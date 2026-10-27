@@ -5,3 +5,5 @@
 - الموقع يُنشر تلقائياً على Cloudflare Workers عند كل تحديث لفرع `main`.
 - واجهة المالك: زر «دخول المالك» أسفل الصفحة (Supabase: مالك / محرر).
 - إعداد قاعدة البيانات: `setup/supabase-setup.sql`.
+
+آخر نشر تلقائي: يُفعَّل عبر Cloudflare Workers Builds.
