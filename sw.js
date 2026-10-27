@@ -1,5 +1,5 @@
 // VITAWAW offline cache. Change VERSION whenever you upload a new index.html
-const VERSION='vitawaw-v5.1b';
+const VERSION='vitawaw-1.0.0';
 const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(FILES)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==VERSION).map(x=>caches.delete(x)))));self.clients.claim()});
