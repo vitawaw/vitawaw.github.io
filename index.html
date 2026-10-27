@@ -596,7 +596,7 @@ o_owner:['المالك','Owner'],o_editor:['محرّر','Editor'],o_local:['تج
 o_preview:['معاينة','Preview'],o_pvexit:['إنهاء المعاينة','End preview'],o_discard:['إلغاء التغييرات','Discard changes'],o_save:['حفظ المسودة','Save draft'],o_publish:['نشر','Publish'],o_logout:['خروج','Log out'],
 o_login:['دخول المالك','Owner login'],o_email:['البريد الإلكتروني','Email'],o_pass:['كلمة المرور','Password'],o_in:['دخول','Log in'],o_cancel:['إلغاء','Cancel'],o_ok:['حفظ','Save'],o_del:['حذف','Delete'],o_edit:['تعديل','Edit'],
 o_nosb:['لم يُربط التطبيق بـ Supabase بعد. يمكنك تجربة وضع المالك على هذا الجهاز فقط، والتعديلات لن يراها غيرك.','The app is not connected to Supabase yet. You can try owner mode on this device only; nobody else will see the changes.'],
-o_trylocal:['تجربة محلية','Try locally'],o_badlogin:['البريد أو كلمة المرور غير صحيحة.','Wrong email or password.'],o_norole:['هذا الحساب ليس له صلاحية تعديل.','This account has no editing permission.'],o_neterr:['تعذّر الاتصال. تحقق من الإنترنت وحاول مرة أخرى.','Could not connect. Check the internet and try again.'],
+o_trylocal:['تجربة محلية','Try locally'],o_first:['أول دخول؟ أنشئ كلمة المرور','First time? Set a password'],o_firstt:['إنشاء كلمة مرور المالك','Set owner password'],o_firsti:['يعمل فقط للبريد المسجّل كمالك أو محرر. اختر كلمة مرور لا تقل عن 8 أحرف.','Works only for an email registered as owner or editor. Choose a password of at least 8 characters.'],o_pass2:['تأكيد كلمة المرور','Confirm password'],o_short:['كلمة المرور يجب ألا تقل عن 8 أحرف.','Password must be at least 8 characters.'],o_mismatch:['كلمتا المرور غير متطابقتين.','Passwords do not match.'],o_notinvited:['لم يتم إنشاء الحساب. تأكد أن البريد مسجّل لديك كمالك أو محرر، أو أن الحساب غير موجود مسبقاً.','Account not created. Make sure the email is registered as owner or editor and does not already have an account.'],o_badlogin:['البريد أو كلمة المرور غير صحيحة.','Wrong email or password.'],o_norole:['هذا الحساب ليس له صلاحية تعديل.','This account has no editing permission.'],o_neterr:['تعذّر الاتصال. تحقق من الإنترنت وحاول مرة أخرى.','Could not connect. Check the internet and try again.'],
 o_pubq:['نشر التعديلات للجميع؟','Publish changes to everyone?'],o_pubi:['ستظهر التعديلات لكل المرضى ومقدمي الرعاية فوراً. يمكنك كتابة ملاحظة لسجل النشر.','Changes will appear to all users right away. You can add a note for the publish log.'],o_note:['ملاحظة (اختياري)','Note (optional)'],
 o_pubdone:['تم النشر','Published'],o_savedone:['تم حفظ المسودة','Draft saved'],o_discq:['إلغاء كل التغييرات غير المنشورة؟','Discard all unpublished changes?'],o_discdone:['تم إلغاء التغييرات','Changes discarded'],o_onlyowner:['النشر للمالك فقط. احفظ المسودة ليراجعها المالك.','Only the owner can publish. Save the draft for the owner to review.'],
 o_text:['النص (عربي)','Text (Arabic)'],o_texten:['النص الإنجليزي (اختياري)','English text (optional)'],o_colors:['ألوان البنر','Banner colours'],o_c1:['اللون الأول','First colour'],o_c2:['اللون الثاني','Second colour'],o_reset:['استعادة الافتراضي','Reset to default'],
@@ -1431,11 +1431,25 @@ async function openOwner(){
   const {data:{session}}=await OWN.client.auth.getSession();
   if(session)return afterLogin();
   while(true){
-    const r=await dialog({title:T('o_login'),fields:[{label:T('o_email'),type:'email',value:''},{label:T('o_pass'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_in'),action:'ok',pri:1}]});
+    const r=await dialog({title:T('o_login'),fields:[{label:T('o_email'),type:'email',value:''},{label:T('o_pass'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_first'),action:'first'},{label:T('o_in'),action:'ok',pri:1}]});
+    if(r.action==='first'){if(await firstSetup(r.values[0]))return afterLogin();continue}
     if(r.action!=='ok')return;
     const {error}=await OWN.client.auth.signInWithPassword({email:r.values[0].trim(),password:r.values[1]});
     if(!error)return afterLogin();
     toast(T('o_badlogin'));
+  }
+}
+async function firstSetup(email0){
+  while(true){
+    const r=await dialog({title:T('o_firstt'),info:T('o_firsti'),fields:[{label:T('o_email'),type:'email',value:email0||''},{label:T('o_pass'),type:'password',value:''},{label:T('o_pass2'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    if(r.action!=='ok')return false;
+    const email=r.values[0].trim(),p1=r.values[1],p2=r.values[2];email0=email;
+    if(p1.length<8){toast(T('o_short'));continue}
+    if(p1!==p2){toast(T('o_mismatch'));continue}
+    let up;try{up=await OWN.client.auth.signUp({email,password:p1})}catch(e){up={error:e}}
+    const {error}=await OWN.client.auth.signInWithPassword({email,password:p1});
+    if(!error)return true;
+    toast(T('o_notinvited'));
   }
 }
 async function afterLogin(){
