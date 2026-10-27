@@ -311,6 +311,13 @@ body.owner:not(.preview) #iadd,body.owner:not(.preview) #radd{min-height:64px;wi
 .dlg .ck{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.4;cursor:pointer}
 .dlg .ck input{margin-top:3px;flex:none;width:16px;height:16px;accent-color:var(--royal)}
 .dlg .box{max-height:calc(100vh - 32px);overflow-y:auto}
+.sev{display:inline-block;font:700 11px var(--f-body);padding:1px 9px;border-radius:99px;margin-inline-end:6px;vertical-align:2px}
+.sev-major{background:var(--bad-bg);color:var(--bad)}.sev-moderate{background:var(--warn-bg);color:var(--warn)}.sev-minor{background:var(--chip);color:var(--royal)}
+.icard.sevb-major{border-inline-start:4px solid var(--bad)}
+.pend{display:inline-flex;align-items:center;font:700 11px var(--f-body);padding:2px 9px;border-radius:99px;background:var(--warn-bg);color:var(--warn);font-style:normal}
+.picker .pend{justify-self:start;margin-top:2px}
+body.owner:not(.preview) .pending{outline:2px dashed var(--warn);outline-offset:2px}
+.nchip .appr{background:var(--warn-bg);color:var(--warn)}
 .nadm:empty{display:none}
 .nadm{display:none;border:1px dashed var(--royal);border-radius:12px;padding:10px;margin-bottom:10px;gap:8px}
 body.owner:not(.preview) .nadm{display:grid}
@@ -567,7 +574,7 @@ body.has-bar footer{padding-bottom:84px}
 
 <script>
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.0.1';
+const APP_VERSION='1.1.0';
 const REVIEW={name:'',role:'',date:''}; // e.g. {name:'د. ...', role:'صيدلي سريري', date:'2026-11-01'}
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
@@ -623,7 +630,7 @@ o_owner:['المالك','Owner'],o_editor:['محرّر','Editor'],o_local:['تج
 o_preview:['معاينة','Preview'],o_pvexit:['إنهاء المعاينة','End preview'],o_discard:['إلغاء التغييرات','Discard changes'],o_save:['حفظ المسودة','Save draft'],o_publish:['نشر','Publish'],o_logout:['خروج','Log out'],
 o_login:['دخول المالك','Owner login'],o_email:['البريد الإلكتروني','Email'],o_pass:['كلمة المرور','Password'],o_in:['دخول','Log in'],o_cancel:['إلغاء','Cancel'],o_ok:['حفظ','Save'],o_del:['حذف','Delete'],o_edit:['تعديل','Edit'],
 o_nosb:['لم يُربط التطبيق بـ Supabase بعد. يمكنك تجربة وضع المالك على هذا الجهاز فقط، والتعديلات لن يراها غيرك.','The app is not connected to Supabase yet. You can try owner mode on this device only; nobody else will see the changes.'],
-o_trylocal:['تجربة محلية','Try locally'],o_nman:['إدارة الفيتامينات (المالك)','Manage nutrients (owner)'],o_nhide:['إخفاء','Hide'],o_nshow:['إظهار','Show'],o_nadd:['+ إضافة فيتامين أو معدن','+ Add a vitamin or mineral'],o_nedit:['تعديل فيتامين','Edit nutrient'],o_nhint:['الفيتامينات الأساسية تُخفى ولا تُحذف حتى يمكن استعادتها. المُضافة تُعدّل وتُحذف بالكامل.','Built-in nutrients are hidden, not deleted, so they can be restored. Added ones can be edited or deleted.'],o_nlast:['يجب أن يبقى فيتامين واحد على الأقل ظاهراً.','At least one nutrient must stay visible.'],o_ninfo:['يحسب التطبيق الاحتياج اليومي حسب العمر والجنس من جدول الجرعات. كل جرعة يجب أن تُربط بمصدر.','The app calculates the daily need from the dose table by age and sex. Every dose must be linked to a source.'],o_nname:['اسم الفيتامين أو المعدن','Nutrient name'],o_nh:['وصف قصير (يظهر تحت الاسم)','Short description (shown under the name)'],o_nunit:['وحدة الجرعة','Dose unit'],o_u_mg:['ملغ (mg)','mg'],o_u_mcg:['ميكروغرام (mcg)','mcg'],o_u_iu:['وحدة دولية (IU)','IU'],o_nrows:['جدول الجرعات: سطر لكل فئة (العمر | الجنس | الاحتياج | الحد الأعلى)','Dose table: one line per group (age | sex | need | upper limit)'],o_nrows_ph:['19-50 | الكل | 400 | 1000\n51+ | الكل | 420 | 1000\n14-50 | حامل | 600 | 1000','19-50 | all | 400 | 1000\n51+ | all | 420 | 1000'],o_nplan:['التوجيه العلاجي (اختياري)','Treatment guidance (optional)'],o_nnote:['تحذيرات وملاحظات (اختياري)','Warnings and notes (optional)'],o_nneedname:['اكتب اسم الفيتامين.','Enter the nutrient name.'],o_nbadrow:['تحقق من صيغة جدول الجرعات في السطر','Check the dose table format on line'],o_ndelinfo:['سيُحذف الفيتامين وكل التداخلات المرتبطة به.','The nutrient and all its interactions will be deleted.'],o_sx_all:['الكل','All'],o_iadd:['إضافة تداخل','Add interaction'],o_iedit:['تعديل التداخل','Edit interaction'],o_inut:['الفيتامين أو المعدن','Nutrient'],o_ia:['اسم المكمل كما يظهر','Supplement name as shown'],o_ia_ph:['يُترك فارغاً لاستخدام اسم الفيتامين','Leave empty to use the nutrient name'],o_ib:['يتداخل مع (دواء أو مادة)','Interacts with (medicine or substance)'],o_id:['ماذا يحدث وما التوصية','What happens and what to do'],o_isrc:['المصادر (اختر مصدراً واحداً على الأقل)','Sources (choose at least one)'],o_ineed:['اكتب الدواء ووصف التداخل.','Enter the medicine and the description.'],o_srcneed:['اختر مصدراً واحداً على الأقل، فكل معلومة مرتبطة بمصدر.','Choose at least one source; every fact must be linked to a source.'],o_radd:['إضافة مصدر','Add source'],o_redit:['تعديل المصدر','Edit source'],o_rinfo:['رقم المصدر يُعطى تلقائياً ولا يتغير حتى تبقى الروابط صحيحة.','The source number is assigned automatically and never changes, so links stay correct.'],o_rorg:['الجهة (مثل Medscape أو NIH)','Publisher (e.g. Medscape, NIH)'],o_rtitle:['عنوان المرجع','Reference title'],o_rurl:['الرابط (يبدأ بـ https://)','Link (starts with https://)'],o_ruse:['ماذا يُستخدم منه (اختياري)','What it is used for (optional)'],o_rneed:['اكتب الجهة والعنوان.','Enter the publisher and title.'],o_rbadurl:['الرابط يجب أن يبدأ بـ https://','The link must start with https://'],o_rused:['هذا المصدر مستخدم في:','This source is used in:'],o_radded:['أُضيف المصدر رقم','Added source number'],o_chpass:['كلمة المرور','Password'],o_chpt:['تغيير كلمة المرور','Change password'],o_newpass:['كلمة المرور الجديدة','New password'],o_chdone:['تم تغيير كلمة المرور.','Password changed.'],o_first:['أول دخول؟ أنشئ كلمة المرور','First time? Set a password'],o_firstt:['إنشاء كلمة مرور المالك','Set owner password'],o_firsti:['يعمل فقط للبريد المسجّل كمالك أو محرر. اختر كلمة مرور لا تقل عن 8 أحرف.','Works only for an email registered as owner or editor. Choose a password of at least 8 characters.'],o_pass2:['تأكيد كلمة المرور','Confirm password'],o_short:['كلمة المرور يجب ألا تقل عن 8 أحرف.','Password must be at least 8 characters.'],o_mismatch:['كلمتا المرور غير متطابقتين.','Passwords do not match.'],o_notinvited:['لم يتم إنشاء الحساب. تأكد أن البريد مسجّل لديك كمالك أو محرر، أو أن الحساب غير موجود مسبقاً.','Account not created. Make sure the email is registered as owner or editor and does not already have an account.'],o_badlogin:['البريد أو كلمة المرور غير صحيحة.','Wrong email or password.'],o_norole:['هذا الحساب ليس له صلاحية تعديل.','This account has no editing permission.'],o_neterr:['تعذّر الاتصال. تحقق من الإنترنت وحاول مرة أخرى.','Could not connect. Check the internet and try again.'],
+o_trylocal:['تجربة محلية','Try locally'],o_nman:['إدارة الفيتامينات (المالك)','Manage nutrients (owner)'],o_nhide:['إخفاء','Hide'],o_nshow:['إظهار','Show'],o_nadd:['+ إضافة فيتامين أو معدن','+ Add a vitamin or mineral'],o_nedit:['تعديل فيتامين','Edit nutrient'],o_nhint:['الفيتامينات الأساسية تُخفى ولا تُحذف حتى يمكن استعادتها. المُضافة تُعدّل وتُحذف بالكامل.','Built-in nutrients are hidden, not deleted, so they can be restored. Added ones can be edited or deleted.'],o_nlast:['يجب أن يبقى فيتامين واحد على الأقل ظاهراً.','At least one nutrient must stay visible.'],o_ninfo:['يحسب التطبيق الاحتياج اليومي حسب العمر والجنس من جدول الجرعات. كل جرعة يجب أن تُربط بمصدر.','The app calculates the daily need from the dose table by age and sex. Every dose must be linked to a source.'],o_nname:['اسم الفيتامين أو المعدن','Nutrient name'],o_nh:['وصف قصير (يظهر تحت الاسم)','Short description (shown under the name)'],o_nunit:['وحدة الجرعة','Dose unit'],o_u_mg:['ملغ (mg)','mg'],o_u_mcg:['ميكروغرام (mcg)','mcg'],o_u_iu:['وحدة دولية (IU)','IU'],o_nrows:['جدول الجرعات: سطر لكل فئة (العمر | الجنس | الاحتياج | الحد الأعلى)','Dose table: one line per group (age | sex | need | upper limit)'],o_nrows_ph:['19-50 | الكل | 400 | 1000\n51+ | الكل | 420 | 1000\n14-50 | حامل | 600 | 1000','19-50 | all | 400 | 1000\n51+ | all | 420 | 1000'],o_nplan:['التوجيه العلاجي (اختياري)','Treatment guidance (optional)'],o_nnote:['تحذيرات وملاحظات (اختياري)','Warnings and notes (optional)'],o_nneedname:['اكتب اسم الفيتامين.','Enter the nutrient name.'],o_nbadrow:['تحقق من صيغة جدول الجرعات في السطر','Check the dose table format on line'],o_ndelinfo:['سيُحذف الفيتامين وكل التداخلات المرتبطة به.','The nutrient and all its interactions will be deleted.'],o_sx_all:['الكل','All'],o_iadd:['إضافة تداخل','Add interaction'],o_iedit:['تعديل التداخل','Edit interaction'],o_inut:['الفيتامين أو المعدن','Nutrient'],o_ia:['اسم المكمل كما يظهر','Supplement name as shown'],o_ia_ph:['يُترك فارغاً لاستخدام اسم الفيتامين','Leave empty to use the nutrient name'],o_ib:['يتداخل مع (دواء أو مادة)','Interacts with (medicine or substance)'],o_id:['ماذا يحدث وما التوصية','What happens and what to do'],o_isrc:['المصادر (اختر مصدراً واحداً على الأقل)','Sources (choose at least one)'],o_ineed:['اكتب الدواء ووصف التداخل.','Enter the medicine and the description.'],o_srcneed:['اختر مصدراً واحداً على الأقل، فكل معلومة مرتبطة بمصدر.','Choose at least one source; every fact must be linked to a source.'],o_radd:['إضافة مصدر','Add source'],o_redit:['تعديل المصدر','Edit source'],o_rinfo:['رقم المصدر يُعطى تلقائياً ولا يتغير حتى تبقى الروابط صحيحة.','The source number is assigned automatically and never changes, so links stay correct.'],o_rorg:['الجهة (مثل Medscape أو NIH)','Publisher (e.g. Medscape, NIH)'],o_rtitle:['عنوان المرجع','Reference title'],o_rurl:['الرابط (يبدأ بـ https://)','Link (starts with https://)'],o_ruse:['ماذا يُستخدم منه (اختياري)','What it is used for (optional)'],o_rneed:['اكتب الجهة والعنوان.','Enter the publisher and title.'],o_rbadurl:['الرابط يجب أن يبدأ بـ https://','The link must start with https://'],o_rused:['هذا المصدر مستخدم في:','This source is used in:'],o_radded:['أُضيف المصدر رقم','Added source number'],sev_major:['خطير','Major'],sev_moderate:['متوسط','Moderate'],sev_minor:['بسيط','Minor'],o_isev:['درجة الخطورة','Severity'],o_pending:['بانتظار مراجعتك','Awaiting your review'],o_approve:['اعتماد','Approve'],o_approved:['اعتُمد. احفظ ثم انشر ليظهر للزوار.','Approved. Save, then publish to show it to visitors.'],o_pendn:['بانتظار المراجعة','awaiting review'],o_saveerr:['لم يُحفظ. تأكد أن كل تداخل وفيتامين مرتبط بمصدر واحد على الأقل.','Not saved. Make sure every interaction and nutrient has at least one source.'],o_chpass:['كلمة المرور','Password'],o_chpt:['تغيير كلمة المرور','Change password'],o_newpass:['كلمة المرور الجديدة','New password'],o_chdone:['تم تغيير كلمة المرور.','Password changed.'],o_first:['أول دخول؟ أنشئ كلمة المرور','First time? Set a password'],o_firstt:['إنشاء كلمة مرور المالك','Set owner password'],o_firsti:['يعمل فقط للبريد المسجّل كمالك أو محرر. اختر كلمة مرور لا تقل عن 8 أحرف.','Works only for an email registered as owner or editor. Choose a password of at least 8 characters.'],o_pass2:['تأكيد كلمة المرور','Confirm password'],o_short:['كلمة المرور يجب ألا تقل عن 8 أحرف.','Password must be at least 8 characters.'],o_mismatch:['كلمتا المرور غير متطابقتين.','Passwords do not match.'],o_notinvited:['لم يتم إنشاء الحساب. تأكد أن البريد مسجّل لديك كمالك أو محرر، أو أن الحساب غير موجود مسبقاً.','Account not created. Make sure the email is registered as owner or editor and does not already have an account.'],o_badlogin:['البريد أو كلمة المرور غير صحيحة.','Wrong email or password.'],o_norole:['هذا الحساب ليس له صلاحية تعديل.','This account has no editing permission.'],o_neterr:['تعذّر الاتصال. تحقق من الإنترنت وحاول مرة أخرى.','Could not connect. Check the internet and try again.'],
 o_pubq:['نشر التعديلات للجميع؟','Publish changes to everyone?'],o_pubi:['ستظهر التعديلات لكل المرضى ومقدمي الرعاية فوراً. يمكنك كتابة ملاحظة لسجل النشر.','Changes will appear to all users right away. You can add a note for the publish log.'],o_note:['ملاحظة (اختياري)','Note (optional)'],
 o_pubdone:['تم النشر','Published'],o_savedone:['تم حفظ المسودة','Draft saved'],o_discq:['إلغاء كل التغييرات غير المنشورة؟','Discard all unpublished changes?'],o_discdone:['تم إلغاء التغييرات','Changes discarded'],o_onlyowner:['النشر للمالك فقط. احفظ المسودة ليراجعها المالك.','Only the owner can publish. Save the draft for the owner to review.'],
 o_text:['النص (عربي)','Text (Arabic)'],o_texten:['النص الإنجليزي (اختياري)','English text (optional)'],o_colors:['ألوان البنر','Banner colours'],o_c1:['اللون الأول','First colour'],o_c2:['اللون الثاني','Second colour'],o_reset:['استعادة الافتراضي','Reset to default'],
@@ -1085,21 +1092,27 @@ function fZn(){
 
 /* ===================== editable content (sources, interactions, custom nutrients) ===================== */
 const defRefList=()=>Object.entries(DEF_REFS).map(([id,x])=>({id:+id,org:x[0],title:x[1],url:x[2],ar:x[3],en:x[4]}));
-const defInterList=()=>DEF_INTER.map(x=>({k:x[0],a:{ar:x[1][0],en:x[1][1]},b:{ar:x[2][0],en:x[2][1]},d:{ar:x[3][0],en:x[3][1]},r:x[4].slice()}));
+const DEF_SEV=['moderate','moderate','minor','moderate','moderate','moderate','moderate','moderate','minor','minor','moderate','moderate','moderate'];
+const defInterList=()=>DEF_INTER.map((x,i)=>({k:x[0],a:{ar:x[1][0],en:x[1][1]},b:{ar:x[2][0],en:x[2][1]},d:{ar:x[3][0],en:x[3][1]},r:x[4].slice(),sev:DEF_SEV[i]||'moderate'}));
+const SHOWALL=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview;
+const SEVORD={major:0,moderate:1,minor:2};
+const CANAPPROVE=()=>typeof OWN!=='undefined'&&(OWN.role==='owner'||OWN.local);
 const NHIDE=()=>(CFG.nut&&CFG.nut.hide)||[];
 const NCUST=()=>(CFG.nut&&CFG.nut.custom)||[];
 function buildData(){
-  REFS=Array.isArray(CFG.refs)?Object.fromEntries(CFG.refs.map(o=>[o.id,[o.org||'',o.title||'',o.url||'',o.ar||'',o.en||o.ar||'']])):DEF_REFS;
+  const all=SHOWALL();
+  REFS=Array.isArray(CFG.refs)?Object.fromEntries(CFG.refs.filter(o=>all||o.rv!==false).map(o=>[o.id,[o.org||'',o.title||'',o.url||'',o.ar||'',o.en||o.ar||'',o.rv!==false]])):DEF_REFS;
   CUST={};NCUST().forEach(c=>{CUST[c.id]=c});
-  const hide=NHIDE(),vis=BUILTIN.filter(k=>!hide.includes(k)),custIds=NCUST().map(c=>c.id);
+  const VC=NCUST().filter(c=>!c.hidden&&(all||c.rv!==false));
+  const hide=NHIDE(),vis=BUILTIN.filter(k=>!hide.includes(k)),custIds=VC.map(c=>c.id);
   KEYS=['all',...vis,...custIds];
   const il=Array.isArray(CFG.inter)?CFG.inter:defInterList();
-  INTER=il.map((x,i)=>[x.k,[x.a.ar,x.a.en||x.a.ar],[x.b.ar,x.b.en||x.b.ar],[x.d.ar,x.d.en||x.d.ar],x.r||[],i]).filter(x=>KEYS.includes(x[0]));
+  INTER=il.map((x,i)=>[x.k,[x.a.ar,x.a.en||x.a.ar],[x.b.ar,x.b.en||x.b.ar],[x.d.ar,x.d.en||x.d.ar],x.r||[],i,x.sev||'moderate',x.rv!==false]).filter(x=>KEYS.includes(x[0])&&(all||x[7]));
   REFGROUP={};
   KEYS.slice(1).forEach(k=>{const g=new Set(DEF_REFGROUP[k]||(CUST[k]?CUST[k].r||[]:[]));INTER.filter(x=>x[0]===k).forEach(x=>x[4].forEach(n=>g.add(n)));REFGROUP[k]=[...g].filter(n=>REFS[n])});
   // picker
   document.querySelectorAll('#picker button[data-k]').forEach(b=>{if(BUILTIN.includes(b.dataset.k))b.hidden=hide.includes(b.dataset.k);else b.remove()});
-  NCUST().forEach(c=>{const b=document.createElement('button');b.dataset.k=c.id;b.className='cnut';b.innerHTML=`<span>${esc(tx2(c.n))}</span><small>${esc(tx2(c.h))}</small>`;$('picker').appendChild(b);F[c.id]=()=>fCustom(c.id);EX[c.id]={age:30,sex:'f'}});
+  VC.forEach(c=>{const b=document.createElement('button');b.dataset.k=c.id;b.className='cnut';b.innerHTML=`<span>${esc(tx2(c.n))}</span><small>${esc(tx2(c.h))}</small>${c.rv===false?`<em class="pend">${T('o_pending')}</em>`:''}`;$('picker').appendChild(b);F[c.id]=()=>fCustom(c.id);EX[c.id]={age:30,sex:'f'}});
   Object.keys(F).forEach(k=>{if(!BUILTIN.includes(k)&&!CUST[k])delete F[k]});
   if(!KEYS.includes(K)||K==='all')K=KEYS[1]||'d';
   document.querySelectorAll('[data-for]').forEach(el=>{el.hidden=!el.dataset.for.split(' ').includes(K)});
@@ -1112,7 +1125,7 @@ function renderNutAdmin(){
   const hide=NHIDE();
   el.innerHTML=`<p class="nadm-h">${T('o_nman')}</p><div class="nadm-l">`+
     BUILTIN.map(k=>`<span class="nchip${hide.includes(k)?' off':''}">${esc(T('n_'+k))}<button type="button" data-nhide="${k}">${T(hide.includes(k)?'o_nshow':'o_nhide')}</button></span>`).join('')+
-    NCUST().map(c=>`<span class="nchip cust">${esc(tx2(c.n))}<button type="button" data-nedit="${c.id}">${T('o_edit')}</button></span>`).join('')+
+    NCUST().map(c=>`<span class="nchip cust${c.rv===false?' pending':''}">${esc(tx2(c.n))}${c.rv===false&&CANAPPROVE()?`<button type="button" class="appr" data-approve="n:${c.id}">${T('o_approve')}</button>`:''}<button type="button" data-nedit="${c.id}">${T('o_edit')}</button></span>`).join('')+
     `</div><button class="btn pri" type="button" id="nadd">${T('o_nadd')}</button><p class="hint">${T('o_nhint')}</p>`;
 }
 /* custom nutrient calculator: dose table by age and sex */
@@ -1126,7 +1139,7 @@ function pickRow(rows,age,sx){
 function fCustom(id){
   const c=CUST[id];if(!c)return;
   const x=req(['age']);if(!x)return;
-  const age=x.age,sx=$('sex').value,u=' '+tx2(c.u),nm=tx2(c.n),row=pickRow(c.rows||[],age,sx);
+  const age=x.age,sx=$('sex').value,u=' '+tx2(c.u||UNITTXT[c.uk]),nm=tx2(c.n),row=pickRow(c.rows||[],age,sx);
   const refs=(c.r||[]).filter(n=>REFS[n]);
   if(!row){render({badge:L('لا توجد قيمة','No value'),tone:'warn',title:esc(L(`لا توجد جرعة مسجّلة لهذا العمر في ${nm}`,`No dose recorded for this age in ${nm}`)),sub:esc(L('راجع الطبيب أو الصيدلي','Ask a doctor or pharmacist')),refs});return}
   const kv=[[L('الاحتياج اليومي (RDA)','Daily need (RDA)'),esc(row.rda+u)],[L('الحد الأعلى (UL)','Upper limit (UL)'),row.ul?esc(row.ul+u+L(' / يوم',' / day')):L('غير محدد','Not established')]];
@@ -1194,7 +1207,7 @@ const kname=k=>k==='all'?T('all'):CUST[k]?tx2(CUST[k].n):T('n_'+k);
 function renderInter(){
   $('filters').innerHTML=KEYS.filter(k=>k==='all'||INTER.some(x=>x[0]===k)).map(k=>`<button data-f="${k}" aria-pressed="${k===IF}">${kname(k)}</button>`).join('');
   if(IF!=='all'&&!INTER.some(x=>x[0]===IF))IF='all';
-  $('ilist').innerHTML=INTER.filter(x=>IF==='all'||x[0]===IF).map(x=>`<div class="icard"><div class="who">${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div><div class="oedit"><button class="btn" type="button" data-iedit="${x[5]}">${PEN}${T('o_edit')}</button></div></div>`).join('')+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
+  $('ilist').innerHTML=INTER.filter(x=>IF==='all'||x[0]===IF).sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]).map(x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div><div class="oedit">${x[7]?'':`<span class="pend">${T('o_pending')}</span>${CANAPPROVE()?`<button class="btn pri" type="button" data-approve="i:${x[5]}">${T('o_approve')}</button>`:''}`}<button class="btn" type="button" data-iedit="${x[5]}">${PEN}${T('o_edit')}</button></div></div>`).join('')+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
   $('icount').textContent=INTER.length;
 }
 const IC={
@@ -1231,7 +1244,7 @@ function renderRefs(){
   if(!KEYS.includes(SF))SF='all';
   const show=SF==='all'?null:REFGROUP[SF];
   $('reflist').innerHTML=Object.entries(REFS).sort((a,b)=>a[0]-b[0]).filter(([n])=>!show||show.includes(+n)).map(([n,x])=>
-    `<li id="ref-${n}"><span class="num">${n}</span><div><div class="org">${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div><div class="oedit"><button class="btn" type="button" data-redit="${n}">${PEN}${T('o_edit')}</button></div></div></li>`).join('')+`<li class="oaddli"><button class="oadd" type="button" id="radd">${PLUS}${T('o_radd')}</button></li>`;
+    `<li id="ref-${n}"><span class="num">${n}</span><div><div class="org">${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div><div class="oedit">${x[5]===false?`<span class="pend">${T('o_pending')}</span>${CANAPPROVE()?`<button class="btn pri" type="button" data-approve="r:${n}">${T('o_approve')}</button>`:''}`:''}<button class="btn" type="button" data-redit="${n}">${PEN}${T('o_edit')}</button></div></div></li>`).join('')+`<li class="oaddli"><button class="oadd" type="button" id="radd">${PLUS}${T('o_radd')}</button></li>`;
   $('rcount').textContent=Object.keys(REFS).length;
   $('rev2').hidden=!REVIEW.name;if(REVIEW.name)$('rev2').innerHTML=reviewHTML().replace(/^<div class="reviewed">|<\/div>$/g,'');
 }
@@ -1416,7 +1429,7 @@ function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent='VITAWAW · '+T(OWN.local?'o_local':OWN.role==='owner'?'o_owner':'o_editor');
   const d=dirty();$('odot').classList.toggle('dirty',d||OWN.saved);
-  $('ostate').textContent=T(d?'o_dirty':OWN.saved?'o_saved':'o_clean');
+  const pc=pendingCount();$('ostate').textContent=T(d?'o_dirty':OWN.saved?'o_saved':'o_clean')+(pc?` · ${pc} ${T('o_pendn')}`:'');
   $('o-preview').textContent=T('o_preview');$('o-discard').textContent=T('o_discard');$('o-save').textContent=T('o_save');
   $('o-publish').textContent=T('o_publish');$('o-logout').textContent=T('o_logout');$('o-pass').textContent=T('o_chpass');$('o-pass').hidden=OWN.local;$('o-pvexit').textContent=T('o_pvexit');
   $('o-publish').hidden=!(OWN.local||OWN.role==='owner');
@@ -1526,7 +1539,7 @@ async function editRef(id){
     v=r.values.map(x=>x.trim());
     if(!v[0]||!v[1]){toast(T('o_rneed'));continue}
     if(v[2]&&!/^https?:\/\//i.test(v[2])){toast(T('o_rbadurl'));continue}
-    const item={id:isNew?Math.max(29,...CFG.refs.map(x=>x.id))+1:id,org:v[0],title:v[1],url:v[2],ar:v[3],en:o.ar===v[3]?(o.en||''):''};
+    const item={id:isNew?Math.max(29,(OWN.nextRef||1)-1,...CFG.refs.map(x=>x.id))+1:id,org:v[0],title:v[1],url:v[2],ar:v[3],en:o.ar===v[3]?(o.en||''):'',rv:OWN.role==='owner'||OWN.local};
     if(isNew)CFG.refs.push(item);else CFG.refs[CFG.refs.findIndex(x=>x.id===id)]=item;
     changed();if(isNew)toast(T('o_radded')+' '+item.id);return;
   }
@@ -1534,20 +1547,29 @@ async function editRef(id){
 async function editInter(i){
   ensureInter();const isNew=i==null,o=isNew?null:CFG.inter[i];
   const nuts=KEYS.slice(1).map(k=>[k,kname(k)]);if(!nuts.length)return;
-  let v=o?[o.k,o.a.ar,o.b.ar,o.d.ar,(o.r||[]).slice()]:[nuts[0][0],'','','',[]];
+  let v=o?[o.k,o.sev||'moderate',o.a.ar,o.b.ar,o.d.ar,(o.r||[]).slice()]:[nuts[0][0],'moderate','','','',[]];
   while(true){
     const btns=[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}];if(!isNew)btns.unshift({label:T('o_del'),action:'del'});
-    const r=await dialog({title:T(isNew?'o_iadd':'o_iedit'),fields:[{label:T('o_inut'),type:'select',options:nuts,value:v[0]},{label:T('o_ia'),value:v[1],ph:T('o_ia_ph')},{label:T('o_ib'),value:v[2]},{label:T('o_id'),type:'textarea',value:v[3]},{label:T('o_isrc'),type:'checks',options:refOpts(),value:v[4]}],buttons:btns});
+    const r=await dialog({title:T(isNew?'o_iadd':'o_iedit'),fields:[{label:T('o_inut'),type:'select',options:nuts,value:v[0]},{label:T('o_isev'),type:'select',options:[['major',T('sev_major')],['moderate',T('sev_moderate')],['minor',T('sev_minor')]],value:v[1]},{label:T('o_ia'),value:v[2],ph:T('o_ia_ph')},{label:T('o_ib'),value:v[3]},{label:T('o_id'),type:'textarea',value:v[4]},{label:T('o_isrc'),type:'checks',options:refOpts(),value:v[5]}],buttons:btns});
     if(r.action==='del'){if(await confirmDel()){CFG.inter.splice(i,1);changed()}return}
     if(r.action!=='ok')return;
-    v=[r.values[0],r.values[1].trim(),r.values[2].trim(),r.values[3].trim(),r.values[4]];
-    if(!v[1])v[1]=kname(v[0]);
-    if(!v[2]||!v[3]){toast(T('o_ineed'));continue}
-    if(!v[4].length){toast(T('o_srcneed'));continue}
-    const item={k:v[0],a:keep(o&&o.a,v[1]),b:keep(o&&o.b,v[2]),d:keep(o&&o.d,v[3]),r:v[4]};
+    v=[r.values[0],r.values[1],r.values[2].trim(),r.values[3].trim(),r.values[4].trim(),r.values[5]];
+    if(!v[2])v[2]=kname(v[0]);
+    if(!v[3]||!v[4]){toast(T('o_ineed'));continue}
+    if(!v[5].length){toast(T('o_srcneed'));continue}
+    const item={k:v[0],sev:v[1],a:keep(o&&o.a,v[2]),b:keep(o&&o.b,v[3]),d:keep(o&&o.d,v[4]),r:v[5],rv:OWN.role==='owner'||OWN.local};if(o&&o.id!=null)item.id=o.id;
     if(isNew)CFG.inter.push(item);else CFG.inter[i]=item;changed();return;
   }
 }
+function approve(key){
+  if(!(OWN.role==='owner'||OWN.local)){toast(T('o_onlyowner'));return}
+  const [t,id]=[key.slice(0,1),key.slice(2)];
+  if(t==='r'){const o=(CFG.refs||[]).find(x=>String(x.id)===id);if(o)o.rv=true}
+  if(t==='i'){const o=(CFG.inter||[])[+id];if(o)o.rv=true}
+  if(t==='n'){const o=NCUST().find(x=>x.id===id);if(o)o.rv=true}
+  changed();toast(T('o_approved'));
+}
+const pendingCount=()=>(CFG.refs||[]).filter(x=>x.rv===false).length+(CFG.inter||[]).filter(x=>x.rv===false).length+NCUST().filter(x=>x.rv===false).length;
 function toggleBuiltin(k){
   CFG.nut=CFG.nut||{hide:[],custom:[]};const h=CFG.nut.hide;const j=h.indexOf(k);
   if(j>=0)h.splice(j,1);else{if(KEYS.length<=2){toast(T('o_nlast'));return}h.push(k)}
@@ -1581,17 +1603,18 @@ async function editNut(id){
     if(!v[0]){toast(T('o_nneedname'));continue}
     const pr=parseRows(v[3]);if(pr.err){toast(T('o_nbadrow')+' '+pr.err);continue}
     if(!v[6].length){toast(T('o_srcneed'));continue}
-    const nid=isNew?'c'+Date.now().toString(36):id;
-    const item={id:nid,n:keep(o&&o.n,v[0]),h:keep(o&&o.h,v[1]),uk:v[2],u:UNITTXT[v[2]],rows:pr.rows,plan:keep(o&&o.plan,v[4]),note:keep(o&&o.note,v[5]),r:v[6]};
+    const nid=isNew?'c'+Date.now().toString(36).slice(-8):id;
+    const item={id:nid,n:keep(o&&o.n,v[0]),h:keep(o&&o.h,v[1]),uk:v[2],u:UNITTXT[v[2]],rows:pr.rows,plan:keep(o&&o.plan,v[4]),note:keep(o&&o.note,v[5]),r:v[6],rv:OWN.role==='owner'||OWN.local,hidden:!!(o&&o.hidden)};
     if(isNew)CFG.nut.custom.push(item);else CFG.nut.custom[CFG.nut.custom.findIndex(c=>c.id===id)]=item;
     if(isNew){K=nid}
     changed();return;
   }
 }
 document.addEventListener('click',e=>{
-  if(!OWN.on)return;const t=e.target.closest('[data-redit],#radd,[data-iedit],#iadd,[data-nhide],[data-nedit],#nadd');if(!t)return;
+  if(!OWN.on)return;const t=e.target.closest('[data-redit],#radd,[data-iedit],#iadd,[data-nhide],[data-nedit],#nadd,[data-approve]');if(!t)return;
   e.preventDefault();e.stopPropagation();
-  if(t.dataset.redit)editRef(+t.dataset.redit);
+  if(t.dataset.approve)approve(t.dataset.approve);
+  else if(t.dataset.redit)editRef(+t.dataset.redit);
   else if(t.id==='radd')editRef(null);
   else if(t.dataset.iedit!=null)editInter(+t.dataset.iedit);
   else if(t.id==='iadd')editInter(null);
@@ -1641,18 +1664,26 @@ async function afterLogin(){
   const {data:m}=await c.from('members').select('role').eq('user_id',user.id).maybeSingle();
   if(!m||!['owner','editor'].includes(m.role)){toast(T('o_norole'));await c.auth.signOut();return}
   const {data:dr}=await c.from('site_config').select('data').eq('id','draft').maybeSingle();
-  startOwner({local:false,role:m.role,draft:dr&&dr.data});
+  const {data:ct,error}=await c.rpc('get_content');if(error||!ct){toast(T('o_neterr'));return}
+  startOwner({local:false,role:m.role,draft:dr&&dr.data,content:ct});
 }
-function startOwner({local,role,draft}){
-  OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;
-  CFG=mergeCfg(DEFAULT_CFG,draft||PUBLISHED);
+function applyContent(ct){CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30}
+const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap});
+function startOwner({local,role,draft,content}){
+  OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;OWN.preview=false;
+  CFG=mergeCfg(DEFAULT_CFG,draft||PUBLISHED);if(content)applyContent(content);
   OWN.base=cfgJSON();OWN.saved=!!draft&&JSON.stringify(draft)!==JSON.stringify(PUBLISHED);
   document.body.classList.add('owner');changed();
 }
 async function saveDraft(){
   const data=JSON.parse(cfgJSON());
   if(OWN.local){try{localStorage.setItem('vw-draft',JSON.stringify(data))}catch(e){}}
-  else{const {error}=await OWN.client.from('site_config').upsert({id:'draft',data,updated_at:new Date().toISOString()});if(error){toast(T('o_neterr'));return false}}
+  else{
+    const c=OWN.client;
+    const {error}=await c.from('site_config').upsert({id:'draft',data:settingsOf(data),updated_at:new Date().toISOString()});if(error){toast(T('o_neterr'));return false}
+    const {error:e2}=await c.rpc('save_content',{p:{refs:CFG.refs||[],inter:CFG.inter||[],nut:{hide:NHIDE(),custom:NCUST()}}});if(e2){console.error(e2);toast(T('o_saveerr'));return false}
+    const {data:ct,error:e3}=await c.rpc('get_content');if(!e3&&ct){applyContent(ct);refreshAll()}
+  }
   OWN.base=cfgJSON();OWN.saved=true;ownerBar();toast(T('o_savedone'));return true;
 }
 async function publish(){
@@ -1662,14 +1693,23 @@ async function publish(){
   if(!(await saveDraft()))return;
   const data=JSON.parse(cfgJSON());
   if(OWN.local){try{localStorage.setItem('vw-cfg',JSON.stringify(data))}catch(e){}}
-  else{const {error}=await OWN.client.rpc('publish_config',{note:r.values[0]||''});if(error){toast(T('o_neterr'));return}}
+  else{
+    const {error}=await OWN.client.rpc('publish_site',{note:r.values[0]||''});if(error){console.error(error);toast(T('o_neterr'));return}
+    const {data:pub}=await OWN.client.from('site_config').select('data').eq('id','published').maybeSingle();
+    if(pub&&pub.data){PUBLISHED=pub.data;try{localStorage.setItem('vw-cfg',JSON.stringify(PUBLISHED))}catch(e){}}
+    OWN.saved=false;ownerBar();toast(T('o_pubdone'));return;
+  }
   PUBLISHED=data;OWN.saved=false;ownerBar();toast(T('o_pubdone'));
 }
 async function discard(){
   const q=await dialog({title:T('o_discq'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_discard'),action:'ok',pri:1}]});if(q.action!=='ok')return;
-  if(OWN.local){try{localStorage.removeItem('vw-draft')}catch(e){}}
-  else await OWN.client.from('site_config').delete().eq('id','draft');
-  CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);OWN.base=cfgJSON();OWN.saved=false;changed();toast(T('o_discdone'));
+  if(OWN.local){try{localStorage.removeItem('vw-draft')}catch(e){}CFG=mergeCfg(DEFAULT_CFG,PUBLISHED)}
+  else{
+    const c=OWN.client;const {data:dr}=await c.from('site_config').select('data').eq('id','draft').maybeSingle();
+    const {data:ct,error}=await c.rpc('get_content');if(error||!ct){toast(T('o_neterr'));return}
+    CFG=mergeCfg(DEFAULT_CFG,(dr&&dr.data)||PUBLISHED);applyContent(ct);
+  }
+  OWN.base=cfgJSON();OWN.saved=false;changed();toast(T('o_discdone'));
 }
 async function changePass(){
   while(true){
@@ -1687,10 +1727,10 @@ $('o-pass').addEventListener('click',changePass);
 async function logout(){
   if(dirty()){const q=await dialog({title:T('o_leave'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_logout'),action:'ok',pri:1}]});if(q.action!=='ok')return}
   if(!OWN.local&&OWN.client)await OWN.client.auth.signOut();
-  OWN.on=false;document.body.classList.remove('owner','preview');CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);refreshAll();
+  OWN.on=false;OWN.preview=false;document.body.classList.remove('owner','preview');CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);refreshAll();
 }
 $('o-enter').addEventListener('click',openOwner);$('o-save').addEventListener('click',saveDraft);$('o-publish').addEventListener('click',publish);$('o-discard').addEventListener('click',discard);$('o-logout').addEventListener('click',logout);
-$('o-preview').addEventListener('click',()=>{document.body.classList.add('preview')});$('o-pvexit').addEventListener('click',()=>document.body.classList.remove('preview'));
+$('o-preview').addEventListener('click',()=>{OWN.preview=true;document.body.classList.add('preview');refreshAll()});$('o-pvexit').addEventListener('click',()=>{OWN.preview=false;document.body.classList.remove('preview');refreshAll()});
 addEventListener('beforeunload',e=>{if(OWN.on&&dirty()){e.preventDefault();e.returnValue=''}});
 
 /* ===================== boot ===================== */

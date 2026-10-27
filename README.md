@@ -5,10 +5,12 @@
 - **الإصدار الحالي:** انظر `APP_VERSION` في `index.html` و[سجل الإصدارات](CHANGELOG.md).
 - **النشر:** تلقائي على Cloudflare Workers عند كل تحديث لفرع `main`.
 - **واجهة المالك:** زر «دخول المالك» أسفل الصفحة (Supabase: مالك / محرر).
-- **قاعدة البيانات:** `setup/supabase-setup.sql`.
+- **قاعدة البيانات:** `supabase/migrations/` (كل تغيير ملف مرقّم بتاريخه).
+- **الاختبارات:** `python3 tests/owner_flow.py` (يحتاج Playwright).
 
 ## خطوات إصدار جديد
 1. تعديل الكود.
 2. رفع `APP_VERSION` في `index.html` و`VERSION` في `sw.js`.
 3. إضافة قسم للإصدار في `CHANGELOG.md`.
-4. الدمج في `main` ثم وسم الإصدار `vX.Y.Z`.
+4. العمل على فرع `release/X.Y.Z` ومراجعة رابط المعاينة من Cloudflare.
+5. الدمج في `main` بعد الموافقة، فيُنشر تلقائياً.
