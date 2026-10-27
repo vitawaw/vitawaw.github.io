@@ -12,3 +12,4 @@
 2. رفع `APP_VERSION` في `index.html` و`VERSION` في `sw.js`.
 3. إضافة قسم للإصدار في `CHANGELOG.md`.
 4. الدمج في `main` ثم وسم الإصدار `vX.Y.Z`.
+
