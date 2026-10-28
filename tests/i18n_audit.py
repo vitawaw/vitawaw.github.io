@@ -88,7 +88,7 @@ def walk(pg,lang,tag):
       document.querySelectorAll('#tools select').forEach(s=>{s.selectedIndex=s.options.length-1;s.dispatchEvent(new Event('change',{bubbles:true}))})}''')
     pg.wait_for_timeout(100);scan(pg,tag+' tools-filled',lang)
     for t in ['interactions','sources','roadmap']:
-        pg.click('#t-'+t);pg.wait_for_timeout(100);scan(pg,tag+' '+t,lang)
+        pg.evaluate(f"go('{t}')");pg.wait_for_timeout(100);scan(pg,tag+' '+t,lang)
         for f in pg.locator(f'#{t} [data-f], #filters button, #sfilters button').all()[:20]:
             try: f.click();pg.wait_for_timeout(30);scan(pg,tag+' '+t+' filter',lang)
             except Exception: pass
@@ -99,7 +99,7 @@ def menus(pg,lang,tag):
 def owner_dialogs(pg,lang,tag):
     sels=['[data-nedit]','#nadd','[data-iedit]','#iadd','[data-redit]','#radd','#o-publish','#o-pass','[data-approveall="n"]','[data-approveall="i"]','[data-approveall="r"]','[data-edtext]','[data-edcolor]','[data-edcontact]','[data-rmedit]','#rmadd','#o-discard']
     for tab in ['calc','interactions','sources','roadmap','tools']:
-        pg.click('#t-'+tab);pg.wait_for_timeout(120);scan(pg,f'{tag} owner {tab}',lang)
+        pg.evaluate(f"go('{tab}')");pg.wait_for_timeout(120);scan(pg,f'{tag} owner {tab}',lang)
         for s in sels:
             loc=pg.locator(f'#{tab} {s}, #obar {s}' if s.startswith('#o-') else f'#{tab} {s}')
             if s.startswith('#o-'): loc=pg.locator(s)
@@ -127,14 +127,14 @@ with sync_playwright() as p:
         pg.click('#t-calc');pg.click('#picker [data-k="d"]');fill_all(pg);pg.wait_for_timeout(100)
         pg.evaluate('l=>setLang(l)',other);pg.wait_for_timeout(200);scan(pg,'after-switch calc',other)
         for t in ['tools','interactions','sources','roadmap']:
-            pg.click('#t-'+t);pg.wait_for_timeout(60);scan(pg,'after-switch '+t,other)
+            pg.evaluate(f"go('{t}')");pg.wait_for_timeout(60);scan(pg,'after-switch '+t,other)
         pg.evaluate('l=>setLang(l)',start);pg.wait_for_timeout(150)
         # owner
         pg.evaluate('openOwner()');pg.wait_for_timeout(900);scan(pg,'owner home',start)
         walk(pg,start,'owner');owner_dialogs(pg,start,'owner');menus(pg,start,'owner')
         pg.evaluate('l=>setLang(l)',other);pg.wait_for_timeout(200)
         for t in ['calc','tools','interactions','sources','roadmap']:
-            pg.click('#t-'+t);pg.wait_for_timeout(60);scan(pg,'owner after-switch '+t,other)
+            pg.evaluate(f"go('{t}')");pg.wait_for_timeout(60);scan(pg,'owner after-switch '+t,other)
         print(start,'errors:',errs[:5])
     # login dialog (visitor, not logged)
     for lg in ['en','ar']:
