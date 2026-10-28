@@ -1,1 +1,28 @@
-{"name":"billowing-glade-6627","compatibility_date":"2026-10-01","assets":{"directory":"./","not_found_handling":"single-page-application"},"previews":{}}
+// Cloudflare Workers configuration. Deployed automatically by Workers Builds from GitHub:
+// branch "main" -> production (npx wrangler deploy), any other branch -> preview (npx wrangler preview).
+{
+  "name": "billowing-glade-6627",
+  "compatibility_date": "2026-10-01",
+  "main": "src/worker.js",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // only /api/* runs the worker; every other request is a free static asset
+    "run_worker_first": ["/api/*"]
+  },
+  // public values only (the anon key is meant to be public; data is protected by RLS)
+  "vars": {
+    "SUPABASE_URL": "https://zrlapysswtqrwfsywbvl.supabase.co",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybGFweXNzd3Rxcndmc3l3YnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMjIxODcsImV4cCI6MjEwODY5ODE4N30.b8tbg5S8g4ojb3Iams4_nik8K6AvLlV5rNZHe2Nthiw"
+  },
+  "triggers": { "crons": ["17 4 * * *"] },
+  "observability": { "enabled": true },
+  // previews do not inherit production settings, so the same public vars are repeated here
+  "previews": {
+    "vars": {
+      "SUPABASE_URL": "https://zrlapysswtqrwfsywbvl.supabase.co",
+      "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybGFweXNzd3Rxcndmc3l3YnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMjIxODcsImV4cCI6MjEwODY5ODE4N30.b8tbg5S8g4ojb3Iams4_nik8K6AvLlV5rNZHe2Nthiw"
+    }
+  }
+}

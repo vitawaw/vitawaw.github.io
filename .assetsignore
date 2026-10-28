@@ -6,3 +6,6 @@ wrangler.jsonc
 README.md
 CHANGELOG.md
 tests
+src
+tools
+SECURITY.md
