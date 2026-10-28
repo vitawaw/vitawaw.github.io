@@ -1,6 +1,8 @@
 .git
 .github
-setup
+supabase
 wrangler.jsonc
 .assetsignore
 README.md
+CHANGELOG.md
+tests
