@@ -7,17 +7,19 @@ const OWN={on:false,local:false,role:null,client:null,base:'',preview:false};
 // texts editable from their own page
 const EDITABLE=['hc_t','hc_l','ht_t','ht_l','ti_t','hi_l','ts_t','hs_l','rm_t','rm_l','sg_t','sg_l','by','priv','w_t','foot2'];
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
-function cfgJSON(){return JSON.stringify({brand:CFG.brand,review:CFG.review,contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
+function cfgJSON(){return JSON.stringify({nav:CFG.nav,pages:CFG.pages,brand:CFG.brand,review:CFG.review,contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
 function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent='VITAWAW · '+T(OWN.local?'o_local':OWN.role==='owner'?'o_owner':'o_editor');
   const d=dirty();$('odot').classList.toggle('dirty',d||OWN.saved);
   const pc=pendingCount();$('ostate').textContent=OWN.preview?T('o_pvnote'):T(d?'o_dirty_s':OWN.saved?'o_saved_s':'o_clean_s');
   $('ostt0').title=OWN.preview?'':T(d?'o_dirty':OWN.saved?'o_saved':'o_clean');
-  $('ostt').hidden=!pc||OWN.preview;$('opend').textContent=pc+' '+T('o_pendn');$('ostt').title=T('o_gopend');
-  $('o-more-l').textContent=T('o_more');$('o-panel-l').textContent=T('o_panel');$('o-panel').setAttribute('aria-label',T('o_panel'));$('o-more').setAttribute('aria-label',T('o_more'));
-  $('o-preview').textContent=T(OWN.preview?'o_pvexit':'o_preview');$('o-preview').setAttribute('aria-pressed',!!OWN.preview);$('o-discard').textContent=T('o_discall');$('o-save').textContent=T('o_save');
-  $('o-publish').textContent=T('o_publish');$('o-logout').textContent=T('o_logout');$('o-pass').textContent=T('o_chpass');$('o-pass').hidden=OWN.local;$('o-pvexit').textContent=T('o_pvexit');
+  $('ostt').hidden=!pc||OWN.preview;$('opend').innerHTML=`<b>${pc}</b><span class="lbl"> ${esc(T('o_pendn'))}</span>`;$('ostt').setAttribute('aria-label',pc+' '+T('o_pendn'));$('ostt').title=T('o_gopend');
+  $('o-more-l').textContent=T('o_acc');$('o-more').setAttribute('aria-label',T('o_acc'));$('o-panel-l').textContent=T('o_panel');$('o-panel').setAttribute('aria-label',T('o_panel'));
+  $('o-mfa').innerHTML=`${T('o_mfa')}<span class="soonb">${T('o_soon')}</span>`;$('o-phone').innerHTML=`${T('o_rphone')}<span class="soonb">${T('o_soon')}</span>`;$('o-logout-all').textContent=T('o_logout_all');
+  renderPageTools();$('o-more').setAttribute('aria-label',T('o_more'));
+  $('o-preview').textContent=T(OWN.preview?'o_pvexit':'o_preview');$('o-preview').setAttribute('aria-pressed',!!OWN.preview);$('o-discard').textContent=T('o_discall');$('o-logout').textContent=T('o_logout_here');$('o-save').textContent=T('o_save');
+  $('o-publish').textContent=T('o_publish');$('o-logout').textContent=T('o_logout_here');$('o-pass').textContent=T('o_chpass');$('o-pass').hidden=OWN.local;$('o-pvexit').textContent=T('o_pvexit');
   $('o-publish').hidden=!(OWN.local||OWN.role==='owner');
 }
 function changed(){refreshAll();ownerBar()}
@@ -297,7 +299,7 @@ async function afterLogin(){
   startOwner({local:false,role:m.role,draft:dr&&dr.data,content:ct});
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30}
-const settingsOf=c=>({brand:c.brand,review:c.review,contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap});
+const settingsOf=c=>({nav:c.nav,pages:c.pages,brand:c.brand,review:c.review,contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap});
 function startOwner({local,role,draft,content}){
   OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;OWN.preview=false;
   CFG=mergeCfg(DEFAULT_CFG,draft||PUBLISHED);if(content)applyContent(content);
@@ -375,19 +377,34 @@ addEventListener('beforeunload',e=>{if(OWN.on&&dirty()){e.preventDefault();e.ret
 /* ===================== owner side panel (☰ لوحة المالك) =====================
    Opens from the side opposite the "⋯ More" menu. Groups the site-wide settings; edits go into the
    draft like everything else and reach visitors only after Publish. "Coming soon" lists planned sections. */
-const PANEL_SOON=['o_s_review','o_s_texts','o_s_history','o_s_trash','o_s_team','o_s_order','o_s_translate'];
+/* Owner side panel: main sections that open to show their sub-items (like WordPress / Shopify admin menus). */
+const PANEL_OPEN=()=>{try{return JSON.parse(localStorage.getItem('vw-od')||'["site"]')}catch(e){return ['site']}};
 function renderDrawer(){
   $('odrawer-t').textContent=T('o_panel');
-  const b=(id,label,cls='')=>`<button class="btn${cls}" type="button" data-pn="${id}">${label}</button>`;
-  const rs=reviewText();
+  const open=PANEL_OPEN(),b=(id,label,cls='')=>`<button class="btn${cls}" type="button" data-pn="${id}">${label}</button>`;
+  const row=(id,label,hint='',extra='')=>`<button class="odrow" type="button" data-pn="${id}"><span>${label}${hint?`<small>${hint}</small>`:''}</span>${extra}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>`;
+  const soon=k=>`<div class="odrow soon"><span>${T(k)}</span><span class="soonb">${T('o_soon')}</span></div>`;
+  const grp=(id,icon,title,body)=>`<details class="odg" data-g="${id}"${open.includes(id)?' open':''}><summary><span class="odi">${icon}</span>${title}</summary><div class="odsub">${body}</div></details>`;
+  const I=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${p}</svg>`;
+  const rs=reviewText(),pend=pendingCount();
+  const navRows=(CFG.nav||[]).map((n,i)=>{const pg=n.id.startsWith('pg-')?(CFG.pages||[]).find(p=>'pg-'+p.id===n.id):null;if(n.id.startsWith('pg-')&&(!pg||!pg.nav))return '';
+    const t=$('t-'+n.id),key=t&&t.querySelector('.full')?t.querySelector('.full').dataset.t:'',lb=txl(n.l)||(pg?pageTitle(pg):(key?T(key):n.id));
+    return `<li class="${n.hidden?'off':''}"><span>${esc(lb)}${n.hidden?` <em class="ohtag">${T('o_hidden')}</em>`:''}</span><span class="mini">${b('nup:'+i,'↑',' sm')}${b('ndn:'+i,'↓',' sm')}${b('nren:'+i,T('o_rename'),' sm')}${n.id!=='calc'?b('nvis:'+i,T(n.hidden?'o_nshow':'o_nhide'),' sm'):''}</span></li>`}).join('');
+  const pageRows=(CFG.pages||[]).map(p=>`<li class="${p.hidden?'off':''}"><span>${esc(pageTitle(p)||'—')}<small>${[p.nav?T('pg_where_nav'):'',p.foot?T('pg_where_foot'):''].filter(Boolean).join(' · ')||T('pg_where_none')}${p.hidden?' · '+T('o_hidden'):''}</small></span><span class="mini">${b('pedit:'+p.id,T('o_edit'),' sm')}${b('pvis:'+p.id,T(p.hidden?'o_nshow':'o_nhide'),' sm')}${b('pdel:'+p.id,T('o_del'),' sm odel')}</span></li>`).join('');
   $('odrawer-b').innerHTML=
-   `<section class="ods"><h3>${T('o_p_brand')}</h3><div class="bprev" aria-hidden="true"><span class="mk">${markHTML()}</span><span class="wm">${wordHTML()}</span></div>
-     <p class="hint">${T('o_p_brand_h')}</p><div class="odbtns">${b('name',T('o_p_name'))}${b('logo',T('o_p_logo'))}${CFG.brand&&CFG.brand.logo?b('logo0',T('o_p_logo0')):''}</div></section>`+
-   `<section class="ods"><h3>${T('o_p_review')}</h3><p class="hint">${rs?esc(rs):T('o_p_review_none')}</p><div class="odbtns">${b('review',T('o_edit'))}</div></section>`+
-   `<section class="ods"><h3>${T('o_p_pages')}</h3><div class="odbtns">${b('t:ab_b',T('ab_t'))}${b('t:pv_b',T('pv_t'))}${b('t:disc_all',T('o_p_disc'))}${b('t:by',T('o_p_by'))}</div></section>`+
-   `<section class="ods"><h3>${T('o_p_look')}</h3><div class="odbtns">${b('contact',T('o_contact'))}${b('colors',T('o_colors'))}</div></section>`+
-   `<section class="ods"><h3>${T('o_p_tools')}</h3><p class="hint">${T('o_p_links_h')}</p><div class="odbtns">${b('links',T('o_p_links'))}</div></section>`+
-   `<section class="ods soon"><h3>${T('o_p_soon')}</h3><ul>${PANEL_SOON.map(k=>`<li>${T(k)}<span class="soonb">${T('o_soon')}</span></li>`).join('')}</ul></section>`;
+   grp('site',I('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>'),T('o_g_site'),
+     `<div class="odcard"><h4>${T('o_p_brand')}</h4><div class="bprev" aria-hidden="true"><span class="mk">${markHTML()}</span><span class="wm">${wordHTML()}</span></div><p class="hint">${T('o_p_brand_h')}</p><div class="odbtns">${b('name',T('o_p_name'))}${b('logo',T('o_p_logo'))}${CFG.brand&&CFG.brand.logo?b('logo0',T('o_p_logo0')):''}</div></div>`+
+     `<div class="odcard"><h4>${T('o_g_nav')}</h4><p class="hint">${T('o_g_nav_h')}</p><ul class="odlist">${navRows}</ul><div class="odbtns">${b('nreset',T('o_reset'))}</div></div>`+
+     `<div class="odcard"><h4>${T('o_g_pages')}</h4><p class="hint">${T('o_g_pages_h')}</p><ul class="odlist">${pageRows||`<li class="off">${T('pg_none')}</li>`}</ul><div class="odbtns">${b('padd','+ '+T('pg_add'),' pri')}${b('preset',T('pg_restore'))}</div></div>`+
+     row('t:by',T('o_g_footer'),T('o_p_by'))+row('colors',T('o_g_look'),T('o_g_look_h')))+
+   grp('med',I('<path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/>'),T('o_g_med'),
+     row('go:calc',T('o_g_nuts'),T('o_g_nuts_h'))+row('go:interactions',T('o_g_inter'),T('o_g_inter_h'))+row('go:sources',T('o_g_srcs'),T('o_g_srcs_h'))+
+     row('review',T('o_p_review'),rs?esc(rs):T('o_p_review_none'))+row('t:disc_all',T('o_p_disc'))+(pend?row('pending',T('o_g_pending'),'',`<span class="cnt">${pend}</span>`):'')+soon('o_s_review'))+
+   grp('contact',I('<path d="M4 5h16v12H7l-3 3z"/>'),T('o_g_contact'),row('contact',T('o_contact'),esc([EMAILF(),PHONEF()].filter(Boolean).join(' · '))))+
+   grp('tools',I('<path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3.5 17.3a1.8 1.8 0 0 0 2.6 2.6l5.8-5.8a4 4 0 0 0 5.2-5.4l-2.4 2.4-2.5-.4-.4-2.5z"/>'),T('o_p_tools'),row('links',T('o_p_links'),T('o_p_links_h'))+soon('o_s_translate'))+
+   grp('history',I('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),T('o_g_history'),soon('o_s_history')+soon('o_s_trash'))+
+   grp('team',I('<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6M16 4.5a3.5 3.5 0 0 1 0 7M22 20c0-3-2-5-5-5.7"/>'),T('o_g_team'),soon('o_s_team'));
+  $('odrawer-b').querySelectorAll('details').forEach(d=>d.addEventListener('toggle',()=>{const o=[...$('odrawer-b').querySelectorAll('details[open]')].map(x=>x.dataset.g);try{localStorage.setItem('vw-od',JSON.stringify(o))}catch(e){}}));
 }
 function openDrawer(){renderDrawer();$('odrawer').hidden=false;$('odrawer-bg').hidden=false;$('o-panel').setAttribute('aria-expanded','true');document.body.classList.add('drawer-open');$('odrawer-x').focus()}
 function closeDrawer(){$('odrawer').hidden=true;$('odrawer-bg').hidden=true;$('o-panel').setAttribute('aria-expanded','false');document.body.classList.remove('drawer-open')}
@@ -395,17 +412,60 @@ $('o-panel').addEventListener('click',()=>{closeMenu();$('odrawer').hidden?openD
 $('odrawer-x').addEventListener('click',closeDrawer);$('odrawer-bg').addEventListener('click',closeDrawer);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('odrawer').hidden&&$('dlg').hidden){closeDrawer();$('o-panel').focus()}});
 $('odrawer-b').addEventListener('click',async e=>{
-  const t=e.target.closest('[data-pn]');if(!t)return;const k=t.dataset.pn;
+  const t=e.target.closest('[data-pn]');if(!t)return;const k=t.dataset.pn,[cmd,arg]=k.split(/:(.*)/s);
   if(k==='name')await editBrandName();
   else if(k==='logo')$('o-logo-file').click();
   else if(k==='logo0'){CFG.brand.logo='';changed()}
   else if(k==='review')await editReview();
-  else if(k.startsWith('t:'))await editText(k.slice(2));
+  else if(cmd==='t')await editText(arg);
   else if(k==='contact')await editContact();
   else if(k==='colors')await pickColors();
   else if(k==='links')await runLinkCheck();
+  else if(cmd==='go'){closeDrawer();go(arg);return}
+  else if(k==='pending'){closeDrawer();$('ostt').click();return}
+  else if(cmd==='nup'||cmd==='ndn')moveNav(+arg,cmd==='nup'?-1:1);
+  else if(cmd==='nren')await renameNav(+arg);
+  else if(cmd==='nvis'){const n=CFG.nav[+arg];if(n&&n.id!=='calc'){n.hidden=!n.hidden;changed()}}
+  else if(k==='nreset'){CFG.nav=clone(DEFAULT_CFG.nav).concat((CFG.pages||[]).filter(p=>p.nav).map(p=>({id:'pg-'+p.id})));changed()}
+  else if(k==='padd')await editPage(null);
+  else if(cmd==='pedit')await editPage(arg);
+  else if(cmd==='pvis'){const p=(CFG.pages||[]).find(x=>x.id===arg);if(p){p.hidden=!p.hidden;changed()}}
+  else if(cmd==='pdel')await delPage(arg);
+  else if(k==='preset'){const have=new Set((CFG.pages||[]).map(p=>p.id));CFG.pages=(CFG.pages||[]).concat(clone(DEFAULT_CFG.pages).filter(p=>!have.has(p.id)));changed();toast(T('pg_restored'))}
   if(!$('odrawer').hidden)renderDrawer();
 });
+/* ----- main menu builder ----- */
+function moveNav(i,d){const a=CFG.nav;if(!a[i])return;
+  // skip entries that are not listed in the panel (pages without a tab)
+  let k=i+d;while(a[k]&&a[k].id.startsWith('pg-')&&!(CFG.pages||[]).some(p=>'pg-'+p.id===a[k].id&&p.nav))k+=d;
+  if(k<0||k>=a.length)return;[a[i],a[k]]=[a[k],a[i]];changed()}
+async function renameNav(i){const n=CFG.nav[i];if(!n)return;const t=$('t-'+n.id),key=t&&t.querySelector('.full')?t.querySelector('.full').dataset.t:'';
+  const pg=n.id.startsWith('pg-')?(CFG.pages||[]).find(p=>'pg-'+p.id===n.id):null;
+  const def=key?[I18N[key][0],I18N[key][1]]:pg?[pageTitle(pg),pageTitle(pg)]:['',''];
+  const r=await dialog({title:T('o_rename'),info:T('o_rename_i'),fields:[{label:T('o_g_tabname'),type:'pair',value:[(n.l&&n.l.ar)||def[0],(n.l&&n.l.en)||def[1]]}],buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  if(r.action==='reset'){delete n.l;changed();return}
+  if(r.action!=='ok')return;const v=r.values[0];if(!v[0]){toast(T('o_p_name_need'));return}
+  if(v[0]===def[0]&&v[1]===def[1])delete n.l;else n.l={ar:v[0],en:v[1]||v[0]};changed()}
+/* ----- pages manager: add / edit / hide / delete pages (About, Privacy, Who we are, anything new) ----- */
+const WHERE=()=>[['foot',T('pg_where_foot')],['nav',T('pg_where_nav')],['both',T('pg_where_both')],['none',T('pg_where_none')]];
+async function editPage(id){
+  CFG.pages=CFG.pages||[];const isNew=id==null,p=isNew?{id:'p'+Date.now().toString(36).slice(-7),t:{ar:'',en:''},b:{ar:'',en:''},foot:true}:CFG.pages.find(x=>x.id===id);if(!p)return;
+  let tv,bv;
+  if(p.sys){const g=k=>{const o=CFG.text[k];return [(o&&o.ar)||I18N[k][0],(o&&o.en)||I18N[k][1]]};tv=g(p.sys+'_t');bv=g(p.sys+'_b')}
+  else{tv=[(p.t&&p.t.ar)||'',(p.t&&p.t.en)||''];bv=[(p.b&&p.b.ar)||'',(p.b&&p.b.en)||'']}
+  const where=p.nav&&p.foot?'both':p.nav?'nav':p.foot?'foot':'none';
+  const r=await dialog({title:T(isNew?'pg_add':'pg_edit'),info:T('pg_info'),fields:[{label:T('o_pt_title'),type:'pair',value:tv},{label:T('pg_body'),type:'pair',area:1,value:bv},{label:T('pg_where'),type:'select',options:WHERE(),value:where}],
+    buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  if(r.action!=='ok')return;const [t,bd,w]=r.values;if(!t[0]){toast(T('o_p_name_need'));return}
+  if(p.sys){const setT=(k,v)=>{const d=I18N[k];if(v[0]===d[0]&&v[1]===d[1])delete CFG.text[k];else CFG.text[k]={ar:v[0]||d[0],en:v[1]||d[1]}};setT(p.sys+'_t',t);setT(p.sys+'_b',bd)}
+  else{p.t={ar:t[0],en:t[1]};p.b={ar:bd[0],en:bd[1]}}
+  p.foot=w==='foot'||w==='both';p.nav=w==='nav'||w==='both';if(isNew)p.hidden=false;
+  CFG.nav=CFG.nav||clone(DEFAULT_CFG.nav);const nid='pg-'+p.id,has=CFG.nav.some(n=>n.id===nid);
+  if(p.nav&&!has)CFG.nav.push({id:nid});if(!p.nav&&has)CFG.nav=CFG.nav.filter(n=>n.id!==nid);
+  if(isNew)CFG.pages.push(p);changed();
+}
+async function delPage(id){if(!(await confirmDel(T('pg_delinfo'))))return;CFG.pages=(CFG.pages||[]).filter(p=>p.id!==id);CFG.nav=(CFG.nav||[]).filter(n=>n.id!=='pg-'+id);changed()}
+
 async function editBrandName(){
   const b=CFG.brand||(CFG.brand={n1:'VITA',n2:'WAW',logo:''});
   const r=await dialog({title:T('o_p_name'),info:T('o_p_name_i'),fields:[{label:T('o_p_n1'),value:b.n1||''},{label:T('o_p_n2'),value:b.n2||''}],
@@ -437,7 +497,7 @@ async function editReview(){
   CFG.review={ph:f(r.values[0]),phr:f(r.values[1]),sup:f(r.values[2]),supr:f(r.values[3]),date:r.values[4]||''};changed();
 }
 async function pickColors(){
-  const pages=PAGES.map(p=>[p,T('tab_'+({calc:'calc',interactions:'int',tools:'tools',sources:'src',roadmap:'rm'})[p])]);
+  const pages=BUILTIN_PAGES.filter(p=>!(CFG.nav||[]).some(n=>n.id===p&&n.hidden)).map(p=>[p,T('tab_'+({calc:'calc',interactions:'int',tools:'tools',sources:'src',roadmap:'rm'})[p])]);
   const r=await dialog({title:T('o_colors'),fields:[{label:T('o_p_page'),type:'select',options:pages,value:cur}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
   if(r.action==='ok')await editColors(r.values[0]);
 }
@@ -457,3 +517,56 @@ async function runLinkCheck(){
     (broken.length?`<h3>${T('o_p_links_broken')}</h3><ul class="lchk">${broken.map(row).join('')}</ul>`:'')+
     (blocked.length?`<h3>${T('o_p_links_blocked')}</h3><p class="meta">${T('o_p_links_blocked_h')}</p><ul class="lchk">${blocked.map(row).join('')}</ul>`:''));
 }
+
+/* ===================== page toolbar (under the main tabs) =====================
+   Each main page has its own tools; nothing here affects the other pages. */
+const HEROKEYS={calc:['hc_t','hc_l'],tools:['ht_t','ht_l'],interactions:['ti_t','hi_l'],sources:['ts_t','hs_l'],roadmap:['rm_t','rm_l']};
+const PT_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
+function renderPageTools(){
+  if(!OWN.on){$('ptools').innerHTML='';return}
+  const p=cur,b=(id,label,extra='')=>`<button class="btn${extra}" type="button" data-pt="${id}">${label}</button>`;
+  const pend=t=>{const n=t==='n'?NCUST().filter(c=>c.rv===false).length:t==='i'?(CFG.inter||[]).filter(x=>x.rv===false).length:(CFG.refs||[]).filter(x=>x.rv===false).length;
+    return n&&CANAPPROVE()?b('appr:'+t,`${T('o_approveall')}<span class="cnt">${n}</span>`):''};
+  const name=document.querySelector(`#t-${p} .full`);const head=`<span class="ptl">${PT_ICON}<span>${T('o_pt_edit').replace('{p}',esc(name?name.textContent:p))}</span></span>`;
+  let items=[];
+  if(p==='calc')items=[b('nadd','+ '+T('o_pt_nut')),pend('n')];
+  else if(p==='interactions')items=[b('iadd','+ '+T('o_pt_inter')),pend('i'),b('pendonly',T('o_pt_pendonly'),OWN.pendOnly?' on':'')];
+  else if(p==='sources')items=[b('radd','+ '+T('o_pt_src')),pend('r'),b('links',T('o_p_links'))];
+  else if(p==='roadmap')items=[b('rmadd','+ '+T('o_pt_feat'))];
+  if(HEROKEYS[p])items.push(b('hero',T('o_pt_hero')),b('color',T('o_colors')));
+  $('ptools').innerHTML=head+items.join('');
+}
+$('ptools').addEventListener('click',async e=>{
+  const t=e.target.closest('[data-pt]');if(!t)return;const k=t.dataset.pt,p=cur;
+  if(k==='nadd')editNut(null);else if(k==='iadd')editInter(null);else if(k==='radd')editRef(null);else if(k==='rmadd')editFeature(null);
+  else if(k.startsWith('appr:'))approveAll(k.slice(5));
+  else if(k==='pendonly'){OWN.pendOnly=!OWN.pendOnly;renderInter();renderPageTools()}
+  else if(k==='links')runLinkCheck();
+  else if(k==='hero')editHero(p);
+  else if(k==='color')editColors(p);
+});
+/** Page title + description, Arabic and English, in one window. */
+async function editHero(p){
+  const [kt,kl]=HEROKEYS[p],cur2=key=>{const o=CFG.text[key];return [(o&&o.ar)||I18N[key][0],(o&&o.en)||I18N[key][1]]};
+  const r=await dialog({title:T('o_pt_hero'),fields:[{label:T('o_pt_title'),type:'pair',value:cur2(kt)},{label:T('o_pt_desc'),type:'pair',area:1,value:cur2(kl)}],
+    buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  const setT=(key,v)=>{const d=I18N[key];if(v[0]===d[0]&&v[1]===d[1])delete CFG.text[key];else CFG.text[key]={ar:v[0]||d[0],en:v[1]||d[1]}};
+  if(r.action==='ok'){setT(kt,r.values[0]);setT(kl,r.values[1]);changed()}
+  if(r.action==='reset'){delete CFG.text[kt];delete CFG.text[kl];changed()}
+}
+/* ===================== account menu (👤) ===================== */
+async function fillAccount(){
+  $('o-acc-role').textContent=T(OWN.local?'o_local':OWN.role==='owner'?'o_owner':'o_editor');
+  if(OWN.local||!OWN.client){$('o-acc-mail').textContent='';$('o-acc-last').textContent='';return}
+  try{const {data}=await OWN.client.auth.getUser();const u=data&&data.user;if(!u)return;
+    $('o-acc-mail').textContent=u.email||'';
+    $('o-acc-last').textContent=u.last_sign_in_at?T('o_lastin')+' '+new Date(u.last_sign_in_at).toLocaleString(LANG==='ar'?'ar-u-nu-latn':'en-GB',{dateStyle:'medium',timeStyle:'short'}):''}catch(e){}
+}
+$('o-more').addEventListener('click',()=>{if(!$('o-menu').hidden)fillAccount()});
+$('o-logout-all').addEventListener('click',async()=>{
+  const q=await dialog({title:T('o_logout_all'),info:T('o_logout_all_i'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_logout_all'),action:'ok',pri:1}]});
+  if(q.action!=='ok')return;
+  if(OWN.on&&dirty()&&!(await saveDraft()))return;
+  try{if(OWN.client)await OWN.client.auth.signOut({scope:'global'})}catch(e){}
+  OWN.client=null;await logout();toast(T('o_logout_all_ok'));
+});

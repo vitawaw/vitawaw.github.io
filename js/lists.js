@@ -13,7 +13,7 @@ function renderInter(){
   $('filters').innerHTML=KEYS.filter(k=>k==='all'||INTER.some(x=>x[0]===k)).map(k=>`<button data-f="${esc(k)}" aria-pressed="${k===IF}">${esc(kname(k))}</button>`).join('');
   if(IF!=='all'&&!INTER.some(x=>x[0]===IF))IF='all';
   const iq=iTerms(normAr($('isearch')&&$('isearch').value)),im=x=>{if(!(IF==='all'||x[0]===IF))return false;if(!iq.length)return true;const h=normAr([x[1][0],x[1][1],x[2][0],x[2][1],x[3][0],x[3][1]].join(' '));return iq.some(q=>h.includes(q))};
-  const ish=INTER.filter(im);
+  const ish=INTER.filter(x=>im(x)&&!(typeof OWN!=='undefined'&&OWN.on&&OWN.pendOnly&&x[7]));
   $('ilist').innerHTML=(ish.length?'':`<p class="inone">${T('i_none')}</p>`)+bulkBar('i',ish.filter(x=>!x[7]).length)+ish.sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]).map(x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}${x[8]?' ohid':''}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div><div class="oedit">${x[7]?'':`<span class="pend">${T('o_pending')}</span>${CANAPPROVE()?`<button class="btn pri" type="button" data-approve="i:${x[5]}">${T('o_approve')}</button>`:''}`}<button class="btn" type="button" data-iedit="${x[5]}">${PEN}${T('o_edit')}</button><button class="btn" type="button" data-ivis="${x[5]}">${T(x[8]?'o_nshow':'o_nhide')}</button><button class="btn odel" type="button" data-idel="${x[5]}">${T('o_del')}</button>${x[8]?`<em class="ohtag">${T('o_hidden')}</em>`:''}</div></div>`).join('')+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
   $('icount').textContent=INTER.length;
 }

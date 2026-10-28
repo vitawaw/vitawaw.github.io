@@ -3,27 +3,69 @@
    language switch (setLang), event wiring, colours and refreshAll().
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
-const PAGES=['calc','interactions','tools','sources','roadmap'];
+const BUILTIN_PAGES=['calc','interactions','tools','sources','roadmap'];
+let PAGES=BUILTIN_PAGES.slice(); // visible main pages in menu order (rebuilt by renderNav)
 let cur='calc';
+/* ----- main menu + extra pages (owner panel → القوائم الرئيسية / الصفحات); visitors see the same ----- */
+const txl=o=>o?(LANG==='ar'?o.ar:(o.en||o.ar))||'':'';
+const pageTitle=pg=>pg.sys?T(pg.sys+'_t'):txl(pg.t);
+const pageBody=pg=>pg.sys?T(pg.sys+'_b'):txl(pg.b);
+const PG_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg>';
+const paras=s=>String(s||'').split('\n').filter(x=>x.trim()).map(x=>`<p>${esc(x)}</p>`).join('');
+function renderNav(){
+  const nav=(CFG.nav||[]).filter(n=>BUILTIN_PAGES.includes(n.id)||n.id.startsWith('pg-'));
+  BUILTIN_PAGES.forEach(id=>{if(!nav.some(n=>n.id===id))nav.push({id})}); // never lose a built-in page
+  const pages=CFG.pages||[],tabs=document.querySelector('.tabs'),main=document.querySelector('main');
+  // custom page tabs + containers
+  document.querySelectorAll('.tab.pgtab').forEach(t=>t.remove());
+  document.querySelectorAll('.page.pgpage').forEach(d=>{if(!pages.some(p=>'pg-'+p.id===d.id&&p.nav&&!p.hidden))d.remove()});
+  const order=[];
+  nav.forEach(n=>{
+    let t;
+    if(n.id.startsWith('pg-')){const pg=pages.find(p=>'pg-'+p.id===n.id);if(!pg||!pg.nav||pg.hidden)return;
+      t=document.createElement('button');t.className='tab pgtab';t.setAttribute('role','tab');t.id='t-'+n.id;t.dataset.p=n.id;t.setAttribute('aria-controls',n.id);
+      t.innerHTML=`${PG_ICON}<span class="full"></span><span class="short"></span>`;
+      let d=$(n.id);if(!d){d=document.createElement('div');d.className='page narrow pgpage';d.id=n.id;d.setAttribute('role','tabpanel');d.hidden=true;main.appendChild(d)}
+      d.innerHTML=`<section class="hero"><div class="hi"><span>${PG_ICON}</span><h2>${esc(pageTitle(pg))}</h2></div></section><section class="pgbody">${paras(pageBody(pg))||`<p class="meta">${T('pg_empty')}</p>`}</section>`;
+      const lb=txl(n.l)||pageTitle(pg);t.querySelector('.full').textContent=lb;t.querySelector('.short').textContent=lb;
+    }else{
+      t=$('t-'+n.id);if(!t)return;
+      t.hidden=!!n.hidden&&n.id!=='calc';
+      const lb=txl(n.l);if(lb){t.querySelector('.full').textContent=lb;const sh=t.querySelector('.short');if(sh)sh.textContent=lb}
+      if(t.hidden)return;
+    }
+    tabs.appendChild(t);order.push(n.id);
+  });
+  BUILTIN_PAGES.forEach(id=>{const n=nav.find(x=>x.id===id);if(n&&n.hidden&&id!=='calc'){const t=$('t-'+id);t.hidden=true;tabs.appendChild(t)}});
+  PAGES=order;
+  // footer links
+  $('flinks').innerHTML=pages.filter(p=>p.foot&&!p.hidden).map(p=>`<button type="button" class="lnk" data-page="${esc(p.id)}">${esc(pageTitle(p))}</button>`).join('<span aria-hidden="true"> · </span>');
+  if(!PAGES.includes(cur))show(PAGES[0]||'calc');
+}
+/** Footer link: open the page as its tab if it has one, otherwise in a window. */
+function openPage(id){const pg=(CFG.pages||[]).find(p=>p.id===id);if(!pg)return;
+  if(pg.nav&&PAGES.includes('pg-'+id)){go('pg-'+id);return}
+  showInfo(pageTitle(pg),(paras(pageBody(pg))||`<p class="meta">${T('pg_empty')}</p>`)+(pg.sys==='ab'&&reviewText()?`<p class="reviewed">${CHECK}${esc(reviewText())}</p>`:'')+`<p class="meta">${esc(T('vno')+' '+APP_VERSION)}</p>`)}
 function show(p){
-  if(!PAGES.includes(p))p='calc';
+  if(!PAGES.includes(p))p=PAGES[0]||'calc';
   cur=p;
-  PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1});
+  document.querySelectorAll('main > .page').forEach(d=>{d.hidden=d.id!==p});
+  document.querySelectorAll('.tabs .tab').forEach(t=>{const on=t.dataset.p===p;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1});
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
   try{localStorage.setItem('vw-p',p)}catch(e){}
   if(p==='roadmap'){$('rmnew').hidden=true;try{localStorage.setItem('vw-rm','3')}catch(e){}}
   updateBar();
+  if(typeof OWN!=='undefined'&&OWN.on)renderPageTools();
 }
 function go(p){if(location.hash!=='#'+p)location.hash=p;else show(p);window.scrollTo(0,0)}
 window.addEventListener('hashchange',()=>{if(location.hash==='#owner'){openOwner();return}show(location.hash.slice(1));window.scrollTo(0,0)});
-document.querySelectorAll('.tab').forEach(t=>{
-  t.addEventListener('click',()=>go(t.dataset.p));
-  t.addEventListener('keydown',e=>{
-    const i=PAGES.indexOf(t.dataset.p),rtl=document.documentElement.dir==='rtl';
-    let j=null;if(e.key==='ArrowRight')j=rtl?i-1:i+1;if(e.key==='ArrowLeft')j=rtl?i+1:i-1;
-    if(j!=null){e.preventDefault();j=(j+PAGES.length)%PAGES.length;go(PAGES[j]);$('t-'+PAGES[j]).focus()}
-  });
-});
+// tabs are rebuilt by renderNav, so clicks and arrow keys are handled on the menu itself
+document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(t)go(t.dataset.p)});
+document.querySelector('.tabs').addEventListener('keydown',e=>{const t=e.target.closest('.tab');if(!t)return;
+  const i=PAGES.indexOf(t.dataset.p),rtl=document.documentElement.dir==='rtl';
+  let j=null;if(e.key==='ArrowRight')j=rtl?i-1:i+1;if(e.key==='ArrowLeft')j=rtl?i+1:i-1;
+  if(j!=null){e.preventDefault();j=(j+PAGES.length)%PAGES.length;go(PAGES[j]);$('t-'+PAGES[j]).focus()}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b){e.preventDefault();openPage(b.dataset.page)}});
 document.addEventListener('click',e=>{
   const ex=e.target.closest('[data-ex]');if(ex){e.preventDefault();fillExample();return}
   const tl=e.target.closest('[data-tool]');if(tl){e.preventDefault();openTool(tl.dataset.tool);return}
@@ -143,7 +185,7 @@ function setLang(l){
   NUMS.forEach(id=>{const er=$('e-'+id);if(er&&!er.hidden)val(id)});
   try{localStorage.setItem('vw-lang',l)}catch(e){}
   $('pc-wa').textContent=T('pc_wa');$('pc-copy').textContent=T('pc_cp');$('pc-close').textContent=T('pc_x');themeIcon();
-  renderInter();renderRefs();renderRoadmap();renderContact();
+  renderNav();renderInter();renderRefs();renderRoadmap();renderContact();
   if(typeof OWN!=='undefined'&&OWN.on){decorate();ownerBar()}conv();cca();gz();pills();F[K]();
 }
 $('lang-ar').addEventListener('click',()=>setLang('ar'));

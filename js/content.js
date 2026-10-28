@@ -8,7 +8,8 @@ const DEF_SEV=['moderate','moderate','minor','moderate','moderate','moderate','m
 const defInterList=()=>DEF_INTER.map((x,i)=>({k:x[0],a:{ar:x[1][0],en:x[1][1]},b:{ar:x[2][0],en:x[2][1]},d:{ar:x[3][0],en:x[3][1]},r:x[4].slice(),sev:DEF_SEV[i]||'moderate'}));
 const SHOWALL=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview;
 const SEVORD={major:0,moderate:1,minor:2};
-const bulkBar=(t,n)=>n&&CANAPPROVE()?`<div class="oedit bulk"><span class="pend">${n} ${T('o_pendn')}</span><button class="btn" type="button" data-approveall="${t}">${T('o_approveall')}</button></div>`:'';
+// approve-all now lives in each page's owner toolbar (renderPageTools), so the in-page bar is gone
+const bulkBar=()=>'';
 const CANAPPROVE=()=>typeof OWN!=='undefined'&&(OWN.role==='owner'||OWN.local);
 const NHIDE=()=>(CFG.nut&&CFG.nut.hide)||[];
 const NCUST=()=>(CFG.nut&&CFG.nut.custom)||[];
@@ -44,13 +45,7 @@ function buildData(){
   renderNutAdmin();
 }
 function filterNuts(){const q=normAr($('nsearch')&&$('nsearch').value);document.querySelectorAll('#picker button[data-k]').forEach(b=>{const t=[...b.querySelectorAll(':scope>span:not(.ocard),:scope>small')].map(x=>x.textContent).join(' ');b.classList.toggle('nf',!!q&&!normAr(t).includes(q))})}
-function renderNutAdmin(){
-  const el=$('nadm');if(!el)return;
-  if(typeof OWN==='undefined'||!OWN.on){el.innerHTML='';return}
-  const hide=NHIDE();
-  // compact owner strip above the cards: approve-all + add (the cards themselves carry edit/hide/approve)
-  el.innerHTML=`${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<div class="nadm-row"><button class="btn pri" type="button" id="nadd">${T('o_nadd')}</button><span class="hint">${T('o_nhint')}</span></div>`;
-}
+function renderNutAdmin(){const el=$('nadm');if(el)el.innerHTML='' /* add / approve-all are in the page toolbar */}
 /* custom nutrient calculator: dose table by age and sex */
 const SEXES=()=>[['all',T('o_sx_all')],['m',T('sx_m')],['f',T('sx_f')],['p',T('sx_p')],['l',T('sx_l')]];
 function pickRow(rows,age,sx){

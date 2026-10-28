@@ -3,7 +3,7 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.4.1';
+const APP_VERSION='1.5.0';
 const REVIEW={name:'',role:'',date:''}; // e.g. {name:'د. ...', role:'صيدلي سريري', date:'2026-11-01'}
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
@@ -15,6 +15,11 @@ const DEFAULT_CFG={
   brand:{n1:'VITA',n2:'WAW',logo:''},
   // medical review stamp, filled from the owner panel
   review:{ph:{ar:'',en:''},phr:{ar:'',en:''},sup:{ar:'',en:''},supr:{ar:'',en:''},date:''},
+  // main menu (tabs): order, optional label {ar,en}, hidden. Custom pages shown as tabs use the id 'pg-<page id>'.
+  nav:[{id:'calc'},{id:'interactions'},{id:'tools'},{id:'sources'},{id:'roadmap'}],
+  // extra pages. sys:'ab'|'pv' = built-in About/Privacy whose texts live in I18N (editable); others store t/b.
+  // foot: link in the footer · nav: tab in the main menu · hidden: kept but not shown
+  pages:[{id:'about',sys:'ab',foot:true},{id:'privacy',sys:'pv',foot:true},{id:'who',t:{ar:'من نحن',en:'Who we are'},b:{ar:'',en:''},foot:true,hidden:true}],
   contact:{email:'vitawaw26@gmail.com',phone:''},
   refs:null,inter:null,nut:{hide:[],custom:[]},
   colors:{calc:['#0B6B6E','#8E1B54'],tools:['#00167a','#075BFF'],interactions:['#7a2e00','#d9731f'],sources:['#0a4a2c','#17915a'],roadmap:['#3a1678','#7c4dff']},
@@ -37,7 +42,7 @@ const DEFAULT_CFG={
    - links must start with http:// or https:// (blocks javascript: links)
    - ids, status and icon names may only contain letters, numbers, "_" and "-"
    - colours must be hex (#rrggbb), e-mail and phone must look like an e-mail and a phone number */
-const SAFE_ID_KEYS=new Set(['k','id','st','ic','sev','uk','sx']);
+const SAFE_ID_KEYS=new Set(['k','id','st','ic','sev','uk','sx','sys']);
 function clean(v,key){
   if(typeof v==='string'){
     if(key==='logo')return /^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+\/=]+$/.test(v)&&v.length<120000?v:'';
@@ -60,6 +65,8 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clean(over);
   if(over.brand)Object.assign(out.brand,over.brand);
   if(over.review)Object.assign(out.review,over.review);
+  if(Array.isArray(over.nav)&&over.nav.length)out.nav=over.nav;
+  if(Array.isArray(over.pages))out.pages=over.pages;
   if(over.contact)Object.assign(out.contact,over.contact);
   if(over.colors)Object.assign(out.colors,over.colors);
   if(over.text)out.text=Object.assign({},over.text);

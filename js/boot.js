@@ -10,7 +10,7 @@ try{
   welcomeSeen=!!localStorage.getItem('vw-welcome');
   const th=localStorage.getItem('vw-theme');if(th)document.documentElement.dataset.theme=th;
 }catch(e){}
-if(PAGES.includes(location.hash.slice(1)))startPage=location.hash.slice(1);
+if(location.hash.length>1&&location.hash!=='#owner')startPage=location.hash.slice(1); // show() falls back if the page does not exist
 $('welcome').hidden=welcomeSeen;
 try{$('rmnew').hidden=localStorage.getItem('vw-rm')==='3'}catch(e){}
 document.querySelectorAll('#modeg [data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===MODE));
