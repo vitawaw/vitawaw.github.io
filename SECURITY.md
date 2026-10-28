@@ -44,6 +44,11 @@ Last full review: 2026-10-28 (version 1.2.0).
 | 7 | Leaked-password protection (HaveIBeenPwned) is off in Supabase Auth. | Low | **Owner action**: Supabase dashboard → Authentication → Passwords (available on paid plans). |
 | 8 | Owner account protected by password only. | Low | Recommended: enable MFA (planned). |
 
+## Owner tools on the worker
+
+`POST /api/check-links` verifies the Supabase session token, requires the `owner` or `editor` role, and only fetches
+URLs already stored in the `sources` table (at most 15 per request), so it cannot be used as an open proxy.
+
 ## Reporting a problem
 
 E-mail vitawaw26@gmail.com. Please do not publish details before a fix is released.

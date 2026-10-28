@@ -30,6 +30,7 @@
     <button class="tab" role="tab" id="t-roadmap" data-p="roadmap" aria-controls="roadmap" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg><span class="full" data-t="tab_rm"></span><span class="short" data-t="tab_rm_s"></span><span class="new" id="rmnew" aria-hidden="true"></span></button>
   </nav>
   <div class="obar" id="obar">
+    <button class="btn opanel" type="button" id="o-panel" aria-haspopup="dialog" aria-controls="odrawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span id="o-panel-l"></span></button>
     <span class="who"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/></svg><span id="owho"></span></span>
     <span class="stt" id="ostt0"><span class="dot" id="odot"></span><span id="ostate"></span></span>
     <button class="opend" type="button" id="ostt" hidden><span id="opend"></span> <span aria-hidden="true" class="oarr">←</span></button>
@@ -254,11 +255,15 @@
 </div>
 
 </main>
-<footer class="gut"><div class="by" data-t="by"></div><div><span data-t="foot2"></span> <a class="footmail" id="mail2" target="_blank" rel="noopener"></a><span id="phone2w"><span id="footsep"> · </span><a class="footmail phone" id="phone2" target="_blank" rel="noopener"></a></span></div><div class="vno" id="vno"></div><button class="ownlink" type="button" id="o-enter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span data-t="o_login"></span></button></footer>
+<footer class="gut"><div class="by" data-t="by"></div><div><span data-t="foot2"></span> <a class="footmail" id="mail2" target="_blank" rel="noopener"></a><span id="phone2w"><span id="footsep"> · </span><a class="footmail phone" id="phone2" target="_blank" rel="noopener"></a></span></div><div class="flinks"><button type="button" class="lnk" data-info="ab" data-t="ab_t"></button><span aria-hidden="true"> · </span><button type="button" class="lnk" data-info="pv" data-t="pv_t"></button></div><div class="vno" id="vno"></div><button class="ownlink" type="button" id="o-enter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span data-t="o_login"></span></button></footer>
 
 <div class="ov" id="ov" hidden role="dialog" aria-modal="true" aria-labelledby="pc-title"><div class="ovw"><div class="pcard" id="pcard"></div><div class="pc-act"><a class="btn wa" id="pc-wa" target="_blank" rel="noopener"></a><button class="btn" type="button" id="pc-copy"></button><button class="btn" type="button" id="pc-close"></button></div></div></div>
 <button class="btn pri pvexit" type="button" id="o-pvexit"></button>
 <div class="dlg" id="dlg" hidden role="dialog" aria-modal="true" aria-labelledby="dlg-t"><form class="box" id="dlgf" novalidate><h3 id="dlg-t"></h3><div id="dlg-b" style="display:grid;gap:12px"></div><p class="msg" id="dlg-m" hidden></p><div class="acts" id="dlg-a"></div></form></div>
+<div class="odrawer-bg" id="odrawer-bg" hidden></div>
+<aside class="odrawer" id="odrawer" hidden role="dialog" aria-modal="true" aria-labelledby="odrawer-t"><div class="odh"><h2 id="odrawer-t"></h2><button class="x" type="button" id="odrawer-x" aria-label="close">×</button></div><div class="odb" id="odrawer-b"></div></aside>
+<input type="file" id="o-logo-file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+<div class="dlg" id="info" hidden role="dialog" aria-modal="true" aria-labelledby="info-t"><div class="box"><h2 id="info-t" class="dlg-title"></h2><div id="info-b" class="infob"></div><div class="acts"><button class="btn pri" type="button" id="info-x" data-t="pc_x"></button></div></div></div>
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see"></span></div>
 

@@ -56,11 +56,23 @@ $('wclose').addEventListener('click',closeWelcome);
 
 /* ===================== patient card ===================== */
 const MARKSVG=document.querySelector('.logo .mk svg').innerHTML;
+/* ----- app identity (owner panel → هوية التطبيق): name in two colours + logo, always in the original box size ----- */
+const markHTML=()=>CFG.brand&&CFG.brand.logo?`<img class="mkimg" src="${esc(CFG.brand.logo)}" alt="">`:`<svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg>`;
+const wordHTML=()=>{const b=CFG.brand||{};return `${esc(b.n1||'')}<em>${esc(b.n2||'')}</em>`};
+function applyBrand(){
+  const n=APPNAME();document.title=n;
+  document.querySelector('.logo .mk').innerHTML=markHTML();
+  const wm=document.querySelector('.logo .wm');wm.innerHTML=wordHTML();wm.style.fontSize='';
+  // long names shrink to the width the default name uses, so the header layout never changes
+  const len=[...n].length;if(len>7)wm.style.fontSize=`calc(${(7/len).toFixed(3)} * var(--wmfs,24px))`;
+  const at=document.querySelector('meta[name="apple-mobile-web-app-title"]');if(at)at.content=n;
+  const fav=document.querySelector('link[rel="icon"]');if(fav){if(!fav.dataset.def)fav.dataset.def=fav.href;fav.href=CFG.brand&&CFG.brand.logo?CFG.brand.logo:fav.dataset.def}
+}
 let lastFocus=null;
 function cardText(){
   const strip=x=>String(x||'').replace(/<[^>]+>/g,'');
   const r=LAST,name=document.querySelector('#picker [aria-pressed="true"] span').textContent;
-  const lines=['VITAWAW · '+name,strip(r.pt||r.title)];
+  const lines=[APPNAME()+' · '+name,strip(r.pt||r.title)];
   (r.notes||[]).filter(n=>n.u).forEach(n=>lines.push('⚠ '+strip(n.t)));
   (r.plan||[]).forEach((x,i)=>lines.push((i+1)+'. '+strip(x.h)+(x.d?': '+strip(x.d):'')));
   lines.push('',T('pc_f'));return lines.join('\n');
@@ -71,11 +83,11 @@ function openCard(){
   const d=new Date().toLocaleDateString(LANG==='ar'?'ar-IQ-u-nu-latn':'en-GB',{year:'numeric',month:'long',day:'numeric'});
   const urgent=(r.notes||[]).filter(n=>n.u);
   $('pcard').setAttribute('dir',LANG==='ar'?'rtl':'ltr');
-  $('pcard').innerHTML=`<div class="pc-h"><div class="pc-logo"><svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg><span>VITA<em>WAW</em></span></div><div class="pc-date">${d}</div></div>
+  $('pcard').innerHTML=`<div class="pc-h"><div class="pc-logo">${markHTML()}<span>${wordHTML()}</span></div><div class="pc-date">${d}</div></div>
    <div class="pc-b"><div class="pc-k" id="pc-title">${name} · ${strip(r.badge)}</div><p class="pc-main">${strip(r.pt||r.title)}</p>
    ${urgent.map(n=>`<div class="pc-alert">${strip(n.t)}</div>`).join('')}
    ${(r.plan&&r.plan.length)?`<div class="pc-k">${T('pc_plan')}</div><ol class="pc-plan">${r.plan.map(x=>`<li><b>${strip(x.h)}</b>${x.d?' — '+strip(x.d):''}</li>`).join('')}</ol>`:''}</div>
-   <div class="pc-f">${T('pc_f')}${REVIEW.name?'<br>'+T('rev')+' '+REVIEW.name:''}<br>${T('pc_shot')}</div>`;
+   <div class="pc-f">${T('pc_f')}${reviewText()?'<br>'+esc(reviewText()):''}<br>${T('pc_shot')}</div>`;
   $('pc-wa').href='https://wa.me/?text='+encodeURIComponent(cardText());
   lastFocus=document.activeElement;$('ov').hidden=false;$('pc-close').focus();document.body.style.overflow='hidden';
 }
@@ -163,4 +175,18 @@ $('ght').addEventListener('input',()=>{gtTouched=true;gz()});
 function applyColors(){
   Object.entries(CFG.colors).forEach(([p,c])=>{const el=$(p);if(!el)return;el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1]);const t=$('t-'+p);if(t)t.style.setProperty('--ti',c[1])});
 }
-function refreshAll(){applyColors();setLang(LANG);decorate()}
+function refreshAll(){applyColors();applyBrand();setLang(LANG);decorate()}
+
+/* ===================== about / privacy (footer links; texts editable from the owner panel) ===================== */
+let infoBack=null;
+/** Generic read-only window (used for About, Privacy and the link-check report). */
+function showInfo(title,html){infoBack=document.activeElement;$('info-t').textContent=title;$('info-b').innerHTML=html;$('info').hidden=false;$('info-x').focus()}
+function openInfo(k){
+  infoBack=document.activeElement;$('info-t').textContent=T(k+'_t');
+  $('info-b').innerHTML=T(k+'_b').split('\n').filter(Boolean).map(p=>`<p>${esc(p)}</p>`).join('')+(k==='ab'&&reviewText()?`<p class="reviewed">${CHECK}${esc(reviewText())}</p>`:'')+`<p class="meta">${esc(T('vno')+' '+APP_VERSION)}</p>`;
+  $('info').hidden=false;$('info-x').focus()}
+function closeInfo(){$('info').hidden=true;if(infoBack)infoBack.focus()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-info]');if(b){e.preventDefault();openInfo(b.dataset.info)}});
+$('info-x').addEventListener('click',closeInfo);
+$('info').addEventListener('click',e=>{if(e.target===$('info'))closeInfo()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('info').hidden)closeInfo()});

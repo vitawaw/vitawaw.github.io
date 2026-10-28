@@ -17,6 +17,7 @@ document.querySelectorAll('#modeg [data-mode]').forEach(b=>b.setAttribute('aria-
 document.querySelectorAll('[data-for]').forEach(el=>{el.hidden=!el.dataset.for.split(' ').includes(K)});
 document.querySelectorAll('#picker button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===K));
 applyColors();
+applyBrand();
 setLang(startLang);
 show(startPage);
 loadPublished();

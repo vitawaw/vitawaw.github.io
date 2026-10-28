@@ -2,7 +2,13 @@
 import worker from '../src/worker.js';
 let calls = 0, fail = false;
 const pub = JSON.stringify([{ data: { refs: [], inter: [], text: {} } }]);
-globalThis.fetch = async (url, init) => {
+let role = 'owner';
+globalThis.fetch = async (url, init = {}) => {
+  if (url.includes('/auth/v1/user')) return init.headers.Authorization === 'Bearer good' ? new Response(JSON.stringify({ id: '11111111-2222-3333-4444-555555555555' })) : new Response('no', { status: 401 });
+  if (url.includes('/rest/v1/members')) return new Response(JSON.stringify(role ? [{ role }] : []));
+  if (url.includes('/rest/v1/sources')) return new Response(JSON.stringify([{ id: 1, url: 'https://ok.test/a' }, { id: 2, url: 'https://gone.test/b' }, { id: 3, url: 'javascript:alert(1)' }]));
+  if (url.startsWith('https://ok.test')) return new Response('fine');
+  if (url.startsWith('https://gone.test')) return new Response('nf', { status: 404 });
   calls++;
   if (!url.includes('/rest/v1/site_config?id=eq.published')) throw new Error('unexpected url ' + url);
   if (init.headers.apikey !== 'anon') throw new Error('missing key');
@@ -34,4 +40,11 @@ r = await worker.fetch(new Request('https://site.test/api/content', { method: 'P
 ok(r.status === 405, 'POST refused');
 r = await get('/index.html');
 ok((await r.text()) === 'asset', 'non-api path goes to static assets');
+const post = (tok, body) => worker.fetch(new Request('https://site.test/api/check-links', { method: 'POST', headers: tok ? { Authorization: 'Bearer ' + tok } : {}, body: JSON.stringify(body) }), env, ctx);
+r = await post(null, { ids: [1] }); ok(r.status === 401, 'check-links: no sign-in -> 401');
+r = await post('bad', { ids: [1] }); ok(r.status === 401, 'check-links: invalid token -> 401');
+role = null; r = await post('good', { ids: [1] }); ok(r.status === 403, 'check-links: signed in but not a team member -> 403');
+role = 'editor'; r = await post('good', { ids: [1, 2, 3] }); const j = await r.json();
+ok(r.status === 200 && j.results.length === 2, 'check-links: team member -> checks only http(s) source URLs');
+ok(j.results.find(x => x.id === 1).ok && !j.results.find(x => x.id === 2).ok, 'check-links: reports working and broken links');
 console.log('all worker tests passed');

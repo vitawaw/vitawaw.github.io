@@ -9,7 +9,14 @@ const ICON={
  bad:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.5h.01"/></svg>',
  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5h.01"/></svg>'};
 const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>';
-function reviewHTML(){return REVIEW.name?`<div class="reviewed">${CHECK}${T('rev')} ${REVIEW.name}${REVIEW.role?' · '+REVIEW.role:''}${REVIEW.date?' · '+REVIEW.date:''}</div>`:''}
+/** Medical review stamp text (owner panel → المراجعة الطبية). Empty when no reviewer is set. */
+/** 2026-10-28 → «28 أكتوبر 2026» / «28 October 2026» (Latin digits in both languages). */
+const fmtDate=iso=>{const d=new Date(iso+'T12:00:00');return isNaN(d)?iso:d.toLocaleDateString(LANG==='ar'?'ar-u-nu-latn':'en-GB',{day:'numeric',month:'long',year:'numeric'})};
+function reviewText(){
+  const rv=CFG.review||{},t=o=>o?(LANG==='ar'?o.ar:(o.en||o.ar))||'':'',ph=t(rv.ph)||REVIEW.name;if(!ph)return '';
+  const role=t(rv.phr)||REVIEW.role,sup=t(rv.sup),supr=t(rv.supr),date=rv.date||REVIEW.date;
+  return `${T('rev')} ${ph}${role?' ('+role+')':''}${sup?' · '+T('rev_sup')+' '+sup+(supr?' ('+supr+')':''):''}${date?' · '+fmtDate(date):''}`}
+function reviewHTML(){const s=reviewText();return s?`<div class="reviewed">${CHECK}${esc(s)}</div>`:''}
 function render(r){
   LAST=r;
   const pt=MODE==='pt';
@@ -34,7 +41,7 @@ function render(r){
      `<div class="src">${T('srcs')} ${all.filter(n=>REFS[n]).map(n=>`<a href="#" data-ref="${n}">${esc(REFS[n][0])}</a>`).join(' · ')}</div>`+
    `</details>`+
    `<p class="disc">${T(pt?'disc_pt':'disc_all')}</p>`+reviewHTML()+
-   `<p class="flag"><a href="${esc(msgLink('VITAWAW – '+L('ملاحظة على نتيجة','Result feedback')+': '+document.querySelector('#picker [aria-pressed="true"] span').textContent, r.title.replace(/<[^>]+>/g,'')))}" target="_blank" rel="noopener">${T('flag')}</a></p>`;
+   `<p class="flag"><a href="${esc(msgLink(APPNAME()+' – '+L('ملاحظة على نتيجة','Result feedback')+': '+document.querySelector('#picker [aria-pressed="true"] span').textContent, r.title.replace(/<[^>]+>/g,'')))}" target="_blank" rel="noopener">${T('flag')}</a></p>`;
   $('copy').addEventListener('click',copyRes);
   $('rdot').style.background=TONE[r.tone];$('rtx').textContent=(pt&&r.ptShort)||r.title.replace(/<[^>]+>/g,'');
   updateBar();
@@ -42,7 +49,7 @@ function render(r){
 function copyRes(){
   if(!LAST)return;
   const strip=s=>String(s||'').replace(/<[^>]+>/g,'');
-  const head='VITAWAW · '+document.querySelector('#picker [aria-pressed="true"] span').textContent;
+  const head=APPNAME()+' · '+document.querySelector('#picker [aria-pressed="true"] span').textContent;
   let lines;
   if(MODE==='pt'&&LAST.pt)lines=[head,strip(LAST.badge),strip(LAST.pt),...(LAST.notes||[]).filter(n=>n.u).map(n=>'! '+strip(n.t)),...(LAST.plan||[]).map((s,i)=>(i+1)+'. '+strip(s.h)+(s.d?': '+strip(s.d):'')),'',T('disc_pt')];
   else lines=[head,strip(LAST.badge),strip(LAST.title),strip(LAST.sub),...(LAST.plan||[]).map((s,i)=>(i+1)+'. '+strip(s.h)+(s.d?': '+strip(s.d):'')),

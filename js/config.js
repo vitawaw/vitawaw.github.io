@@ -11,6 +11,10 @@ const SB={url:'https://zrlapysswtqrwfsywbvl.supabase.co',key:'eyJhbGciOiJIUzI1Ni
 
 /* ===================== editable configuration ===================== */
 const DEFAULT_CFG={
+  // app identity: the name is shown in two colours (n1 + n2); logo is a small image (data URL) or '' for the built-in mark
+  brand:{n1:'VITA',n2:'WAW',logo:''},
+  // medical review stamp, filled from the owner panel
+  review:{ph:{ar:'',en:''},phr:{ar:'',en:''},sup:{ar:'',en:''},supr:{ar:'',en:''},date:''},
   contact:{email:'vitawaw26@gmail.com',phone:''},
   refs:null,inter:null,nut:{hide:[],custom:[]},
   colors:{calc:['#0B6B6E','#8E1B54'],tools:['#00167a','#075BFF'],interactions:['#7a2e00','#d9731f'],sources:['#0a4a2c','#17915a'],roadmap:['#3a1678','#7c4dff']},
@@ -36,6 +40,8 @@ const DEFAULT_CFG={
 const SAFE_ID_KEYS=new Set(['k','id','st','ic','sev','uk','sx']);
 function clean(v,key){
   if(typeof v==='string'){
+    if(key==='logo')return /^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+\/=]+$/.test(v)&&v.length<120000?v:'';
+    if(key==='date')return /^\d{4}-\d{2}-\d{2}$/.test(v)?v:'';
     if(key==='url')return /^https?:\/\/[^\s"'<>]+$/i.test(v.trim())?v.trim():'';
     if(SAFE_ID_KEYS.has(key))return v.replace(/[^\w-]/g,'');
     if(key==='email')return /^[^\s@"'<>]+@[^\s@"'<>]+\.[a-z]{2,}$/i.test(v.trim())?v.trim():'';
@@ -52,6 +58,8 @@ function clean(v,key){
 }
 const clone=o=>JSON.parse(JSON.stringify(o));
 function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clean(over);
+  if(over.brand)Object.assign(out.brand,over.brand);
+  if(over.review)Object.assign(out.review,over.review);
   if(over.contact)Object.assign(out.contact,over.contact);
   if(over.colors)Object.assign(out.colors,over.colors);
   if(over.text)out.text=Object.assign({},over.text);
@@ -62,6 +70,8 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   return out}
 let PUBLISHED=null,CFG=clone(DEFAULT_CFG);
 try{const c=localStorage.getItem('vw-cfg');if(c){PUBLISHED=JSON.parse(c);CFG=mergeCfg(DEFAULT_CFG,PUBLISHED)}}catch(e){}
+/** App name as set by the owner (default VITAWAW). */
+const APPNAME=()=>((CFG.brand&&(CFG.brand.n1||'')+(CFG.brand.n2||''))||'VITAWAW').trim()||'VITAWAW';
 const EMAILF=()=>CFG.contact.email||'';
 const PHONEF=()=>(CFG.contact.phone||'').trim();
 /** WhatsApp chat link for the contact phone (digits only, international format). */

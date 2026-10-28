@@ -7,7 +7,7 @@ const OWN={on:false,local:false,role:null,client:null,base:'',preview:false};
 // texts editable from their own page
 const EDITABLE=['hc_t','hc_l','ht_t','ht_l','ti_t','hi_l','ts_t','hs_l','rm_t','rm_l','sg_t','sg_l','by','priv','w_t','foot2'];
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
-function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
+function cfgJSON(){return JSON.stringify({brand:CFG.brand,review:CFG.review,contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
 function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent='VITAWAW · '+T(OWN.local?'o_local':OWN.role==='owner'?'o_owner':'o_editor');
@@ -15,7 +15,7 @@ function ownerBar(){
   const pc=pendingCount();$('ostate').textContent=OWN.preview?T('o_pvnote'):T(d?'o_dirty_s':OWN.saved?'o_saved_s':'o_clean_s');
   $('ostt0').title=OWN.preview?'':T(d?'o_dirty':OWN.saved?'o_saved':'o_clean');
   $('ostt').hidden=!pc||OWN.preview;$('opend').textContent=pc+' '+T('o_pendn');$('ostt').title=T('o_gopend');
-  $('o-more-l').textContent=T('o_more');$('o-more').setAttribute('aria-label',T('o_more'));
+  $('o-more-l').textContent=T('o_more');$('o-panel-l').textContent=T('o_panel');$('o-panel').setAttribute('aria-label',T('o_panel'));$('o-more').setAttribute('aria-label',T('o_more'));
   $('o-preview').textContent=T(OWN.preview?'o_pvexit':'o_preview');$('o-preview').setAttribute('aria-pressed',!!OWN.preview);$('o-discard').textContent=T('o_discall');$('o-save').textContent=T('o_save');
   $('o-publish').textContent=T('o_publish');$('o-logout').textContent=T('o_logout');$('o-pass').textContent=T('o_chpass');$('o-pass').hidden=OWN.local;$('o-pvexit').textContent=T('o_pvexit');
   $('o-publish').hidden=!(OWN.local||OWN.role==='owner');
@@ -48,7 +48,7 @@ function dialog({title,fields=[],info='',buttons}){
       if(f.type==='pair'){const ta=f.area,tag=(lang,v,sfx)=>ta?`<textarea id="${id}${sfx}"${lang==='en'?' dir="ltr"':''}>${esc(v)}</textarea>`:`<input type="text" id="${id}${sfx}" value="${esc(v)}"${lang==='en'?' dir="ltr"':''}>`;
         return `<fieldset class="pair"><legend class="l">${esc(f.label)}</legend><div class="cols"><div class="row"><label class="l2" for="${id}a">${T('o_ar')}</label>${tag('ar',f.value[0]||'','a')}</div><div class="row"><label class="l2" for="${id}b">English</label>${tag('en',f.value[1]||'','b')}</div></div></fieldset>`}
       if(f.type==='colors')return `<div class="cols"><div class="row"><label class="l" for="${id}a">${esc(f.labels[0])}</label><input type="color" id="${id}a" value="${f.value[0]}"></div><div class="row"><label class="l" for="${id}b">${esc(f.labels[1])}</label><input type="color" id="${id}b" value="${f.value[1]}"></div></div>`;
-      return `<div class="row">${lab}<input type="${f.type||'text'}" id="${id}" value="${esc(f.value)}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${['tel','email','url'].includes(f.type)?' dir="ltr"':''}></div>`;
+      return `<div class="row">${lab}<input type="${f.type||'text'}" id="${id}" value="${esc(f.value)}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${['tel','email','url','date'].includes(f.type)?' dir="ltr"':''}></div>`;
     }).join('');
     $('dlg-a').innerHTML=buttons.map((b,i)=>`<button class="btn${b.pri?' pri':''}" type="${b.pri?'submit':'button'}" data-bi="${i}" data-act="${esc(b.action)}">${esc(b.label)}</button>`).join('');
     const read=()=>fields.map((f,i)=>f.type==='pair'?[$('dlgf'+i+'a').value.trim(),$('dlgf'+i+'b').value.trim()]:f.type==='colors'?[$('dlgf'+i+'a').value,$('dlgf'+i+'b').value]:f.type==='checks'?[...$('dlgf'+i).querySelectorAll('input:checked')].map(x=>+x.value):$('dlgf'+i).value);
@@ -297,7 +297,7 @@ async function afterLogin(){
   startOwner({local:false,role:m.role,draft:dr&&dr.data,content:ct});
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30}
-const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap});
+const settingsOf=c=>({brand:c.brand,review:c.review,contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap});
 function startOwner({local,role,draft,content}){
   OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;OWN.preview=false;
   CFG=mergeCfg(DEFAULT_CFG,draft||PUBLISHED);if(content)applyContent(content);
@@ -371,3 +371,89 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('o-menu').hidden
 $('ostt').addEventListener('click',()=>{if(!pendingCount())return;const tab=NCUST().some(c=>c.rv===false)?'calc':(CFG.inter||[]).some(x=>x.rv===false)?'interactions':'sources';
   go(tab);setTimeout(()=>{const el=document.querySelector('#'+tab+' .bulk, #'+tab+' .pending');if(el){el.scrollIntoView({block:'center'})}},60)});$('o-pvexit').addEventListener('click',()=>setPreview(false));
 addEventListener('beforeunload',e=>{if(OWN.on&&dirty()){e.preventDefault();e.returnValue=''}});
+
+/* ===================== owner side panel (☰ لوحة المالك) =====================
+   Opens from the side opposite the "⋯ More" menu. Groups the site-wide settings; edits go into the
+   draft like everything else and reach visitors only after Publish. "Coming soon" lists planned sections. */
+const PANEL_SOON=['o_s_review','o_s_texts','o_s_history','o_s_trash','o_s_team','o_s_order','o_s_translate'];
+function renderDrawer(){
+  $('odrawer-t').textContent=T('o_panel');
+  const b=(id,label,cls='')=>`<button class="btn${cls}" type="button" data-pn="${id}">${label}</button>`;
+  const rs=reviewText();
+  $('odrawer-b').innerHTML=
+   `<section class="ods"><h3>${T('o_p_brand')}</h3><div class="bprev" aria-hidden="true"><span class="mk">${markHTML()}</span><span class="wm">${wordHTML()}</span></div>
+     <p class="hint">${T('o_p_brand_h')}</p><div class="odbtns">${b('name',T('o_p_name'))}${b('logo',T('o_p_logo'))}${CFG.brand&&CFG.brand.logo?b('logo0',T('o_p_logo0')):''}</div></section>`+
+   `<section class="ods"><h3>${T('o_p_review')}</h3><p class="hint">${rs?esc(rs):T('o_p_review_none')}</p><div class="odbtns">${b('review',T('o_edit'))}</div></section>`+
+   `<section class="ods"><h3>${T('o_p_pages')}</h3><div class="odbtns">${b('t:ab_b',T('ab_t'))}${b('t:pv_b',T('pv_t'))}${b('t:disc_all',T('o_p_disc'))}${b('t:by',T('o_p_by'))}</div></section>`+
+   `<section class="ods"><h3>${T('o_p_look')}</h3><div class="odbtns">${b('contact',T('o_contact'))}${b('colors',T('o_colors'))}</div></section>`+
+   `<section class="ods"><h3>${T('o_p_tools')}</h3><p class="hint">${T('o_p_links_h')}</p><div class="odbtns">${b('links',T('o_p_links'))}</div></section>`+
+   `<section class="ods soon"><h3>${T('o_p_soon')}</h3><ul>${PANEL_SOON.map(k=>`<li>${T(k)}<span class="soonb">${T('o_soon')}</span></li>`).join('')}</ul></section>`;
+}
+function openDrawer(){renderDrawer();$('odrawer').hidden=false;$('odrawer-bg').hidden=false;$('o-panel').setAttribute('aria-expanded','true');document.body.classList.add('drawer-open');$('odrawer-x').focus()}
+function closeDrawer(){$('odrawer').hidden=true;$('odrawer-bg').hidden=true;$('o-panel').setAttribute('aria-expanded','false');document.body.classList.remove('drawer-open')}
+$('o-panel').addEventListener('click',()=>{closeMenu();$('odrawer').hidden?openDrawer():closeDrawer()});
+$('odrawer-x').addEventListener('click',closeDrawer);$('odrawer-bg').addEventListener('click',closeDrawer);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('odrawer').hidden&&$('dlg').hidden){closeDrawer();$('o-panel').focus()}});
+$('odrawer-b').addEventListener('click',async e=>{
+  const t=e.target.closest('[data-pn]');if(!t)return;const k=t.dataset.pn;
+  if(k==='name')await editBrandName();
+  else if(k==='logo')$('o-logo-file').click();
+  else if(k==='logo0'){CFG.brand.logo='';changed()}
+  else if(k==='review')await editReview();
+  else if(k.startsWith('t:'))await editText(k.slice(2));
+  else if(k==='contact')await editContact();
+  else if(k==='colors')await pickColors();
+  else if(k==='links')await runLinkCheck();
+  if(!$('odrawer').hidden)renderDrawer();
+});
+async function editBrandName(){
+  const b=CFG.brand||(CFG.brand={n1:'VITA',n2:'WAW',logo:''});
+  const r=await dialog({title:T('o_p_name'),info:T('o_p_name_i'),fields:[{label:T('o_p_n1'),value:b.n1||''},{label:T('o_p_n2'),value:b.n2||''}],
+    buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  if(r.action==='reset'){b.n1='VITA';b.n2='WAW';changed();return}
+  if(r.action!=='ok')return;const n1=r.values[0].trim(),n2=r.values[1].trim();
+  if(!(n1+n2)){toast(T('o_p_name_need'));return}if([...(n1+n2)].length>16){toast(T('o_p_name_long'));return}
+  b.n1=n1;b.n2=n2;changed();
+}
+/* logo: any picture is fitted (not stretched) into a square, saved small, and shown at the built-in mark's size */
+$('o-logo-file').addEventListener('change',async()=>{
+  const f=$('o-logo-file').files[0];$('o-logo-file').value='';if(!f)return;
+  if(f.size>5*1024*1024){toast(T('o_p_logo_big'));return}
+  try{
+    const url=URL.createObjectURL(f),img=new Image();await new Promise((ok,no)=>{img.onload=ok;img.onerror=no;img.src=url});
+    const S=128,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+    const sc=Math.min(S/img.naturalWidth,S/img.naturalHeight)||1,w=img.naturalWidth*sc,h=img.naturalHeight*sc;g.drawImage(img,(S-w)/2,(S-h)/2,w,h);URL.revokeObjectURL(url);
+    let d=c.toDataURL('image/png');if(d.length>60000)d=c.toDataURL('image/webp',.86);
+    if(d.length>110000){toast(T('o_p_logo_big'));return}
+    CFG.brand=CFG.brand||{n1:'VITA',n2:'WAW'};CFG.brand.logo=d;changed();if(!$('odrawer').hidden)renderDrawer();toast(T('o_p_logo_ok'));
+  }catch(err){toast(T('o_p_logo_bad'))}
+});
+async function editReview(){
+  const v=CFG.review||(CFG.review={});const p=o=>[(o&&o.ar)||'',(o&&o.en)||''];
+  const r=await dialog({title:T('o_p_review'),info:T('o_p_review_i'),fields:[{label:T('o_p_ph'),type:'pair',value:p(v.ph)},{label:T('o_p_phr'),type:'pair',value:p(v.phr)},{label:T('o_p_sup'),type:'pair',value:p(v.sup)},{label:T('o_p_supr'),type:'pair',value:p(v.supr)},{label:T('rev_date'),type:'date',value:v.date||''}],
+    buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  if(r.action==='reset'){CFG.review=clone(DEFAULT_CFG.review);changed();return}
+  if(r.action!=='ok')return;const f=x=>({ar:x[0],en:x[1]});
+  CFG.review={ph:f(r.values[0]),phr:f(r.values[1]),sup:f(r.values[2]),supr:f(r.values[3]),date:r.values[4]||''};changed();
+}
+async function pickColors(){
+  const pages=PAGES.map(p=>[p,T('tab_'+({calc:'calc',interactions:'int',tools:'tools',sources:'src',roadmap:'rm'})[p])]);
+  const r=await dialog({title:T('o_colors'),fields:[{label:T('o_p_page'),type:'select',options:pages,value:cur}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  if(r.action==='ok')await editColors(r.values[0]);
+}
+/* link check runs on our worker (the browser cannot open other sites); only signed-in team members may use it */
+async function runLinkCheck(){
+  if(OWN.local||!OWN.client){toast(T('o_p_links_local'));return}
+  const ids=Object.entries(REFS).filter(([,x])=>/^https?:\/\//.test(x[2]||'')).map(([n])=>+n);if(!ids.length)return;
+  const {data}=await OWN.client.auth.getSession();const tok=data&&data.session&&data.session.access_token;if(!tok){toast(T('o_neterr'));return}
+  toast(T('o_p_links_run'));const out=[];
+  for(let i=0;i<ids.length;i+=15){
+    try{const r=await fetch('/api/check-links',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({ids:ids.slice(i,i+15)})});
+      if(!r.ok){toast(T('o_neterr'));return}out.push(...(await r.json()).results)}catch(e){toast(T('o_neterr'));return}
+  }
+  const bad=out.filter(x=>!x.ok),blocked=bad.filter(x=>x.status===401||x.status===403||x.status===429),broken=bad.filter(x=>!blocked.includes(x));
+  const row=x=>`<li><b>${x.id}</b> · ${esc(REFS[x.id]?REFS[x.id][0]:'')} — <span class="${x.ok?'okc':'badc'}">${x.status||T('o_p_links_err')}</span><br><a href="${esc(REFS[x.id]?REFS[x.id][2]:'')}" target="_blank" rel="noopener">${esc(REFS[x.id]?REFS[x.id][1]:'')}</a></li>`;
+  showInfo(T('o_p_links'),`<p>${T('o_p_links_sum').replace('{ok}',out.length-bad.length).replace('{n}',out.length)}</p>`+
+    (broken.length?`<h3>${T('o_p_links_broken')}</h3><ul class="lchk">${broken.map(row).join('')}</ul>`:'')+
+    (blocked.length?`<h3>${T('o_p_links_blocked')}</h3><p class="meta">${T('o_p_links_blocked_h')}</p><ul class="lchk">${blocked.map(row).join('')}</ul>`:''));
+}

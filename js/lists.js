@@ -28,7 +28,7 @@ const IC={
  baby:'<circle cx="12" cy="7" r="3.5"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/>'};
 function renderContact(){
   const E=CFG.contact.email,P=(CFG.contact.phone||'').trim();
-  const subj='VITAWAW – '+L('اقتراح','Suggestion');
+  const subj=APPNAME()+' – '+L('اقتراح','Suggestion');
   $('mail1').textContent=E;$('mail2').textContent=E;$('mailrow').hidden=!E;$('mailh').hidden=!E;$('mail2').hidden=!E;
   $('mail2').href=E?mailto(subj):'';$('mailgo').href=E?mailto(subj):'';
   $('vno').textContent=T('vno')+' '+APP_VERSION;
@@ -61,5 +61,5 @@ function renderRefs(){
   $('reflist').innerHTML=(SHOWALL()?`<li class="oaddli">${bulkBar('r',(CFG.refs||[]).filter(x=>x.rv===false).length)}</li>`:'')+Object.entries(REFS).sort((a,b)=>RTORD[refType(a[1][0],a[1][7])]-RTORD[refType(b[1][0],b[1][7])]||a[0]-b[0]).filter(([n])=>!show||show.includes(+n)).map(([n,x])=>
     `<li id="ref-${n}"${x[6]?' class="ohid"':''}><span class="num">${n}</span><div><div class="org"><span class="rtype rt-${refType(x[0],x[7])}">${T('rt_'+refType(x[0],x[7]))}</span>${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div><div class="oedit">${x[5]===false?`<span class="pend">${T('o_pending')}</span>${CANAPPROVE()?`<button class="btn pri" type="button" data-approve="r:${n}">${T('o_approve')}</button>`:''}`:''}<button class="btn" type="button" data-redit="${n}">${PEN}${T('o_edit')}</button><button class="btn" type="button" data-rvis="${n}">${T(x[6]?'o_nshow':'o_nhide')}</button><button class="btn odel" type="button" data-rdel="${n}">${T('o_del')}</button>${x[6]?`<em class="ohtag">${T('o_hidden')}</em>`:''}</div></div></li>`).join('')+`<li class="oaddli"><button class="oadd" type="button" id="radd">${PLUS}${T('o_radd')}</button></li>`;
   $('rcount').textContent=Object.keys(REFS).length;
-  $('rev2').hidden=!REVIEW.name;if(REVIEW.name)$('rev2').innerHTML=reviewHTML().replace(/^<div class="reviewed">|<\/div>$/g,'');
+  const rs=reviewText();$('rev2').hidden=!rs;if(rs)$('rev2').innerHTML=reviewHTML().replace(/^<div class="reviewed">|<\/div>$/g,'');
 }
