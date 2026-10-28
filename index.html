@@ -13,7 +13,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23ffffff%22/%3E%3Cg%20transform%3D%22translate%287%203.5%29%20scale%28.78%29%22%3E%3Cg%20transform%3D%22translate%2830%2058%29%20rotate%28-24%29%22%20opacity%3D%221%22%3E%3Crect%20x%3D%22-9%22%20y%3D%22-44%22%20width%3D%2218%22%20height%3D%2244%22%20rx%3D%229%22%20fill%3D%22%239FDCD8%22/%3E%3Cpath%20d%3D%22M-9%20-22V-35a9%209%200%200%201%2018%200V-22z%22%20fill%3D%22%230E8C8C%22/%3E%3Cpath%20d%3D%22M-9%20-22h18%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.55%22%20stroke-width%3D%221.2%22/%3E%3Cpath%20d%3D%22M-4.8%20-36.5v9%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.45%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M-4.8%20-17v9%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%220.6%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22/%3E%3C/g%3E%3Cg%20transform%3D%22translate%2834%2058%29%20rotate%2824%29%22%20opacity%3D%220.94%22%3E%3Crect%20x%3D%22-9%22%20y%3D%22-44%22%20width%3D%2218%22%20height%3D%2244%22%20rx%3D%229%22%20fill%3D%22%23F1B6CD%22/%3E%3Cpath%20d%3D%22M-9%20-22V-35a9%209%200%200%201%2018%200V-22z%22%20fill%3D%22%239C1F5C%22/%3E%3Cpath%20d%3D%22M-9%20-22h18%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.55%22%20stroke-width%3D%221.2%22/%3E%3Cpath%20d%3D%22M-4.8%20-36.5v9%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.45%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M-4.8%20-17v9%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%220.6%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E">
 <link rel="preload" href="fonts/tajawal-400.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="fonts/cairo-700.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.2.0">
+<link rel="stylesheet" href="css/app.css?v=1.3.0">
 </head>
 <body>
 <header class="top gut">
@@ -222,6 +222,7 @@
     <p class="meta" data-t="ts_m"></p>
     <div class="reviewed" id="rev2" hidden></div>
     <div class="filters" id="sfilters"></div>
+    <p class="meta" data-t="rt_note"></p>
     <ol class="refs" id="reflist"></ol>
   </section>
 </div>
@@ -237,14 +238,14 @@
   <section class="contact">
     <h2 data-t="sg_t"></h2>
     <p class="lead" style="margin:0" data-t="sg_l"></p>
-    <div class="mailrow"><span class="mail" id="mail1"></span><button class="btn" type="button" data-copymail data-t="cpm"></button><a class="btn pri" id="mailgo" target="_blank" rel="noopener" data-t="sendm"></a></div>
-    <div class="mailrow" id="phonerow"><span class="mail phone" id="phone1"></span><button class="btn" type="button" data-copyphone data-t="cpp"></button><a class="btn pri" id="callgo" data-t="call"></a></div>
-    <p class="hint" style="margin:0" data-t="mailh"></p>
+    <div class="mailrow" id="mailrow"><span class="mail" id="mail1"></span><button class="btn" type="button" data-copymail data-t="cpm"></button><a class="btn pri" id="mailgo" target="_blank" rel="noopener" data-t="sendm"></a></div>
+    <div class="mailrow" id="phonerow"><span class="mail phone" id="phone1"></span><button class="btn" type="button" data-copyphone data-t="cpp"></button><a class="btn pri" id="wago" target="_blank" rel="noopener" data-t="wa"></a><a class="btn" id="callgo" data-t="call"></a></div>
+    <p class="hint" style="margin:0" id="mailh" data-t="mailh"></p>
   </section>
 </div>
 
 </main>
-<footer class="gut"><div class="by" data-t="by"></div><div><span data-t="foot2"></span> <span class="footmail" id="mail2"></span><span id="phone2w"> · <span class="footmail phone" id="phone2"></span></span></div><div class="vno" id="vno"></div><button class="ownlink" type="button" id="o-enter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span data-t="o_login"></span></button></footer>
+<footer class="gut"><div class="by" data-t="by"></div><div><span data-t="foot2"></span> <a class="footmail" id="mail2" target="_blank" rel="noopener"></a><span id="phone2w"><span id="footsep"> · </span><a class="footmail phone" id="phone2" target="_blank" rel="noopener"></a></span></div><div class="vno" id="vno"></div><button class="ownlink" type="button" id="o-enter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span data-t="o_login"></span></button></footer>
 
 <div class="ov" id="ov" hidden role="dialog" aria-modal="true" aria-labelledby="pc-title"><div class="ovw"><div class="pcard" id="pcard"></div><div class="pc-act"><a class="btn wa" id="pc-wa" target="_blank" rel="noopener"></a><button class="btn" type="button" id="pc-copy"></button><button class="btn" type="button" id="pc-close"></button></div></div></div>
 <button class="btn pri pvexit" type="button" id="o-pvexit"></button>
@@ -252,19 +253,19 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see"></span></div>
 
-<script src="js/config.js?v=1.2.0" defer></script>
-<script src="js/i18n.js?v=1.2.0" defer></script>
-<script src="js/data.js?v=1.2.0" defer></script>
-<script src="js/util.js?v=1.2.0" defer></script>
-<script src="js/validation.js?v=1.2.0" defer></script>
-<script src="js/render.js?v=1.2.0" defer></script>
-<script src="js/calculators.js?v=1.2.0" defer></script>
-<script src="js/content.js?v=1.2.0" defer></script>
-<script src="js/tools.js?v=1.2.0" defer></script>
-<script src="js/lists.js?v=1.2.0" defer></script>
-<script src="js/ui.js?v=1.2.0" defer></script>
-<script src="js/published.js?v=1.2.0" defer></script>
-<script src="js/owner.js?v=1.2.0" defer></script>
-<script src="js/boot.js?v=1.2.0" defer></script>
+<script src="js/config.js?v=1.3.0" defer></script>
+<script src="js/i18n.js?v=1.3.0" defer></script>
+<script src="js/data.js?v=1.3.0" defer></script>
+<script src="js/util.js?v=1.3.0" defer></script>
+<script src="js/validation.js?v=1.3.0" defer></script>
+<script src="js/render.js?v=1.3.0" defer></script>
+<script src="js/calculators.js?v=1.3.0" defer></script>
+<script src="js/content.js?v=1.3.0" defer></script>
+<script src="js/tools.js?v=1.3.0" defer></script>
+<script src="js/lists.js?v=1.3.0" defer></script>
+<script src="js/ui.js?v=1.3.0" defer></script>
+<script src="js/published.js?v=1.3.0" defer></script>
+<script src="js/owner.js?v=1.3.0" defer></script>
+<script src="js/boot.js?v=1.3.0" defer></script>
 </body>
 </html>

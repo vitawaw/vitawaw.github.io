@@ -34,7 +34,7 @@ function render(r){
      `<div class="src">${T('srcs')} ${all.filter(n=>REFS[n]).map(n=>`<a href="#" data-ref="${n}">${esc(REFS[n][0])}</a>`).join(' · ')}</div>`+
    `</details>`+
    `<p class="disc">${T(pt?'disc_pt':'disc_all')}</p>`+reviewHTML()+
-   `<p class="flag"><a href="${esc(mailto('VITAWAW – '+L('ملاحظة على نتيجة','Result feedback')+': '+document.querySelector('#picker [aria-pressed="true"] span').textContent, r.title.replace(/<[^>]+>/g,'')))}" target="_blank" rel="noopener">${T('flag')}</a></p>`;
+   `<p class="flag"><a href="${esc(msgLink('VITAWAW – '+L('ملاحظة على نتيجة','Result feedback')+': '+document.querySelector('#picker [aria-pressed="true"] span').textContent, r.title.replace(/<[^>]+>/g,'')))}" target="_blank" rel="noopener">${T('flag')}</a></p>`;
   $('copy').addEventListener('click',copyRes);
   $('rdot').style.background=TONE[r.tone];$('rtx').textContent=(pt&&r.ptShort)||r.title.replace(/<[^>]+>/g,'');
   updateBar();

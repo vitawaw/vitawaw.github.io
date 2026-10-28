@@ -3,7 +3,7 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.2.0';
+const APP_VERSION='1.3.0';
 const REVIEW={name:'',role:'',date:''}; // e.g. {name:'د. ...', role:'صيدلي سريري', date:'2026-11-01'}
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
@@ -62,5 +62,10 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   return out}
 let PUBLISHED=null,CFG=clone(DEFAULT_CFG);
 try{const c=localStorage.getItem('vw-cfg');if(c){PUBLISHED=JSON.parse(c);CFG=mergeCfg(DEFAULT_CFG,PUBLISHED)}}catch(e){}
-const EMAILF=()=>CFG.contact.email;
+const EMAILF=()=>CFG.contact.email||'';
+const PHONEF=()=>(CFG.contact.phone||'').trim();
+/** WhatsApp chat link for the contact phone (digits only, international format). */
+const waLink=(text='')=>{const d=PHONEF().replace(/\D/g,'');return d?`https://wa.me/${d}${text?'?text='+encodeURIComponent(text):''}`:''};
+/** Link to send us a message: e-mail if there is one, otherwise WhatsApp to the phone. */
+const msgLink=(subj,body='')=>EMAILF()?mailto(subj,body):waLink(subj+(body?'\n'+body:''));
 const mailto=(subj,body='')=>`mailto:${encodeURIComponent(EMAILF()).replace('%40','@')}?subject=${encodeURIComponent(subj)}${body?'&body='+encodeURIComponent(body):''}`;

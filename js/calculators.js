@@ -40,8 +40,10 @@ function fD(){
       pt:age>=50?L('حبة فيتامين D بجرعة 6,000 وحدة يومياً لمدة 8 أسابيع مع وجبة، ثم جرعة يومية أقل.','Vitamin D 6,000 units a day with a meal for 8 weeks, then a lower daily dose.'):L('كبسولة فيتامين D بجرعة 50,000 وحدة مرة واحدة أسبوعياً لمدة 8 أسابيع، في نفس اليوم كل أسبوع مع وجبة. بعدها جرعة يومية أقل.','One 50,000-unit vitamin D capsule once a week for 8 weeks, on the same day each week with a meal. Then a lower daily dose.'),
       plan:[{h:L('العلاج: 8 أسابيع','Treatment: 8 weeks'),d:L('50,000 IU أسبوعياً أو 6,000 IU يومياً','50,000 IU weekly or 6,000 IU daily')},retest,{h:L('الصيانة','Maintenance'),d:'1,500 – 2,000 IU / '+L('يوم','day')}]};
       if(age>=50)notes.push({t:L('لمن عمرهم 50 سنة فأكثر تُفضَّل الجرعة اليومية على الجرعات الكبيرة المتباعدة.','For adults 50 and older, daily dosing is preferred over large intermittent doses.'),r:[3],i:1});}
+    notes.push({t:L('التصنيف والجرعات العلاجية هنا من إرشاد Endocrine Society 2011. إرشاد 2024 لم يحدد مستوى مستهدفاً، وتعتبر NIH أن 20 ng/mL فأكثر كافٍ لصحة العظام لدى معظم الأصحاء.','The categories and treatment doses here follow the Endocrine Society 2011 guideline. The 2024 guideline sets no target level, and NIH considers 20 ng/mL or more adequate for bone health in most healthy people.'),r:[2,3,4],i:1});
     if(ng<10)notes.push({t:L('المستوى منخفض جداً: يُنصح بفحص الكالسيوم والفوسفور وPTH وتقييم لين العظام.','Very low level: check calcium, phosphate and PTH, and assess for osteomalacia.'),r:[1],u:1});
   }else if(ng<30){
+    notes.push({t:L('مستوى 20 – 29 ng/mL تعتبره Endocrine Society 2011 «غير كافٍ»، بينما تعتبره NIH كافياً لصحة العظام لدى معظم الأصحاء. القرار للطبيب حسب الحالة وعوامل الخطورة.','Endocrine Society 2011 calls 20–29 ng/mL "insufficient", while NIH considers it adequate for bone health in most healthy people. The doctor decides based on the person and risk factors.'),r:[2,4],i:1});
     const INS=L('عدم كفاية (20 – 29 ng/mL)','Insufficient (20–29 ng/mL)');
     if(age<1){rec=400;r={badge:INS,tone:'warn',title:L('400 – 1,000 IU يومياً','400–1,000 IU daily'),sub:L('بإشراف طبيب الأطفال','Under pediatric supervision'),refs:[2],pt:L('قطرات فيتامين D من 400 إلى 1,000 وحدة يومياً حسب طبيب الأطفال.','Vitamin D drops, 400–1,000 units a day as the pediatrician advises.')}}
     else if(!adult){rec=1000;r={badge:INS,tone:'warn',title:L('1,000 IU يومياً على الأقل','At least 1,000 IU daily'),sub:L('لرفع المستوى فوق 30 ng/mL بشكل ثابت','To keep the level consistently above 30 ng/mL'),refs:[2],pt:L('فيتامين D بجرعة 1,000 وحدة يومياً على الأقل.','Vitamin D, at least 1,000 units a day.')}}
@@ -51,12 +53,14 @@ function fD(){
     const rk=risk&&adult;rec=rk?3000:(age<1?400:age<=70?600:800);
     r={badge:L('مستوى كافٍ','Sufficient'),tone:'ok',title:rk?L('صيانة 3,000 – 6,000 IU يومياً','Maintenance 3,000–6,000 IU daily'):L('لا حاجة لجرعة علاجية','No treatment dose needed'),sub:rk?L('لاستمرار عامل الخطورة','Because the risk factor persists'):L('الاحتياج اليومي ','Daily need ')+rda+L(' من الغذاء والمكملات',' from food and supplements'),refs:rk?[2]:[4],
       pt:rk?L('مستواك جيد. استمر على جرعة صيانة يحددها الطبيب.','Your level is good. Keep a maintenance dose your doctor sets.'):L('مستواك جيد ولا تحتاج جرعة علاجية.','Your level is good; no treatment dose is needed.')};
-    notes.push({t:L('لا يوصى بفحص فيتامين D روتينياً للأصحاء. يوصى بالمكمل وقائياً للأطفال والحوامل ومن تجاوزوا 75 سنة.','Routine vitamin D testing is not advised in healthy people. Preventive supplements are advised for children, pregnant women and adults over 75.'),r:[3],i:1});
+    if(ng>50)notes.unshift({t:L('مستوى أعلى من 50 ng/mL (125 nmol/L): تربطه NIH بآثار سلبية محتملة، خاصة فوق 60 ng/mL، فلا فائدة من رفعه أكثر.','Above 50 ng/mL (125 nmol/L): NIH links this to potential adverse effects, particularly above 60 ng/mL, so there is no benefit in raising it further.'),r:[4],u:1});
+    notes.push({t:L('لا يوصى بفحص فيتامين D روتينياً للأصحاء. توصي Endocrine Society 2024 بالمكمل وقائياً للأطفال والمراهقين (1 – 18 سنة) والحوامل ومن تجاوزوا 75 سنة والبالغين المعرّضين بشدة للسكري (مرحلة ما قبل السكري).','Routine vitamin D testing is not advised in healthy people. Endocrine Society 2024 advises preventive supplements for ages 1–18, pregnancy, adults over 75 and adults with high-risk prediabetes.'),r:[3,4],i:1});
   }else{
     r={badge:L('أعلى من 100 ng/mL','Above 100 ng/mL'),tone:'bad',title:L('أوقف مكملات فيتامين D','Stop vitamin D supplements'),sub:L('وافحص الكالسيوم المصحح والفوسفور. المستويات فوق 100 ng/mL تتجاوز الحد الآمن في إرشادات Endocrine Society','Check corrected calcium and phosphate. Levels above 100 ng/mL exceed the safe limit in Endocrine Society guidance'),refs:[2],
       pt:L('مستواك مرتفع. أوقف حبوب فيتامين D وراجع الطبيب لفحص الكالسيوم.','Your level is high. Stop vitamin D tablets and see your doctor to check calcium.')};
     notes.push({t:L('أوقف المكملات وافحص الكالسيوم قبل أي جرعة جديدة.','Stop supplements and check calcium before any new dose.'),r:[2],u:1});
-    notes.push({t:L('التسمم يُذكر عادة عند مستويات أعلى بكثير (نحو 200 – 240 ng/mL)، لكن الاستمرار في الجرعات العالية غير مبرر.','Toxicity is usually reported at much higher levels (about 200–240 ng/mL), but continuing high doses is not justified.'),r:[4]});
+    notes.push({t:L('حسب NIH يرتبط التسمم عادة بمستويات أعلى من 150 ng/mL (375 nmol/L)، ومع ذلك لا مبرر لاستمرار الجرعات العالية.','Per NIH, toxicity is typically associated with levels above 150 ng/mL (375 nmol/L); even so, continuing high doses is not justified.'),r:[4]});
+    if(ng>150)notes.unshift({t:L('المستوى ضمن نطاق التسمم المحتمل: يحتاج تقييماً طبياً عاجلاً للكالسيوم ووظائف الكلى.','This level is in the possible toxicity range: urgent medical assessment of calcium and kidney function is needed.'),r:[4],u:1});
   }
   r.kv=kv;r.notes=notes;if(rec)r.tool='drops';render(r);
   if(rec){$('iu').value=rec;conv()}
@@ -66,7 +70,7 @@ function fD(){
 function fB12(){
   const x=req(['age','b12v']);if(!x)return;
   const age=x.age,v=x.b12v,pg=$('b12u').value==='pmol'?v/0.738:v,sx=$('sex').value,cause=$('b12c').value,neuro=$('neuro').checked;
-  const rda=sx==='p'?2.6:sx==='l'?2.8:age<1?0.5:age<=3?0.9:age<=8?1.2:age<=13?1.8:2.4;
+  const rda=sx==='p'?2.6:sx==='l'?2.8:age<1?'0.4 – 0.5':age<=3?0.9:age<=8?1.2:age<=13?1.8:2.4;
   const kv=[[L('الاحتياج اليومي (RDA)','Daily need (RDA)'),rda+L(' mcg / يوم',' mcg / day')],[L('الحد الأعلى','Upper limit'),L('غير محدد','Not established')],[L('القيمة بوحدة pg/mL','Value in pg/mL'),fmt(pg)]];
   const notes=[{t:L('لا يُعطى حمض الفوليك وحده بجرعات علاجية قبل استبعاد نقص B12، لأنه قد يخفي فقر الدم بينما يتفاقم الضرر العصبي.','Do not give treatment-dose folic acid alone before excluding B12 deficiency: it can mask anemia while nerve damage progresses.'),r:[28]}];
   if(age<16)notes.unshift({t:L('حدود NICE المستخدمة هنا لمن عمرهم 16 سنة فأكثر. علاج الأطفال يحدده طبيب الأطفال.','The NICE thresholds used here apply from age 16. A pediatrician decides treatment for children.'),r:[5],u:1});
@@ -127,7 +131,7 @@ function fFol(){
 /* ===================== Iron ===================== */
 function ironRDA(a,sx){
   if(sx==='p')return 27; if(sx==='l')return teen(a)?10:9;
-  if(a<1)return 11; if(a<=3)return 7; if(a<=8)return 10; if(a<=13)return 8;
+  if(a<1)return '0.27 – 11'; if(a<=3)return 7; if(a<=8)return 10; if(a<=13)return 8;
   if(a<=18)return sx==='m'?11:15; if(a<=50)return sx==='m'?8:18; return 8;
 }
 let PILL={k:'fe',dose:60};
@@ -137,18 +141,20 @@ function fFe(){
   const age=x.age,w=x.wt,sx=$('sex').value,g=$('feg').value,rda=ironRDA(age,sx),ul=age<14?40:45,EL=L(' ملغ حديد عنصري',' mg elemental iron');
   const kv=[[L('الاحتياج اليومي (RDA)','Daily need (RDA)'),rda+EL],[L('الحد الأعلى (UL)','Upper limit (UL)'),ul+L(' ملغ / يوم',' mg / day')]];
   const notes=[{t:L('الجرعات كلها بالحديد العنصري، وليس بوزن الملح المكتوب على العبوة.','All doses are elemental iron, not the salt weight on the pack.'),r:[15],i:1}];let r,dose=null;
-  if(g==='rda'){dose=rda;r={badge:L('الاحتياج الوقائي','Preventive requirement'),tone:'info',title:L(`${rda} ملغ حديد عنصري يومياً`,`${rda} mg elemental iron daily`),sub:L('من الغذاء أو المكملات، دون جرعات علاجية ما لم يثبت النقص مخبرياً','From food or supplements; no treatment doses unless deficiency is confirmed by tests'),refs:[15],pt:L(`تحتاج ${rda} ملغ حديد يومياً، والأفضل من الطعام. لا تأخذ جرعات علاجية دون تحليل.`,`You need ${rda} mg of iron a day, ideally from food. Do not take treatment doses without a blood test.`)}}
+  if(age<1)notes.push({t:L('للرضّع: 0.27 ملغ من الولادة حتى 6 أشهر (احتياج كافٍ من حليب الأم)، و11 ملغ من 7 إلى 12 شهراً.','Infants: 0.27 mg from birth to 6 months (adequate intake from breast milk), and 11 mg from 7 to 12 months.'),r:[15]});
+  if(g==='rda'){dose=typeof rda==='number'?rda:11;r={badge:L('الاحتياج الوقائي','Preventive requirement'),tone:'info',title:L(`${rda} ملغ حديد عنصري يومياً`,`${rda} mg elemental iron daily`),sub:L('من الغذاء أو المكملات، دون جرعات علاجية ما لم يثبت النقص مخبرياً','From food or supplements; no treatment doses unless deficiency is confirmed by tests'),refs:[15],pt:L(`تحتاج ${rda} ملغ حديد يومياً، والأفضل من الطعام. لا تأخذ جرعات علاجية دون تحليل.`,`You need ${rda} mg of iron a day, ideally from food. Do not take treatment doses without a blood test.`)}}
   else if(age<12){
     dose=Math.round(w*3);
     r={badge:g==='ida'?L('فقر دم بعوز الحديد (طفل)','Iron-deficiency anemia (child)'):L('نقص الحديد (طفل)','Iron deficiency (child)'),tone:g==='ida'?'bad':'warn',title:L(`${fmt(dose)} ملغ حديد عنصري مرة يومياً`,`${fmt(dose)} mg elemental iron once daily`),sub:L('3 ملغ/كغم/يوم (Ferrous sulfate غالباً) لمدة 3 أشهر','3 mg/kg/day (usually ferrous sulfate) for 3 months'),refs:[14],
       pt:L(`شراب أو قطرات حديد بجرعة ${fmt(dose)} ملغ مرة واحدة يومياً لمدة 3 أشهر.`,`Iron syrup or drops, ${fmt(dose)} mg once a day for 3 months.`),
-      plan:[{h:L('العلاج: 3 أشهر','Treatment: 3 months'),d:L(`${fmt(dose)} ملغ مرة يومياً`,`${fmt(dose)} mg once daily`)},{h:L('المتابعة','Follow-up'),d:L('يعيد طبيب الأطفال التحليل','The pediatrician rechecks blood tests')}]};
-    if(g==='id')notes.push({t:L('حسب AAP يبدأ العلاج للأطفال الصغار عند Ferritin أقل من 20 ng/mL.','Per AAP, young children are treated when ferritin is below 20 ng/mL.'),r:[14]});
+      plan:[{h:L('العلاج: 3 أشهر على الأقل','Treatment: at least 3 months'),d:L(`${fmt(dose)} ملغ مرة يومياً`,`${fmt(dose)} mg once daily`)},{h:L('المتابعة','Follow-up'),d:L('مراجعة بعد شهر وبعد 3 أشهر','Visits at 1 month and at 3 months')},{h:L('بعد 3 أشهر','At 3 months'),d:L('إذا بقي Ferritin أقل من 20 ng/mL يستمر العلاج 3 أشهر إضافية','If ferritin is still below 20 ng/mL, continue 3 more months')}]};
+    if(g==='id')notes.push({t:L('حسب AAP يتوافق Ferritin بقيمة 20 ng/mL أو أقل مع نقص الحديد لدى الأطفال.','Per AAP, ferritin of 20 ng/mL or less is consistent with iron deficiency in children.'),r:[14]});
+    if(dose>65)notes.unshift({t:L(`الجرعة المحسوبة (${fmt(dose)} ملغ) أعلى من جرعة المراهقين في الإرشاد نفسه (65 ملغ). راجع طبيب الأطفال قبل تجاوزها.`,`The calculated dose (${fmt(dose)} mg) is higher than the adolescent dose in the same guideline (65 mg). Check with the pediatrician before exceeding it.`),r:[14],u:1});
   }else if(age<18){
     dose=65;
-    r={badge:g==='ida'?L('فقر دم بعوز الحديد (مراهق)','Iron-deficiency anemia (adolescent)'):L('نقص الحديد (مراهق)','Iron deficiency (adolescent)'),tone:g==='ida'?'bad':'warn',title:L('65 ملغ حديد عنصري مرة يومياً','65 mg elemental iron once daily'),sub:L('لمدة 3 أشهر','For 3 months')+(g==='id'?L('، عند Ferritin أقل من 30 ng/mL','; when ferritin is below 30 ng/mL'):''),refs:[14],
+    r={badge:g==='ida'?L('فقر دم بعوز الحديد (مراهق)','Iron-deficiency anemia (adolescent)'):L('نقص الحديد (مراهق)','Iron deficiency (adolescent)'),tone:g==='ida'?'bad':'warn',title:L('65 ملغ حديد عنصري مرة يومياً','65 mg elemental iron once daily'),sub:L('لمدة 3 أشهر على الأقل','For at least 3 months')+(g==='id'?L('، عند Ferritin بقيمة 30 ng/mL أو أقل','; when ferritin is 30 ng/mL or less'):''),refs:[14],
       pt:L('حبة حديد تحتوي 65 ملغ حديد مرة يومياً لمدة 3 أشهر.','One iron tablet with 65 mg of iron once a day for 3 months.'),
-      plan:[{h:L('العلاج: 3 أشهر','Treatment: 3 months'),d:L('65 ملغ مرة يومياً','65 mg once daily')},{h:L('المتابعة','Follow-up'),d:L('إعادة التحليل بعد انتهاء العلاج','Retest after treatment')}]};
+      plan:[{h:L('العلاج: 3 أشهر','Treatment: 3 months'),d:L('65 ملغ مرة يومياً','65 mg once daily')},{h:L('المتابعة','Follow-up'),d:L('مراجعة بعد شهر وبعد 3 أشهر','Visits at 1 month and at 3 months')}]};
   }else if(g==='ida'){
     dose=60;
     r={badge:L('فقر دم بعوز الحديد','Iron-deficiency anemia'),tone:'bad',title:L('60 – 120 ملغ حديد عنصري صباحاً، يوماً بعد يوم','60–120 mg elemental iron in the morning, every other day'),sub:L('الجرعة الواحدة يوماً بعد يوم تُمتص أفضل من الجرعات اليومية المتتالية أو المقسّمة','A single dose on alternate days is absorbed better than daily or split doses'),refs:[13,12],tool2:'ganz',
@@ -174,14 +180,15 @@ function fCa(){
   const age=x.age,sx=$('sex').value,known=x.cadiet!=null,diet=x.cadiet||0,MG=L(' ملغ',' mg');
   let rda;
   if(sx==='p'||sx==='l')rda=teen(age)?1300:1000;
-  else rda=age<1?260:age<=3?700:age<=8?1000:age<=18?1300:age<=50?1000:age<=70?(sx==='m'?1000:1200):1200;
+  else rda=age<1?'200 – 260':age<=3?700:age<=8?1000:age<=18?1300:age<=50?1000:age<=70?(sx==='m'?1000:1200):1200;
+  const rdaT=typeof rda==='number'?fmt(rda):rda;
   const ul=age<1?'1,000 – 1,500':age<=8?'2,500':age<=18?'3,000':age<=50?'2,500':'2,000';
-  const kv=[[L('الاحتياج اليومي (RDA)','Daily need (RDA)'),fmt(rda)+MG],[L('الحد الأعلى (UL)','Upper limit (UL)'),ul+L(' ملغ / يوم',' mg / day')]];
+  const kv=[[L('الاحتياج اليومي (RDA)','Daily need (RDA)'),rdaT+MG],[L('الحد الأعلى (UL)','Upper limit (UL)'),ul+L(' ملغ / يوم',' mg / day')]];
   let r;
-  if(!known){r={badge:L('الاحتياج اليومي','Daily requirement'),tone:'info',title:L(`${fmt(rda)} ملغ كالسيوم يومياً من الغذاء والمكملات معاً`,`${fmt(rda)} mg calcium daily from food and supplements combined`),sub:L('أدخل الكالسيوم من الطعام لحساب كمية المكمل اللازمة بالضبط','Enter dietary calcium to calculate the exact supplement needed'),refs:[18],
-    pt:L(`تحتاج ${fmt(rda)} ملغ كالسيوم يومياً من الطعام والمكملات معاً.`,`You need ${fmt(rda)} mg of calcium a day from food and supplements together.`)}}
+  if(!known){r={badge:L('الاحتياج اليومي','Daily requirement'),tone:'info',title:L(`${rdaT} ملغ كالسيوم يومياً من الغذاء والمكملات معاً`,`${rdaT} mg calcium daily from food and supplements combined`),sub:L('أدخل الكالسيوم من الطعام لحساب كمية المكمل اللازمة بالضبط','Enter dietary calcium to calculate the exact supplement needed'),refs:[18],
+    pt:L(`تحتاج ${rdaT} ملغ كالسيوم يومياً من الطعام والمكملات معاً.`,`You need ${rdaT} mg of calcium a day from food and supplements together.`)}}
   else{
-    const gap=Math.max(0,rda-diet),doses=Math.ceil(gap/500);kv.push([L('من الغذاء','From food'),fmt(diet)+MG]);
+    const gap=Math.max(0,(typeof rda==='number'?rda:260)-diet),doses=Math.ceil(gap/500);kv.push([L('من الغذاء','From food'),fmt(diet)+MG]);
     if(gap===0)r={badge:L('الغذاء يغطي الاحتياج','Diet covers the need'),tone:'ok',title:L('لا حاجة لمكمل كالسيوم','No calcium supplement needed'),sub:L('المدخول الغذائي المدخل يساوي الاحتياج أو يزيد عليه','The entered dietary intake meets or exceeds the need'),refs:[18],pt:L('طعامك يكفي، ولا تحتاج حبوب كالسيوم.','Your diet is enough; you do not need calcium tablets.')};
     else{r={badge:L('نقص في المدخول','Intake below need'),tone:'warn',title:L(`مكمل ${fmt(gap)} ملغ كالسيوم عنصري يومياً`,`Supplement ${fmt(gap)} mg elemental calcium daily`),sub:doses>1?L(`مقسّمة على ${doses===2?'جرعتين':doses+' جرعات'}، لا تزيد الجرعة الواحدة على 500 ملغ`,`Split into ${doses} doses, no more than 500 mg each`):L('جرعة واحدة لا تزيد على 500 ملغ','One dose of no more than 500 mg'),refs:[18],
       pt:doses>1?L(`تحتاج ${fmt(gap)} ملغ كالسيوم إضافية يومياً، مقسّمة على ${doses===2?'مرتين':doses+' مرات'} (لا تزيد كل مرة على 500 ملغ).`,`You need ${fmt(gap)} mg more calcium a day, split into ${doses} doses (no more than 500 mg each).`):L(`تحتاج ${fmt(gap)} ملغ كالسيوم إضافية يومياً في جرعة واحدة.`,`You need ${fmt(gap)} mg more calcium a day in one dose.`),
@@ -206,12 +213,15 @@ function fMg(){
   const notes=[];let r;
   if(sev){r={badge:L('أعراض شديدة','Severe symptoms'),tone:'bad',title:L('تحويل فوري للمستشفى','Refer to hospital now'),sub:L('المغنيسيوم الوريدي للأعراض الشديدة مثل التشنجات واضطراب النظم','IV magnesium for severe symptoms such as seizures or arrhythmia'),refs:[21,22],pt:L('اذهب إلى الطوارئ الآن. هذه الأعراض تحتاج علاجاً وريدياً في المستشفى.','Go to the emergency department now. These symptoms need IV treatment in hospital.')};
     notes.push({t:L('حالة طارئة: لا يُعتمد على العلاج الفموي.','Emergency: oral treatment is not enough.'),r:[21],u:1})}
+  else if(mgdl<1.22&&age>=18){r={badge:L('منخفض بشدة (أقل من 0.5 mmol/L)','Severely low (below 0.5 mmol/L)'),tone:'bad',title:L('المغنيسيوم الوريدي في المستشفى','IV magnesium in hospital'),sub:L('العلاج الفموي غير مناسب لهذا المستوى','Oral replacement is not suitable at this level'),refs:[22,21],pt:L('مستوى المغنيسيوم منخفض جداً. راجع الطوارئ أو الطبيب اليوم لأنك تحتاج علاجاً وريدياً.','Your magnesium level is very low. Go to the emergency department or see a doctor today: you need IV treatment.')};
+    notes.push({t:L('حسب NHS SPS: النقص الشديد (أقل من 0.5 mmol/L) يُعالج بـ Magnesium sulfate وريدياً في المستشفى.','Per NHS SPS: severe deficiency (below 0.5 mmol/L) is treated with IV magnesium sulfate in hospital.'),r:[22],u:1})}
   else if(mgdl>=1.8)r={badge:L('ضمن الطبيعي','Normal'),tone:'ok',title:L('لا حاجة لعلاج','No treatment needed'),sub:L(`الاحتياج اليومي ${rda} ملغ، ولا تتجاوز مكملات المغنيسيوم ${ul} يومياً`,`Daily need ${rda} mg; magnesium supplements should not exceed ${ul} a day`),refs:[20,21],pt:L('مستوى المغنيسيوم طبيعي، ولا تحتاج علاجاً.','Your magnesium level is normal; no treatment is needed.')};
   else if(age<18)r={badge:L('منخفض (أقل من 1.8 mg/dL)','Low (below 1.8 mg/dL)'),tone:'warn',title:L('العلاج يحدده طبيب الأطفال','A pediatrician decides treatment'),sub:L('تختلف الجرعات حسب الوزن والسبب','Doses depend on weight and cause'),refs:[21],pt:L('المستوى منخفض، ويحدد طبيب الأطفال العلاج.','The level is low; the pediatrician will decide treatment.')};
-  else r={badge:mgdl<1.25?L('منخفض بوضوح (أقل من 1.25 mg/dL)','Clearly low (below 1.25 mg/dL)'):L('منخفض (1.25 – 1.8 mg/dL)','Low (1.25–1.8 mg/dL)'),tone:mgdl<1.25?'bad':'warn',title:L('10 – 24 mmol مغنيسيوم فموياً يومياً','10–24 mmol oral magnesium daily'),sub:L('أي نحو 240 – 580 ملغ مغنيسيوم عنصري، مقسّمة على جرعات مع الطعام','About 240–580 mg elemental magnesium, in divided doses with meals'),refs:[22],
+  else r={badge:L('منخفض (0.5 – 0.74 mmol/L)','Low (0.5–0.74 mmol/L)'),tone:'warn',title:L('10 – 24 mmol مغنيسيوم فموياً يومياً','10–24 mmol oral magnesium daily'),sub:L('أي نحو 240 – 580 ملغ مغنيسيوم عنصري، مقسّمة على جرعات مع الطعام','About 240–580 mg elemental magnesium, in divided doses with meals'),refs:[22],
     pt:L('حبوب مغنيسيوم مقسّمة على اليوم مع الطعام حسب ما يحدده الطبيب، ثم تحليل جديد خلال أسبوع تقريباً. قد تسبب إسهالاً خفيفاً.','Magnesium tablets split through the day with meals, as your doctor sets, then a new blood test in about a week. They can cause mild diarrhea.'),
-    plan:[{h:L('العلاج: حتى 7 أيام','Treatment: up to 7 days'),d:L('10 – 24 mmol يومياً مقسّمة مع الطعام','10–24 mmol daily, divided, with meals')},{h:L('إعادة التحليل','Retest'),d:L('مستوى المغنيسيوم في المصل','Serum magnesium')},{h:L('بعد التصحيح','After correction'),d:L('الاستمرار يوماً أو يومين بعد عودة المستوى طبيعياً','Continue 1–2 days after the level normalises')}],
-    opts:[{h:L('متى يكون العلاج ضرورياً','When treatment is needed'),b:L('عند وجود أعراض أو بقاء المستوى أقل من 1.25 mg/dL','With symptoms, or a level persistently below 1.25 mg/dL'),r:[21]},{h:L('الأثر الجانبي الأشيع','Most common side effect'),b:L('الإسهال','Diarrhea'),d:L('ابدأ بجرعة منخفضة وارفعها تدريجياً','Start low and increase gradually'),r:[22]}]};
+    plan:[{h:L('العلاج: حتى 7 أيام','Treatment: up to 7 days'),d:L('10 – 24 mmol يومياً مقسّمة مع الطعام','10–24 mmol daily, divided, with meals')},{h:L('إعادة التحليل','Retest'),d:L('بعد 7 أيام، ثم بعد 1 – 3 أشهر حسب السبب','After 7 days, then after 1–3 months depending on the cause')},{h:L('بعد التصحيح','After correction'),d:L('الاستمرار يوماً أو يومين بعد عودة المستوى طبيعياً','Continue 1–2 days after the level normalises')}],
+    opts:[{h:L('متى يكون العلاج ضرورياً','When treatment is needed'),b:L('عند وجود أعراض أو استمرار انخفاض المستوى','With symptoms, or a persistently low level'),r:[21]},{h:L('الأثر الجانبي الأشيع','Most common side effect'),b:L('الإسهال','Diarrhea'),d:L('ابدأ بجرعة منخفضة وارفعها تدريجياً','Start low and increase gradually'),r:[22]}]};
+  if(r.refs&&r.refs.includes(22)&&!sev&&mgdl>=1.22)notes.push({t:L('الجرعة العلاجية أعلى من الحد الأعلى للمكملات (350 ملغ) لأنها علاج مؤقت بإشراف طبي، وليست مكملاً دائماً.','The treatment dose is above the supplement upper limit (350 mg) because it is short-term treatment under medical supervision, not a long-term supplement.'),r:[20,22]});
   if(ren)notes.push({t:L('في القصور الكلوي يرتفع خطر تراكم المغنيسيوم، فتُراقب المستويات عن قرب وتُخفض الجرعة الوريدية.','Kidney impairment raises the risk of magnesium build-up: monitor closely and reduce IV doses.'),r:[20,22],u:1});
   notes.push({t:L('مدرات البول ومثبطات مضخة البروتون قد تسبب نقص المغنيسيوم.','Diuretics and proton pump inhibitors can cause low magnesium.'),r:[20],i:1});
   r.kv=kv;r.notes=notes;render(r);
@@ -221,8 +231,8 @@ function fMg(){
 function fC(){
   const x=req(['age']);if(!x)return;
   const age=x.age,sx=$('sex').value,g=$('czg').value,smk=$('smk').checked,MG=L(' ملغ',' mg');
-  let rda=sx==='p'?(teen(age)?80:85):sx==='l'?(teen(age)?115:120):age<1?40:age<=3?15:age<=8?25:age<=13?45:age<=18?(sx==='m'?75:65):(sx==='m'?90:75);
-  if(smk&&age>=14)rda+=35;
+  let rda=sx==='p'?(teen(age)?80:85):sx==='l'?(teen(age)?115:120):age<1?'40 – 50':age<=3?15:age<=8?25:age<=13?45:age<=18?(sx==='m'?75:65):(sx==='m'?90:75);
+  if(smk&&age>=14&&typeof rda==='number')rda+=35;
   const ul=age<1?L('غير محدد','Not established'):(age<=3?'400':age<=8?'650':age<=13?'1,200':age<=18?'1,800':'2,000')+MG+L(' / يوم',' / day');
   const kv=[[L('الاحتياج اليومي (RDA)','Daily need (RDA)'),rda+MG+(smk?L(' (شامل إضافة المدخن)',' (includes smoker addition)'):'')],[L('الحد الأعلى (UL)','Upper limit (UL)'),ul]];
   let r;
