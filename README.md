@@ -88,7 +88,7 @@ from `_headers`, so a blocked script fails the test.
 ## Release process
 
 1. Work on a branch `release/X.Y.Z`. Every push builds a **preview URL** on Cloudflare (production is untouched).
-2. `python3 tools/set_version.py X.Y.Z` and add a section to `CHANGELOG.md`.
+2. `python3 tools/set_version.py X.Y.Z` and add a section to `CHANGELOG.md`. **Run it before every push that changes `css/` or `js/`**: it stamps each file link with a content hash so browsers never mix a new page with old scripts. `python3 tests/check_assets.py` fails if you forgot.
 3. Run the tests, check the preview link on a phone and a computer.
 4. Merge into `main`: Cloudflare deploys to production automatically.
 
