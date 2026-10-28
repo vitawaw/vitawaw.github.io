@@ -12,8 +12,10 @@ function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent='VITAWAW · '+T(OWN.local?'o_local':OWN.role==='owner'?'o_owner':'o_editor');
   const d=dirty();$('odot').classList.toggle('dirty',d||OWN.saved);
-  const pc=pendingCount();$('ostate').textContent=T(d?'o_dirty':OWN.saved?'o_saved':'o_clean')+(pc?` · ${pc} ${T('o_pendn')}`:'');
-  $('o-preview').textContent=T('o_preview');$('o-discard').textContent=T('o_discard');$('o-save').textContent=T('o_save');
+  const pc=pendingCount();$('ostate').textContent=OWN.preview?T('o_pvnote'):T(d?'o_dirty':OWN.saved?'o_saved':'o_clean');
+  $('opend').hidden=!pc;$('opend').textContent=pc+' '+T('o_pendn');$('ostt').title=pc?T('o_gopend'):'';
+  $('o-more-l').textContent=T('o_more');$('o-more').setAttribute('aria-label',T('o_more'));
+  $('o-preview').textContent=T(OWN.preview?'o_pvexit':'o_preview');$('o-preview').setAttribute('aria-pressed',!!OWN.preview);$('o-discard').textContent=T('o_discard');$('o-save').textContent=T('o_save');
   $('o-publish').textContent=T('o_publish');$('o-logout').textContent=T('o_logout');$('o-pass').textContent=T('o_chpass');$('o-pass').hidden=OWN.local;$('o-pvexit').textContent=T('o_pvexit');
   $('o-publish').hidden=!(OWN.local||OWN.role==='owner');
 }
@@ -45,7 +47,7 @@ function dialog({title,fields=[],info='',buttons}){
       if(f.type==='colors')return `<div class="cols"><div class="row"><label class="l" for="${id}a">${esc(f.labels[0])}</label><input type="color" id="${id}a" value="${f.value[0]}"></div><div class="row"><label class="l" for="${id}b">${esc(f.labels[1])}</label><input type="color" id="${id}b" value="${f.value[1]}"></div></div>`;
       return `<div class="row">${lab}<input type="${f.type||'text'}" id="${id}" value="${esc(f.value)}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${['tel','email','url'].includes(f.type)?' dir="ltr"':''}></div>`;
     }).join('');
-    $('dlg-a').innerHTML=buttons.map((b,i)=>`<button class="btn${b.pri?' pri':''}" type="${b.pri?'submit':'button'}" data-bi="${i}">${esc(b.label)}</button>`).join('');
+    $('dlg-a').innerHTML=buttons.map((b,i)=>`<button class="btn${b.pri?' pri':''}" type="${b.pri?'submit':'button'}" data-bi="${i}" data-act="${esc(b.action)}">${esc(b.label)}</button>`).join('');
     const read=()=>fields.map((f,i)=>f.type==='colors'?[$('dlgf'+i+'a').value,$('dlgf'+i+'b').value]:f.type==='checks'?[...$('dlgf'+i).querySelectorAll('input:checked')].map(x=>+x.value):$('dlgf'+i).value);
     const finish=v=>{$('dlg').hidden=true;$('dlgf').onsubmit=null;$('dlg-a').onclick=null;res(v)};
     $('dlg-a').onclick=e=>{const b=e.target.closest('[data-bi]');if(!b||b.type==='submit')return;finish({action:buttons[+b.dataset.bi].action,values:read()})};
@@ -54,7 +56,8 @@ function dialog({title,fields=[],info='',buttons}){
     $('dlg').hidden=false;const first=$('dlg-b').querySelector('input,textarea,select');(first||$('dlg-a').querySelector('button')).focus();
   });
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('dlg').hidden){$('dlg-a').querySelector('[data-bi]:not([type=submit])')?.click()}});
+// Escape always means "cancel", never another button such as Delete
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('dlg').hidden){e.preventDefault();$('dlg-a').querySelector('[data-act="cancel"]')?.click()}});
 
 /* ----- editors ----- */
 async function editText(k){
@@ -200,6 +203,7 @@ async function editNut(id){
     changed();return;
   }
 }
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.ocard [role=button]')){e.preventDefault();e.target.click()}},true);
 document.addEventListener('click',e=>{
   if(!OWN.on)return;const t=e.target.closest('[data-redit],#radd,[data-iedit],#iadd,[data-nhide],[data-nedit],#nadd,[data-approve],[data-approveall]');if(!t)return;
   e.preventDefault();e.stopPropagation();
@@ -321,5 +325,15 @@ async function logout(){
   OWN.on=false;OWN.preview=false;document.body.classList.remove('owner','preview');CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);refreshAll();
 }
 $('o-enter').addEventListener('click',openOwner);$('o-save').addEventListener('click',saveDraft);$('o-publish').addEventListener('click',publish);$('o-discard').addEventListener('click',discard);$('o-logout').addEventListener('click',logout);
-$('o-preview').addEventListener('click',()=>{OWN.preview=true;document.body.classList.add('preview');refreshAll()});$('o-pvexit').addEventListener('click',()=>{OWN.preview=false;document.body.classList.remove('preview');refreshAll()});
+function setPreview(on){OWN.preview=on;document.body.classList.toggle('preview',on);closeMenu();refreshAll();ownerBar()}
+$('o-preview').addEventListener('click',()=>setPreview(!OWN.preview));
+/* "⋯" account menu (password, discard, log out) */
+function closeMenu(){$('o-menu').hidden=true;$('o-more').setAttribute('aria-expanded','false')}
+$('o-more').addEventListener('click',e=>{e.stopPropagation();const open=$('o-menu').hidden;$('o-menu').hidden=!open;$('o-more').setAttribute('aria-expanded',String(open));if(open)$('o-menu').querySelector('button:not([hidden])').focus()});
+$('o-menu').addEventListener('click',closeMenu);
+document.addEventListener('click',e=>{if(!e.target.closest('.omenu'))closeMenu()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('o-menu').hidden){closeMenu();$('o-more').focus()}});
+/* status button: jump to the first place with items awaiting review */
+$('ostt').addEventListener('click',()=>{if(!pendingCount())return;const tab=NCUST().some(c=>c.rv===false)?'calc':(CFG.inter||[]).some(x=>x.rv===false)?'interactions':'sources';
+  go(tab);setTimeout(()=>{const el=document.querySelector('#'+tab+' .bulk, #'+tab+' .pending');if(el){el.scrollIntoView({block:'center'})}},60)});$('o-pvexit').addEventListener('click',()=>setPreview(false));
 addEventListener('beforeunload',e=>{if(OWN.on&&dirty()){e.preventDefault();e.returnValue=''}});

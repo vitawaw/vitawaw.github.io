@@ -24,8 +24,16 @@ function buildData(){
   REFGROUP={};
   KEYS.slice(1).forEach(k=>{const g=new Set(DEF_REFGROUP[k]||(CUST[k]?CUST[k].r||[]:[]));INTER.filter(x=>x[0]===k).forEach(x=>x[4].forEach(n=>g.add(n)));REFGROUP[k]=[...g].filter(n=>REFS[n])});
   // picker
-  document.querySelectorAll('#picker button[data-k]').forEach(b=>{if(BUILTIN.includes(b.dataset.k))b.hidden=hide.includes(b.dataset.k);else b.remove()});
+  const ownerTools=typeof OWN!=='undefined'&&OWN.on&&!OWN.preview;
+  document.querySelectorAll('#picker button[data-k]').forEach(b=>{if(BUILTIN.includes(b.dataset.k)){b.hidden=hide.includes(b.dataset.k)&&!ownerTools;b.classList.toggle('ohid',hide.includes(b.dataset.k));b.querySelectorAll('.ocard').forEach(x=>x.remove())}else b.remove()});
   VC.forEach(c=>{const b=document.createElement('button');b.dataset.k=c.id;b.className='cnut';b.innerHTML=`<span>${esc(tx2(c.n))}</span><small>${esc(tx2(c.h))}</small>${c.rv===false?`<em class="pend">${T('o_pending')}</em>`:''}`;$('picker').appendChild(b);F[c.id]=()=>fCustom(c.id);EX[c.id]={age:30,sex:'f'}});
+  if(ownerTools){ // owner sees the same cards as visitors, plus small actions on each card
+    const act=(attr,v,label,cls='')=>`<span class="oa${cls}" role="button" tabindex="0" ${attr}="${esc(v)}">${label}</span>`;
+    document.querySelectorAll('#picker button[data-k]').forEach(b=>{const k=b.dataset.k,c=CUST[k],o=document.createElement('span');o.className='ocard';
+      if(BUILTIN.includes(k))o.innerHTML=(hide.includes(k)?`<em class="ohtag">${T('o_hidden')}</em>`:'')+act('data-nhide',k,T(hide.includes(k)?'o_nshow':'o_nhide'));
+      else if(c)o.innerHTML=(c.rv===false&&CANAPPROVE()?act('data-approve','n:'+k,T('o_approve'),' appr'):'')+act('data-nedit',k,T('o_edit'));
+      b.appendChild(o)});
+  }
   Object.keys(F).forEach(k=>{if(!BUILTIN.includes(k)&&!CUST[k])delete F[k]});
   if(!KEYS.includes(K)||K==='all')K=KEYS[1]||'d';
   document.querySelectorAll('[data-for]').forEach(el=>{el.hidden=!el.dataset.for.split(' ').includes(K)});
@@ -33,15 +41,13 @@ function buildData(){
   $('nsw').hidden=$('picker').querySelectorAll('button[data-k]:not([hidden])').length<10;filterNuts();
   renderNutAdmin();
 }
-function filterNuts(){const q=normAr($('nsearch')&&$('nsearch').value);document.querySelectorAll('#picker button[data-k]').forEach(b=>b.classList.toggle('nf',!!q&&!normAr(b.textContent).includes(q)))}
+function filterNuts(){const q=normAr($('nsearch')&&$('nsearch').value);document.querySelectorAll('#picker button[data-k]').forEach(b=>{const t=[...b.querySelectorAll(':scope>span:not(.ocard),:scope>small')].map(x=>x.textContent).join(' ');b.classList.toggle('nf',!!q&&!normAr(t).includes(q))})}
 function renderNutAdmin(){
   const el=$('nadm');if(!el)return;
   if(typeof OWN==='undefined'||!OWN.on){el.innerHTML='';return}
   const hide=NHIDE();
-  el.innerHTML=`<p class="nadm-h">${T('o_nman')}</p><div class="nadm-l">`+
-    BUILTIN.map(k=>`<span class="nchip${hide.includes(k)?' off':''}">${esc(T('n_'+k))}<button type="button" data-nhide="${k}">${T(hide.includes(k)?'o_nshow':'o_nhide')}</button></span>`).join('')+
-    NCUST().map(c=>`<span class="nchip cust${c.rv===false?' pending':''}">${esc(tx2(c.n))}${c.rv===false&&CANAPPROVE()?`<button type="button" class="appr" data-approve="n:${c.id}">${T('o_approve')}</button>`:''}<button type="button" data-nedit="${c.id}">${T('o_edit')}</button></span>`).join('')+
-    `</div>${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<button class="btn pri" type="button" id="nadd">${T('o_nadd')}</button><p class="hint">${T('o_nhint')}</p>`;
+  // compact owner strip above the cards: approve-all + add (the cards themselves carry edit/hide/approve)
+  el.innerHTML=`${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<div class="nadm-row"><button class="btn pri" type="button" id="nadd">${T('o_nadd')}</button><span class="hint">${T('o_nhint')}</span></div>`;
 }
 /* custom nutrient calculator: dose table by age and sex */
 const SEXES=()=>[['all',T('o_sx_all')],['m',T('sx_m')],['f',T('sx_f')],['p',T('sx_p')],['l',T('sx_l')]];

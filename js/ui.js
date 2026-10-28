@@ -3,7 +3,7 @@
    language switch (setLang), event wiring, colours and refreshAll().
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
-const PAGES=['calc','tools','interactions','sources','roadmap'];
+const PAGES=['calc','interactions','tools','sources','roadmap'];
 let cur='calc';
 function show(p){
   if(!PAGES.includes(p))p='calc';
@@ -46,7 +46,7 @@ $('rbar').addEventListener('click',toRes);$('rbar').addEventListener('keydown',e
 
 /* ===================== mode, welcome, text size ===================== */
 function setMode(m,save=true){
-  MODE=m;document.querySelectorAll('#modeg [data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));
+  MODE=m;document.querySelectorAll('#modeg [data-mode],#oview [data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));
   if(save)try{localStorage.setItem('vw-mode',m)}catch(e){}
   if(LAST)F[K]();
 }
