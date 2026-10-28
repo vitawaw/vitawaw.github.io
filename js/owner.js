@@ -3,20 +3,25 @@
    publish, preview, password change. The Supabase library is downloaded only when someone logs in.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== owner mode ===================== */
-const OWN={on:false,local:false,role:null,client:null,base:'',preview:false};
+const OWN={on:false,local:false,role:null,client:null,base:'',preview:false,perms:{},name:''};
 // texts editable from their own page
 const EDITABLE=['hc_t','hc_l','ht_t','ht_l','ti_t','hi_l','ts_t','hs_l','rm_t','rm_l','sg_t','sg_l','by','priv','w_t','foot2'];
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
-function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
+function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
 function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
-  $('owho').textContent='VITAWAW · '+T(OWN.local?'o_local':OWN.role==='owner'?'o_owner':'o_editor');
+  $('owho').textContent=whoLabel();
   const d=dirty();$('odot').classList.toggle('dirty',d||OWN.saved);
-  const pc=pendingCount();$('ostate').textContent=T(d?'o_dirty':OWN.saved?'o_saved':'o_clean')+(pc?` · ${pc} ${T('o_pendn')}`:'');
-  $('o-preview').textContent=T('o_preview');$('o-discard').textContent=T('o_discard');$('o-save').textContent=T('o_save');
-  $('o-publish').textContent=T('o_publish');$('o-logout').textContent=T('o_logout');$('o-pass').textContent=T('o_chpass');$('o-pass').hidden=OWN.local;$('o-pvexit').textContent=T('o_pvexit');
-  $('o-publish').hidden=!(OWN.local||OWN.role==='owner');
+  $('ostate').textContent=T(d?'o_dirty':OWN.saved?'o_saved':'o_clean');
+  const pc=ISOWNER()?pendingCount():0;$('o-pend').hidden=!pc;$('o-pend').textContent=`${pc} ${T('o_pendn')} ›`;
+  $('o-save').textContent=T(ISOWNER()?'o_save':'mr_savemine');$('o-publish').textContent=T('o_publish');$('o-pvexit').textContent=T('o_pvexit');
+  $('o-publish').hidden=!ISOWNER();
+  // what this account may edit: hides the edit buttons it cannot use (the database refuses them anyway)
+  ['nut','inter','refs','text'].forEach(k=>document.body.classList.toggle('cant-'+k,!CAN(k)));
+  document.body.classList.toggle('not-owner',!ISOWNER());
+  renderNav();renderMore();
 }
+function setPreview(on){OWN.preview=on;document.body.classList.toggle('preview',on);refreshAll()}
 function changed(){refreshAll();ownerBar()}
 function decorate(){
   document.querySelectorAll('.edp').forEach(b=>b.remove());
@@ -75,7 +80,7 @@ async function editContact(){
   const c=CFG.contact;
   const r=await dialog({title:T('o_contact'),fields:[{label:T('o_email'),type:'email',value:c.email},{label:T('o_phone'),type:'tel',value:c.phone||''}],
     buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
-  if(r.action==='ok'){const [e,ph]=r.values.map(x=>x.trim());CFG.contact={email:e||c.email,phone:ph};changed()}
+  if(r.action==='ok'){const [e,ph]=r.values.map(x=>x.trim());if(!e&&!ph){toast(T('o_contact_need'));return}CFG.contact={email:e,phone:ph};changed()}
 }
 const STATUSES=()=>[['dev',T('st_dev')],['plan',T('st_plan')],['idea',T('st_idea')]];
 const ICONS=()=>Object.keys(IC).map(k=>[k,{bell:'🔔',chart:'📈',plus:'➕',pill:'💊',clock:'⏰',share:'📤',cam:'📷',baby:'👶'}[k]+' '+k]);
@@ -92,6 +97,7 @@ function moveFeature(i,d){const j=i+d;if(j<0||j>=CFG.roadmap.length)return;const
 document.addEventListener('click',e=>{
   if(!OWN.on)return;const t=e.target.closest('[data-edtext],[data-edcolor],[data-edcontact],[data-rmedit],[data-rmup],[data-rmdown],#rmadd');if(!t)return;
   e.preventDefault();e.stopPropagation();
+  if(t.dataset.edtext?!CAN('text'):!ISOWNER()){toast(T('tm_noperm'));return}
   if(t.dataset.edtext)editText(t.dataset.edtext);
   else if(t.dataset.edcolor)editColors(t.dataset.edcolor);
   else if(t.dataset.edcontact)editContact();
@@ -122,7 +128,7 @@ async function editRef(id){
     v=r.values.map(x=>x.trim());
     if(!v[0]||!v[1]){toast(T('o_rneed'));continue}
     if(v[2]&&!/^https?:\/\//i.test(v[2])){toast(T('o_rbadurl'));continue}
-    const item={id:isNew?Math.max(29,(OWN.nextRef||1)-1,...CFG.refs.map(x=>x.id))+1:id,org:v[0],title:v[1],url:v[2],ar:v[3],en:o.ar===v[3]?(o.en||''):'',rv:OWN.role==='owner'||OWN.local};
+    const item={...(isNew?{}:{hidden:!!o.hidden,kind:o.kind||''}),id:isNew?Math.max(29,(OWN.nextRef||1)-1,...CFG.refs.map(x=>x.id))+1:id,org:v[0],title:v[1],url:v[2],ar:v[3],en:o.ar===v[3]?(o.en||''):'',rv:OWN.role==='owner'||OWN.local};
     if(isNew)CFG.refs.push(item);else CFG.refs[CFG.refs.findIndex(x=>x.id===id)]=item;
     changed();if(isNew)toast(T('o_radded')+' '+item.id);return;
   }
@@ -140,7 +146,7 @@ async function editInter(i){
     if(!v[2])v[2]=kname(v[0]);
     if(!v[3]||!v[4]){toast(T('o_ineed'));continue}
     if(!v[5].length){toast(T('o_srcneed'));continue}
-    const item={k:v[0],sev:v[1],a:keep(o&&o.a,v[2]),b:keep(o&&o.b,v[3]),d:keep(o&&o.d,v[4]),r:v[5],rv:OWN.role==='owner'||OWN.local};if(o&&o.id!=null)item.id=o.id;
+    const item={hidden:!!(o&&o.hidden),k:v[0],sev:v[1],a:keep(o&&o.a,v[2]),b:keep(o&&o.b,v[3]),d:keep(o&&o.d,v[4]),r:v[5],rv:OWN.role==='owner'||OWN.local};if(o&&o.id!=null)item.id=o.id;
     if(isNew)CFG.inter.push(item);else CFG.inter[i]=item;changed();return;
   }
 }
@@ -203,6 +209,8 @@ async function editNut(id){
 document.addEventListener('click',e=>{
   if(!OWN.on)return;const t=e.target.closest('[data-redit],#radd,[data-iedit],#iadd,[data-nhide],[data-nedit],#nadd,[data-approve],[data-approveall]');if(!t)return;
   e.preventDefault();e.stopPropagation();
+  const need=t.dataset.approve||t.dataset.approveall||t.dataset.nhide?'owner':(t.dataset.redit||t.id==='radd')?'refs':(t.dataset.iedit!=null||t.id==='iadd')?'inter':'nut';
+  if(need==='owner'?!ISOWNER():!CAN(need)){toast(T(need==='owner'?'o_onlyowner':'tm_noperm'));return}
   if(t.dataset.approveall)approveAll(t.dataset.approveall);
   else if(t.dataset.approve)approve(t.dataset.approve);
   else if(t.dataset.redit)editRef(+t.dataset.redit);
@@ -216,7 +224,7 @@ document.addEventListener('click',e=>{
 
 /* ----- login / session ----- */
 function loadSupabaseLib(){return new Promise((ok,no)=>{if(window.supabase)return ok();const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)})}
-async function openOwner(){
+async function openOwner(opt={}){
   history.replaceState(null,'',location.pathname+location.search+'#'+(cur||'calc'));
   if(OWN.on)return;
   if(!SBON()){
@@ -228,6 +236,7 @@ async function openOwner(){
   OWN.client=OWN.client||window.supabase.createClient(SB.url,SB.key);
   const {data:{session}}=await OWN.client.auth.getSession();
   if(session)return afterLogin();
+  if(opt.join!=null){if(await firstSetup(opt.join))return afterLogin();return}
   while(true){
     const r=await dialog({title:T('o_login'),fields:[{label:T('o_email'),type:'email',value:''},{label:T('o_pass'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_first'),action:'first'},{label:T('o_in'),action:'ok',pri:1}]});
     if(r.action==='first'){if(await firstSetup(r.values[0]))return afterLogin();continue}
@@ -252,14 +261,17 @@ async function firstSetup(email0){
 }
 async function afterLogin(){
   const c=OWN.client;const {data:{user}}=await c.auth.getUser();
-  const {data:m}=await c.from('members').select('role').eq('user_id',user.id).maybeSingle();
-  if(!m||!['owner','editor'].includes(m.role)){toast(T('o_norole'));await c.auth.signOut();return}
+  const {data:m}=await c.from('members').select('role,status,perms,name').eq('user_id',user.id).maybeSingle();
+  if(!m||!['owner','editor'].includes(m.role)||m.status==='removed'){toast(T('o_norole'));await c.auth.signOut();return}
+  if(m.status!=='active'){toast(T('tm_susp_msg'));await c.auth.signOut();return}
+  OWN.perms=clean(m.perms||{});OWN.name=clean(m.name||'');
   const {data:dr}=await c.from('site_config').select('data').eq('id','draft').maybeSingle();
   const {data:ct,error}=await c.rpc('get_content');if(error||!ct){toast(T('o_neterr'));return}
   startOwner({local:false,role:m.role,draft:dr&&dr.data,content:ct});
+  if(m.role==='owner')teamLoad().then(()=>renderNav());
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30}
-const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap});
+const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages});
 function startOwner({local,role,draft,content}){
   OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;OWN.preview=false;
   CFG=mergeCfg(DEFAULT_CFG,draft||PUBLISHED);if(content)applyContent(content);
@@ -271,8 +283,9 @@ async function saveDraft(){
   if(OWN.local){try{localStorage.setItem('vw-draft',JSON.stringify(data))}catch(e){}}
   else{
     const c=OWN.client;
-    const {error}=await c.from('site_config').upsert({id:'draft',data:settingsOf(data),updated_at:new Date().toISOString()});if(error){toast(T('o_neterr'));return false}
-    const {error:e2}=await c.rpc('save_content',{p:{refs:CFG.refs||[],inter:CFG.inter||[],nut:{hide:NHIDE(),custom:NCUST()}}});if(e2){console.error(e2);toast(T('o_saveerr'));return false}
+    if(CAN('text')){const {error}=await c.from('site_config').upsert({id:'draft',data:settingsOf(data),updated_at:new Date().toISOString()});if(error){toast(T('o_neterr'));return false}}
+    const p={};if(CAN('refs'))p.refs=CFG.refs||[];if(CAN('inter'))p.inter=CFG.inter||[];if(CAN('nut'))p.nut={hide:NHIDE(),custom:NCUST()};
+    if(Object.keys(p).length){const {error:e2}=await c.rpc('save_content',{p});if(e2){console.error(e2);toast(T('o_saveerr'));return false}}
     const {data:ct,error:e3}=await c.rpc('get_content');if(!e3&&ct){applyContent(ct);refreshAll()}
   }
   OWN.base=cfgJSON();OWN.saved=true;ownerBar();toast(T('o_savedone'));return true;
@@ -314,12 +327,13 @@ async function changePass(){
     toast(T('o_chdone'));return;
   }
 }
-$('o-pass').addEventListener('click',changePass);
 async function logout(){
   if(dirty()){const q=await dialog({title:T('o_leave'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_logout'),action:'ok',pri:1}]});if(q.action!=='ok')return}
   if(!OWN.local&&OWN.client)await OWN.client.auth.signOut();
-  OWN.on=false;OWN.preview=false;document.body.classList.remove('owner','preview');CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);refreshAll();
+  closeSheet(false);TEAM.list=null;
+  OWN.on=false;OWN.preview=false;OWN.perms={};OWN.name='';OWN.role=null;
+  document.body.classList.remove('owner','preview','not-owner','cant-nut','cant-inter','cant-refs','cant-text');CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);refreshAll();
 }
-$('o-enter').addEventListener('click',openOwner);$('o-save').addEventListener('click',saveDraft);$('o-publish').addEventListener('click',publish);$('o-discard').addEventListener('click',discard);$('o-logout').addEventListener('click',logout);
-$('o-preview').addEventListener('click',()=>{OWN.preview=true;document.body.classList.add('preview');refreshAll()});$('o-pvexit').addEventListener('click',()=>{OWN.preview=false;document.body.classList.remove('preview');refreshAll()});
+$('o-save').addEventListener('click',saveDraft);$('o-publish').addEventListener('click',publish);
+$('o-pvexit').addEventListener('click',()=>setPreview(false));$('o-pend').addEventListener('click',()=>openNav('review'));
 addEventListener('beforeunload',e=>{if(OWN.on&&dirty()){e.preventDefault();e.returnValue=''}});

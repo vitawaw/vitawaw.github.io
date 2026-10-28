@@ -45,6 +45,5 @@ function openTool(kind){
   let sec='tool-d';
   if(kind==='pills'){sec='tool-pill';$('salt').value=PILL.k==='ca'?'0.40':'0.20';$('tabmg').value=PILL.k==='ca'?1250:325;$('needmg').value=PILL.dose;pills()}
   if(kind==='ganz')sec='tool-gz';
-  go('tools');
-  setTimeout(()=>{const s=$(sec);s.scrollIntoView({block:'start'});window.scrollBy(0,-110);s.classList.remove('flash');void s.offsetWidth;s.classList.add('flash')},30);
+  openToolSheet(sec);
 }

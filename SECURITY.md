@@ -7,10 +7,13 @@ Last full review: 2026-10-28 (version 1.2.0).
 | Who | Can | Cannot |
 |---|---|---|
 | Visitor | Read the **published** snapshot (`site_config` row `published`). | Read drafts, unreviewed items, members or history; write anything. |
-| Editor (invited) | Read and edit content and the draft. Every edit is marked *awaiting review*. | Approve, publish, delete permanently, manage members. |
+| Pharmacist (invited by the owner) | Read the draft and unreviewed content; edit only the parts the owner switched on: vitamins (`nut`), interactions (`inter`), sources (`refs`), page texts and info pages (`text`). Every edit is marked *awaiting review*. | Approve, publish, delete permanently, manage accounts, change contact / colours / roadmap, hide built-in vitamins. A suspended or removed account has no access at all. |
 | Owner (pharmacist) | Everything an editor can, plus approve and publish. | Delete permanently (soft delete only; history is kept). |
 
-- **Sign-up is invite-only.** A database trigger rejects any e-mail that is not in `private.invites`.
+- **Sign-up is invite-only.** A database trigger rejects any e-mail that is not in `private.invites` (or whose invitation was cancelled).
+- **Pharmacist permissions are enforced by the database**, not the page: `private.can_edit(kind)` in every write policy, a check in `save_content()`,
+  and a trigger that lets a pharmacist change only `text` and `pages` in the draft. Account management goes through owner-only
+  functions (`team_list`, `team_invite`, `team_update`, `team_revoke_invite`) that check the owner role themselves.
 - **Row level security** is on for every table. Table grants follow least privilege (migration `security_hardening`).
 - **Only the public anon key** is in the page. The `service_role` key is never used by the site.
 - **Visitor privacy:** calculator inputs (age, weight, lab values) never leave the browser. Fonts are self-hosted,

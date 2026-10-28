@@ -12,10 +12,18 @@ function show(p){
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
   try{localStorage.setItem('vw-p',p)}catch(e){}
   if(p==='roadmap'){$('rmnew').hidden=true;try{localStorage.setItem('vw-rm','3')}catch(e){}}
-  updateBar();
+  updateBar();if(typeof renderNav==='function')renderNav();
 }
 function go(p){if(location.hash!=='#'+p)location.hash=p;else show(p);window.scrollTo(0,0)}
-window.addEventListener('hashchange',()=>{if(location.hash==='#owner'){openOwner();return}show(location.hash.slice(1));window.scrollTo(0,0)});
+window.addEventListener('hashchange',()=>{if(routeSpecial())return;show(location.hash.slice(1));window.scrollTo(0,0)});
+/* links that open something instead of a tab: #owner (sign in), #join=<email> (invited pharmacist), #info-<page> (info page) */
+function routeSpecial(){
+  const h=decodeURIComponent(location.hash.slice(1));
+  if(h==='owner'){openOwner();return true}
+  if(h==='join'||h.startsWith('join=')){openOwner({join:h.slice(5)});return true}
+  if(h.startsWith('info-')){history.replaceState(null,'',location.pathname+location.search+'#'+cur);openPage(h.slice(5));return true}
+  return false;
+}
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click',()=>go(t.dataset.p));
   t.addEventListener('keydown',e=>{
@@ -48,7 +56,7 @@ $('rbar').addEventListener('click',toRes);$('rbar').addEventListener('keydown',e
 function setMode(m,save=true){
   MODE=m;document.querySelectorAll('#modeg [data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));
   if(save)try{localStorage.setItem('vw-mode',m)}catch(e){}
-  if(LAST)F[K]();
+  if(LAST)F[K]();if(typeof renderMore==='function')renderMore();
 }
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.mode);if(b.closest('#welcome'))closeWelcome()}));
 function closeWelcome(){$('welcome').hidden=true;try{localStorage.setItem('vw-welcome','1')}catch(e){}}
@@ -90,10 +98,8 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-card]')){e.prev
 const SUN='<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
 const MOON='<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>';
 const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches};
-function themeIcon(){const d=isDark();$('th-light').setAttribute('aria-pressed',!d);$('th-dark').setAttribute('aria-pressed',d);
-  $('th-light').setAttribute('aria-label',T('th_light'));$('th-light').title=T('th_light');$('th-dark').setAttribute('aria-label',T('th_dark'));$('th-dark').title=T('th_dark')}
+function themeIcon(){if(typeof renderMore==='function')renderMore()}
 function setTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('vw-theme',t)}catch(e){}themeIcon()}
-$('th-light').addEventListener('click',()=>setTheme('light'));$('th-dark').addEventListener('click',()=>setTheme('dark'));
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',themeIcon);
 
 /* ===================== examples / clear ===================== */
@@ -119,23 +125,19 @@ function syncSex(){
 function setLang(l){
   LANG=l;buildData();const html=document.documentElement;
   html.lang=l;html.dir=l==='ar'?'rtl':'ltr';
-  $('lang-ar').setAttribute('aria-pressed',l==='ar');$('lang-en').setAttribute('aria-pressed',l==='en');
   document.querySelectorAll('[data-t]').forEach(el=>{if(I18N[el.dataset.t])el.textContent=T(el.dataset.t)});
   document.querySelectorAll('[data-ph]').forEach(el=>{const v=I18N[el.dataset.ph];if(v)el.placeholder=v[l==='ar'?0:1]});
   document.querySelectorAll('[data-th]').forEach(el=>{const v=I18N[el.dataset.th];if(v)el.innerHTML=v[l==='ar'?0:1]});
   $('backarrow').setAttribute('d',l==='ar'?'M9 6l6 6-6 6':'M15 6l-6 6 6 6');
-  $('thg').setAttribute('aria-label',l==='ar'?'المظهر':'Appearance');$('langg').setAttribute('aria-label',l==='ar'?'اللغة':'Language');
   document.querySelectorAll('[aria-label="unit"],[aria-label="الوحدة"]').forEach(el=>el.setAttribute('aria-label',l==='ar'?'الوحدة':'unit'));
   document.querySelectorAll('.x,[aria-label="close"],[aria-label="إغلاق"]').forEach(el=>{if(el.getAttribute('aria-label'))el.setAttribute('aria-label',l==='ar'?'إغلاق':'Close')});
   {const md=document.querySelector('meta[name=description]');if(md)md.content=l==='ar'?'حاسبة جرعات الفيتامينات والمعادن المبنية على مصادر طبية، مع التداخلات الدوائية':'Vitamin and mineral dose calculator based on medical sources, with drug interactions'}
   NUMS.forEach(id=>{const er=$('e-'+id);if(er&&!er.hidden)val(id)});
   try{localStorage.setItem('vw-lang',l)}catch(e){}
   $('pc-wa').textContent=T('pc_wa');$('pc-copy').textContent=T('pc_cp');$('pc-close').textContent=T('pc_x');themeIcon();
-  renderInter();renderRefs();renderRoadmap();renderContact();
+  renderInter();renderRefs();renderRoadmap();renderContact();renderNav();
   if(typeof OWN!=='undefined'&&OWN.on){decorate();ownerBar()}conv();cca();gz();pills();F[K]();
 }
-$('lang-ar').addEventListener('click',()=>setLang('ar'));
-$('lang-en').addEventListener('click',()=>setLang('en'));
 
 /* ===================== wiring ===================== */
 const F={d:fD,b12:fB12,fol:fFol,fe:fFe,ca:fCa,mg:fMg,c:fC,zn:fZn};

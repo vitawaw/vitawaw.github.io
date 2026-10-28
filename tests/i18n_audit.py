@@ -1,14 +1,31 @@
+"""Language audit: walks every page, dialog and menu in one language and lists any text left in the other.
+Run: python3 tests/i18n_audit.py en   (or ar). Prints TOTAL 0 when clean."""
 import json, sys, re
 from playwright.sync_api import sync_playwright
-SP='/tmp/claude-0/-home-claude/662f7c63-33f7-5bbe-bbbd-c61c98738720/scratchpad/'
-html=open('/home/claude/vitawaw.github.io/index.html',encoding='utf-8').read()
-seed=open(SP+'seedfull.json').read();fake=open(SP+'fake_sb4.js').read()
+html=open('index.html',encoding='utf-8').read()
+seed=open('tests/seed_state.json').read();fake=open('tests/fake_supabase.js').read()
+ROOT='.'
+def serve(route):
+    import os,mimetypes
+    from urllib.parse import urlparse
+    p=urlparse(route.request.url).path.lstrip('/') or 'index.html'
+    f=os.path.join(ROOT,p)
+    if not os.path.isfile(f): f=os.path.join(ROOT,'index.html')
+    ct=mimetypes.guess_type(f)[0] or 'text/html'
+    hdr={}
+    if ct=='text/html':
+        import re
+        h=open(os.path.join(ROOT,'_headers')).read()
+        m=re.search(r'Content-Security-Policy: (.*)',h)
+        if m: hdr['Content-Security-Policy']=m.group(1).replace("connect-src 'self'","connect-src 'self' http://app.test").replace('; upgrade-insecure-requests','')
+    route.fulfill(status=200,body=open(f,'rb').read(),content_type=ct,headers=hdr)
 def setup(pg,pub='[]'):
     pg.add_init_script('window.__SEED='+seed+';')
     pg.route('https://cdn.jsdelivr.net/**',lambda r:r.fulfill(status=200,body=fake,content_type='application/javascript'))
     pg.route('https://zrlapysswtqrwfsywbvl.supabase.co/**',lambda r:r.fulfill(status=200,body=pub,content_type='application/json'))
     pg.route('https://fonts.googleapis.com/**',lambda r:r.fulfill(status=200,body='',content_type='text/css'))
-    pg.route('http://app.test/**',lambda r:r.fulfill(status=200,body=html,content_type='text/html'))
+    pg.route('http://app.test/**',serve)
+    pg.route('http://app.test/api/content',lambda r:r.fulfill(status=200,body=pub,content_type='application/json'))
 SCAN=r'''(lang)=>{
  const AR=/[؀-ۿ]/;
  const EN=/\b(?!(?:mg|mcg|IU|ng|mL|dL|nmol|pmol|pg|kg|cm|RAE|DFE|NE|ALA|EPA|DHA|INR|HIV|ACE|ARBs?|PPIs?|NIH|ODS|FDA|EFSA|WHO|NICE|BNF|AI|UL|RDA|OK|VITAWAW|Supabase|Medscape|Endocrine|Society|Ganzoni|WhatsApp|e\.g)\b)[a-z]{3,}\s+[a-z]{2,}\s+[a-z]{2,}/i;
@@ -71,6 +88,13 @@ def walk(pg,lang,tag):
         for f in pg.locator(f'#{t} [data-f], #filters button, #sfilters button').all()[:20]:
             try: f.click();pg.wait_for_timeout(30);scan(pg,tag+' '+t+' filter',lang)
             except Exception: pass
+def menus(pg,lang,tag):
+    pg.evaluate('openNav()');pg.wait_for_timeout(120)
+    for g in pg.evaluate("[...document.querySelectorAll('#drawer [data-g][aria-expanded]')].map(b=>b.dataset.g)"):
+        pg.evaluate(f"openNav('{g}')");pg.wait_for_timeout(60);scan(pg,f'{tag} drawer {g}',lang)
+    pg.evaluate('closeNav(false)');pg.evaluate('openMore()');pg.wait_for_timeout(80);scan(pg,tag+' more',lang);pg.evaluate('closeMore(false)')
+    for pid in pg.evaluate("(CFG.pages||[]).map(p=>p.id)"):
+        pg.evaluate(f"openPage('{pid}')");pg.wait_for_timeout(50);scan(pg,f'{tag} page {pid}',lang);pg.evaluate('closeSheet(false)')
 def owner_dialogs(pg,lang,tag):
     sels=['[data-nedit]','#nadd','[data-iedit]','#iadd','[data-redit]','#radd','#o-publish','#o-pass','[data-approveall="n"]','[data-approveall="i"]','[data-approveall="r"]','[data-edtext]','[data-edcolor]','[data-edcontact]','[data-rmedit]','#rmadd','#o-discard']
     for tab in ['calc','interactions','sources','roadmap','tools']:
@@ -89,32 +113,32 @@ def owner_dialogs(pg,lang,tag):
                         b=pg.locator('#dlg-a button:not(.pri)')
                         if b.count(): b.first.click();pg.wait_for_timeout(60)
             except Exception as e: print('ERR',s,e)
-    pg.click('#o-preview');pg.wait_for_timeout(150);scan(pg,tag+' preview',lang);pg.click('#o-pvexit');pg.wait_for_timeout(100)
+    pg.evaluate('setPreview(true)');pg.wait_for_timeout(150);scan(pg,tag+' preview',lang);pg.click('#o-pvexit');pg.wait_for_timeout(100)
 with sync_playwright() as p:
     b=p.chromium.launch()
     for start in [sys.argv[1]]:
         other='ar' if start=='en' else 'en'
         pg=b.new_context(viewport={'width':390,'height':844}).new_page();pg.set_default_timeout(4000);errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));setup(pg)
         pg.goto('http://app.test/');pg.wait_for_timeout(600)
-        pg.click('#lang-'+start);pg.wait_for_timeout(150);scan(pg,'visitor home',start)
-        walk(pg,start,'visitor')
+        pg.evaluate('l=>setLang(l)',start);pg.wait_for_timeout(150);scan(pg,'visitor home',start)
+        walk(pg,start,'visitor');menus(pg,start,'visitor')
         # render in this lang, then switch and scan stale content
         pg.click('#t-calc');pg.click('#picker [data-k="d"]');fill_all(pg);pg.wait_for_timeout(100)
-        pg.click('#lang-'+other);pg.wait_for_timeout(200);scan(pg,'after-switch calc',other)
+        pg.evaluate('l=>setLang(l)',other);pg.wait_for_timeout(200);scan(pg,'after-switch calc',other)
         for t in ['tools','interactions','sources','roadmap']:
             pg.click('#t-'+t);pg.wait_for_timeout(60);scan(pg,'after-switch '+t,other)
-        pg.click('#lang-'+start);pg.wait_for_timeout(150)
+        pg.evaluate('l=>setLang(l)',start);pg.wait_for_timeout(150)
         # owner
-        pg.click('#o-enter');pg.wait_for_timeout(900);scan(pg,'owner home',start)
-        walk(pg,start,'owner');owner_dialogs(pg,start,'owner')
-        pg.click('#lang-'+other);pg.wait_for_timeout(200)
+        pg.evaluate('openOwner()');pg.wait_for_timeout(900);scan(pg,'owner home',start)
+        walk(pg,start,'owner');owner_dialogs(pg,start,'owner');menus(pg,start,'owner')
+        pg.evaluate('l=>setLang(l)',other);pg.wait_for_timeout(200)
         for t in ['calc','tools','interactions','sources','roadmap']:
             pg.click('#t-'+t);pg.wait_for_timeout(60);scan(pg,'owner after-switch '+t,other)
         print(start,'errors:',errs[:5])
     # login dialog (visitor, not logged)
     for lg in ['en','ar']:
         pg=b.new_context(viewport={'width':390,'height':844}).new_page()
-        pg.add_init_script("window.__NOSESSION=1");setup(pg);pg.goto('http://app.test/');pg.wait_for_timeout(500);pg.click('#lang-'+lg);pg.wait_for_timeout(100)
+        pg.add_init_script("window.__NOSESSION=1");setup(pg);pg.goto('http://app.test/');pg.wait_for_timeout(500);pg.evaluate('l=>setLang(l)',lg);pg.wait_for_timeout(100)
 groups={}
 for (lang,w,t),lab in found.items(): groups.setdefault((lang,t),[]).append((w,lab))
 for (lang,t),ws in sorted(groups.items()):
