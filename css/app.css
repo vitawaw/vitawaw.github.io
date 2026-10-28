@@ -365,41 +365,41 @@ body.has-bar footer{padding-bottom:84px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rt-g{background:#123a22;color:#8fe0a8}:root:not([data-theme="light"]) .rt-o{background:#16264d;color:#9ab8ff}:root:not([data-theme="light"]) .rt-d{background:#3d2a08;color:#ffcf80}:root:not([data-theme="light"]) .rt-s{background:#2e1747;color:#d8b4fe}}
 :root[data-theme="dark"] .rt-g{background:#123a22;color:#8fe0a8}:root[data-theme="dark"] .rt-o{background:#16264d;color:#9ab8ff}:root[data-theme="dark"] .rt-d{background:#3d2a08;color:#ffcf80}:root[data-theme="dark"] .rt-s{background:#2e1747;color:#d8b4fe}
 
-/* ===== owner bar (1.4.0) =====
-   Desktop: one row — who · status · view-as · [Preview] [Save] [Publish] [⋯ menu]
-   Phone:   top row — status · view-as;  fixed bottom bar — Preview · Save · Publish · ⋯ */
-.obar{overflow:visible;flex-wrap:nowrap}
-.obar .stt{border:0;background:transparent;font:600 13px var(--f-body);color:var(--mute);display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:4px 6px;border-radius:8px}
-.obar .opend{background:var(--warn-bg);color:var(--warn);font:700 12px var(--f-body);border-radius:99px;padding:2px 9px}
-.obar .stt:hover .opend{outline:2px solid var(--warn)}
-.oview button{min-width:0}
-.oacts{display:flex;gap:8px;align-items:center}
+/* ===== owner bar =====
+   Top row (all devices): who · save state · "N awaiting review" chip. Wraps instead of overflowing.
+   Desktop (>1100px): actions on the same row.  Phone + iPad (<=1100px): actions in a fixed bottom bar. */
+.obar{flex-wrap:wrap;overflow:visible;row-gap:6px}
+.obar .stt{display:inline-flex;align-items:center;gap:6px;font:600 13px var(--f-body);color:var(--mute)}
+.obar .opend{border:1px solid transparent;background:var(--warn-bg);color:var(--warn);font:700 12.5px var(--f-body);border-radius:99px;padding:4px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.obar .opend[hidden]{display:none}
+.obar .opend:hover,.obar .opend:focus-visible{border-color:var(--warn)}
+[dir="ltr"] .oarr{transform:scaleX(-1);display:inline-block}
+.oacts{display:flex;gap:8px;align-items:center;margin-inline-start:auto}
 .oacts .btn{white-space:nowrap}
 #o-preview[aria-pressed="true"]{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
 .omenu{position:relative}
 #o-more svg{width:16px;height:16px}
-.omenu-list{position:absolute;top:calc(100% + 6px);inset-inline-end:0;min-width:200px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,22,122,.18);padding:6px;display:grid;gap:2px;z-index:40}
+.omenu-list{position:absolute;top:calc(100% + 6px);inset-inline-end:0;min-width:210px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,22,122,.18);padding:6px;display:grid;gap:2px;z-index:40}
 .omenu-list[hidden]{display:none}
-.omenu-list button{all:unset;box-sizing:border-box;display:block;padding:10px 12px;border-radius:8px;font:600 14px var(--f-body);color:var(--ink);cursor:pointer;text-align:start}
+.omenu-list button{all:unset;box-sizing:border-box;display:block;padding:11px 12px;border-radius:8px;font:600 14px var(--f-body);color:var(--ink);cursor:pointer;text-align:start}
 .omenu-list button:hover,.omenu-list button:focus-visible{background:var(--soft)}
 .omenu-list button.danger{color:var(--bad)}
 .omenu-list button[hidden]{display:none}
+.osep{border:0;border-top:1px solid var(--line);margin:4px 6px}
 body.owner .pvexit{display:none!important}
-@media (max-width:700px){
+@media (max-width:1100px){
   .obar{gap:8px;padding:6px 2px}
-  .obar #owho,.obar #ostate{display:none}
   .obar .sp{flex:1}
-  .oacts{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -6px 18px rgba(0,22,122,.10);
-    display:grid;grid-template-columns:1fr 1fr 1.2fr auto;gap:8px;padding:8px max(12px,env(safe-area-inset-left,0px)) calc(8px + env(safe-area-inset-bottom,0px))}
-  .oacts .btn{justify-content:center;min-height:44px;font-size:14px}
-  #o-more-l{display:none}
-  .omenu-list{top:auto;bottom:calc(100% + 8px)}
-  body.owner{padding-bottom:72px}
-  body.owner .rbar{bottom:calc(60px + env(safe-area-inset-bottom,0px))}
-  body.owner .toast{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+  .oacts{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -6px 18px rgba(0,22,122,.10);
+    display:grid;grid-template-columns:1fr 1.2fr 1.2fr auto;gap:10px;padding:8px max(12px,env(safe-area-inset-left,0px)) calc(8px + env(safe-area-inset-bottom,0px))}
+  .oacts .btn{justify-content:center;min-height:46px;font-size:15px}
+  .omenu-list{top:auto;bottom:calc(100% + 10px)}
+  body.owner{padding-bottom:76px}
+  body.owner .rbar{bottom:calc(62px + env(safe-area-inset-bottom,0px))}
+  body.owner .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 }
-@media (min-width:701px){#o-more-l{display:inline}}
-
+@media (min-width:701px) and (max-width:1100px){.oacts{padding-inline:max(24px,calc((100vw - 900px)/2))}}
+@media (max-width:600px){#o-more-l{display:none}.obar #owho{display:none}}
 /* owner tools inside the nutrient cards (same cards as visitors see) */
 .ocard{display:none}
 body.owner:not(.preview) .ocard{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
@@ -421,4 +421,4 @@ body.owner .picker button.ohid{opacity:.6;border-style:dashed}
 @media (max-width:560px){#tools .grid{grid-template-columns:1fr}}
 /* preview: the bar stays, with only "End preview" and the view toggle */
 body.owner.preview #o-save,body.owner.preview #o-publish,body.owner.preview .omenu,body.owner.preview .opend{display:none!important}
-@media (max-width:700px){body.owner.preview .oacts{grid-template-columns:1fr}}
+@media (max-width:1100px){body.owner.preview .oacts{grid-template-columns:1fr}}

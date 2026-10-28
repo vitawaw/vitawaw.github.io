@@ -31,8 +31,8 @@
   </nav>
   <div class="obar" id="obar">
     <span class="who"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/></svg><span id="owho"></span></span>
-    <button class="stt" type="button" id="ostt"><span class="dot" id="odot"></span><span id="ostate"></span><span class="opend" id="opend" hidden></span></button>
-    <div class="seg oview" id="oview" role="group"><button type="button" data-mode="pro" data-t="m_pro"></button><button type="button" data-mode="patient" data-t="m_pt"></button></div>
+    <span class="stt" id="ostt0"><span class="dot" id="odot"></span><span id="ostate"></span></span>
+    <button class="opend" type="button" id="ostt" hidden><span id="opend"></span> <span aria-hidden="true" class="oarr">←</span></button>
     <span class="sp"></span>
     <div class="oacts" id="oacts">
       <button class="btn" type="button" id="o-preview"></button>
@@ -42,8 +42,9 @@
         <button class="btn" type="button" id="o-more" aria-haspopup="menu" aria-expanded="false" aria-controls="o-menu"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg><span id="o-more-l"></span></button>
         <div class="omenu-list" id="o-menu" role="menu" hidden>
           <button type="button" role="menuitem" id="o-pass"></button>
-          <button type="button" role="menuitem" id="o-discard" class="danger"></button>
           <button type="button" role="menuitem" id="o-logout"></button>
+          <hr class="osep">
+          <button type="button" role="menuitem" id="o-discard" class="danger"></button>
         </div>
       </div>
     </div>

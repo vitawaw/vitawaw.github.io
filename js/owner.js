@@ -12,10 +12,11 @@ function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent='VITAWAW · '+T(OWN.local?'o_local':OWN.role==='owner'?'o_owner':'o_editor');
   const d=dirty();$('odot').classList.toggle('dirty',d||OWN.saved);
-  const pc=pendingCount();$('ostate').textContent=OWN.preview?T('o_pvnote'):T(d?'o_dirty':OWN.saved?'o_saved':'o_clean');
-  $('opend').hidden=!pc;$('opend').textContent=pc+' '+T('o_pendn');$('ostt').title=pc?T('o_gopend'):'';
+  const pc=pendingCount();$('ostate').textContent=OWN.preview?T('o_pvnote'):T(d?'o_dirty_s':OWN.saved?'o_saved_s':'o_clean_s');
+  $('ostt0').title=OWN.preview?'':T(d?'o_dirty':OWN.saved?'o_saved':'o_clean');
+  $('ostt').hidden=!pc||OWN.preview;$('opend').textContent=pc+' '+T('o_pendn');$('ostt').title=T('o_gopend');
   $('o-more-l').textContent=T('o_more');$('o-more').setAttribute('aria-label',T('o_more'));
-  $('o-preview').textContent=T(OWN.preview?'o_pvexit':'o_preview');$('o-preview').setAttribute('aria-pressed',!!OWN.preview);$('o-discard').textContent=T('o_discard');$('o-save').textContent=T('o_save');
+  $('o-preview').textContent=T(OWN.preview?'o_pvexit':'o_preview');$('o-preview').setAttribute('aria-pressed',!!OWN.preview);$('o-discard').textContent=T('o_discall');$('o-save').textContent=T('o_save');
   $('o-publish').textContent=T('o_publish');$('o-logout').textContent=T('o_logout');$('o-pass').textContent=T('o_chpass');$('o-pass').hidden=OWN.local;$('o-pvexit').textContent=T('o_pvexit');
   $('o-publish').hidden=!(OWN.local||OWN.role==='owner');
 }
