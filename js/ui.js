@@ -24,7 +24,7 @@ function routeSpecial(){
   if(h.startsWith('info-')){history.replaceState(null,'',location.pathname+location.search+'#'+cur);openPage(h.slice(5));return true}
   return false;
 }
-document.querySelectorAll('.tab').forEach(t=>{
+document.querySelectorAll('.tab[data-p]').forEach(t=>{
   t.addEventListener('click',()=>go(t.dataset.p));
   t.addEventListener('keydown',e=>{
     const i=PAGES.indexOf(t.dataset.p),rtl=document.documentElement.dir==='rtl';

@@ -1,10 +1,10 @@
 /* VITAWAW · js/nav.js
-   The menus. Same design for visitors, pharmacists and the owner:
-   - ☰ side menu: sections (tap a main item → its sub-items appear under it as chips), information pages,
-     and a «الإدارة / Management» part for the team (what appears depends on the account's permissions).
-   - ⋯ More menu (opposite side): language, appearance, view mode, share/install, contact, account, publishing.
+   The menus, like a phone app. Same design for visitors, pharmacists and the owner:
+   - Tab bar: the sections (bottom of the screen on phones and tablets, under the logo on wide screens) and «More».
+   - «More»: one grouped list — publishing and management for the team (by permission), settings (language,
+     appearance, view mode), information pages, share/install, contact, account.
    - Floating window (sheet) in the middle of the screen: tools, information pages, pharmacists.
-   To add a menu entry, add one object to navGroups() or one row to renderMore().
+   To add a menu entry, add one row to renderMore() (or a group to adminGroups() for the team).
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 
 /* ===================== helpers ===================== */
@@ -37,89 +37,46 @@ document.addEventListener('click',e=>{
   const f=ACT[b.dataset.na[0]][+b.dataset.na.slice(1)];if(f){e.preventDefault();f(b)}
 });
 
-/* ===================== ☰ side menu ===================== */
-let NAVG=null; // which main item is open (shows its chips)
+/* ===================== bottom bar + «More» ===================== */
+// Navigation works like a phone app: the tab bar (bottom on phones and tablets, top on wide screens) holds the
+// sections, and «More» opens one grouped list with everything else (settings, information, account, management).
 function pickNut(k){K=k;try{localStorage.setItem('vw-k',k)}catch(e){}apply();go('calc')}
 function goPending(p){
-  closeNav();
+  closeMore(false);
   if(p==='interactions'){IF='all';$('isearch').value='';renderInter()}
   if(p==='sources'){SF='all';renderRefs()}
   go(p);setTimeout(()=>{const el=$(p).querySelector('.pending');if(el)el.scrollIntoView({block:'center'})},60);
 }
 function pendCounts(){return {n:NCUST().filter(x=>x.rv===false).length,i:(CFG.inter||[]).filter(x=>x.rv===false).length,r:(CFG.refs||[]).filter(x=>x.rv===false).length,c:changeList().length,d:delCount()}}
-function navGroups(){
-  const G=[{sec:'nv_sections'}];
-  G.push({id:'calc',page:'calc',label:T('tab_calc'),chips:KEYS.slice(1).map(k=>({label:kname(k),pressed:cur==='calc'&&K===k,f:()=>{closeNav();pickNut(k)}}))});
-  G.push({id:'interactions',page:'interactions',label:T('tab_int'),n:INTER.length,
-    chips:KEYS.filter(k=>k==='all'||INTER.some(x=>x[0]===k)).map(k=>({label:kname(k),pressed:cur==='interactions'&&IF===k,f:()=>{closeNav();IF=k;renderInter();go('interactions')}}))});
-  G.push({id:'tools',page:'tools',label:T('tab_tools'),chips:TOOLS.map(([sec,k])=>({label:T(k),f:()=>{closeNav();openToolSheet(sec)}}))});
-  G.push({id:'sources',page:'sources',label:T('tab_src'),n:Object.keys(REFS).length,
-    chips:KEYS.map(k=>({label:kname(k),pressed:cur==='sources'&&SF===k,f:()=>{closeNav();SF=k;renderRefs();go('sources')}}))});
-  G.push({id:'roadmap',page:'roadmap',label:T('tab_rm')});
-  const pg=visiblePages();
-  if(pg.length){G.push({sec:'nv_info'});pg.forEach(p=>G.push({id:'pg-'+p.id,label:tx2(p.t),ico:ICO.info,hidden:p.hidden,f:()=>{closeNav();openPage(p.id)}}))}
-  // management (owner, or a pharmacist with the matching permission)
-  if(typeof OWN!=='undefined'&&OWN.on&&!OWN.preview){
-    const A=[];
-    if(ISOWNER()){
-      const c=pendCounts(),tot=c.n+c.i+c.r+c.d;
-      A.push({id:'review',label:T('ad_review'),ico:ICO.check,n:tot,chips:tot?[
-        c.n&&{label:T('ad_vit'),n:c.n,f:()=>goPending('calc')},c.i&&{label:T('tab_int'),n:c.i,f:()=>goPending('interactions')},c.r&&{label:T('tab_src'),n:c.r,f:()=>goPending('sources')},c.c&&{label:T('rc_t'),n:c.c,f:()=>{closeNav(false);openChanges()}}].filter(Boolean)
-        :[{label:T('ad_none'),cls:'muted',f:()=>{}}]});
-    }
-    if(CAN('text'))A.push({id:'pages',label:T('ad_pages'),ico:ICO.page,chips:[{label:T('ad_newpage'),cls:'add',f:()=>{closeNav();editPage(null)}},
-      ...(CFG.pages||[]).map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>{closeNav();editPage(p.id)}}))]});
-    if(ISOWNER()&&!OWN.local)A.push({id:'team',label:T('ad_team'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,chips:[
-      {label:T('ad_invite'),cls:'add',f:()=>{closeNav();teamInvite()}},{label:T('ad_accounts'),f:()=>{closeNav();openTeam()}},{label:T('ad_invites'),f:()=>{closeNav();openTeam('inv')}}]});
-    if(ISOWNER())A.push({id:'site',label:T('ad_site'),ico:ICO.site,chips:[{label:T('o_contact'),f:()=>{closeNav();editContact()}},
-      ...PAGES.map(p=>({label:T('ad_colors')+': '+T({calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm'}[p]),f:()=>{closeNav();editColors(p)}}))]});
-    if(A.length)G.push({sec:'nv_admin'},...A);
+/** management groups for the signed-in team (what appears depends on the account's permissions) */
+function adminGroups(){
+  const A=[];
+  if(!(typeof OWN!=='undefined'&&OWN.on&&!OWN.preview))return A;
+  if(ISOWNER()){
+    const c=pendCounts(),tot=c.n+c.i+c.r+c.d;
+    A.push({id:'review',label:T('ad_review'),ico:ICO.check,n:tot,chips:tot?[
+      c.n&&{label:T('ad_vit'),n:c.n,f:()=>goPending('calc')},c.i&&{label:T('tab_int'),n:c.i,f:()=>goPending('interactions')},c.r&&{label:T('tab_src'),n:c.r,f:()=>goPending('sources')},c.c&&{label:T('rc_t'),n:c.c,f:()=>{closeMore(false);openChanges()}}].filter(Boolean)
+      :[{label:T('ad_none'),cls:'muted',f:()=>{}}]});
   }
-  return G;
+  if(CAN('text'))A.push({id:'pages',label:T('ad_pages'),ico:ICO.page,chips:[{label:T('ad_newpage'),cls:'add',f:()=>{closeMore(false);editPage(null)}},
+    ...(CFG.pages||[]).map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>{closeMore(false);editPage(p.id)}}))]});
+  if(ISOWNER()&&!OWN.local)A.push({id:'team',label:T('ad_team'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,chips:[
+    {label:T('ad_invite'),cls:'add',f:()=>{closeMore(false);teamInvite()}},{label:T('ad_accounts'),f:()=>{closeMore(false);openTeam()}},{label:T('ad_invites'),f:()=>{closeMore(false);openTeam('inv')}}]});
+  if(ISOWNER())A.push({id:'site',label:T('ad_site'),ico:ICO.site,chips:[{label:T('o_contact'),f:()=>{closeMore(false);editContact()}},
+    ...PAGES.map(p=>({label:T('ad_colors')+': '+T({calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm'}[p]),f:()=>{closeMore(false);editColors(p)}}))]});
+  return A;
 }
-function navMain(g){
-  if(g.chips){
-    NAVG=NAVG===g.id?null:g.id;
-    if(g.page&&NAVG===g.id&&cur!==g.page)go(g.page);
-    renderNav();const b=$('drawer-b').querySelector(`[data-g="${g.id}"]`);if(b)b.focus();
-    return;
-  }
-  if(g.page){closeNav();go(g.page);return}
-  if(g.f)g.f();
-}
+/** footer links, the «More» dot and labels; refreshes the open «More» list */
 function renderNav(){
-  if(!$('drawer'))return;
-  $('nav-btn').setAttribute('aria-label',T('nav_menu'));$('nav-btn').title=T('nav_menu');
-  $('more-btn').setAttribute('aria-label',T('nav_more'));$('more-btn').title=T('nav_more');
-  $('drawer-t').textContent=T('nav_menu');$('more-t').textContent=T('nav_more');
-  document.querySelectorAll('#drawer-x,#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
+  if(!$('more'))return;
+  $('more-t').textContent=T('nav_more');
+  document.querySelectorAll('#more-x,#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
   $('nav-dot').hidden=!(ISOWNER()&&!OWN.preview&&pendingCount());
   $('flinks').innerHTML=visiblePages(false).map(p=>`<a href="#info-${esc(p.id)}">${esc(tx2(p.t))}</a>`).join('<span aria-hidden="true"> · </span>');
-  if($('drawer').hidden)return;
-  ACT.d=[];let h='';
-  for(const g of navGroups()){
-    if(g.sec){h+=`<p class="dsec">${esc(T(g.sec))}</p>`;continue}
-    const open=!!g.chips&&NAVG===g.id,on=!!g.page&&cur===g.page,i=ACT.d.push(()=>navMain(g))-1;
-    h+=`<div class="dgrp${open?' open':''}" style="${colorVars(g.page)}"><button type="button" class="ditem${on?' on':''}" data-g="${esc(g.id)}" data-na="d${i}"${g.chips?` aria-expanded="${open}"`:''}${on?' aria-current="page"':''}>`+
-       `<span class="di">${g.ico||tabIco(g.page)}</span><span class="dl">${esc(g.label)}</span>${g.n?`<span class="cnt">${g.n}</span>`:''}${g.hidden?`<span class="pend">${T('pg_hidden')}</span>`:''}${g.chips?CHEV:''}</button>`+
-       (open?`<div class="filters dchips">${g.chips.map(c=>chipH('d',c)).join('')}</div>`:'')+`</div>`;
-  }
-  $('drawer-b').innerHTML=h;
+  renderMore();
 }
-function openNav(group){
-  closeMore(false);NAVG=group||(PAGES.includes(cur)?cur:null);
-  $('drawer').hidden=false;$('scrim').hidden=false;$('nav-btn').setAttribute('aria-expanded','true');document.body.classList.add('menu-open');
-  renderNav();($('drawer-b').querySelector('.ditem.on')||$('drawer-b').querySelector('.ditem')||$('drawer')).focus();
-}
-function closeNav(focus=true){
-  if($('drawer').hidden)return;
-  $('drawer').hidden=true;$('drawer-b').innerHTML='';$('scrim').hidden=true;$('nav-btn').setAttribute('aria-expanded','false');document.body.classList.remove('menu-open');
-  if(focus)$('nav-btn').focus();
-}
-$('nav-btn').addEventListener('click',()=>$('drawer').hidden?openNav():closeNav());
-$('drawer-x').addEventListener('click',()=>closeNav());
+const openNav=()=>openMore(),closeNav=f=>closeMore(f); // older names
 
-/* ===================== ⋯ More menu ===================== */
 let INSTALL=null;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();INSTALL=e});
 function shareApp(){
@@ -134,49 +91,83 @@ function installApp(){
 }
 const APPNAME=()=>'VITAWAW';
 const whoLabel=()=>T(OWN.local?'o_local':OWN.role==='owner'?'o_owner':'o_editor')+(OWN.name?' · '+OWN.name:'');
+const MI={
+  lang:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>',
+  theme:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+  mode:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/></svg>',
+  install:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/></svg>',
+  wa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/></svg>',
+  mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5l8.5 6.5 8.5-6.5"/></svg>',
+  call:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 3.5h3.5l1.5 4.5-2.2 1.4a11 11 0 0 0 6.8 6.8l1.4-2.2 4.5 1.5V19a2 2 0 0 1-2 2A16.5 16.5 0 0 1 3 5.5a2 2 0 0 1 2-2z"/></svg>',
+  login:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M4 12h11M11 8l4 4-4 4"/></svg>',
+  invite:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 9v6M9 12h6"/></svg>',
+  key:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2M14 9l2 2"/></svg>',
+  out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M20 12H9M16 8l4 4-4 4"/></svg>',
+  pub:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>'
+};
+const CHEVS='<svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+/** «More»: one grouped list (like a phone's settings). Rows are buttons or links; settings are segmented controls. */
 function renderMore(){
   if(!$('more')||$('more').hidden)return;
   ACT.m=[];const own=typeof OWN!=='undefined'&&OWN.on;
   const shut=f=>()=>{closeMore(false);f()};
-  const rows=[
-    ['mr_lang',[{label:'العربية',pressed:LANG==='ar',f:()=>setLang('ar')},{label:'English',pressed:LANG==='en',f:()=>setLang('en')}]],
-    ['mr_theme',[{label:T('mr_light'),pressed:!isDark(),f:()=>setTheme('light')},{label:T('mr_dark'),pressed:isDark(),f:()=>setTheme('dark')}]],
-    ['mr_mode',[{label:T('m_pro'),pressed:MODE==='pro',f:()=>setMode('pro')},{label:T('m_pt'),pressed:MODE==='pt',f:()=>setMode('pt')}]],
-    ['mr_app',[{label:T('mr_share'),f:shut(shareApp)},{label:T('mr_install'),f:shut(installApp)}]]];
-  const c=[];if(PHONEF())c.push({label:T('mr_wa'),href:waLink('VITAWAW')});if(EMAILF())c.push({label:T('mr_mail'),href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
-  if(PHONEF())c.push({label:T('mr_call'),href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
-  if(c.length)rows.push(['mr_contact',c]);
-  if(!own)rows.push(['mr_account',[{label:T('o_login'),cls:'pri',f:shut(()=>openOwner())},{label:T('mr_join'),f:shut(()=>openOwner({join:''}))}]]);
-  else{
-    rows.push(['mr_pub',ISOWNER()
+  const row=(c)=>{
+    const inner=`<span class="di"${c.page?` style="${colorVars(c.page)}"`:''}>${c.ico||ICO.info}</span><span class="mt">${esc(c.label)}${c.sub?`<small>${esc(c.sub)}</small>`:''}</span>${c.n?`<span class="cnt">${c.n}</span>`:''}${c.href?'':CHEVS}`;
+    if(c.href)return `<a class="mi" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`;
+    return `<button type="button" class="mi${c.cls?' '+c.cls:''}" data-na="m${ACT.m.push(c.f)-1}">${inner}</button>`;
+  };
+  const seg=(ico,label,cs)=>`<div class="mi seg"><span class="di">${ico}</span><span class="mt">${esc(label)}</span><div class="segc">${cs.map(x=>chipH('m',x)).join('')}</div></div>`;
+  const grp=(title,body)=>body?`<div class="mg">${title?`<h3>${esc(title)}</h3>`:''}<div class="ml">${body}</div></div>`:'';
+  let h='';
+  if(own){
+    h+=`<p class="mwho">${esc(whoLabel())}</p>`;
+    h+=grp('',`<div class="mi chips"><div class="filters">${(ISOWNER()
       ?[{label:T(OWN.preview?'o_pvexit':'o_preview'),pressed:OWN.preview,f:shut(()=>setPreview(!OWN.preview))},{label:T('o_save'),f:shut(saveDraft)},{label:T('o_publish'),cls:'pri',f:shut(publish)},{label:T('o_discard'),cls:'danger',f:shut(discard)}]
-      :[{label:T('mr_savemine'),cls:'pri',f:shut(saveDraft)},{label:T('o_discard'),cls:'danger',f:shut(discard)}]]);
-    const m=[];if(!OWN.local)m.push({label:T('o_chpass'),f:shut(changePass)});if(!ISOWNER())m.push({label:T('mr_myperms'),f:shut(showMyPerms)});m.push({label:T('o_logout'),f:shut(logout)});
-    rows.push(['mr_mine',m]);
+      :[{label:T('mr_savemine'),cls:'pri',f:shut(saveDraft)},{label:T('o_discard'),cls:'danger',f:shut(discard)}]).map(x=>chipH('m',x)).join('')}</div></div>`);
+    const A=adminGroups();
+    if(A.length)h+=grp(T('nv_admin'),A.map(g=>`<div class="mi grp"><span class="di">${g.ico}</span><span class="mt">${esc(g.label)}</span>${g.n?`<span class="cnt">${g.n}</span>`:''}</div><div class="filters mchips">${g.chips.map(c=>chipH('m',c)).join('')}</div>`).join(''));
   }
-  $('more-b').innerHTML=(own?`<p class="mwho">${esc(whoLabel())}</p>`:'')+rows.map(([k,cs])=>`<div class="mrow"><p class="ml">${esc(T(k))}</p><div class="filters">${cs.map(x=>chipH('m',x)).join('')}</div></div>`).join('');
+  h+=grp(T('mr_settings'),
+    seg(MI.lang,T('mr_lang'),[{label:'العربية',pressed:LANG==='ar',f:()=>setLang('ar')},{label:'English',pressed:LANG==='en',f:()=>setLang('en')}])+
+    seg(MI.theme,T('mr_theme'),[{label:T('mr_light'),pressed:!isDark(),f:()=>setTheme('light')},{label:T('mr_dark'),pressed:isDark(),f:()=>setTheme('dark')}])+
+    seg(MI.mode,T('mr_mode'),[{label:T('m_pro'),pressed:MODE==='pro',f:()=>setMode('pro')},{label:T('m_pt'),pressed:MODE==='pt',f:()=>setMode('pt')}]));
+  h+=grp(T('nv_info'),row({label:T('tab_rm'),ico:tabIco('roadmap'),page:'roadmap',f:shut(()=>go('roadmap'))})+
+    visiblePages().map(p=>row({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:shut(()=>openPage(p.id))})).join(''));
+  const c=[];if(PHONEF())c.push(row({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')}));if(EMAILF())c.push(row({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))}));
+  if(PHONEF())c.push(row({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')}));
+  h+=grp(T('mr_app'),row({label:T('mr_share'),ico:MI.share,f:shut(shareApp)})+row({label:T('mr_install'),ico:MI.install,f:shut(installApp)}));
+  if(c.length)h+=grp(T('mr_contact'),c.join(''));
+  h+=grp(T(own?'mr_mine':'mr_account'),own
+    ?[!OWN.local&&row({label:T('o_chpass'),ico:MI.key,f:shut(changePass)}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:shut(showMyPerms)}),row({label:T('o_logout'),ico:MI.out,cls:'danger',f:shut(logout)})].filter(Boolean).join('')
+    :row({label:T('o_login'),ico:MI.login,f:shut(()=>openOwner())})+row({label:T('mr_join'),ico:MI.invite,f:shut(()=>openOwner({join:''}))}));
+  const keep=$('more-b').scrollTop;$('more-b').innerHTML=h;$('more-b').scrollTop=keep;
 }
+const WIDE=()=>matchMedia('(min-width:900px)').matches;
 function openMore(){
-  closeNav(false);
-  // sit right under the ⋯ button, on its side (works for wide screens where the button is not at the edge)
-  const r=$('more-btn').getBoundingClientRect(),m=$('more').style,rtl=document.documentElement.dir==='rtl';
-  m.top=Math.round(r.bottom+8)+'px';m.left=rtl?Math.max(12,Math.round(r.left))+'px':'auto';m.right=rtl?'auto':Math.max(12,Math.round(innerWidth-r.right))+'px';
-  $('more').hidden=false;$('scrim').hidden=false;$('scrim').classList.add('light');$('more-btn').setAttribute('aria-expanded','true');
-  renderMore();($('more-b').querySelector('button,a')||$('more')).focus();
+  closeSheet(false);
+  // wide screens: a panel under the «More» tab; phones and tablets: a sheet from the bottom
+  const m=$('more').style;
+  if(WIDE()){const r=$('more-btn').getBoundingClientRect(),rtl=document.documentElement.dir==='rtl';
+    m.top=Math.round(r.bottom+8)+'px';m.left=rtl?Math.max(12,Math.round(r.left))+'px':'auto';m.right=rtl?'auto':Math.max(12,Math.round(innerWidth-r.right))+'px'}
+  else m.top=m.left=m.right='';
+  $('more').hidden=false;$('scrim').hidden=false;$('scrim').classList.toggle('light',WIDE());$('more-btn').setAttribute('aria-expanded','true');document.body.classList.add('menu-open');
+  $('more-b').scrollTop=0;renderMore();$('more-x').focus();
 }
 function closeMore(focus=true){
   if($('more').hidden)return;
-  $('more').hidden=true;$('more-b').innerHTML='';$('scrim').hidden=true;$('scrim').classList.remove('light');$('more-btn').setAttribute('aria-expanded','false');
+  $('more').hidden=true;$('more-b').innerHTML='';$('scrim').hidden=true;$('scrim').classList.remove('light');$('more-btn').setAttribute('aria-expanded','false');document.body.classList.remove('menu-open');
   if(focus)$('more-btn').focus();
 }
 $('more-btn').addEventListener('click',()=>$('more').hidden?openMore():closeMore());
-$('scrim').addEventListener('click',()=>{closeNav(false);closeMore(false)});
+$('more-x').addEventListener('click',()=>closeMore());
+$('scrim').addEventListener('click',()=>closeMore(false));
 
 /* ===================== floating window (sheet) ===================== */
 let SHEET=null;
 /** content: HTML string, or an element that is moved in (and put back on close, keeping its events). */
 function openSheet(title,content,opt={}){
-  closeSheet(false);closeNav(false);closeMore(false);
+  closeSheet(false);closeMore(false);
   $('sheet-t').textContent=title;const b=$('sheet-b');b.innerHTML='';ACT.s=[];
   SHEET={last:opt.last||document.activeElement,onClose:opt.onClose,key:opt.key};
   if(typeof content==='string')b.innerHTML=content;
@@ -224,5 +215,4 @@ document.addEventListener('keydown',e=>{
   if(e.key!=='Escape'||!$('dlg').hidden||!$('ov').hidden)return;
   if(!$('sheet').hidden){closeSheet();return}
   if(!$('more').hidden){closeMore();return}
-  if(!$('drawer').hidden)closeNav();
 });

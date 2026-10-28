@@ -45,8 +45,10 @@ and where the project stands. Details: `README.md` (architecture, file map, test
   each checks the owner role inside.
 
 ## Where things are (no build step; plain scripts loaded in order by `index.html`)
-- Menus: `js/nav.js` — `navGroups()` = ☰ side menu (main item → chip sub-items), `renderMore()` = ⋯ menu,
-  `openSheet()` = floating window, info pages (`CFG.pages`, defaults in `js/config.js`).
+- Menus (1.6.2, app style): `js/nav.js` — the tab bar (`nav.tabs` in index.html: bottom bar under 900px, top tabs above)
+  holds the sections + «More» (`#more-btn`); `renderMore()` = the one grouped «More» list (bottom sheet on phones),
+  `adminGroups()` = its management part; `openSheet()` = floating window, info pages (`CFG.pages`, defaults in `js/config.js`).
+  The ☰ side drawer was removed in 1.6.2 (he asked for menus like other apps).
 - Pharmacist accounts: `js/team.js` (owner only) + migration `*_pharmacist_accounts.sql`.
 - Owner/pharmacist editing, save, publish, login: `js/owner.js`. `CAN(kind)` / `ISOWNER()` in `nav.js`.
 - Texts: `js/i18n.js` (`key:['عربي','English']`). Every visible text must exist in **both** languages.
@@ -63,7 +65,8 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-28)
-- **1.6.1 in preview** (branch `ccr-cad26eca-o7h5hm`), from his request for a full review: a pharmacist's edit or deletion of
+- **1.6.2 in preview** (branch `ccr-cad26eca-o7h5hm`): he asked to redesign the interface and menus to be easy and like other
+  apps, and to fix everything without asking him back. Includes 1.6.1:, from his request for a full review: a pharmacist's edit or deletion of
   approved content waits for the owner (approved version kept in column `pub`, `get_content()` returns `pv` / `del`,
   owner decides with `review_change()`; window «تعديلات وحذف من الصيادلة»), publish uses approved versions only,
   SRI on supabase-js. The migration `supabase/migrations/pending_review_versions.sql` is **not applied yet**: the Supabase

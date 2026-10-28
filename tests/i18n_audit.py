@@ -93,10 +93,7 @@ def walk(pg,lang,tag):
             try: f.click();pg.wait_for_timeout(30);scan(pg,tag+' '+t+' filter',lang)
             except Exception: pass
 def menus(pg,lang,tag):
-    pg.evaluate('openNav()');pg.wait_for_timeout(120)
-    for g in pg.evaluate("[...document.querySelectorAll('#drawer [data-g][aria-expanded]')].map(b=>b.dataset.g)"):
-        pg.evaluate(f"openNav('{g}')");pg.wait_for_timeout(60);scan(pg,f'{tag} drawer {g}',lang)
-    pg.evaluate('closeNav(false)');pg.evaluate('openMore()');pg.wait_for_timeout(80);scan(pg,tag+' more',lang);pg.evaluate('closeMore(false)')
+    pg.evaluate('openMore()');pg.wait_for_timeout(120);scan(pg,tag+' more',lang);pg.evaluate('closeMore(false)')
     for pid in pg.evaluate("(CFG.pages||[]).map(p=>p.id)"):
         pg.evaluate(f"openPage('{pid}')");pg.wait_for_timeout(50);scan(pg,f'{tag} page {pid}',lang);pg.evaluate('closeSheet(false)')
 def owner_dialogs(pg,lang,tag):
