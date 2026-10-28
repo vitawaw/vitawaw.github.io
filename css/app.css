@@ -296,7 +296,7 @@ footer .by{font:700 13px var(--f-display);color:var(--ink)}
 footer .vno{font-variant-numeric:tabular-nums;opacity:.85}
 
 .oedit{display:none}
-body.owner:not(.preview) .oedit{display:flex;gap:6px;margin-top:6px}
+body.owner:not(.preview) .oedit{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;min-width:0}
 .oaddli{display:none!important}
 body.owner:not(.preview) .oaddli{display:block!important;background:transparent!important;padding:0!important}
 body.owner:not(.preview) #iadd,body.owner:not(.preview) #radd{min-height:64px;width:100%}
@@ -422,3 +422,16 @@ body.owner .picker button.ohid{opacity:.6;border-style:dashed}
 /* preview: the bar stays, with only "End preview" and the view toggle */
 body.owner.preview #o-save,body.owner.preview #o-publish,body.owner.preview .omenu,body.owner.preview .opend{display:none!important}
 @media (max-width:1100px){body.owner.preview .oacts{grid-template-columns:1fr}}
+
+/* owner: hidden items stay visible to the owner, dimmed; delete buttons in red */
+body.owner .icard.ohid,body.owner ol.refs li.ohid{opacity:.6;border-style:dashed}
+.ocard .oa.del,.oedit .btn.odel{color:var(--bad)}
+.ocard .oa.del{background:var(--bad-bg,#fdecec)}
+.dlg fieldset.pair{border:0;margin:0;padding:0;min-width:0;display:grid;gap:6px}
+.dlg fieldset.pair legend{padding:0;margin-bottom:4px}
+.dlg .l2{font:600 12px var(--f-body);color:var(--mute)}
+.dlg .pair textarea{min-height:70px}
+@media (max-width:520px){.dlg fieldset.pair .cols{grid-template-columns:1fr}}
+.dlg .box{max-height:calc(100vh - 32px);overflow:auto}
+
+.oedit .btn{flex:0 0 auto}

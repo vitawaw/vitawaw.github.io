@@ -40,7 +40,7 @@ with sync_playwright() as p:
     # edit an interaction severity
     pg.click('[data-iedit="0"]');pg.wait_for_timeout(200);pg.select_option('#dlgf1','major');ok(pg)
     # add interaction
-    pg.click('#iadd');pg.wait_for_timeout(200);pg.select_option('#dlgf0','ca');pg.fill('#dlgf3','Ciprofloxacin');pg.fill('#dlgf4','يقلل امتصاص المضاد؛ افصل بينهما');pg.check('#dlgf5 input[value="18"]');ok(pg)
+    pg.click('#iadd');pg.wait_for_timeout(200);pg.select_option('#dlgf0','ca');pg.fill('#dlgf3a','Ciprofloxacin');pg.fill('#dlgf3b','Ciprofloxacin');pg.fill('#dlgf4a','يقلل امتصاص المضاد؛ افصل بينهما');pg.fill('#dlgf4b','Reduces antibiotic absorption; separate them');pg.check('#dlgf5 input[value="18"]');ok(pg)
     # save
     pg.click('#o-save');pg.wait_for_timeout(600);print('after save toast:',pg.inner_text('#toast'),'| new ids:',pg.evaluate("CFG.inter.filter(x=>x.b.ar==='Ciprofloxacin').map(x=>x.id+'/'+x.rv)"))
     # publish without approving -> pending excluded

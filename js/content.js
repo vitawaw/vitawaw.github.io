@@ -14,13 +14,15 @@ const NHIDE=()=>(CFG.nut&&CFG.nut.hide)||[];
 const NCUST=()=>(CFG.nut&&CFG.nut.custom)||[];
 function buildData(){
   const all=SHOWALL();
-  REFS=Array.isArray(CFG.refs)?Object.fromEntries(CFG.refs.filter(o=>all||o.rv!==false).map(o=>[o.id,[o.org||'',o.title||'',o.url||'',o.ar||'',o.en||o.ar||'',o.rv!==false]])):DEF_REFS;
+  // REFS[id] = [org, title, url, use_ar, use_en, reviewed, hidden, kind]
+  REFS=Array.isArray(CFG.refs)?Object.fromEntries(CFG.refs.filter(o=>all||(o.rv!==false&&!o.hidden)).map(o=>[o.id,[o.org||'',o.title||'',o.url||'',o.ar||'',o.en||o.ar||'',o.rv!==false,!!o.hidden,o.kind||'']])):DEF_REFS;
   CUST={};NCUST().forEach(c=>{CUST[c.id]=c});
-  const VC=NCUST().filter(c=>!c.hidden&&(all||c.rv!==false));
+  const VC=NCUST().filter(c=>all||(!c.hidden&&c.rv!==false)); // owner also sees hidden / pending ones
   const hide=NHIDE(),vis=BUILTIN.filter(k=>!hide.includes(k)),custIds=VC.map(c=>c.id);
   KEYS=['all',...vis,...custIds];
   const il=Array.isArray(CFG.inter)?CFG.inter:defInterList();
-  INTER=il.map((x,i)=>[x.k,[x.a.ar,x.a.en||x.a.ar],[x.b.ar,x.b.en||x.b.ar],[x.d.ar,x.d.en||x.d.ar],x.r||[],i,x.sev||'moderate',x.rv!==false]).filter(x=>KEYS.includes(x[0])&&(all||x[7]));
+  // INTER row = [nutrient, supplement, drug, advice, sources, index in CFG.inter, severity, reviewed, hidden]
+  INTER=il.map((x,i)=>[x.k,[x.a.ar,x.a.en||x.a.ar],[x.b.ar,x.b.en||x.b.ar],[x.d.ar,x.d.en||x.d.ar],x.r||[],i,x.sev||'moderate',x.rv!==false,!!x.hidden]).filter(x=>KEYS.includes(x[0])&&(all||(x[7]&&!x[8])));
   REFGROUP={};
   KEYS.slice(1).forEach(k=>{const g=new Set(DEF_REFGROUP[k]||(CUST[k]?CUST[k].r||[]:[]));INTER.filter(x=>x[0]===k).forEach(x=>x[4].forEach(n=>g.add(n)));REFGROUP[k]=[...g].filter(n=>REFS[n])});
   // picker
@@ -30,8 +32,8 @@ function buildData(){
   if(ownerTools){ // owner sees the same cards as visitors, plus small actions on each card
     const act=(attr,v,label,cls='')=>`<span class="oa${cls}" role="button" tabindex="0" ${attr}="${esc(v)}">${label}</span>`;
     document.querySelectorAll('#picker button[data-k]').forEach(b=>{const k=b.dataset.k,c=CUST[k],o=document.createElement('span');o.className='ocard';
-      if(BUILTIN.includes(k))o.innerHTML=(hide.includes(k)?`<em class="ohtag">${T('o_hidden')}</em>`:'')+act('data-nhide',k,T(hide.includes(k)?'o_nshow':'o_nhide'));
-      else if(c)o.innerHTML=(c.rv===false&&CANAPPROVE()?act('data-approve','n:'+k,T('o_approve'),' appr'):'')+act('data-nedit',k,T('o_edit'));
+      if(BUILTIN.includes(k))o.innerHTML=(hide.includes(k)?`<em class="ohtag">${T('o_hidden')}</em>`:'')+act('data-bedit',k,T('o_edit'))+act('data-nvis',k,T(hide.includes(k)?'o_nshow':'o_nhide'));
+      else if(c){o.innerHTML=(c.hidden?`<em class="ohtag">${T('o_hidden')}</em>`:'')+(c.rv===false&&CANAPPROVE()?act('data-approve','n:'+k,T('o_approve'),' appr'):'')+act('data-nedit',k,T('o_edit'))+act('data-nvis',k,T(c.hidden?'o_nshow':'o_nhide'))+act('data-ndel',k,T('o_del'),' del');b.classList.toggle('ohid',!!c.hidden)}
       b.appendChild(o)});
   }
   Object.keys(F).forEach(k=>{if(!BUILTIN.includes(k)&&!CUST[k])delete F[k]});
