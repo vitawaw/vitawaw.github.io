@@ -339,6 +339,29 @@ footer .ownlink:hover{color:var(--royal);border-color:var(--royal)}
 footer .ownlink svg{width:13px;height:13px}
 body.owner footer .ownlink{display:none}
 body.has-bar footer{padding-bottom:84px}
+/* ===== devices: touch, tablet, desktop ===== */
+.nsearch input,.dlg textarea,.dlg input[type=text],.dlg input[type=email],.dlg input[type=password],.dlg input[type=tel],.dlg input[type=url],.dlg select{font-size:16px}
+.inone{padding:18px 12px;text-align:center;color:var(--mute);font-size:14px;border:1px dashed var(--line);border-radius:12px}
+@media (pointer:coarse){
+ .btn{min-height:40px;padding-block:7px}
+ .obar .btn{min-height:36px}
+ .pill button{min-height:34px;min-width:42px}
+ .filters button{min-height:38px;padding:6px 14px}
+ .seg button{min-height:34px;padding-inline:13px}
+ .x{min-width:40px;min-height:40px}
+ .ownlink{min-height:40px}
+ a.ref{padding:2px 8px;font-size:12px;margin-inline-start:4px;line-height:1.5}
+ body.owner:not(.preview) .edp{width:34px;height:34px}
+ .nchip button{min-height:30px}
+ summary{min-height:40px;display:flex;align-items:center}
+}
+@media (min-width:1024px){
+ #interactions.page.narrow,#sources.page.narrow{max-width:1080px}
+ .ilist{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+ .ilist>.bulk,.ilist>.inone{grid-column:1/-1}
+ ol.refs{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+}
+@media (min-width:1440px){main,.brand,.tabs,.obar,footer{max-width:1240px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}</style>
@@ -536,8 +559,9 @@ body.has-bar footer{padding-bottom:84px}
   <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 4v13M7 17l-3-3M7 17l3-3M17 20V7M17 7l-3 3M17 7l3 3"/></svg></span><h2 data-t="ti_t"></h2></div><p data-t="hi_l"></p></section>
   <section>
     <p class="lead" style="margin-top:0" data-t="ti_l"></p>
+    <div class="nsearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="isearch" autocomplete="off" data-ph="ph_is" placeholder="—" aria-labelledby="t-interactions"></div>
     <div class="filters" id="filters"></div>
-    <div class="ilist" id="ilist"></div>
+    <div class="ilist" id="ilist" aria-live="polite"></div>
   </section>
 </div>
 
@@ -597,7 +621,7 @@ const DEFAULT_CFG={
    {st:'dev',ic:'bell',t:{ar:'تذكير بمواعيد الجرعات',en:'Dose reminders'},d:{ar:'تنبيه في يوم ووقت الجرعة، خاصة للجرعات الأسبوعية التي يسهل نسيانها.',en:'A reminder on the day and time of each dose, especially weekly doses that are easy to forget.'}},
    {st:'dev',ic:'clock',t:{ar:'جدول يومي ذكي للمكملات',en:'Smart daily schedule'},d:{ar:'ترتيب أوقات أخذ المكملات معاً بحيث تُحترم فواصل التداخلات تلقائياً.',en:'Arranges the times for all your supplements so interaction gaps are respected automatically.'}},
    {st:'plan',ic:'chart',t:{ar:'سجل التحاليل ومتابعة التحسن',en:'Lab history and progress'},d:{ar:'احفظ نتائج تحاليلك وشاهد تحسّن المستوى على رسم بياني بين تحليل وآخر.',en:'Save your test results and see your level improve on a chart from one test to the next.'}},
-   {st:'plan',ic:'plus',t:{ar:'فيتامينات ومعادن إضافية',en:'More vitamins and minerals'},d:{ar:'إضافة فيتامينات B1 وB6 وA وE وK واليود، بالمنهج نفسه المبني على المصادر.',en:'Adding vitamins B1, B6, A, E, K and iodine, with the same source-based approach.'}},
+   {st:'dev',ic:'plus',t:{ar:'توسيع المحتوى باستمرار',en:'Content keeps growing'},d:{ar:'نضيف فيتامينات ومعادن وتداخلات دوائية جديدة باستمرار، ويراجع صيدلي كل إضافة قبل نشرها.',en:'We keep adding vitamins, minerals and drug interactions, and a pharmacist reviews every addition before it is published.'}},
    {st:'plan',ic:'pill',t:{ar:'فحص تداخلات أدويتك',en:'Check your own medicines'},d:{ar:'أدخل أدويتك الحالية فتظهر التداخلات التي تخصك فقط مع المكملات.',en:'Enter the medicines you take and see only the interactions that apply to you.'}},
    {st:'plan',ic:'share',t:{ar:'تقرير PDF للطبيب',en:'PDF report for your doctor'},d:{ar:'ملف مفصّل بالنتيجة والخطة والمصادر لطباعته أو إرساله للطبيب.',en:'A detailed file with the result, plan and sources to print or send to your doctor.'}},
    {st:'idea',ic:'baby',t:{ar:'قسم خاص للحمل والأطفال',en:'Pregnancy and children section'},d:{ar:'جرعات مفصّلة حسب أسبوع الحمل وعمر الطفل ووزنه بإشراف مختصين.',en:'Detailed doses by pregnancy week and by child age and weight, reviewed by specialists.'}},
@@ -630,7 +654,7 @@ priv:['بياناتك تبقى على جهازك فقط، ولا تُحفظ ول
 card:['بطاقة المريض','Patient card'],pc_k:['التعليمات','Instructions'],pc_plan:['الخطة','Plan'],pc_wa:['مشاركة عبر واتساب','Share on WhatsApp'],pc_cp:['نسخ','Copy'],pc_x:['إغلاق','Close'],
 pc_f:['معلومات إرشادية من حاسبة VITAWAW المبنية على مصادر طبية. أكّد الجرعة مع طبيبك أو الصيدلي.','Guidance from the VITAWAW calculator, based on medical sources. Confirm the dose with your doctor or pharmacist.'],
 pc_shot:['يمكنك أيضاً تصوير الشاشة لحفظ البطاقة.','You can also take a screenshot to keep the card.'],
-ph_ns:['ابحث: فيتامين، معدن، أو اسم مثل B12','Search: vitamin, mineral, or e.g. B12'],ph_age:['مثال: 35','e.g. 35'],ph_wt:['مثال: 70','e.g. 70'],ph_ht:['مثال: 165','e.g. 165'],ph_d:['مثال: 14','e.g. 14'],ph_b12:['مثال: 160','e.g. 160'],ph_ca:['مثال: 500','e.g. 500'],ph_mg:['مثال: 1.5','e.g. 1.5'],
+ph_is:['ابحث باسم الدواء أو المكمّل، مثل Warfarin','Search by medicine or supplement, e.g. warfarin'],i_none:['لا توجد تداخلات مطابقة لبحثك. هذا لا يعني عدم وجود تداخل، اسأل الصيدلي.','No interactions match your search. That does not rule one out; ask your pharmacist.'],ph_ns:['ابحث: فيتامين، معدن، أو اسم مثل B12','Search: vitamin, mineral, or e.g. B12'],ph_age:['مثال: 35','e.g. 35'],ph_wt:['مثال: 70','e.g. 70'],ph_ht:['مثال: 165','e.g. 165'],ph_d:['مثال: 14','e.g. 14'],ph_b12:['مثال: 160','e.g. 160'],ph_ca:['مثال: 500','e.g. 500'],ph_mg:['مثال: 1.5','e.g. 1.5'],
 th_dark:['الوضع الداكن','Dark mode'],th_light:['الوضع الفاتح','Light mode'],
 cpp:['نسخ الرقم','Copy number'],call:['اتصل بنا','Call us'],
 o_owner:['المالك','Owner'],o_editor:['محرّر','Editor'],o_local:['تجربة محلية','Local test'],o_clean:['لا تغييرات غير محفوظة','No unsaved changes'],o_dirty:['تغييرات غير محفوظة','Unsaved changes'],o_saved:['المسودة محفوظة، لم تُنشر بعد','Draft saved, not published yet'],
@@ -1215,10 +1239,14 @@ const BUILTIN=['d','b12','fol','fe','ca','mg','c','zn'];
 let KEYS=['all',...BUILTIN],INTER=[],REFGROUP={},CUST={};
 const tx2=o=>o?(LANG==='ar'?o.ar:(o.en||o.ar)):'';
 const kname=k=>k==='all'?T('all'):CUST[k]?tx2(CUST[k].n):T('n_'+k);
+const DRUG_AR={"وارفارين": "warfarin", "ليفوثيروكسين": "levothyroxine", "ثيروكسين": "levothyroxine", "ميتفورمين": "metformin", "ميثوتريكسات": "methotrexate", "اورليستات": "orlistat", "بنسيلامين": "penicillamine", "سيمفاستاتين": "simvastatin", "ثيوفيلين": "theophylline", "ليفودوبا": "levodopa", "ليثيوم": "lithium", "دولوتغرافير": "dolutegravir", "دولوتجرافير": "dolutegravir", "سيسبلاتين": "cisplatin", "فلورويوراسيل": "fluorouracil", "ايزونيازيد": "isoniazid", "سيكلوسيرين": "cycloserine", "فوروسيمايد": "furosemide", "فيوروسمايد": "furosemide", "لازكس": "furosemide", "كوليسترامين": "cholestyramine", "اليندرونات": "alendronate", "سيبروفلوكساسين": "ciprofloxacin", "موكسيفلوكساسين": "moxifloxacin", "اوميبرازول": "omeprazole", "لانسوبرازول": "lansoprazole", "سبيرونولاكتون": "spironolactone", "اميلورايد": "amiloride", "لوسارتان": "losartan", "بينازيبريل": "benazepril", "ليسينوبريل": "lisinopril", "فوسينوبريل": "fosinopril", "كاربامازيبين": "carbamazepine", "فينيتوين": "phenytoin", "فينوباربيتال": "phenobarbital", "بريميدون": "primidone", "فالبروات": "valproate", "ديباكين": "valproate", "ميثيمازول": "methimazole", "سلفاسالازين": "sulfasalazine", "بيرازيناميد": "pyrazinamide", "اسيتريتين": "acitretin", "بيكساروتين": "bexarotene", "بيوميتانيد": "bumetanide", "ميتولازون": "metolazone", "كلوروثيازيد": "chlorothiazide", "تتراسايكلين": "tetracycline", "تتراسيكلين": "tetracycline", "سيفالوسبورين": "cephalosporin", "ستيرويد": "glucocorticoid", "كورتيزون": "glucocorticoid", "بريدنيزولون": "glucocorticoid", "اسبرين": "antiplatelet", "كلوبيدوغريل": "antiplatelet", "تروبونين": "troponin", "نياسين": "niacin", "كوليستيبول": "colestipol"};
+const iTerms=q=>{if(!q)return[];const t=[q];if(q.length>=3)for(const[a,e]of Object.entries(DRUG_AR))if(normAr(a).includes(q))t.push(e);return t};
 function renderInter(){
   $('filters').innerHTML=KEYS.filter(k=>k==='all'||INTER.some(x=>x[0]===k)).map(k=>`<button data-f="${k}" aria-pressed="${k===IF}">${kname(k)}</button>`).join('');
   if(IF!=='all'&&!INTER.some(x=>x[0]===IF))IF='all';
-  $('ilist').innerHTML=bulkBar('i',INTER.filter(x=>!x[7]&&(IF==='all'||x[0]===IF)).length)+INTER.filter(x=>IF==='all'||x[0]===IF).sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]).map(x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div><div class="oedit">${x[7]?'':`<span class="pend">${T('o_pending')}</span>${CANAPPROVE()?`<button class="btn pri" type="button" data-approve="i:${x[5]}">${T('o_approve')}</button>`:''}`}<button class="btn" type="button" data-iedit="${x[5]}">${PEN}${T('o_edit')}</button></div></div>`).join('')+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
+  const iq=iTerms(normAr($('isearch')&&$('isearch').value)),im=x=>{if(!(IF==='all'||x[0]===IF))return false;if(!iq.length)return true;const h=normAr([x[1][0],x[1][1],x[2][0],x[2][1],x[3][0],x[3][1]].join(' '));return iq.some(q=>h.includes(q))};
+  const ish=INTER.filter(im);
+  $('ilist').innerHTML=(ish.length?'':`<p class="inone">${T('i_none')}</p>`)+bulkBar('i',ish.filter(x=>!x[7]).length)+ish.sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]).map(x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div><div class="oedit">${x[7]?'':`<span class="pend">${T('o_pending')}</span>${CANAPPROVE()?`<button class="btn pri" type="button" data-approve="i:${x[5]}">${T('o_approve')}</button>`:''}`}<button class="btn" type="button" data-iedit="${x[5]}">${PEN}${T('o_edit')}</button></div></div>`).join('')+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
   $('icount').textContent=INTER.length;
 }
 const IC={
@@ -1403,6 +1431,7 @@ function apply(){
   F[K]();
 }
 $('nsearch').addEventListener('input',filterNuts);
+$('isearch').addEventListener('input',renderInter);
 $('picker').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;K=b.dataset.k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()});
 ['age','sex','wt','ht','dlab','dunit','mal','med','ren','b12v','b12u','b12c','neuro','folg','feg','cadiet','mgv','mgu','mgsx','mgren','czg','smk']
   .forEach(i=>{$(i).addEventListener('input',()=>{if(i==='age')syncSex();F[K]()});$(i).addEventListener('change',()=>{if(i==='age')syncSex();F[K]()})});
@@ -1587,7 +1616,7 @@ function approve(key){
 }
 async function approveAll(t){
   if(!CANAPPROVE())return;
-  const list=t==='r'?(CFG.refs||[]):t==='i'?(CFG.inter||[]).filter((x,i)=>IF==='all'||x.k===IF):NCUST();
+  const list=t==='r'?(CFG.refs||[]):t==='i'?(CFG.inter||[]).filter(x=>{const iq=iTerms(normAr($('isearch').value));if(!(IF==='all'||x.k===IF))return false;if(!iq.length)return true;const h=normAr([x.a,x.b,x.d].map(o=>o?o.ar+' '+o.en:'').join(' '));return iq.some(q=>h.includes(q))}):NCUST();
   const n=list.filter(x=>x.rv===false).length;if(!n)return;
   const q=await dialog({title:T('o_approveall'),info:T('o_approveall_i').replace('{n}',n),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_approveall'),action:'ok',pri:1}]});
   if(q.action!=='ok')return;list.forEach(x=>{if(x.rv===false)x.rv=true});changed();toast(T('o_approved'));
