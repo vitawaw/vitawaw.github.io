@@ -52,7 +52,9 @@ Browser ──► Cloudflare (static files: index.html, css/, js/, fonts/)      
 | `js/lists.js` | Interactions (with search), sources, roadmap, contact. |
 | `js/ui.js` | Tabs, modes, patient card, theme, language switch, event wiring. |
 | `js/published.js` | Loads published content for visitors. |
-| `js/owner.js` | Owner / editor interface (login, edit, review, publish). |
+| `js/owner.js` | Owner / pharmacist interface (login, edit, review, save, publish). |
+| `js/nav.js` | Menus: ☰ side menu (main items + chip sub-items), ⋯ More, floating window, info pages. |
+| `js/team.js` | Pharmacist accounts (owner only): invite, permissions, suspend, remove. |
 | `js/boot.js` | Start-up. |
 | `src/worker.js` | Cloudflare Worker: `/api/content` with edge caching, daily keep-alive. |
 | `_headers` | Security headers (CSP etc.) and cache rules for static files. |
@@ -70,6 +72,9 @@ Browser ──► Cloudflare (static files: index.html, css/, js/, fonts/)      
 | Add a text | Add `key:['عربي','English']` to `I18N`, then `data-t="key"` in HTML or `T('key')` in JS. |
 | Change a dose rule | `js/calculators.js`, function of that nutrient. Cite the source with `R([n])`. |
 | Add a vitamin / interaction / source | No code needed: owner interface → add → approve → publish. |
+| Add an info page (about, privacy…) | No code needed: ☰ → الإدارة → صفحات المعلومات → ＋ صفحة جديدة. |
+| Add a menu entry | `js/nav.js`: one object in `navGroups()` (side menu) or one row in `renderMore()` (⋯). |
+| Add a pharmacist | ☰ → الصيادلة → ＋ دعوة صيدلي; send the link. |
 | Change colours / layout | `css/app.css`. Owner can also change page colours from the site. |
 | Change the database | New file `supabase/migrations/YYYYMMDDHHMMSS_name.sql`, apply it, commit it. |
 
@@ -79,6 +84,8 @@ Browser ──► Cloudflare (static files: index.html, css/, js/, fonts/)      
 python3 -m http.server 8000          # then open http://localhost:8000
                                      # (/api/content is not available locally; the page falls back to Supabase)
 python3 tests/owner_flow.py          # owner + visitor + editor flows, needs Playwright (pip install playwright)
+python3 tests/menu_flow.py           # menus, floating windows, info pages, pharmacist accounts
+python3 tests/i18n_audit.py en       # every page/dialog/menu fully in English (and `ar` for Arabic)
 node tests/worker_test.mjs           # edge worker: caching, stale copy, 304, routing
 ```
 

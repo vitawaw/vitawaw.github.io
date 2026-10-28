@@ -26,17 +26,21 @@ def setup(pg,pub='[]'):
     pg.route('http://app.test/**',serve)
     pg.route('http://app.test/api/content',lambda r:r.fulfill(status=200,body=pub,content_type='application/json'))
 def ok(pg): pg.click('#dlg-a .pri'); pg.wait_for_timeout(300)
+def more(pg,label):
+    # opens the ⋯ menu and taps the chip with this text
+    pg.click('#more-btn');pg.wait_for_timeout(150);pg.locator('#more-b button',has_text=label).first.click();pg.wait_for_timeout(300)
+def login(pg): more(pg,'تسجيل الدخول');pg.wait_for_timeout(600)
 with sync_playwright() as p:
     b=p.chromium.launch();ctx=b.new_context(viewport={'width':390,'height':844});pg=ctx.new_page()
     errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:(m.type=='error' or 'Content Security Policy' in m.text) and errs.append(m.text));setup(pg)
-    pg.goto('http://app.test/');pg.wait_for_timeout(500);pg.click('#o-enter');pg.wait_for_timeout(800)
+    pg.goto('http://app.test/');pg.wait_for_timeout(500);login(pg)
     print('owner on:',pg.evaluate("document.body.classList.contains('owner')"),'| bar:',pg.inner_text('#ostate'))
     print('picker has vk (pending, owner sees):',pg.locator('#picker [data-k="vk"]').count(),pg.inner_text('#picker [data-k="vk"]').replace('\n',' / '))
     pg.click('#t-interactions');pg.wait_for_timeout(200)
     print('first card (sorted major first):',pg.locator('#ilist .icard').first.inner_text().replace('\n',' | ')[:120])
     pg.screenshot(path='tests/out_owner.png')
     # preview hides pending
-    pg.click('#o-preview');pg.wait_for_timeout(300);print('PREVIEW icount:',pg.inner_text('#icount'),'vk in picker:',pg.locator('#picker [data-k="vk"]').count());pg.click('#o-pvexit');pg.wait_for_timeout(300)
+    more(pg,'معاينة');print('PREVIEW icount:',pg.inner_text('#icount'),'vk in picker:',pg.locator('#picker [data-k="vk"]').count());pg.click('#o-pvexit');pg.wait_for_timeout(300)
     # edit an interaction severity
     pg.click('[data-iedit="0"]');pg.wait_for_timeout(200);pg.select_option('#dlgf1','major');ok(pg)
     # add interaction
@@ -63,5 +67,8 @@ with sync_playwright() as p:
     v.screenshot(path='tests/out_visitor.png')
     print('visitor errors',verr)
     # editor: edits reset review, cannot publish
-    e=b.new_context(viewport={'width':390,'height':844}).new_page();e.add_init_script("window.__ROLE='editor'");setup(e);e.goto('http://app.test/');e.wait_for_timeout(500);e.click('#o-enter');e.wait_for_timeout(700)
+    e=b.new_context(viewport={'width':390,'height':844}).new_page();e.add_init_script("window.__ROLE='editor'");setup(e);e.add_init_script("window.__PERMS={inter:true}");e.goto('http://app.test/');e.wait_for_timeout(500);login(e)
     print('EDITOR publish btn visible:',e.is_visible('#o-publish'),'| approve btns:',e.locator('[data-approve]').count())
+    print('EDITOR classes:',e.evaluate("['cant-nut','cant-inter','cant-refs','cant-text','not-owner'].filter(c=>document.body.classList.contains(c)).join(',')"))
+    e.click('#t-interactions');e.wait_for_timeout(200);e.click('[data-iedit="0"]');e.wait_for_timeout(200);e.select_option('#dlgf1','minor');ok(e)
+    e.click('#o-save');e.wait_for_timeout(600);print('EDITOR saved parts:',e.evaluate('window.__SAVED'),'| draft written:',e.evaluate("__calls.some(c=>c[0]==='upsert')"),'| toast:',e.inner_text('#toast'))
