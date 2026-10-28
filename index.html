@@ -318,6 +318,11 @@ body.owner:not(.preview) #iadd,body.owner:not(.preview) #radd{min-height:64px;wi
 .picker .pend{justify-self:start;margin-top:2px}
 body.owner:not(.preview) .pending{outline:2px dashed var(--warn);outline-offset:2px}
 .nchip .appr{background:var(--warn-bg);color:var(--warn)}
+.nsearch{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--bg);margin-bottom:10px}
+.nsearch svg{width:18px;height:18px;color:var(--mute);flex:none}
+.nsearch input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:500 15px var(--f-body);padding:10px 0;outline:none}
+.picker button.nf{display:none}
+.oedit.bulk{align-items:center;justify-content:space-between;border:1px dashed var(--warn);border-radius:12px;padding:8px 10px;margin:0 0 8px}
 .nadm:empty{display:none}
 .nadm{display:none;border:1px dashed var(--royal);border-radius:12px;padding:10px;margin-bottom:10px;gap:8px}
 body.owner:not(.preview) .nadm{display:grid}
@@ -379,6 +384,7 @@ body.has-bar footer{padding-bottom:84px}
    <section>
     <h2><span class="n">1</span><span data-t="s1"></span></h2>
     <div class="nadm" id="nadm"></div>
+    <div class="nsearch" id="nsw" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="nsearch" autocomplete="off" data-ph="ph_ns"></div>
     <div class="picker" id="picker">
       <button data-k="d" aria-pressed="true"><span data-t="n_d"></span><small data-t="h_d"></small></button>
       <button data-k="b12" aria-pressed="false"><span data-t="n_b12"></span><small data-t="h_b12"></small></button>
@@ -623,14 +629,14 @@ priv:['بياناتك تبقى على جهازك فقط، ولا تُحفظ ول
 card:['بطاقة المريض','Patient card'],pc_k:['التعليمات','Instructions'],pc_plan:['الخطة','Plan'],pc_wa:['مشاركة عبر واتساب','Share on WhatsApp'],pc_cp:['نسخ','Copy'],pc_x:['إغلاق','Close'],
 pc_f:['معلومات إرشادية من حاسبة VITAWAW المبنية على مصادر طبية. أكّد الجرعة مع طبيبك أو الصيدلي.','Guidance from the VITAWAW calculator, based on medical sources. Confirm the dose with your doctor or pharmacist.'],
 pc_shot:['يمكنك أيضاً تصوير الشاشة لحفظ البطاقة.','You can also take a screenshot to keep the card.'],
-ph_age:['مثال: 35','e.g. 35'],ph_wt:['مثال: 70','e.g. 70'],ph_ht:['مثال: 165','e.g. 165'],ph_d:['مثال: 14','e.g. 14'],ph_b12:['مثال: 160','e.g. 160'],ph_ca:['مثال: 500','e.g. 500'],ph_mg:['مثال: 1.5','e.g. 1.5'],
+ph_ns:['ابحث: فيتامين، معدن، أو اسم مثل B12','Search: vitamin, mineral, or e.g. B12'],ph_age:['مثال: 35','e.g. 35'],ph_wt:['مثال: 70','e.g. 70'],ph_ht:['مثال: 165','e.g. 165'],ph_d:['مثال: 14','e.g. 14'],ph_b12:['مثال: 160','e.g. 160'],ph_ca:['مثال: 500','e.g. 500'],ph_mg:['مثال: 1.5','e.g. 1.5'],
 th_dark:['الوضع الداكن','Dark mode'],th_light:['الوضع الفاتح','Light mode'],
 cpp:['نسخ الرقم','Copy number'],call:['اتصل بنا','Call us'],
 o_owner:['المالك','Owner'],o_editor:['محرّر','Editor'],o_local:['تجربة محلية','Local test'],o_clean:['لا تغييرات غير محفوظة','No unsaved changes'],o_dirty:['تغييرات غير محفوظة','Unsaved changes'],o_saved:['المسودة محفوظة، لم تُنشر بعد','Draft saved, not published yet'],
 o_preview:['معاينة','Preview'],o_pvexit:['إنهاء المعاينة','End preview'],o_discard:['إلغاء التغييرات','Discard changes'],o_save:['حفظ المسودة','Save draft'],o_publish:['نشر','Publish'],o_logout:['خروج','Log out'],
 o_login:['دخول المالك','Owner login'],o_email:['البريد الإلكتروني','Email'],o_pass:['كلمة المرور','Password'],o_in:['دخول','Log in'],o_cancel:['إلغاء','Cancel'],o_ok:['حفظ','Save'],o_del:['حذف','Delete'],o_edit:['تعديل','Edit'],
 o_nosb:['لم يُربط التطبيق بـ Supabase بعد. يمكنك تجربة وضع المالك على هذا الجهاز فقط، والتعديلات لن يراها غيرك.','The app is not connected to Supabase yet. You can try owner mode on this device only; nobody else will see the changes.'],
-o_trylocal:['تجربة محلية','Try locally'],o_nman:['إدارة الفيتامينات (المالك)','Manage nutrients (owner)'],o_nhide:['إخفاء','Hide'],o_nshow:['إظهار','Show'],o_nadd:['+ إضافة فيتامين أو معدن','+ Add a vitamin or mineral'],o_nedit:['تعديل فيتامين','Edit nutrient'],o_nhint:['الفيتامينات الأساسية تُخفى ولا تُحذف حتى يمكن استعادتها. المُضافة تُعدّل وتُحذف بالكامل.','Built-in nutrients are hidden, not deleted, so they can be restored. Added ones can be edited or deleted.'],o_nlast:['يجب أن يبقى فيتامين واحد على الأقل ظاهراً.','At least one nutrient must stay visible.'],o_ninfo:['يحسب التطبيق الاحتياج اليومي حسب العمر والجنس من جدول الجرعات. كل جرعة يجب أن تُربط بمصدر.','The app calculates the daily need from the dose table by age and sex. Every dose must be linked to a source.'],o_nname:['اسم الفيتامين أو المعدن','Nutrient name'],o_nh:['وصف قصير (يظهر تحت الاسم)','Short description (shown under the name)'],o_nunit:['وحدة الجرعة','Dose unit'],o_u_mg:['ملغ (mg)','mg'],o_u_mcg:['ميكروغرام (mcg)','mcg'],o_u_iu:['وحدة دولية (IU)','IU'],o_nrows:['جدول الجرعات: سطر لكل فئة (العمر | الجنس | الاحتياج | الحد الأعلى)','Dose table: one line per group (age | sex | need | upper limit)'],o_nrows_ph:['19-50 | الكل | 400 | 1000\n51+ | الكل | 420 | 1000\n14-50 | حامل | 600 | 1000','19-50 | all | 400 | 1000\n51+ | all | 420 | 1000'],o_nplan:['التوجيه العلاجي (اختياري)','Treatment guidance (optional)'],o_nnote:['تحذيرات وملاحظات (اختياري)','Warnings and notes (optional)'],o_nneedname:['اكتب اسم الفيتامين.','Enter the nutrient name.'],o_nbadrow:['تحقق من صيغة جدول الجرعات في السطر','Check the dose table format on line'],o_ndelinfo:['سيُحذف الفيتامين وكل التداخلات المرتبطة به.','The nutrient and all its interactions will be deleted.'],o_sx_all:['الكل','All'],o_iadd:['إضافة تداخل','Add interaction'],o_iedit:['تعديل التداخل','Edit interaction'],o_inut:['الفيتامين أو المعدن','Nutrient'],o_ia:['اسم المكمل كما يظهر','Supplement name as shown'],o_ia_ph:['يُترك فارغاً لاستخدام اسم الفيتامين','Leave empty to use the nutrient name'],o_ib:['يتداخل مع (دواء أو مادة)','Interacts with (medicine or substance)'],o_id:['ماذا يحدث وما التوصية','What happens and what to do'],o_isrc:['المصادر (اختر مصدراً واحداً على الأقل)','Sources (choose at least one)'],o_ineed:['اكتب الدواء ووصف التداخل.','Enter the medicine and the description.'],o_srcneed:['اختر مصدراً واحداً على الأقل، فكل معلومة مرتبطة بمصدر.','Choose at least one source; every fact must be linked to a source.'],o_radd:['إضافة مصدر','Add source'],o_redit:['تعديل المصدر','Edit source'],o_rinfo:['رقم المصدر يُعطى تلقائياً ولا يتغير حتى تبقى الروابط صحيحة.','The source number is assigned automatically and never changes, so links stay correct.'],o_rorg:['الجهة (مثل Medscape أو NIH)','Publisher (e.g. Medscape, NIH)'],o_rtitle:['عنوان المرجع','Reference title'],o_rurl:['الرابط (يبدأ بـ https://)','Link (starts with https://)'],o_ruse:['ماذا يُستخدم منه (اختياري)','What it is used for (optional)'],o_rneed:['اكتب الجهة والعنوان.','Enter the publisher and title.'],o_rbadurl:['الرابط يجب أن يبدأ بـ https://','The link must start with https://'],o_rused:['هذا المصدر مستخدم في:','This source is used in:'],o_radded:['أُضيف المصدر رقم','Added source number'],sev_major:['خطير','Major'],sev_moderate:['متوسط','Moderate'],sev_minor:['بسيط','Minor'],o_isev:['درجة الخطورة','Severity'],o_pending:['بانتظار مراجعتك','Awaiting your review'],o_approve:['اعتماد','Approve'],o_approved:['اعتُمد. احفظ ثم انشر ليظهر للزوار.','Approved. Save, then publish to show it to visitors.'],o_pendn:['بانتظار المراجعة','awaiting review'],o_saveerr:['لم يُحفظ. تأكد أن كل تداخل وفيتامين مرتبط بمصدر واحد على الأقل.','Not saved. Make sure every interaction and nutrient has at least one source.'],o_chpass:['كلمة المرور','Password'],o_chpt:['تغيير كلمة المرور','Change password'],o_newpass:['كلمة المرور الجديدة','New password'],o_chdone:['تم تغيير كلمة المرور.','Password changed.'],o_first:['أول دخول؟ أنشئ كلمة المرور','First time? Set a password'],o_firstt:['إنشاء كلمة مرور المالك','Set owner password'],o_firsti:['يعمل فقط للبريد المسجّل كمالك أو محرر. اختر كلمة مرور لا تقل عن 8 أحرف.','Works only for an email registered as owner or editor. Choose a password of at least 8 characters.'],o_pass2:['تأكيد كلمة المرور','Confirm password'],o_short:['كلمة المرور يجب ألا تقل عن 8 أحرف.','Password must be at least 8 characters.'],o_mismatch:['كلمتا المرور غير متطابقتين.','Passwords do not match.'],o_notinvited:['لم يتم إنشاء الحساب. تأكد أن البريد مسجّل لديك كمالك أو محرر، أو أن الحساب غير موجود مسبقاً.','Account not created. Make sure the email is registered as owner or editor and does not already have an account.'],o_badlogin:['البريد أو كلمة المرور غير صحيحة.','Wrong email or password.'],o_norole:['هذا الحساب ليس له صلاحية تعديل.','This account has no editing permission.'],o_neterr:['تعذّر الاتصال. تحقق من الإنترنت وحاول مرة أخرى.','Could not connect. Check the internet and try again.'],
+o_trylocal:['تجربة محلية','Try locally'],o_nman:['إدارة الفيتامينات (المالك)','Manage nutrients (owner)'],o_nhide:['إخفاء','Hide'],o_nshow:['إظهار','Show'],o_nadd:['+ إضافة فيتامين أو معدن','+ Add a vitamin or mineral'],o_nedit:['تعديل فيتامين','Edit nutrient'],o_nhint:['الفيتامينات الأساسية تُخفى ولا تُحذف حتى يمكن استعادتها. المُضافة تُعدّل وتُحذف بالكامل.','Built-in nutrients are hidden, not deleted, so they can be restored. Added ones can be edited or deleted.'],o_nlast:['يجب أن يبقى فيتامين واحد على الأقل ظاهراً.','At least one nutrient must stay visible.'],o_ninfo:['يحسب التطبيق الاحتياج اليومي حسب العمر والجنس من جدول الجرعات. كل جرعة يجب أن تُربط بمصدر.','The app calculates the daily need from the dose table by age and sex. Every dose must be linked to a source.'],o_nname:['اسم الفيتامين أو المعدن','Nutrient name'],o_nh:['وصف قصير (يظهر تحت الاسم)','Short description (shown under the name)'],o_nunit:['وحدة الجرعة','Dose unit'],o_u_mg:['ملغ (mg)','mg'],o_u_mcg:['ميكروغرام (mcg)','mcg'],o_u_iu:['وحدة دولية (IU)','IU'],o_u_g:['غرام (g)','g'],o_nrows:['جدول الجرعات: سطر لكل فئة (العمر | الجنس | الاحتياج | الحد الأعلى)','Dose table: one line per group (age | sex | need | upper limit)'],o_nrows_ph:['19-50 | الكل | 400 | 1000\n51+ | الكل | 420 | 1000\n14-50 | حامل | 600 | 1000','19-50 | all | 400 | 1000\n51+ | all | 420 | 1000'],o_nplan:['التوجيه العلاجي (اختياري)','Treatment guidance (optional)'],o_nnote:['تحذيرات وملاحظات (اختياري)','Warnings and notes (optional)'],o_nneedname:['اكتب اسم الفيتامين.','Enter the nutrient name.'],o_nbadrow:['تحقق من صيغة جدول الجرعات في السطر','Check the dose table format on line'],o_ndelinfo:['سيُحذف الفيتامين وكل التداخلات المرتبطة به.','The nutrient and all its interactions will be deleted.'],o_sx_all:['الكل','All'],o_iadd:['إضافة تداخل','Add interaction'],o_iedit:['تعديل التداخل','Edit interaction'],o_inut:['الفيتامين أو المعدن','Nutrient'],o_ia:['اسم المكمل كما يظهر','Supplement name as shown'],o_ia_ph:['يُترك فارغاً لاستخدام اسم الفيتامين','Leave empty to use the nutrient name'],o_ib:['يتداخل مع (دواء أو مادة)','Interacts with (medicine or substance)'],o_id:['ماذا يحدث وما التوصية','What happens and what to do'],o_isrc:['المصادر (اختر مصدراً واحداً على الأقل)','Sources (choose at least one)'],o_ineed:['اكتب الدواء ووصف التداخل.','Enter the medicine and the description.'],o_srcneed:['اختر مصدراً واحداً على الأقل، فكل معلومة مرتبطة بمصدر.','Choose at least one source; every fact must be linked to a source.'],o_radd:['إضافة مصدر','Add source'],o_redit:['تعديل المصدر','Edit source'],o_rinfo:['رقم المصدر يُعطى تلقائياً ولا يتغير حتى تبقى الروابط صحيحة.','The source number is assigned automatically and never changes, so links stay correct.'],o_rorg:['الجهة (مثل Medscape أو NIH)','Publisher (e.g. Medscape, NIH)'],o_rtitle:['عنوان المرجع','Reference title'],o_rurl:['الرابط (يبدأ بـ https://)','Link (starts with https://)'],o_ruse:['ماذا يُستخدم منه (اختياري)','What it is used for (optional)'],o_rneed:['اكتب الجهة والعنوان.','Enter the publisher and title.'],o_rbadurl:['الرابط يجب أن يبدأ بـ https://','The link must start with https://'],o_rused:['هذا المصدر مستخدم في:','This source is used in:'],o_radded:['أُضيف المصدر رقم','Added source number'],sev_major:['خطير','Major'],sev_moderate:['متوسط','Moderate'],sev_minor:['بسيط','Minor'],o_isev:['درجة الخطورة','Severity'],o_pending:['بانتظار مراجعتك','Awaiting your review'],o_approveall:['اعتماد الكل','Approve all'],o_approveall_i:['سيتم اعتماد {n} عنصراً. اعتمد فقط بعد مراجعة كل عنصر ومصدره؛ لن تظهر للزوار إلا بعد النشر.','{n} items will be approved. Approve only after reviewing each item and its source; visitors see them only after you publish.'],o_approve:['اعتماد','Approve'],o_approved:['اعتُمد. احفظ ثم انشر ليظهر للزوار.','Approved. Save, then publish to show it to visitors.'],o_pendn:['بانتظار المراجعة','awaiting review'],o_saveerr:['لم يُحفظ. تأكد أن كل تداخل وفيتامين مرتبط بمصدر واحد على الأقل.','Not saved. Make sure every interaction and nutrient has at least one source.'],o_chpass:['كلمة المرور','Password'],o_chpt:['تغيير كلمة المرور','Change password'],o_newpass:['كلمة المرور الجديدة','New password'],o_chdone:['تم تغيير كلمة المرور.','Password changed.'],o_first:['أول دخول؟ أنشئ كلمة المرور','First time? Set a password'],o_firstt:['إنشاء كلمة مرور المالك','Set owner password'],o_firsti:['يعمل فقط للبريد المسجّل كمالك أو محرر. اختر كلمة مرور لا تقل عن 8 أحرف.','Works only for an email registered as owner or editor. Choose a password of at least 8 characters.'],o_pass2:['تأكيد كلمة المرور','Confirm password'],o_short:['كلمة المرور يجب ألا تقل عن 8 أحرف.','Password must be at least 8 characters.'],o_mismatch:['كلمتا المرور غير متطابقتين.','Passwords do not match.'],o_notinvited:['لم يتم إنشاء الحساب. تأكد أن البريد مسجّل لديك كمالك أو محرر، أو أن الحساب غير موجود مسبقاً.','Account not created. Make sure the email is registered as owner or editor and does not already have an account.'],o_badlogin:['البريد أو كلمة المرور غير صحيحة.','Wrong email or password.'],o_norole:['هذا الحساب ليس له صلاحية تعديل.','This account has no editing permission.'],o_neterr:['تعذّر الاتصال. تحقق من الإنترنت وحاول مرة أخرى.','Could not connect. Check the internet and try again.'],
 o_pubq:['نشر التعديلات للجميع؟','Publish changes to everyone?'],o_pubi:['ستظهر التعديلات لكل المرضى ومقدمي الرعاية فوراً. يمكنك كتابة ملاحظة لسجل النشر.','Changes will appear to all users right away. You can add a note for the publish log.'],o_note:['ملاحظة (اختياري)','Note (optional)'],
 o_pubdone:['تم النشر','Published'],o_savedone:['تم حفظ المسودة','Draft saved'],o_discq:['إلغاء كل التغييرات غير المنشورة؟','Discard all unpublished changes?'],o_discdone:['تم إلغاء التغييرات','Changes discarded'],o_onlyowner:['النشر للمالك فقط. احفظ المسودة ليراجعها المالك.','Only the owner can publish. Save the draft for the owner to review.'],
 o_text:['النص (عربي)','Text (Arabic)'],o_texten:['النص الإنجليزي (اختياري)','English text (optional)'],o_colors:['ألوان البنر','Banner colours'],o_c1:['اللون الأول','First colour'],o_c2:['اللون الثاني','Second colour'],o_reset:['استعادة الافتراضي','Reset to default'],
@@ -1096,6 +1102,7 @@ const DEF_SEV=['moderate','moderate','minor','moderate','moderate','moderate','m
 const defInterList=()=>DEF_INTER.map((x,i)=>({k:x[0],a:{ar:x[1][0],en:x[1][1]},b:{ar:x[2][0],en:x[2][1]},d:{ar:x[3][0],en:x[3][1]},r:x[4].slice(),sev:DEF_SEV[i]||'moderate'}));
 const SHOWALL=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview;
 const SEVORD={major:0,moderate:1,minor:2};
+const bulkBar=(t,n)=>n&&CANAPPROVE()?`<div class="oedit bulk"><span class="pend">${n} ${T('o_pendn')}</span><button class="btn" type="button" data-approveall="${t}">${T('o_approveall')}</button></div>`:'';
 const CANAPPROVE=()=>typeof OWN!=='undefined'&&(OWN.role==='owner'||OWN.local);
 const NHIDE=()=>(CFG.nut&&CFG.nut.hide)||[];
 const NCUST=()=>(CFG.nut&&CFG.nut.custom)||[];
@@ -1117,8 +1124,11 @@ function buildData(){
   if(!KEYS.includes(K)||K==='all')K=KEYS[1]||'d';
   document.querySelectorAll('[data-for]').forEach(el=>{el.hidden=!el.dataset.for.split(' ').includes(K)});
   document.querySelectorAll('#picker button[data-k]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===K));
+  $('nsw').hidden=$('picker').querySelectorAll('button[data-k]:not([hidden])').length<10;filterNuts();
   renderNutAdmin();
 }
+const normAr=x=>String(x||'').toLowerCase().replace(/[أإآا]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[\u064B-\u0652]/g,'').replace(/\s+/g,' ').trim();
+function filterNuts(){const q=normAr($('nsearch')&&$('nsearch').value);document.querySelectorAll('#picker button[data-k]').forEach(b=>b.classList.toggle('nf',!!q&&!normAr(b.textContent).includes(q)))}
 function renderNutAdmin(){
   const el=$('nadm');if(!el)return;
   if(typeof OWN==='undefined'||!OWN.on){el.innerHTML='';return}
@@ -1126,7 +1136,7 @@ function renderNutAdmin(){
   el.innerHTML=`<p class="nadm-h">${T('o_nman')}</p><div class="nadm-l">`+
     BUILTIN.map(k=>`<span class="nchip${hide.includes(k)?' off':''}">${esc(T('n_'+k))}<button type="button" data-nhide="${k}">${T(hide.includes(k)?'o_nshow':'o_nhide')}</button></span>`).join('')+
     NCUST().map(c=>`<span class="nchip cust${c.rv===false?' pending':''}">${esc(tx2(c.n))}${c.rv===false&&CANAPPROVE()?`<button type="button" class="appr" data-approve="n:${c.id}">${T('o_approve')}</button>`:''}<button type="button" data-nedit="${c.id}">${T('o_edit')}</button></span>`).join('')+
-    `</div><button class="btn pri" type="button" id="nadd">${T('o_nadd')}</button><p class="hint">${T('o_nhint')}</p>`;
+    `</div>${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<button class="btn pri" type="button" id="nadd">${T('o_nadd')}</button><p class="hint">${T('o_nhint')}</p>`;
 }
 /* custom nutrient calculator: dose table by age and sex */
 const SEXES=()=>[['all',T('o_sx_all')],['m',T('sx_m')],['f',T('sx_f')],['p',T('sx_p')],['l',T('sx_l')]];
@@ -1207,7 +1217,7 @@ const kname=k=>k==='all'?T('all'):CUST[k]?tx2(CUST[k].n):T('n_'+k);
 function renderInter(){
   $('filters').innerHTML=KEYS.filter(k=>k==='all'||INTER.some(x=>x[0]===k)).map(k=>`<button data-f="${k}" aria-pressed="${k===IF}">${kname(k)}</button>`).join('');
   if(IF!=='all'&&!INTER.some(x=>x[0]===IF))IF='all';
-  $('ilist').innerHTML=INTER.filter(x=>IF==='all'||x[0]===IF).sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]).map(x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div><div class="oedit">${x[7]?'':`<span class="pend">${T('o_pending')}</span>${CANAPPROVE()?`<button class="btn pri" type="button" data-approve="i:${x[5]}">${T('o_approve')}</button>`:''}`}<button class="btn" type="button" data-iedit="${x[5]}">${PEN}${T('o_edit')}</button></div></div>`).join('')+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
+  $('ilist').innerHTML=bulkBar('i',INTER.filter(x=>!x[7]&&(IF==='all'||x[0]===IF)).length)+INTER.filter(x=>IF==='all'||x[0]===IF).sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]).map(x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div><div class="oedit">${x[7]?'':`<span class="pend">${T('o_pending')}</span>${CANAPPROVE()?`<button class="btn pri" type="button" data-approve="i:${x[5]}">${T('o_approve')}</button>`:''}`}<button class="btn" type="button" data-iedit="${x[5]}">${PEN}${T('o_edit')}</button></div></div>`).join('')+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
   $('icount').textContent=INTER.length;
 }
 const IC={
@@ -1243,7 +1253,7 @@ function renderRefs(){
   $('sfilters').innerHTML=KEYS.map(k=>`<button data-sf="${k}" aria-pressed="${k===SF}">${kname(k)}</button>`).join('');
   if(!KEYS.includes(SF))SF='all';
   const show=SF==='all'?null:REFGROUP[SF];
-  $('reflist').innerHTML=Object.entries(REFS).sort((a,b)=>a[0]-b[0]).filter(([n])=>!show||show.includes(+n)).map(([n,x])=>
+  $('reflist').innerHTML=(SHOWALL()?`<li class="oaddli">${bulkBar('r',(CFG.refs||[]).filter(x=>x.rv===false).length)}</li>`:'')+Object.entries(REFS).sort((a,b)=>a[0]-b[0]).filter(([n])=>!show||show.includes(+n)).map(([n,x])=>
     `<li id="ref-${n}"><span class="num">${n}</span><div><div class="org">${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div><div class="oedit">${x[5]===false?`<span class="pend">${T('o_pending')}</span>${CANAPPROVE()?`<button class="btn pri" type="button" data-approve="r:${n}">${T('o_approve')}</button>`:''}`:''}<button class="btn" type="button" data-redit="${n}">${PEN}${T('o_edit')}</button></div></div></li>`).join('')+`<li class="oaddli"><button class="oadd" type="button" id="radd">${PLUS}${T('o_radd')}</button></li>`;
   $('rcount').textContent=Object.keys(REFS).length;
   $('rev2').hidden=!REVIEW.name;if(REVIEW.name)$('rev2').innerHTML=reviewHTML().replace(/^<div class="reviewed">|<\/div>$/g,'');
@@ -1387,6 +1397,7 @@ function apply(){
   document.querySelectorAll('#picker button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===K));
   F[K]();
 }
+$('nsearch').addEventListener('input',filterNuts);
 $('picker').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;K=b.dataset.k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()});
 ['age','sex','wt','ht','dlab','dunit','mal','med','ren','b12v','b12u','b12c','neuro','folg','feg','cadiet','mgv','mgu','mgsx','mgren','czg','smk']
   .forEach(i=>{$(i).addEventListener('input',()=>{if(i==='age')syncSex();F[K]()});$(i).addEventListener('change',()=>{if(i==='age')syncSex();F[K]()})});
@@ -1569,6 +1580,13 @@ function approve(key){
   if(t==='n'){const o=NCUST().find(x=>x.id===id);if(o)o.rv=true}
   changed();toast(T('o_approved'));
 }
+async function approveAll(t){
+  if(!CANAPPROVE())return;
+  const list=t==='r'?(CFG.refs||[]):t==='i'?(CFG.inter||[]).filter((x,i)=>IF==='all'||x.k===IF):NCUST();
+  const n=list.filter(x=>x.rv===false).length;if(!n)return;
+  const q=await dialog({title:T('o_approveall'),info:T('o_approveall_i').replace('{n}',n),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_approveall'),action:'ok',pri:1}]});
+  if(q.action!=='ok')return;list.forEach(x=>{if(x.rv===false)x.rv=true});changed();toast(T('o_approved'));
+}
 const pendingCount=()=>(CFG.refs||[]).filter(x=>x.rv===false).length+(CFG.inter||[]).filter(x=>x.rv===false).length+NCUST().filter(x=>x.rv===false).length;
 function toggleBuiltin(k){
   CFG.nut=CFG.nut||{hide:[],custom:[]};const h=CFG.nut.hide;const j=h.indexOf(k);
@@ -1589,8 +1607,8 @@ function parseRows(txt){
   }
   return rows.length?{rows}:{err:1};
 }
-const UNITS=()=>[['mg',T('o_u_mg')],['mcg',T('o_u_mcg')],['iu',T('o_u_iu')]];
-const UNITTXT={mg:{ar:'ملغ',en:'mg'},mcg:{ar:'ميكروغرام',en:'mcg'},iu:{ar:'وحدة دولية',en:'IU'}};
+const UNITS=()=>[['mg',T('o_u_mg')],['mcg',T('o_u_mcg')],['g',T('o_u_g')],['iu',T('o_u_iu')]];
+const UNITTXT={mg:{ar:'ملغ',en:'mg'},mcg:{ar:'ميكروغرام',en:'mcg'},g:{ar:'غرام',en:'g'},iu:{ar:'وحدة دولية',en:'IU'}};
 async function editNut(id){
   CFG.nut=CFG.nut||{hide:[],custom:[]};const isNew=id==null,o=isNew?null:CFG.nut.custom.find(c=>c.id===id);if(!isNew&&!o)return;
   let v=o?[o.n.ar,(o.h&&o.h.ar)||'',o.uk||'mg',fmtRows(o.rows),(o.plan&&o.plan.ar)||'',(o.note&&o.note.ar)||'',(o.r||[]).slice()]:['','','mg','','','',[]];
@@ -1611,9 +1629,10 @@ async function editNut(id){
   }
 }
 document.addEventListener('click',e=>{
-  if(!OWN.on)return;const t=e.target.closest('[data-redit],#radd,[data-iedit],#iadd,[data-nhide],[data-nedit],#nadd,[data-approve]');if(!t)return;
+  if(!OWN.on)return;const t=e.target.closest('[data-redit],#radd,[data-iedit],#iadd,[data-nhide],[data-nedit],#nadd,[data-approve],[data-approveall]');if(!t)return;
   e.preventDefault();e.stopPropagation();
-  if(t.dataset.approve)approve(t.dataset.approve);
+  if(t.dataset.approveall)approveAll(t.dataset.approveall);
+  else if(t.dataset.approve)approve(t.dataset.approve);
   else if(t.dataset.redit)editRef(+t.dataset.redit);
   else if(t.id==='radd')editRef(null);
   else if(t.dataset.iedit!=null)editInter(+t.dataset.iedit);
