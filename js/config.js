@@ -3,7 +3,7 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.6.0';
+const APP_VERSION='1.6.1';
 const REVIEW={name:'',role:'',date:''}; // e.g. {name:'د. ...', role:'صيدلي سريري', date:'2026-11-01'}
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */

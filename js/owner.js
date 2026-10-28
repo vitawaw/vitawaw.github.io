@@ -165,7 +165,33 @@ async function approveAll(t){
   const q=await dialog({title:T('o_approveall'),info:T('o_approveall_i').replace('{n}',n),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_approveall'),action:'ok',pri:1}]});
   if(q.action!=='ok')return;list.forEach(x=>{if(x.rv===false)x.rv=true});changed();toast(T('o_approved'));
 }
-const pendingCount=()=>(CFG.refs||[]).filter(x=>x.rv===false).length+(CFG.inter||[]).filter(x=>x.rv===false).length+NCUST().filter(x=>x.rv===false).length;
+const pendingCount=()=>(CFG.refs||[]).filter(x=>x.rv===false).length+(CFG.inter||[]).filter(x=>x.rv===false).length+NCUST().filter(x=>x.rv===false).length+delCount();
+/* ----- a pharmacist's change to approved content (owner): visitors keep the approved version until the owner decides ----- */
+const DELS=()=>(typeof OWN!=='undefined'&&OWN.del)||{refs:[],inter:[],nut:[]};
+const delCount=()=>{const d=DELS();return (d.refs||[]).length+(d.inter||[]).length+(d.nut||[]).length};
+/** every waiting change to approved content: edits (the item carries its approved version in pv) and deletions */
+function changeList(){
+  const d=DELS(),lbl={r:x=>`${x.id}. ${x.org} — ${x.title}`,i:x=>`${tx2(x.a)} + ${tx2(x.b)}`,n:x=>tx2(x.n)};
+  const ed=(t,list)=>list.filter(x=>x.rv===false&&x.pv).map(x=>({t,id:x.id,del:false,label:lbl[t](x),was:lbl[t](x.pv)}));
+  const dl=(t,list)=>(list||[]).map(x=>({t,id:x.id,del:true,label:lbl[t](x)}));
+  return [...ed('n',NCUST()),...dl('n',d.nut),...ed('i',CFG.inter||[]),...dl('i',d.inter),...ed('r',CFG.refs||[]),...dl('r',d.refs)];
+}
+function openChanges(){openSheet(T('rc_t'),'',{key:'changes'});renderChanges()}
+function renderChanges(){
+  if(!SHEET||SHEET.key!=='changes')return;
+  ACT.s=[];const S=c=>chipH('s',c),list=changeList(),kind={r:'tab_src',i:'tab_int',n:'ad_vit'};
+  $('sheet-b').innerHTML=`<p class="hint">${T('rc_hint')}</p>`+(list.length?list.map(c=>`<div class="tmc"><div class="tmh"><b>${esc(c.label)}</b><span class="st ${c.del?'st-idea':'st-plan'}">${T(c.del?'rc_del':'rc_edit')}</span></div>
+    <div class="tmm">${esc(T(kind[c.t]))}${c.was&&c.was!==c.label?` · ${T('rc_was')} ${esc(c.was)}`:''}</div>
+    <div class="filters tma">${S({label:T(c.del?'rc_okdel':'o_approve'),cls:'pri',f:()=>decide(c,true)})}${S({label:T(c.del?'rc_restore':'rc_reject'),f:()=>decide(c,false)})}</div></div>`).join(''):`<p class="inone">${T('ad_none')}</p>`);
+}
+async function decide(c,accept){
+  if(OWN.local||!ISOWNER())return;
+  if(dirty()){toast(T('rc_savefirst'));return}
+  const {error}=await OWN.client.rpc('review_change',{p_kind:c.t,p_id:String(c.id),p_accept:accept});
+  if(error){console.error(error);toast(T('o_neterr'));return}
+  const {data:ct,error:e2}=await OWN.client.rpc('get_content');if(e2||!ct){toast(T('o_neterr'));return}
+  applyContent(ct);OWN.base=cfgJSON();OWN.saved=true;changed();renderChanges();toast(T(accept?'o_approved':'rc_restored'));
+}
 function toggleBuiltin(k){
   CFG.nut=CFG.nut||{hide:[],custom:[]};const h=CFG.nut.hide;const j=h.indexOf(k);
   if(j>=0)h.splice(j,1);else{if(KEYS.length<=2){toast(T('o_nlast'));return}h.push(k)}
@@ -223,7 +249,9 @@ document.addEventListener('click',e=>{
 },true);
 
 /* ----- login / session ----- */
-function loadSupabaseLib(){return new Promise((ok,no)=>{if(window.supabase)return ok();const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)})}
+// the library file must match this fingerprint exactly (Subresource Integrity), otherwise the browser refuses to run it
+const SB_LIB={src:'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js',sri:'sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o'};
+function loadSupabaseLib(){return new Promise((ok,no)=>{if(window.supabase)return ok();const sc=document.createElement('script');sc.src=SB_LIB.src;sc.integrity=SB_LIB.sri;sc.crossOrigin='anonymous';sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)})}
 async function openOwner(opt={}){
   history.replaceState(null,'',location.pathname+location.search+'#'+(cur||'calc'));
   if(OWN.on)return;
@@ -270,7 +298,7 @@ async function afterLogin(){
   startOwner({local:false,role:m.role,draft:dr&&dr.data,content:ct});
   if(m.role==='owner')teamLoad().then(()=>renderNav());
 }
-function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30}
+function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null}
 const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages});
 function startOwner({local,role,draft,content}){
   OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;OWN.preview=false;
@@ -331,7 +359,7 @@ async function logout(){
   if(dirty()){const q=await dialog({title:T('o_leave'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_logout'),action:'ok',pri:1}]});if(q.action!=='ok')return}
   if(!OWN.local&&OWN.client)await OWN.client.auth.signOut();
   closeSheet(false);TEAM.list=null;
-  OWN.on=false;OWN.preview=false;OWN.perms={};OWN.name='';OWN.role=null;
+  OWN.on=false;OWN.preview=false;OWN.perms={};OWN.name='';OWN.role=null;OWN.del=null;
   document.body.classList.remove('owner','preview','not-owner','cant-nut','cant-inter','cant-refs','cant-text');CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);refreshAll();
 }
 $('o-save').addEventListener('click',saveDraft);$('o-publish').addEventListener('click',publish);

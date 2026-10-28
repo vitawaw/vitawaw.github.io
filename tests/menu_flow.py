@@ -135,6 +135,32 @@ with sync_playwright() as p:
     check('invitation link opens create-account with e-mail', j.is_visible('#dlg') and j.input_value('#dlgf0') == 'ahmed@example.com', j.inner_text('#dlg-t') if j.is_visible('#dlg') else '')
     j.screenshot(path='tests/shots/join.png')
 
+    # ---------- pharmacist edits / deletions of approved content (1.6.1) ----------
+    # (runs before the seed is set, so it edits the seed as it is assigned)
+    seed_chg = """(()=>{let v;Object.defineProperty(window,'__SEED',{configurable:true,get:()=>v,set:s=>{v=s;const x=s.inter[1];x.pv={...JSON.parse(JSON.stringify(x)),rv:true};x.d={ar:'وصف عدّله صيدلي',en:'Edited by a pharmacist'};x.rv=false;
+      const gone=s.inter.splice(2,1)[0];const r=s.refs.find(y=>y.id===29);s.refs=s.refs.filter(y=>y.id!==29);s.del={refs:[{...r,rv:true}],inter:[{...gone,rv:true}],nut:[]};}});})();"""
+    for w, h, n in [(390, 844, 'phone'), (768, 1024, 'ipad'), (1366, 900, 'desktop')]:
+        c, cerr = page(b, w, h, seed_chg); login(c)
+        if n == 'phone':
+            check('review menu counts edit + 2 deletions', c.evaluate('pendCounts().c') == 3 and c.evaluate('pendCounts().d') == 2, str(c.evaluate('pendCounts()')))
+            more(c, 'معاينة')
+            check('preview shows the approved version, not the edit', c.evaluate("INTER.some(x=>x[3][0]==='وصف عدّله صيدلي')") is False and c.evaluate("INTER.some(x=>x[2][0]===__st.del.inter[0].b.ar)"))
+            check('preview still shows a proposed deletion', c.evaluate('!!REFS[29]'))
+            c.click('#o-pvexit'); c.wait_for_timeout(300)
+        c.click('#nav-btn'); c.wait_for_timeout(200); c.locator('#drawer .ditem', has_text='بانتظار المراجعة').click(); c.wait_for_timeout(200)
+        c.locator('#drawer .dchips button', has_text='تعديلات وحذف').click(); c.wait_for_timeout(300)
+        check(f'{n}: changes window lists 3 items', c.locator('#sheet-b .tmc').count() == 3)
+        check(f'{n}: no horizontal scroll in changes window', c.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+        c.screenshot(path=f'tests/shots/{n}_changes.png')
+        if n == 'phone':
+            c.locator('#sheet-b .tmc', has_text='تعديل').first.locator('button', has_text='رفض التعديل').click(); c.wait_for_timeout(400)
+            check('reject edit brings the approved text back', c.evaluate("CFG.inter.some(x=>x.d.ar==='وصف عدّله صيدلي')") is False and c.evaluate("CFG.inter[1].rv") is True)
+            c.locator('#sheet-b .tmc', has_text='حذف مقترح').first.locator('button', has_text='تأكيد الحذف').click(); c.wait_for_timeout(400)
+            c.locator('#sheet-b .tmc', has_text='حذف مقترح').first.locator('button', has_text='استرجاع').click(); c.wait_for_timeout(400)
+            check('confirm one deletion, restore the other', c.locator('#sheet-b .tmc').count() == 0 and c.evaluate('delCount()') == 0, c.evaluate("JSON.stringify(__calls.filter(x=>x[1]==='review_change'))"))
+            check('restored item is back in the list', c.evaluate("CFG.refs.some(x=>x.id===29)||CFG.inter.length===__SEED.inter.length+1"))
+        check(f'{n}: no page errors (changes)', not cerr, str(cerr))
+
     # ---------- sizes ----------
     for w, h, n in [(768, 1024, 'ipad'), (1366, 900, 'desktop')]:
         d, derr = page(b, w, h)

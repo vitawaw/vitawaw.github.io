@@ -18,7 +18,11 @@ def serve(route):
         h=open(os.path.join(ROOT,'_headers')).read()
         m=re.search(r'Content-Security-Policy: (.*)',h)
         if m: hdr['Content-Security-Policy']=m.group(1).replace("connect-src 'self'","connect-src 'self' http://app.test").replace('; upgrade-insecure-requests','')
-    route.fulfill(status=200,body=open(f,'rb').read(),content_type=ct,headers=hdr)
+    body=open(f,'rb').read()
+    if f.endswith('owner.js'):   # the fake library stands in for supabase-js, so the page must expect the fake's fingerprint
+        import re,hashlib,base64
+        body=re.sub(rb"sri:'sha384-[^']+'",("sri:'sha384-"+base64.b64encode(hashlib.sha384(fake.encode()).digest()).decode()+"'").encode(),body)
+    route.fulfill(status=200,body=body,content_type=ct,headers=hdr)
 def setup(pg,pub='[]'):
     pg.add_init_script('window.__SEED='+seed+';')
     pg.route('https://cdn.jsdelivr.net/**',lambda r:r.fulfill(status=200,body=fake,content_type='application/javascript'))

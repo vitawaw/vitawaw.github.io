@@ -63,6 +63,13 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-28)
+- **1.6.1 in preview** (branch `ccr-cad26eca-o7h5hm`), from his request for a full review: a pharmacist's edit or deletion of
+  approved content waits for the owner (approved version kept in column `pub`, `get_content()` returns `pv` / `del`,
+  owner decides with `review_change()`; window «تعديلات وحذف من الصيادلة»), publish uses approved versions only,
+  SRI on supabase-js. The migration `supabase/migrations/pending_review_versions.sql` is **not applied yet**: the Supabase
+  approval prompt never showed on his tablet. Apply it (then rename the file to the assigned version) before publishing 1.6.1;
+  the 1.6.1 page works without it but the new window stays empty and review_change() is missing.
+- He clarified: the pharmacists he invites are limited assistants to the owner (not the pharmacists who visit the site).
 - **Live: 1.6.0**. It includes the new menus (☰ / ⋯ / floating windows), info pages, pharmacist accounts, and the 1.3.0
   medical fixes.
 - Old branches `release/1.4.0` (1.4.1) and `release/1.5.0` were **not** published. 1.5.0 was rejected; don't reuse it.
