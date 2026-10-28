@@ -3,16 +3,32 @@ import json
 html=open('index.html',encoding='utf-8').read()
 seed=open('tests/seed_state.json').read()
 fake=open('tests/fake_supabase.js').read()
+ROOT='.'
+def serve(route):
+    import os,mimetypes
+    from urllib.parse import urlparse
+    p=urlparse(route.request.url).path.lstrip('/') or 'index.html'
+    f=os.path.join(ROOT,p)
+    if not os.path.isfile(f): f=os.path.join(ROOT,'index.html')
+    ct=mimetypes.guess_type(f)[0] or 'text/html'
+    hdr={}
+    if ct=='text/html':
+        import re
+        h=open(os.path.join(ROOT,'_headers')).read()
+        m=re.search(r'Content-Security-Policy: (.*)',h)
+        if m: hdr['Content-Security-Policy']=m.group(1).replace("connect-src 'self'","connect-src 'self' http://app.test").replace('; upgrade-insecure-requests','')
+    route.fulfill(status=200,body=open(f,'rb').read(),content_type=ct,headers=hdr)
 def setup(pg,pub='[]'):
     pg.add_init_script('window.__SEED='+seed+';')
     pg.route('https://cdn.jsdelivr.net/**',lambda r:r.fulfill(status=200,body=fake,content_type='application/javascript'))
     pg.route('https://zrlapysswtqrwfsywbvl.supabase.co/**',lambda r:r.fulfill(status=200,body=pub,content_type='application/json'))
     pg.route('https://fonts.googleapis.com/**',lambda r:r.fulfill(status=200,body='',content_type='text/css'))
-    pg.route('http://app.test/**',lambda r:r.fulfill(status=200,body=html,content_type='text/html'))
+    pg.route('http://app.test/**',serve)
+    pg.route('http://app.test/api/content',lambda r:r.fulfill(status=200,body=pub,content_type='application/json'))
 def ok(pg): pg.click('#dlg-a .pri'); pg.wait_for_timeout(300)
 with sync_playwright() as p:
     b=p.chromium.launch();ctx=b.new_context(viewport={'width':390,'height':844});pg=ctx.new_page()
-    errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:m.type=='error' and errs.append(m.text));setup(pg)
+    errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:(m.type=='error' or 'Content Security Policy' in m.text) and errs.append(m.text));setup(pg)
     pg.goto('http://app.test/');pg.wait_for_timeout(500);pg.click('#o-enter');pg.wait_for_timeout(800)
     print('owner on:',pg.evaluate("document.body.classList.contains('owner')"),'| bar:',pg.inner_text('#ostate'))
     print('picker has vk (pending, owner sees):',pg.locator('#picker [data-k="vk"]').count(),pg.inner_text('#picker [data-k="vk"]').replace('\n',' / '))
