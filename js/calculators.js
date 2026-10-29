@@ -21,7 +21,7 @@ function fD(){
   const kv=[[L('الاحتياج اليومي (RDA)','Daily need (RDA)'),rda+day],[L('الحد الأعلى اليومي (UL)','Upper limit (UL)'),ul+day]];
   if(bmi)kv.push([L('مؤشر كتلة الجسم','BMI'),fmt(bmi)+(obese?L(' (سمنة)',' (obesity)'):'')]);
   const notes=[];let r,rec=null;
-  if(CKD())notes.push({t:L('في القصور الكلوي المتقدم يحدد طبيب الكلى العلاج، وقد يلزم الشكل النشط من فيتامين D مع مراقبة الكالسيوم والفوسفور.','In advanced kidney disease the nephrologist decides treatment; an active form of vitamin D may be needed, with calcium and phosphate monitoring.'),r:[61,1],u:1});
+  if(CKD())notes.push({t:L('في القصور الكلوي المتقدم يحدد طبيب الكلى العلاج، وقد يلزم الشكل النشط من فيتامين D مع مراقبة الكالسيوم والفوسفور.','In advanced kidney disease the nephrologist decides treatment; an active form of vitamin D may be needed, with calcium and phosphate monitoring.'),r:[61],u:1});
   if($('sex').value==='p')notes.push({t:L('في الحمل يوصى بمكمل فيتامين D وقائياً، ويحدد طبيب النساء جرعة العلاج.','In pregnancy, preventive vitamin D is recommended; the obstetrician sets any treatment dose.'),r:[3]});
   const DEF=L('نقص (أقل من 20 ng/mL)','Deficient (below 20 ng/mL)');
   const retest={h:L('إعادة التحليل','Retest'),d:L('للتأكد من تجاوز 30 ng/mL قبل الانتقال للصيانة','To confirm the level is above 30 ng/mL before maintenance')};
@@ -38,13 +38,13 @@ function fD(){
       r={badge:L('نقص مع عامل خطورة','Deficient, with a risk factor'),tone:'bad',title:L('6,000 – 10,000 IU يومياً','6,000–10,000 IU daily'),sub:L('السبب: ','Reason: ')+why,refs:[2],
       pt:L('تحتاج جرعة أعلى من المعتاد: 6,000 إلى 10,000 وحدة فيتامين D يومياً حسب ما يحدده الطبيب، ثم جرعة صيانة.','You need a higher dose than usual: 6,000–10,000 units of vitamin D a day as your doctor decides, then a maintenance dose.'),
       plan:[{h:L('العلاج','Treatment'),d:'6,000 – 10,000 IU / '+L('يوم','day')},retest,{h:L('الصيانة','Maintenance'),d:'3,000 – 6,000 IU / '+L('يوم','day')}]}}
-    else{rec=6000;const daily={h:L('الخيار اليومي','Daily option'),b:L('6,000 IU يومياً لمدة 8 أسابيع','6,000 IU daily for 8 weeks'),d:L('يعادل 15 قطرة من عيار 400 IU','Equals 15 drops of a 400 IU/drop product'),r:[2]},weekly={h:L('الخيار الأسبوعي','Weekly option'),b:L('50,000 IU مرة أسبوعياً لمدة 8 أسابيع','50,000 IU once weekly for 8 weeks'),d:L('في يوم ثابت مع وجبة','Same day each week, with a meal'),r:[2,1]};
+    else{rec=6000;const daily={h:L('الخيار اليومي','Daily option'),b:L('6,000 IU يومياً لمدة 8 أسابيع','6,000 IU daily for 8 weeks'),d:L('يعادل 15 قطرة من عيار 400 IU','Equals 15 drops of a 400 IU/drop product'),r:[2]},weekly={h:L('الخيار الأسبوعي','Weekly option'),b:L('50,000 IU مرة أسبوعياً لمدة 8 أسابيع','50,000 IU once weekly for 8 weeks'),d:L('في يوم ثابت مع وجبة','Same day each week, with a meal'),r:[2]};
       r={badge:DEF,tone:'bad',title:L('50,000 IU أسبوعياً أو 6,000 IU يومياً لمدة 8 أسابيع','50,000 IU weekly or 6,000 IU daily for 8 weeks'),sub:L('ثم صيانة 1,500 – 2,000 IU يومياً بعد الوصول فوق 30 ng/mL','Then 1,500–2,000 IU daily once above 30 ng/mL'),refs:[2],opts:age>=50?[daily,weekly]:[weekly,daily],
       pt:age>=50?L('حبة فيتامين D بجرعة 6,000 وحدة يومياً لمدة 8 أسابيع مع وجبة، ثم جرعة يومية أقل.','Vitamin D 6,000 units a day with a meal for 8 weeks, then a lower daily dose.'):L('كبسولة فيتامين D بجرعة 50,000 وحدة مرة واحدة أسبوعياً لمدة 8 أسابيع، في نفس اليوم كل أسبوع مع وجبة. بعدها جرعة يومية أقل.','One 50,000-unit vitamin D capsule once a week for 8 weeks, on the same day each week with a meal. Then a lower daily dose.'),
       plan:[{h:L('العلاج: 8 أسابيع','Treatment: 8 weeks'),d:L('50,000 IU أسبوعياً أو 6,000 IU يومياً','50,000 IU weekly or 6,000 IU daily')},retest,{h:L('الصيانة','Maintenance'),d:'1,500 – 2,000 IU / '+L('يوم','day')}]};
       if(age>=50)notes.push({t:L('لمن عمرهم 50 سنة فأكثر تُفضَّل الجرعة اليومية على الجرعات الكبيرة المتباعدة.','For adults 50 and older, daily dosing is preferred over large intermittent doses.'),r:[3],i:1});}
     notes.push({t:L('التصنيف والجرعات العلاجية هنا من إرشاد Endocrine Society 2011. إرشاد 2024 لم يحدد مستوى مستهدفاً، وتعتبر NIH أن 20 ng/mL فأكثر كافٍ لصحة العظام لدى معظم الأصحاء.','The categories and treatment doses here follow the Endocrine Society 2011 guideline. The 2024 guideline sets no target level, and NIH considers 20 ng/mL or more adequate for bone health in most healthy people.'),r:[2,3,4],i:1});
-    if(ng<10)notes.push({t:L('المستوى منخفض جداً: يُنصح بفحص الكالسيوم والفوسفور وPTH وتقييم لين العظام.','Very low level: check calcium, phosphate and PTH, and assess for osteomalacia.'),r:[1],u:1});
+    if(ng<10)notes.push({t:L('المستوى منخفض جداً: يُنصح بفحص الكالسيوم والفوسفور وPTH وتقييم لين العظام.','Very low level: check calcium, phosphate and PTH, and assess for osteomalacia.'),r:[2,4],u:1});
   }else if(ng<30){
     notes.push({t:L('مستوى 20 – 29 ng/mL تعتبره Endocrine Society 2011 «غير كافٍ»، بينما تعتبره NIH كافياً لصحة العظام لدى معظم الأصحاء. القرار للطبيب حسب الحالة وعوامل الخطورة.','Endocrine Society 2011 calls 20–29 ng/mL "insufficient", while NIH considers it adequate for bone health in most healthy people. The doctor decides based on the person and risk factors.'),r:[2,4],i:1});
     const INS=L('عدم كفاية (20 – 29 ng/mL)','Insufficient (20–29 ng/mL)');
@@ -86,22 +86,22 @@ function fB12(){
     if(neuro){r={badge:L('نقص مؤكد مع أعراض عصبية','Confirmed deficiency with neurological symptoms'),tone:'bad',title:L('حقن عضلية عاجلة وتحويل للطبيب','Urgent IM injections and medical referral'),sub:L('Hydroxocobalamin 1 ملغ عضلياً يوماً بعد يوم حتى يتوقف التحسن، ثم 1 ملغ كل شهرين','Hydroxocobalamin 1 mg IM on alternate days until no further improvement, then 1 mg every 2 months'),refs:[29],
       pt:L('راجع الطبيب اليوم. تحتاج حقن B12 عاجلة لأن الأعراض العصبية قد تصبح دائمة إذا تأخر العلاج.','See a doctor today. You need urgent B12 injections, because nerve symptoms can become permanent if treatment is delayed.'),
       plan:[{h:L('البداية','Start'),d:L('حقنة 1 ملغ يوماً بعد يوم حتى يتوقف التحسن','1 mg every other day until no further improvement')},{h:L('الاستمرار','Continue'),d:L('حقنة 1 ملغ كل شهرين','1 mg every 2 months')}],
-      opts:[{h:L('البديل (Cyanocobalamin)','Alternative (cyanocobalamin)'),b:L('1,000 mcg عضلياً يومياً لأسبوع، ثم أسبوعياً لشهر، ثم شهرياً','1,000 mcg IM daily for 1 week, weekly for 1 month, then monthly'),r:[7]}]};
+      opts:[{h:L('البديل (Cyanocobalamin)','Alternative (cyanocobalamin)'),b:L('1,000 mcg عضلياً يوماً بعد يوم لأسبوعين، ثم أسبوعياً حتى الأسبوع 8، ثم شهرياً','1,000 mcg IM on alternate days for 2 weeks, weekly to week 8, then monthly'),d:L('النظام المستعمل في التجارب التي جمعتها مراجعة Cochrane','The regimen used in the trials pooled by the Cochrane review'),r:[64,63]}]};
       notes.unshift({t:L('أعراض عصبية مع نقص B12: لا يؤخَّر العلاج.','Neurological symptoms with low B12: do not delay treatment.'),r:[29,5],u:1})}
     else if(cause==='malab')r={badge:CONF,tone:'bad',title:L('Hydroxocobalamin 1 ملغ عضلياً 3 مرات أسبوعياً لمدة أسبوعين','Hydroxocobalamin 1 mg IM three times a week for 2 weeks'),sub:L('ثم 1 ملغ كل 2 إلى 3 أشهر مدى الحياة غالباً','Then 1 mg every 2–3 months, usually lifelong'),refs:[29],
       pt:L('تحتاج حقن B12 لأن جسمك لا يمتصه جيداً من الطعام: 3 حقن في الأسبوع لمدة أسبوعين، ثم حقنة كل 2 إلى 3 أشهر.','You need B12 injections because your body does not absorb it well: 3 injections a week for 2 weeks, then one every 2–3 months.'),
       plan:[{h:L('التحميل: أسبوعان','Loading: 2 weeks'),d:L('1 ملغ 3 مرات أسبوعياً','1 mg three times a week')},{h:L('الاستمرار','Continue'),d:L('1 ملغ كل 2 – 3 أشهر، غالباً مدى الحياة','1 mg every 2–3 months, usually lifelong')}],
-      opts:[{h:L('بديل فموي بقرار الطبيب','Oral alternative, if the doctor chooses'),b:L('1,000 – 2,000 mcg يومياً','1,000–2,000 mcg daily'),d:L('نجح العلاج الفموي عالي الجرعة لدى معظم مرضى فقر الدم الخبيث في دراسة متابعة','High-dose oral therapy corrected deficiency in most pernicious anemia patients in a cohort study'),r:[6,7]}]};
+      opts:[{h:L('بديل فموي بقرار الطبيب','Oral alternative, if the doctor chooses'),b:L('1,000 – 2,000 mcg يومياً','1,000–2,000 mcg daily'),d:L('في التجارب كان B12 الفموي بجرعة عالية بفعالية الحقن في رفع المستوى؛ والدليل محدود العدد','In trials, high-dose oral B12 raised levels as well as injections; the evidence comes from few trials'),r:[63,64]}]};
     else if(cause==='diet')r={badge:CONF,tone:'bad',title:L('Cyanocobalamin فموياً 50 – 150 mcg يومياً','Oral cyanocobalamin 50–150 mcg daily'),sub:L('للنقص الغذائي، مع استمرار المكمل ما دام النظام الغذائي نباتياً','For dietary deficiency; continue while the diet stays vegan'),refs:[29],
       pt:L('حبة B12 يومياً (50 إلى 150 ميكروغرام)، واستمر عليها ما دمت نباتياً.','Take a B12 tablet daily (50–150 micrograms), and keep taking it while you follow a vegan diet.'),
-      opts:[{h:L('بديل بجرعة أعلى','Higher-dose alternative'),b:L('1,000 mcg فموياً يومياً','1,000 mcg orally daily'),r:[7]}]};
-    else r={badge:CONF,tone:'bad',title:L('1,000 mcg فموياً يومياً أو حقن عضلية','1,000 mcg orally daily, or IM injections'),sub:L('مع البحث عن السبب، ومنه فحص فقر الدم الخبيث','And look for the cause, including pernicious anemia'),refs:[5,7],
+      opts:[{h:L('بديل بجرعة أعلى','Higher-dose alternative'),b:L('1,000 mcg فموياً يومياً','1,000 mcg orally daily'),r:[63]}]};
+    else r={badge:CONF,tone:'bad',title:L('1,000 mcg فموياً يومياً أو حقن عضلية','1,000 mcg orally daily, or IM injections'),sub:L('مع البحث عن السبب، ومنه فحص فقر الدم الخبيث','And look for the cause, including pernicious anemia'),refs:[5,63],
       pt:L('لديك نقص في B12. يحدد الطبيب بين حبة يومية بجرعة 1,000 ميكروغرام أو الحقن، بعد معرفة السبب.','You have low B12. Your doctor will choose between a 1,000-microgram daily tablet or injections after finding the cause.'),
-      opts:[{h:L('الفموي','Oral'),b:L('1,000 mcg يومياً','1,000 mcg daily'),r:[7]},{h:L('العضلي','Intramuscular'),b:L('Hydroxocobalamin 1 ملغ 3 مرات أسبوعياً لأسبوعين، ثم كل 2 – 3 أشهر','Hydroxocobalamin 1 mg three times a week for 2 weeks, then every 2–3 months'),r:[29]}]};
+      opts:[{h:L('الفموي','Oral'),b:L('1,000 mcg يومياً','1,000 mcg daily'),r:[63]},{h:L('العضلي','Intramuscular'),b:L('Hydroxocobalamin 1 ملغ 3 مرات أسبوعياً لأسبوعين، ثم كل 2 – 3 أشهر','Hydroxocobalamin 1 mg three times a week for 2 weeks, then every 2–3 months'),r:[29]}]};
   }else if(st==='ind'){
     r={badge:sA==='ind'?L('نتيجة غير حاسمة (Active B12 بين 25 و70 pmol/L)','Indeterminate (active B12 25–70 pmol/L)'):L('نتيجة غير حاسمة (180 – 350 ng/L)','Indeterminate (180–350 ng/L)'),tone:'warn',title:sA==='ind'?L('افحص MMA للتأكيد','Confirm with MMA'):L('افحص Active B12 أو MMA للتأكيد','Confirm with active B12 or MMA'),sub:neuro?L('مع وجود أعراض لا يؤخَّر العلاج انتظاراً للنتيجة','With symptoms, do not delay treatment while waiting'):L('إذا وجدت أعراض أو عوامل خطورة فناقش العلاج مع الطبيب','If symptoms or risk factors are present, discuss treatment with the doctor'),refs:[5],
       pt:L('النتيجة على الحد. يحتاج الطبيب تحليلاً إضافياً للتأكد قبل تحديد العلاج.','The result is borderline. Your doctor needs one more test to confirm before deciding treatment.'),
-      opts:neuro?[{h:L('عند وجود أعراض عصبية','With neurological symptoms'),b:L('Hydroxocobalamin 1 ملغ عضلياً يوماً بعد يوم حتى يتوقف التحسن','Hydroxocobalamin 1 mg IM on alternate days until no further improvement'),r:[29]}]:[{h:L('إن قرر الطبيب العلاج','If the doctor decides to treat'),b:L('1,000 mcg فموياً يومياً','1,000 mcg orally daily'),r:[7]}]};
+      opts:neuro?[{h:L('عند وجود أعراض عصبية','With neurological symptoms'),b:L('Hydroxocobalamin 1 ملغ عضلياً يوماً بعد يوم حتى يتوقف التحسن','Hydroxocobalamin 1 mg IM on alternate days until no further improvement'),r:[29]}]:[{h:L('إن قرر الطبيب العلاج','If the doctor decides to treat'),b:L('1,000 mcg فموياً يومياً','1,000 mcg orally daily'),r:[63]}]};
     if(neuro)notes.unshift({t:L('توجد أعراض عصبية: راجع الطبيب دون تأخير.','Neurological symptoms present: see a doctor without delay.'),r:[5],u:1});
   }else r={badge:sT==='ind'?L('نقص غير مرجّح (Active B12 أعلى من 70 pmol/L)','Deficiency unlikely (active B12 above 70 pmol/L)'):L('ضمن الطبيعي','Normal'),tone:'ok',title:L(`الاحتياج اليومي ${rda} mcg`,`Daily need ${rda} mcg`),sub:L('من الغذاء أو متعدد الفيتامينات','From food or a multivitamin'),refs:sA?[5,8]:[8],pt:L('مستوى B12 طبيعي، ولا تحتاج علاجاً.','Your B12 level is normal; no treatment is needed.')};
   if(st==='ind'&&sA==='ind')notes.push({t:L('حسب NICE: عند Active B12 بين 25 و70 pmol/L مع أعراض، يُفحص MMA وتُفسَّر نتيجته حسب حدود المختبر.','Per NICE: with active B12 of 25–70 pmol/L and symptoms, test MMA and read it against the laboratory limits.'),r:[5]});
@@ -118,18 +118,18 @@ function fFol(){
   const kv=[[L('الاحتياج اليومي (RDA)','Daily need (RDA)'),rda+' mcg DFE'],[L('الحد الأعلى لحمض الفوليك المصنّع','Upper limit for synthetic folic acid'),ul?fmt(ul)+L(' mcg / يوم',' mcg / day'):L('غير محدد','Not established')]];
   const notes=[];let r;
   if(g==='rda')r={badge:L('الاحتياج اليومي','Daily requirement'),tone:'info',title:L(`${rda} mcg DFE يومياً`,`${rda} mcg DFE daily`),sub:L('من الغذاء والأغذية المدعّمة','From food and fortified foods'),refs:[11],pt:L(`تحتاج ${rda} ميكروغرام يومياً، ويكفي غالباً الطعام المتوازن.`,`You need ${rda} micrograms a day, which a balanced diet usually provides.`)};
-  else if(g==='plan')r={badge:L('التخطيط للحمل','Planning pregnancy'),tone:'info',title:L('400 mcg حمض فوليك يومياً','400 mcg folic acid daily'),sub:L('قبل الحمل وحتى نهاية الأسبوع 12 للوقاية من عيوب الأنبوب العصبي','From before conception to the end of week 12, to prevent neural tube defects'),refs:[10,11],
+  else if(g==='plan')r={badge:L('التخطيط للحمل','Planning pregnancy'),tone:'info',title:L('400 mcg حمض فوليك يومياً','400 mcg folic acid daily'),sub:L('قبل الحمل وحتى نهاية الأسبوع 12 للوقاية من عيوب الأنبوب العصبي','From before conception to the end of week 12, to prevent neural tube defects'),refs:[65,11],
     pt:L('حبة حمض فوليك 400 ميكروغرام يومياً، ابدئي قبل الحمل واستمري حتى نهاية الأسبوع 12.','One 400-microgram folic acid tablet a day; start before pregnancy and continue to the end of week 12.'),
     plan:[{h:L('قبل الحمل','Before pregnancy'),d:'400 mcg / '+L('يوم','day')},{h:L('حتى الأسبوع 12','Until week 12'),d:L('استمري على الجرعة نفسها','Continue the same dose')}]};
-  else if(g==='ntd'){r={badge:L('خطورة عالية','High risk'),tone:'warn',title:L('4 – 5 ملغ حمض فوليك يومياً','4–5 mg folic acid daily'),sub:L('لمن لديها حمل سابق بعيب في الأنبوب العصبي أو عوامل خطورة أخرى، بوصفة طبية','For a previous pregnancy affected by a neural tube defect or other risk factors, on prescription'),refs:[10],
+  else if(g==='ntd'){r={badge:L('خطورة عالية','High risk'),tone:'warn',title:L('4 – 5 ملغ حمض فوليك يومياً','4–5 mg folic acid daily'),sub:L('لمن لديها حمل سابق بعيب في الأنبوب العصبي أو عوامل خطورة أخرى، بوصفة طبية','For a previous pregnancy affected by a neural tube defect or other risk factors, on prescription'),refs:[67],
     pt:L('تحتاجين جرعة عالية (4 إلى 5 ملغ يومياً) بوصفة من الطبيب.','You need a high dose (4–5 mg a day) prescribed by your doctor.')};
     notes.push({t:L('هذه الجرعة أعلى من الحد الأعلى العام (1,000 mcg) وتؤخذ بإشراف طبي فقط.','This exceeds the general upper limit (1,000 mcg) and is for medical supervision only.'),r:[11],u:1})}
   else{
     if(age<18)r={badge:L('فقر دم بعوز الفولات','Folate-deficiency anemia'),tone:'bad',title:L('جرعة الأطفال يحددها طبيب الأطفال','A pediatrician sets the child dose'),sub:L('تختلف حسب العمر والسبب','It varies with age and cause'),refs:[28],pt:L('يحدد طبيب الأطفال الجرعة.','The pediatrician will set the dose.')};
-    else r={badge:L('فقر دم بعوز الفولات','Folate-deficiency anemia'),tone:'bad',title:L('1 – 5 ملغ يومياً','1–5 mg daily'),sub:L('في الممارسة البريطانية 5 ملغ يومياً لمدة 4 أشهر، وقد يلزم حتى 15 ملغ في سوء الامتصاص','UK practice is 5 mg daily for 4 months; up to 15 mg may be needed in malabsorption'),refs:[9,10,28],
+    else r={badge:L('فقر دم بعوز الفولات','Folate-deficiency anemia'),tone:'bad',title:L('1 – 5 ملغ يومياً','1–5 mg daily'),sub:L('في الممارسة البريطانية 5 ملغ يومياً لمدة 4 أشهر، وقد يلزم حتى 15 ملغ في سوء الامتصاص','UK practice is 5 mg daily for 4 months; up to 15 mg may be needed in malabsorption'),refs:[66,28],
       pt:L('حمض الفوليك من 1 إلى 5 ملغ يومياً لمدة نحو 4 أشهر، بعد أن يتأكد الطبيب أن فيتامين B12 طبيعي.','Folic acid 1–5 mg a day for about 4 months, after your doctor confirms your B12 is normal.'),
       plan:[{h:L('قبل البدء','Before starting'),d:L('استبعاد نقص B12','Exclude B12 deficiency')},{h:L('العلاج: 4 أشهر','Treatment: 4 months'),d:L('1 – 5 ملغ يومياً','1–5 mg daily')},{h:L('بعدها','Afterwards'),d:L('معالجة السبب وإعادة التقييم','Treat the cause and reassess')}],
-      opts:[{h:L('البداية الشائعة','Common starting dose'),b:L('1 ملغ يومياً','1 mg daily'),d:L('الحالات المقاومة قد تحتاج أكثر','Resistant cases may need more'),r:[9]},{h:L('البروتوكول البريطاني','UK regimen'),b:L('5 ملغ يومياً لمدة 4 أشهر','5 mg daily for 4 months'),r:[28]}]};
+      opts:[{h:L('البداية الشائعة','Common starting dose'),b:L('1 ملغ يومياً','1 mg daily'),d:L('الحالات المقاومة قد تحتاج أكثر','Resistant cases may need more'),r:[66]},{h:L('البروتوكول البريطاني','UK regimen'),b:L('5 ملغ يومياً لمدة 4 أشهر','5 mg daily for 4 months'),r:[28]}]};
     notes.push({t:L('استبعد نقص B12 قبل البدء بالجرعات العلاجية.','Exclude B12 deficiency before starting treatment doses.'),r:[28],u:1});
   }
   if(g==='plan'){r.tool='pills';PILL={k:'fol',dose:0.4,tab:0.4};r.ul=[['fol',400]]}
@@ -149,16 +149,18 @@ function hbCut(age,sx,tri,months){
   if(m<6)return null; if(m<24)return 10.5; if(m<60)return 11; if(age<12)return 11.5; if(age<15)return 12;
   if(sx==='p')return tri===2?10.5:11; return sx==='m'?13:12;
 }
-/** ferritin at or below which iron deficiency is likely, ng/mL (= µg/L): AAP 2026 for children and adolescents,
-    WHO 2020 with infection or inflammation, and 30 for adults (Medscape; WHO's 15 is the population cut-off) */
-function ferCut(age,infl){return infl?(age<5?30:70):age<12?20:30}
+/** ferritin limit for iron deficiency, ng/mL (= µg/L): AAP 2026 for children (20 or less) and adolescents (30 or less),
+    BSG 2021 for adults (below 45, its suggested best trade-off), WHO 2020 with infection or inflammation (below 30 under 5, below 70) */
+function ferCut(age,infl){return infl?(age<5?30:70):age<12?20:age<18?30:45}
+/** the AAP limits include the value ("20 or less"); BSG and WHO use "below" */
+const ferLow=(f,age,infl)=>infl||age>=18?f<ferCut(age,infl):f<=ferCut(age,infl);
 let PILL={k:'fe',dose:60};
 function fFe(){
   const hasFer=$('fer').value.trim()!=='';
   const x0=req(['age'],['wt','hb','fer']);if(!x0)return;
   const age=x0.age,sx=$('sex').value,hb=x0.hb,fer=x0.fer,infl=$('infl').checked;
   // with a ferritin result the state comes from the labs (WHO 2024 Hb cut-offs + ferritin), otherwise from the list
-  const hc=hbCut(age,sx),fc=ferCut(age,infl),anem=hb!=null&&hc!=null&&hb<hc,lowF=fer!=null&&fer<=fc;
+  const hc=hbCut(age,sx),fc=ferCut(age,infl),anem=hb!=null&&hc!=null&&hb<hc,lowF=fer!=null&&ferLow(fer,age,infl),below=infl||age>=18;
   const g=hasFer?(lowF?(anem?'ida':'id'):(anem?'other':'ok')):$('feg').value;
   $('fegw').hidden=hasFer;
   const young=age<12&&(g==='ida'||g==='id');
@@ -166,10 +168,10 @@ function fFe(){
   const w=x0.wt,rda=ironRDA(age,sx),ul=age<14?40:45,EL=L(' ملغ حديد عنصري',' mg elemental iron');
   const kv=[[L('الاحتياج اليومي (RDA)','Daily need (RDA)'),rda+EL],[L('الحد الأعلى (UL)','Upper limit (UL)'),ul+L(' ملغ / يوم',' mg / day')]];
   if(hb!=null){kv.push([L('الهيموغلوبين','Hemoglobin'),fmt(hb)+' g/dL']);if(hc!=null)kv.push([L('فقر الدم تحت (WHO)','Anemia below (WHO)'),fmt(hc)+' g/dL'])}
-  if(fer!=null)kv.push(['Ferritin',fmt(fer)+' ng/mL'],[L('نقص الحديد عند','Iron deficiency at'),L(`${fmt(fc)} ng/mL أو أقل`,`${fmt(fc)} ng/mL or less`)]);
+  if(fer!=null)kv.push(['Ferritin',fmt(fer)+' ng/mL'],[L('نقص الحديد عند','Iron deficiency at'),below?L(`أقل من ${fmt(fc)} ng/mL`,`below ${fmt(fc)} ng/mL`):L(`${fmt(fc)} ng/mL أو أقل`,`${fmt(fc)} ng/mL or less`)]);
   const notes=[{t:L('الجرعات كلها بالحديد العنصري، وليس بوزن الملح المكتوب على العبوة.','All doses are elemental iron, not the salt weight on the pack.'),r:[15],i:1}];let r,dose=null;
   if(hb!=null&&hc==null)notes.push({t:L('لا يوجد حد لفقر الدم من منظمة الصحة العالمية تحت عمر 6 أشهر؛ يفسّر طبيب الأطفال النتيجة.','WHO sets no anemia cut-off under 6 months; the pediatrician interprets the result.'),r:[51]});
-  if(hasFer)notes.push({t:L('حدود Ferritin: 20 ng/mL أو أقل للأطفال و30 للمراهقين (AAP)، و30 للبالغين، و70 عند وجود التهاب أو عدوى (30 تحت 5 سنوات، WHO) لأن الالتهاب يرفع Ferritin. حدود فقر الدم من WHO 2024.','Ferritin limits: 20 ng/mL or less in children and 30 in adolescents (AAP), 30 in adults, and 70 with inflammation or infection (30 under 5 years, WHO) because inflammation raises ferritin. Anemia cut-offs: WHO 2024.'),r:[14,12,52,51],i:1});
+  if(hasFer)notes.push({t:L('حدود Ferritin: 20 ng/mL أو أقل للأطفال و30 أو أقل للمراهقين (AAP 2026)، وأقل من 45 للبالغين (BSG 2021)، وأقل من 70 عند وجود التهاب أو عدوى (أقل من 30 تحت 5 سنوات، WHO 2020) لأن الالتهاب يرفع Ferritin. حدود فقر الدم من WHO 2024.','Ferritin limits: 20 ng/mL or less in children and 30 or less in adolescents (AAP 2026), below 45 in adults (BSG 2021), and below 70 with inflammation or infection (below 30 under 5 years, WHO 2020) because inflammation raises ferritin. Anemia cut-offs: WHO 2024.'),r:[14,68,52,51],i:1});
   if(!hasFer&&hb!=null&&hc!=null&&g!=='rda')notes.push(anem?{t:L('الهيموغلوبين أقل من حد WHO لهذا العمر: أكّد نقص الحديد بتحليل Ferritin قبل العلاج.','Hemoglobin is below the WHO cut-off for this age: confirm iron deficiency with ferritin before treatment.'),r:[51,52]}:
     {t:L('الهيموغلوبين ليس أقل من حد WHO لهذا العمر، فلا يوجد فقر دم. أدخل Ferritin لتأكيد نقص المخزون.','Hemoglobin is not below the WHO cut-off for this age, so there is no anemia. Enter ferritin to confirm low stores.'),r:[51],u:g==='ida'?1:0});
   if(hasFer&&hb==null&&lowF)notes.push({t:L('أدخل الهيموغلوبين لمعرفة وجود فقر دم.','Enter hemoglobin to check for anemia.'),r:[51],i:1});
@@ -195,11 +197,11 @@ function fFe(){
       plan:[{h:L('العلاج: 3 أشهر','Treatment: 3 months'),d:L('65 ملغ مرة يومياً','65 mg once daily')},{h:L('المتابعة','Follow-up'),d:L('مراجعة بعد شهر وبعد 3 أشهر','Visits at 1 month and at 3 months')}]};
   }else if(g==='ida'){
     dose=60;
-    r={badge:L('فقر دم بعوز الحديد','Iron-deficiency anemia'),tone:'bad',title:L('60 – 120 ملغ حديد عنصري صباحاً، يوماً بعد يوم','60–120 mg elemental iron in the morning, every other day'),sub:L('الجرعة الواحدة يوماً بعد يوم تُمتص أفضل من الجرعات اليومية المتتالية أو المقسّمة','A single dose on alternate days is absorbed better than daily or split doses'),refs:[13,12],tool2:'ganz',
+    r={badge:L('فقر دم بعوز الحديد','Iron-deficiency anemia'),tone:'bad',title:L('60 – 120 ملغ حديد عنصري صباحاً، يوماً بعد يوم','60–120 mg elemental iron in the morning, every other day'),sub:L('الجرعة الواحدة يوماً بعد يوم تُمتص أفضل من الجرعات اليومية المتتالية أو المقسّمة','A single dose on alternate days is absorbed better than daily or split doses'),refs:[13,68],tool2:'ganz',
       pt:L('حبة حديد صباحاً يوماً بعد يوم (60 إلى 120 ملغ حديد)، لمدة 3 إلى 6 أشهر.','One iron tablet in the morning every other day (60–120 mg of iron) for 3–6 months.'),
       plan:[{h:L('العلاج','Treatment'),d:L('حتى يعود الهيموغلوبين طبيعياً','Until hemoglobin is normal')},{h:L('تعويض المخزون','Refill stores'),d:L('الاستمرار ليصبح المجموع 3 – 6 أشهر','Continue for 3–6 months in total')}],
-      opts:[{h:L('البديل اليومي','Daily alternative'),b:L('جرعة واحدة يومياً','One dose daily'),d:L('الجرعات الأقل قد تكون بنفس الفعالية مع آثار هضمية أقل','Lower doses may work as well with fewer stomach side effects'),r:[12]},
-            {h:L('الحديد الوريدي','IV iron'),b:L('عند عدم التحمل أو سوء الامتصاص أو الحاجة لتصحيح سريع','For intolerance, malabsorption or when rapid correction is needed'),r:[12,16]}]};
+      opts:[{h:L('البديل اليومي','Daily alternative'),b:L('جرعة واحدة يومياً','One dose daily'),d:L('الجرعات الأقل قد تكون بنفس الفعالية مع آثار هضمية أقل','Lower doses may work as well with fewer stomach side effects'),r:[68]},
+            {h:L('الحديد الوريدي','IV iron'),b:L('عند عدم التحمل أو سوء الامتصاص أو الحاجة لتصحيح سريع','For intolerance, malabsorption or when rapid correction is needed'),r:[68,16]}]};
   }else{
     dose=60;
     r={badge:L('نقص مخزون بدون فقر دم','Low iron stores without anemia'),tone:'warn',title:L('60 ملغ حديد عنصري صباحاً، يوماً بعد يوم','60 mg elemental iron in the morning, every other day'),sub:L('هذا النظام هو الذي دُرس في النساء ذوات المخزون المنخفض، مع إعادة Ferritin بعد 3 أشهر','This is the regimen studied in iron-depleted women; recheck ferritin after 3 months'),refs:[13],
@@ -392,7 +394,7 @@ function fPreg(){
   if(hb!=null){kv.push([L('الهيموغلوبين','Hemoglobin'),fmt(hb)+' g/dL']);if(hc!=null)kv.push([L('فقر الدم تحت (WHO)','Anemia below (WHO)'),fmt(hc)+' g/dL'])}
   kv.push([L('الحد الأعلى لفيتامين A الجاهز','Upper limit for preformed vitamin A'),tn?'2,800 mcg (9,333 IU)':'3,000 mcg (10,000 IU)']);
   if(anem)notes.push({t:L(`الهيموغلوبين أقل من ${fmt(hc)} g/dL: فقر دم في الحمل حسب WHO. افحص Ferritin، وتحدد طبيبة النساء العلاج.`,`Hemoglobin below ${fmt(hc)} g/dL: anemia in pregnancy per WHO. Check ferritin; the obstetrician decides treatment.`),r:[51,57],u:1});
-  if(ntd)notes.push({t:L('جرعة 4 – 5 ملغ أعلى من الحد الأعلى العام (1,000 mcg) وتؤخذ بإشراف طبي فقط.','4–5 mg exceeds the general upper limit (1,000 mcg) and is for medical supervision only.'),r:[10,11],u:1});
+  if(ntd)notes.push({t:L('جرعة 4 – 5 ملغ أعلى من الحد الأعلى العام (1,000 mcg) وتؤخذ بإشراف طبي فقط.','4–5 mg exceeds the general upper limit (1,000 mcg) and is for medical supervision only.'),r:[67,11],u:1});
   notes.push({t:L('تجنبي مكملات فيتامين A (Retinol) بجرعات عالية في الحمل لأنها قد تسبب تشوهات؛ لا تتجاوزي الحد الأعلى.','Avoid high-dose vitamin A (retinol) supplements in pregnancy because they can cause birth defects; stay under the upper limit.'),r:[30],u:preg?1:0});
   notes.push({t:L('افصلي الحديد عن الكالسيوم بساعتين على الأقل لأن الكالسيوم يقلل امتصاص الحديد.','Take iron and calcium at least 2 hours apart, because calcium lowers iron absorption.'),r:[18,15]});
   if(preg&&lowca)notes.push({t:L('توصي WHO بالكالسيوم 1.5 – 2 غ يومياً للحوامل ذوات المدخول المنخفض لتقليل خطر تسمم الحمل.','WHO recommends 1.5–2 g calcium daily for pregnant women with low intake to reduce the risk of pre-eclampsia.'),r:[57,18],i:1});
@@ -400,7 +402,7 @@ function fPreg(){
   if(age<12)notes.unshift({t:L('العمر المدخل لا يناسب الحمل؛ تأكدي من العمر.','The age entered does not fit pregnancy; check the age.'),u:1});
   const badge=st==='plan'?L('التخطيط للحمل','Planning pregnancy'):lac?L('الرضاعة الطبيعية','Breastfeeding'):L(`الحمل: الثلث ${['الأول','الثاني','الثالث'][tri-1]}`,`Pregnancy: trimester ${tri}`);
   const r={badge,tone:anem?'warn':'info',title:lac?L('يود 150 mcg يومياً + غذاء متوازن','Iodine 150 mcg daily + a balanced diet'):preg?L('حمض الفوليك + الحديد + اليود يومياً','Folic acid + iron + iodine daily'):L('حمض الفوليك + اليود يومياً','Folic acid + iodine daily'),
-    sub:L('مع فيتامين D والكالسيوم والكولين والأوميغا-3 من الغذاء أو المكملات','With vitamin D, calcium, choline and omega-3 from food or supplements'),refs:[57,10,11,15,37,4,18,44,42],plan,
+    sub:L('مع فيتامين D والكالسيوم والكولين والأوميغا-3 من الغذاء أو المكملات','With vitamin D, calcium, choline and omega-3 from food or supplements'),refs:[57,65,11,15,37,4,18,44,42],plan,
     pt:lac?L('حبة يود 150 ميكروغرام يومياً، مع غذاء متوازن وسمك قليل الزئبق مرتين أسبوعياً.','A 150-microgram iodine tablet a day, with a balanced diet and low-mercury fish twice a week.'):
       preg?L('يومياً: حمض الفوليك، وحبة حديد، ويود 150 ميكروغرام، حسب ما تحدده طبيبة النساء. افصلي الحديد عن الكالسيوم بساعتين.','Every day: folic acid, an iron tablet and 150 micrograms of iodine, as your obstetrician advises. Take iron and calcium 2 hours apart.'):
       L('ابدئي حمض الفوليك 400 ميكروغرام ويود 150 ميكروغرام يومياً قبل الحمل بشهر على الأقل.','Start folic acid 400 micrograms and iodine 150 micrograms a day at least a month before pregnancy.')};

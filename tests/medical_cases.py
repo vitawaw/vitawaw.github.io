@@ -38,9 +38,12 @@ CASES = [  # nutrient, fields, sex, expected text somewhere in the result (Arabi
  ('b12',{'age':40,'b12v':250,'ab12':90}, 'f', 'نقص غير مرجّح'),               # >70 unlikely
  ('fe', {'age':30,'hb':10.5,'fer':8}, 'f', '60 – 120 ملغ'),                    # WHO Hb <12 + ferritin <=30 -> IDA
  ('fe', {'age':30,'hb':13,'fer':10}, 'm', 'نقص مخزون بدون فقر دم'),            # men: anemia below 13
- ('fe', {'age':30,'hb':10,'fer':150}, 'f', 'لا تبدأ الحديد'),                  # anemia with normal ferritin
+ ('fe', {'age':30,'hb':10,'fer':150}, 'f', 'لا تبدأ الحديد'),
+ ('fe', {'age':40,'hb':14.5,'fer':40}, 'm', 'نقص مخزون بدون فقر دم'),          # BSG 2021: adults below 45
+ ('fe', {'age':40,'hb':14.5,'fer':45}, 'm', 'مخزون الحديد طبيعي'),             # 45 is not below 45
+ ('fe', {'age':15,'hb':13,'fer':30}, 'm', 'نقص الحديد'),                        # AAP adolescents: 30 or less                  # anemia with normal ferritin
  ('fe', {'age':3,'wt':14,'hb':10.8,'fer':10}, 'f', '42 ملغ'),                  # 24-59 mo cut-off 11; 3 mg/kg (AAP)
- ('fe', {'age':30,'fer':50,'infl':1}, 'f', '70 ng/mL أو أقل'),                   # inflammation: limit 70 -> deficiency
+ ('fe', {'age':30,'fer':50,'infl':1}, 'f', 'أقل من 70 ng/mL'),                   # inflammation: limit 70 -> deficiency
  ('mg', {'age':8,'wt':25,'mgv':1.5}, 'm', '63 – 125 ملغ'),                     # RCH 2.5-5 mg/kg three times a day
  ('inf',{'mon':5,'wt':7,'feed':'bf'}, 'f', '7 ملغ يومياً'),                    # AAP 2026 1 mg/kg from 4 months
  ('inf',{'mon':5,'wt':7,'feed':'bf'}, 'f', '400 IU'),                          # AAP 2008 vitamin D

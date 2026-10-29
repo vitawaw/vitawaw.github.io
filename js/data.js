@@ -43,10 +43,16 @@ const DEF_REFS={
 59:['UK SmPC (electronic medicines compendium)','Ferinject (ferric carboxymaltose): Summary of Product Characteristics','https://www.medicines.org.uk/emc/product/5910/smpc','جدول جرعات Ferinject المبسّط','Simplified Ferinject dosing table'],
 60:['U.S. FDA (Tivicay label)','TIVICAY (dolutegravir): Full Prescribing Information','https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/204790s031%2C213983s004lbl.pdf','فاصل Dolutegravir عن الحديد والكالسيوم ومضادات الحموضة','Spacing dolutegravir from iron, calcium and antacids'],
 61:['KDIGO, 2017','KDIGO 2017 Clinical Practice Guideline Update for the Diagnosis, Evaluation, Prevention, and Treatment of Chronic Kidney Disease–Mineral and Bone Disorder (CKD-MBD). Kidney Int Suppl 2017;7(1):1–59','https://doi.org/10.1016/j.kisu.2017.04.001','فيتامين D والكالسيوم والفوسفات في القصور الكلوي','Vitamin D, calcium and phosphate in kidney disease'],
-62:['KDIGO, 2012','KDIGO Clinical Practice Guideline for Anemia in Chronic Kidney Disease. Kidney Int Suppl 2012;2(4):279–335','https://kdigo.org/guidelines/anemia-in-ckd/','الحديد وفقر الدم في القصور الكلوي','Iron and anemia in kidney disease']
+62:['KDIGO, 2012','KDIGO Clinical Practice Guideline for Anemia in Chronic Kidney Disease. Kidney Int Suppl 2012;2(4):279–335','https://kdigo.org/guidelines/anemia-in-ckd/','الحديد وفقر الدم في القصور الكلوي','Iron and anemia in kidney disease'],
+63:['Cochrane Review, 2018','Wang H, et al. Oral vitamin B12 versus intramuscular vitamin B12 for vitamin B12 deficiency. Cochrane Database Syst Rev 2018;3:CD004655','https://doi.org/10.1002/14651858.CD004655.pub3','B12 الفموي بجرعة عالية مقابل الحقن','High-dose oral versus injected B12'],
+64:['American Family Physician, 2022','Oral vs. Intramuscular Vitamin B12 for Vitamin B12 Deficiency (Cochrane for Clinicians). Am Fam Physician 2022;105(6):663','https://www.aafp.org/pubs/afp/issues/2022/0600/p663.pdf','نظم B12 الفموي والعضلي في التجارب','Oral and IM B12 regimens in the trials'],
+65:['CDC (U.S. Centers for Disease Control and Prevention)','Folic Acid: Facts for Clinicians','https://www.cdc.gov/folic-acid/hcp/clinical-overview/index.html','400 mcg حمض فوليك قبل الحمل','400 mcg folic acid before pregnancy'],
+66:['U.S. FDA labeling (DailyMed)','Folic acid tablets 1 mg: Prescribing information (dosage and administration)','https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=FOLIC+ACID+1+MG+TABLET','جرعة حمض الفوليك العلاجية حتى 1 ملغ','Therapeutic folic acid dose up to 1 mg'],
+67:['ACOG Practice Bulletin No. 187, 2017','Neural Tube Defects. Obstet Gynecol 2017;130(6):e279–e290','https://doi.org/10.1097/AOG.0000000000002412','4 ملغ حمض فوليك بعد حمل سابق بعيب في الأنبوب العصبي','4 mg folic acid after a previous NTD pregnancy'],
+68:['British Society of Gastroenterology, 2021','Snook J, et al. British Society of Gastroenterology guidelines for the management of iron deficiency anaemia in adults. Gut 2021;70:2030–2051','https://doi.org/10.1136/gutjnl-2021-325210','علاج فقر الدم بعوز الحديد للبالغين وحد Ferritin','Adult iron-deficiency anaemia treatment and ferritin cut-off']
 };
 let REFS=DEF_REFS;
-const DEF_REFGROUP={d:[1,2,3,4,61],b12:[5,6,7,8,29],fol:[9,10,11,28],fe:[12,13,14,15,16,17,27,51,52,59,62],ca:[18,19,27,61],mg:[20,21,22,58],c:[23,24],zn:[25,26],
+const DEF_REFGROUP={d:[2,3,4,61],b12:[5,8,29,63,64],fol:[11,28,65,66,67],fe:[13,14,15,16,17,27,51,52,59,62,68],ca:[18,19,27,61],mg:[20,21,22,58],c:[23,24],zn:[25,26],
   preg:[57,10,11,15,37,4,3,18,44,42,30,51],inf:[55,14,56,4],vac:[53,54,30]};
 
 const DEF_INTER=[

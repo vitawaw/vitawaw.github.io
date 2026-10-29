@@ -168,9 +168,26 @@ insert into public.sources (id, org, title, url, use_ar, use_en, kind, reviewed)
       'فيتامين D والكالسيوم والفوسفات في القصور الكلوي', 'Vitamin D, calcium and phosphate in kidney disease', 'g', false),
  (62, 'KDIGO, 2012', 'KDIGO Clinical Practice Guideline for Anemia in Chronic Kidney Disease. Kidney Int Suppl 2012;2(4):279–335', 'https://kdigo.org/guidelines/anemia-in-ckd/',
       'الحديد وفقر الدم في القصور الكلوي', 'Iron and anemia in kidney disease', 'g', false),
+ -- primary sources replacing the secondary ones (Medscape 1, 6, 7, 9, 12 and StatPearls 10), approved by the owner
+ (63, 'Cochrane Review, 2018', 'Wang H, et al. Oral vitamin B12 versus intramuscular vitamin B12 for vitamin B12 deficiency. Cochrane Database Syst Rev 2018;3:CD004655', 'https://doi.org/10.1002/14651858.CD004655.pub3',
+      'B12 الفموي بجرعة عالية مقابل الحقن', 'High-dose oral versus injected B12', 's', false),
+ (64, 'American Family Physician, 2022', 'Oral vs. Intramuscular Vitamin B12 for Vitamin B12 Deficiency (Cochrane for Clinicians). Am Fam Physician 2022;105(6):663', 'https://www.aafp.org/pubs/afp/issues/2022/0600/p663.pdf',
+      'نظم B12 الفموي والعضلي في التجارب', 'Oral and IM B12 regimens in the trials', 's', false),
+ (65, 'CDC (U.S. Centers for Disease Control and Prevention)', 'Folic Acid: Facts for Clinicians', 'https://www.cdc.gov/folic-acid/hcp/clinical-overview/index.html',
+      '400 mcg حمض فوليك قبل الحمل', '400 mcg folic acid before pregnancy', 'o', false),
+ (66, 'U.S. FDA labeling (DailyMed)', 'Folic acid tablets 1 mg: Prescribing information (dosage and administration)', 'https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=FOLIC+ACID+1+MG+TABLET',
+      'جرعة حمض الفوليك العلاجية حتى 1 ملغ', 'Therapeutic folic acid dose up to 1 mg', 'd', false),
+ (67, 'ACOG Practice Bulletin No. 187, 2017', 'Neural Tube Defects. Obstet Gynecol 2017;130(6):e279–e290', 'https://doi.org/10.1097/AOG.0000000000002412',
+      '4 ملغ حمض فوليك بعد حمل سابق بعيب في الأنبوب العصبي', '4 mg folic acid after a previous NTD pregnancy', 'g', false),
+ (68, 'British Society of Gastroenterology, 2021', 'Snook J, et al. British Society of Gastroenterology guidelines for the management of iron deficiency anaemia in adults. Gut 2021;70:2030–2051', 'https://doi.org/10.1136/gutjnl-2021-325210',
+      'علاج فقر الدم بعوز الحديد للبالغين وحد Ferritin', 'Adult iron-deficiency anaemia treatment and ferritin cut-off', 'g', false),
  (60, 'U.S. FDA (Tivicay label)', 'TIVICAY (dolutegravir): Full Prescribing Information', 'https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/204790s031%2C213983s004lbl.pdf',
       'فاصل Dolutegravir عن الحديد والكالسيوم ومضادات الحموضة', 'Spacing dolutegravir from iron, calcium and antacids', 'd', false)
 on conflict (id) do nothing;
+
+-- the secondary sources replaced above are hidden (soft: the owner approves in 🔔, history is kept, nothing is deleted)
+update public.sources t set hidden = true, pub = case when t.reviewed then to_jsonb(t) - 'pub' else t.pub end, reviewed = false
+ where id in (1, 6, 7, 9, 10, 12) and not deleted and not hidden;
 
 -- source 27: the patient-information page now returns 404; the label's drug-interactions page states the 4-hour gap
 update public.sources t set title = 'LEVOXYL (levothyroxine sodium): Drug Interactions', url = 'https://www.pfizermedical.com/levoxyl/drug-interactions',

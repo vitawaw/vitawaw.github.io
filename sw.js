@@ -1,6 +1,6 @@
 // VITAWAW service worker: lets the installed app open offline.
 // VERSION and FILES are updated by tools/set_version.py; do not edit them by hand.
-const VERSION='vitawaw-1.10.0-7db96ebe';
+const VERSION='vitawaw-1.10.0-0a4be3fb';
 const FILES=[
   './',
   './index.html',
@@ -10,11 +10,11 @@ const FILES=[
   './css/app.css?v=1.10.0-aa4364b8',
   './js/config.js?v=1.10.0-52e29505',
   './js/i18n.js?v=1.10.0-f77d3897',
-  './js/data.js?v=1.10.0-9eb89675',
+  './js/data.js?v=1.10.0-77eb47bb',
   './js/util.js?v=1.10.0-19fde934',
   './js/validation.js?v=1.10.0-0db6be41',
   './js/render.js?v=1.10.0-f4128517',
-  './js/calculators.js?v=1.10.0-0879c80d',
+  './js/calculators.js?v=1.10.0-084829f0',
   './js/content.js?v=1.10.0-43851910',
   './js/tools.js?v=1.10.0-1f16d104',
   './js/lists.js?v=1.10.0-a9e0aeae',
