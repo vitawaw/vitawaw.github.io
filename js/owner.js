@@ -184,18 +184,24 @@ const hideRef=id=>{ensureRefs();toggleHidden(CFG.refs.find(x=>x.id===id))};
 async function editInter(i){
   ensureInter();const isNew=i==null,o=isNew?null:CFG.inter[i];
   const nuts=KEYS.slice(1).map(k=>[k,kname(k)]);if(!nuts.length)return;
-  let v=o?[o.k,o.sev||'moderate',o.a.ar,o.a.en||'',o.b.ar,o.b.en||'',o.d.ar,o.d.en||'',(o.r||[]).slice()]:[nuts[0][0],'moderate','','','','','','',[]],err=null;
+  const g0=(o&&o.g)||{};
+  let v=o?[o.k,o.sev||'moderate',o.a.ar,o.a.en||'',o.b.ar,o.b.en||'',o.d.ar,o.d.en||'',(o.r||[]).slice(),g0.d||'',g0.d?String(g0.b):'',g0.d?String(g0.a):'']:[nuts[0][0],'moderate','','','','','','',[],'','',''],err=null;
   while(true){
     const r=await dialog({err,title:T(isNew?'o_iadd':'o_iedit'),fields:[{label:T('o_inut'),type:'select',options:nuts,value:v[0]},{label:T('o_isev'),type:'select',options:[['major',T('sev_major')],['moderate',T('sev_moderate')],['minor',T('sev_minor')]],value:v[1]},
       {label:T('o_ia'),value:v[2],ph:T('o_ia_ph')},{label:T('o_ia_en'),value:v[3],ltr:1},{label:T('o_ib'),value:v[4]},{label:T('o_ib_en'),value:v[5],ltr:1},
-      {label:T('o_id'),type:'textarea',value:v[6]},{label:T('o_id_en'),type:'textarea',value:v[7],ltr:1},{label:T('o_isrc'),type:'checks',options:refOpts(),value:v[8]}],
+      {label:T('o_id'),type:'textarea',value:v[6]},{label:T('o_id_en'),type:'textarea',value:v[7],ltr:1},{label:T('o_isrc'),type:'checks',options:refOpts(),value:v[8]},
+      // timing for the daily supplement schedule (optional): which item it concerns and the minimum gaps in hours
+      {label:T('o_ig'),type:'select',options:[['',T('o_ig_none')],...SCI.map(x=>[x[0],L(x[1],x[2])])],value:v[9]},{label:T('o_igb'),type:'number',value:v[10],ltr:1},{label:T('o_iga'),type:'number',value:v[11],ltr:1}],
       buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return;
-    v=[...r.values.slice(0,8).map(x=>x.trim()),r.values[8]];
+    v=[...r.values.slice(0,8).map(x=>x.trim()),r.values[8],...r.values.slice(9).map(x=>x.trim())];
     if(!v[2])v[2]=kname(v[0]);
     if(!v[4]||!v[6]){err={i:v[4]?6:4,msg:T('o_ineed')};continue}
     if(!v[8].length){err={i:8,msg:T('o_srcneed')};continue}
-    const item={hidden:!!(o&&o.hidden),k:v[0],sev:v[1],a:{ar:v[2],en:v[3]},b:{ar:v[4],en:v[5]},d:{ar:v[6],en:v[7]},r:v[8],rv:CANAPPROVE()};if(o&&o.id!=null)item.id=o.id;
+    const hb=parseFloat(v[10]),ha=parseFloat(v[11]),okH=n=>!isNaN(n)&&n>=0&&n<=24;
+    if(v[9]&&!okH(hb)){err={i:10,msg:T('o_igbad')};continue}
+    if(v[9]&&!okH(ha)){err={i:11,msg:T('o_igbad')};continue}
+    const item={hidden:!!(o&&o.hidden),k:v[0],sev:v[1],a:{ar:v[2],en:v[3]},b:{ar:v[4],en:v[5]},d:{ar:v[6],en:v[7]},r:v[8],rv:CANAPPROVE(),g:v[9]?{d:v[9],b:hb,a:ha}:{}};if(o&&o.id!=null)item.id=o.id;
     if(isNew)CFG.inter.push(item);else CFG.inter[i]=item;changed();return;
   }
 }
@@ -499,9 +505,9 @@ function pubSummary(){
   const nutHide=NHIDE(),nut=[...NCUST(),...(d.nut||[])].map(ok).filter(live);
   const keys=new Set(BUILTIN.filter(k=>!nutHide.includes(k)).concat(nut.map(c=>c.id)));
   const A={refs:[...(CFG.refs||[]),...(d.refs||[])].map(ok).filter(live).map(x=>st({id:x.id,org:x.org,title:x.title,url:x.url,ar:x.ar,en:x.en,kind:x.kind})),
-    inter:[...(CFG.inter||[]),...(d.inter||[])].map(ok).filter(x=>live(x)&&keys.has(x.k)).map(x=>st({k:x.k,a:x.a,b:x.b,d:x.d,sev:x.sev,r:x.r})),
+    inter:[...(CFG.inter||[]),...(d.inter||[])].map(ok).filter(x=>live(x)&&keys.has(x.k)).map(x=>st({k:x.k,a:x.a,b:x.b,d:x.d,sev:x.sev,r:x.r,...(x.g&&x.g.d?{g:x.g}:{})})),
     nut:nut.map(c=>st({id:c.id,n:c.n,h:c.h,uk:c.uk,rows:c.rows,plan:c.plan,note:c.note,r:c.r}))};
-  const B={refs:(P.refs||[]).map(st),inter:(P.inter||[]).map(st),nut:((P.nut&&P.nut.custom)||[]).map(st)};
+  const B={refs:(P.refs||[]).map(st),inter:(P.inter||[]).map(x=>{const y={...x};if(!(y.g&&y.g.d))delete y.g;return st(y)}),nut:((P.nut&&P.nut.custom)||[]).map(st)};
   let n=0;for(const k of ['refs','inter','nut']){const a=new Set(A[k]),b=new Set(B[k]);n+=Math.max([...a].filter(x=>!b.has(x)).length,[...b].filter(x=>!a.has(x)).length)}
   if(st(nutHide)!==st((P.nut&&P.nut.hide)||[]))n++;
   for(const k of ['contact','colors','text','roadmap','pages','nutOrder','brand','review'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;

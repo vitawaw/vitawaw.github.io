@@ -163,7 +163,7 @@ function ucv(){
 /* ===================== daily supplement schedule =====================
    Times are minutes after waking (W). Meals are assumed at W+1 h (breakfast), W+6 h (lunch), W+12 h (dinner), bed at W+15 h.
    Each item: [id, ar, en, candidate times (best first), how to take ar, en, sources]. The search tries every combination
-   and keeps the one with the best-ranked times that respects every minimum gap (SCGAP). */
+   and keeps the one with the best-ranked times that respects every minimum gap (schRules). */
 const H=60;
 const SCI=[
  ['levo','Levothyroxine','Levothyroxine',[0,30],'على معدة فارغة مع الماء، قبل الفطور بـ 30 – 60 دقيقة','On an empty stomach with water, 30–60 minutes before breakfast',[27]],
@@ -174,28 +174,40 @@ const SCI=[
  ['mg','المغنيسيوم','Magnesium',[12*H,15*H,6*H],'مع الطعام أو قبل النوم','With food or at bedtime',[20]],
  ['zn','الزنك','Zinc',[6*H,12*H,1*H],'مع الوجبة إن سبّب غثياناً','With a meal if it causes nausea',[25]],
  ['d','فيتامين D','Vitamin D',[6*H,12*H,1*H],'مع أكبر وجبة فيها دهون','With the largest meal containing fat',[4]],
- ['abx','مضاد حيوي (Ciprofloxacin أو Doxycycline) مرتين يومياً','Antibiotic (ciprofloxacin or doxycycline) twice a day',[1*H,2*H,3*H,0],'كل 12 ساعة؛ إذا وُصف 3 مرات يومياً فاسأل الصيدلاني','Every 12 hours; if prescribed three times a day, ask the pharmacist',[45]]];
-/* minimum gaps in minutes between two items (either order), or [before, after] for directional rules (a before b / a after b) */
-const SCGAP=[['levo','fe',4*H,[27]],['levo','ca',4*H,[27]],['levo','ca2',4*H,[27]],['levo','mg',4*H,[27]],
- ['fe','ca',2*H,[18,15]],['fe','ca2',2*H,[18,15]],['fe','zn',2*H,[25]],
- ['bis','levo',30,[20]],['bis','fe',30,[20]],['bis','zn',30,[20]],['bis','d',30,[20]],['bis','ca',2*H,[20]],['bis','ca2',2*H,[20]],['bis','mg',2*H,[20]],['bis','abx',30,[20]],
- ...['fe','ca','ca2','mg','zn'].map(m=>['abx',m,[2*H,6*H],[45]])];
+ ['abx','مضاد حيوي (Ciprofloxacin أو Doxycycline) مرتين يومياً','Antibiotic (ciprofloxacin or doxycycline) twice a day',[1*H,2*H,3*H,0],'كل 12 ساعة؛ إذا وُصف 3 مرات يومياً فاسأل الصيدلاني','Every 12 hours; if prescribed three times a day, ask the pharmacist',[45]],
+ ['dtg','Dolutegravir','Dolutegravir',[0,1*H,2*H,15*H],'مرة يومياً في وقت ثابت؛ ويمكن أخذه مع الحديد أو الكالسيوم إذا كان مع وجبة','Once a day at a fixed time; it can be taken with iron or calcium if taken with a meal',[60]]];
+/* built-in gaps, used when no interaction in the content sets one: [x, y, b, a, sources] = x at least b hours before y or a hours after it
+   (b = a for a simple gap; a = 24 means x must come first). The owner sets the same thing on an interaction («التوقيت في الجدول»):
+   its "g" {d: x, b, a} with the interaction's supplement as y — that one replaces the built-in rule for the pair. */
+const SCDEF=[['levo','fe',4,4,[27]],['levo','ca',4,4,[27]],['levo','mg',4,4,[27]],['fe','ca',2,2,[18,15]],['zn','fe',2,2,[25]],
+ ...['levo','fe','zn','d','abx','dtg'].map(m=>['bis',m,0.5,24,[20]]),['bis','ca',2,24,[20]],['bis','mg',2,24,[20]],
+ ...['fe','ca','mg','zn'].map(m=>['abx',m,2,6,[45]]),...['fe','ca','mg'].map(m=>['dtg',m,2,6,[60]])];
+const SCIDS=()=>SCI.map(x=>x[0]);
+/** the rules in force: interactions with timing (INTER[i][9]) win over the built-in ones; the second calcium dose follows calcium */
+function schRules(){
+  const by={},key=(x,y)=>x+'|'+y;
+  SCDEF.forEach(([x,y,b,a,r])=>{by[key(x,y)]={x,y,b,a,r,def:1}});
+  const own={};
+  (typeof INTER!=='undefined'?INTER:[]).forEach(t=>{const g=t[9];if(!g||!SCIDS().includes(g.d)||!SCIDS().includes(t[0])||g.d===t[0])return;
+    const k=key(g.d,t[0]),o=own[k]||{x:g.d,y:t[0],b:0,a:0,r:[]};o.b=Math.max(o.b,+g.b||0);o.a=Math.max(o.a,+g.a||0);o.r=[...new Set([...o.r,...t[4]])];own[k]=o});
+  Object.entries(own).forEach(([k,o])=>{by[k]=o;delete by[key(o.y,o.x)]});
+  const out=Object.values(by);
+  out.filter(o=>o.y==='ca'||o.x==='ca').forEach(o=>out.push({...o,x:o.x==='ca'?'ca2':o.x,y:o.y==='ca'?'ca2':o.y}));
+  return out;
+}
 const hhmm=(m,W)=>{const t=((W*60+m)%1440+1440)%1440;return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`};
 function schBuild(){
   const was=Object.fromEntries(SCI.map(x=>[x[0],$('sc-'+x[0])?$('sc-'+x[0]).checked:false]));
   $('schk').innerHTML=SCI.map(x=>`<label class="chk"><input type="checkbox" id="sc-${x[0]}"${was[x[0]]?' checked':''}><span>${esc(L(x[1],x[2]))}</span></label>`).join('');
   sch();
 }
-/** does the antibiotic (doses at a and a+12 h) keep 2 h before / 6 h after mineral time m? */
-const abxOk=(a,m,g)=>[a,a+12*H].every(t=>t<=m-g[0]||t>=m+g[1]);
 function schSolve(ids){
-  const items=ids.map(id=>SCI.find(x=>x[0]===id));let best=null;
-  const fits=(asg,id,t)=>SCGAP.every(([x,y,g])=>{
+  const items=ids.map(id=>SCI.find(x=>x[0]===id)),rules=schRules();let best=null;
+  const doses=(id,t)=>id==='abx'?[t,t+12*H]:[t];       // the antibiotic is taken twice, 12 hours apart
+  const fits=(asg,id,t)=>rules.every(({x,y,b,a})=>{
     const other=id===x?y:id===y?x:null;if(other==null||asg[other]==null)return true;
     const tx=id===x?t:asg[x],ty=id===y?t:asg[y];
-    if(Array.isArray(g))return abxOk(tx,ty,g);          // x = antibiotic
-    if(x==='bis')return ty>=tx+g;                         // everything after the weekly alendronate
-    return Math.abs(tx-ty)>=g;
+    return doses(x,tx).every(u=>doses(y,ty).every(m=>u<=m-b*H||u>=m+a*H));
   });
   const go=(i,asg,cost)=>{
     if(best&&cost>=best.cost)return;
@@ -216,9 +228,11 @@ function sch(){
   const meals=[[0,L('الاستيقاظ','Wake up')],[H,L('الفطور','Breakfast')],[6*H,L('الغداء','Lunch')],[12*H,L('العشاء','Dinner')],[15*H,L('النوم','Bed')]];
   const rows=[...meals.map(([t,n])=>({t,meal:n})),...ids.flatMap(id=>{const x=SCI.find(y=>y[0]===id),t=asg[id];
     return (id==='abx'?[t,t+12*H]:[t]).map(tt=>({t:tt,x}))})].sort((a,b)=>a.t-b.t||(a.meal?-1:1));
-  const pairs=SCGAP.filter(([a,b])=>ids.includes(a)&&ids.includes(b));
+  const pairs=schRules().filter(o=>ids.includes(o.x)&&ids.includes(o.y)&&!(o.x==='ca2'||o.y==='ca2'));
   $('schout').innerHTML=`<ol class="sched">${rows.map(r=>r.meal?`<li class="meal"><time>${hhmm(r.t,W)}</time><span>${esc(r.meal)}</span></li>`:
     `<li><time>${hhmm(r.t,W)}</time><div><b>${esc(L(r.x[1],r.x[2]))}</b><small>${esc(L(r.x[4],r.x[5]))}${R(r.x[6])}</small></div></li>`).join('')}</ol>`+
-    (pairs.length?`<p class="hint">${T('sc_gaps')}</p><ul class="gaps">${pairs.map(([a,b,g,r])=>{const n=k=>L(...SCI.find(y=>y[0]===k).slice(1,3)).replace(/ \(.*\)$/,'');
-      return `<li><b>${esc(n(a))} ↔ ${esc(n(b))}</b> ${esc(Array.isArray(g)?L('المضاد قبله بساعتين أو بعده بـ 6 ساعات','antibiotic 2 h before or 6 h after'):a==='bis'?L(`بعده بـ ${g>=60?g/60+' ساعة':g+' دقيقة'} على الأقل`,`at least ${g>=60?g/60+' h':g+' min'} after it`):L(`فاصل ${g/60===2?'ساعتين':g/60+' ساعات'} على الأقل`,`at least ${g/60} h apart`))}${R(r)}</li>`}).join('')}</ul>`:'');
+    (pairs.length?`<p class="hint">${T('sc_gaps')}</p><ul class="gaps">${pairs.map(o=>{const n=k=>L(...SCI.find(y=>y[0]===k).slice(1,3)).replace(/ \(.*\)$/,'').replace(/ مرتين يومياً| twice a day/,'');
+      const h=v=>v<1?L(`${v*60} دقيقة`,`${v*60} min`):v===1?L('ساعة','1 h'):v===2?L('ساعتين','2 h'):L(`${fmt(v)} ساعات`,`${fmt(v)} h`);
+      const t=o.a>=24?L(`${n(o.x)} أولاً، و${n(o.y)} بعده بـ ${h(o.b)} على الأقل`,`${n(o.x)} first, ${n(o.y)} at least ${h(o.b)} later`):o.a===o.b?L(`فاصل ${h(o.b)} على الأقل`,`at least ${h(o.b)} apart`):L(`${n(o.x)} قبله بـ ${h(o.b)} أو بعده بـ ${h(o.a)}`,`${n(o.x)} ${h(o.b)} before or ${h(o.a)} after`);
+      return `<li><b>${esc(n(o.x))} ↔ ${esc(n(o.y))}</b> ${esc(t)}${R(o.r)}${o.def?'':` <span class="own">${T('sc_own')}</span>`}</li>`}).join('')}</ul>`:'');
 }

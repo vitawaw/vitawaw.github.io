@@ -40,7 +40,8 @@ const DEF_REFS={
 56:['American Academy of Pediatrics, 2022','Hand I, et al. Vitamin K and the newborn infant. Pediatrics 2022;149(3):e2021056036','https://doi.org/10.1542/peds.2021-056036','فيتامين K عند الولادة','Vitamin K at birth'],
 57:['World Health Organization, 2016','WHO recommendations on antenatal care for a positive pregnancy experience','https://www.who.int/publications/i/item/9789241549912','الحديد وحمض الفوليك والكالسيوم في الحمل','Iron, folic acid and calcium in pregnancy'],
 58:["The Royal Children's Hospital Melbourne","Clinical Practice Guideline: Hypomagnesaemia",'https://www.rch.org.au/clinicalguide/guideline_index/Hypomagnesaemia/','جرعة المغنيسيوم الفموية للأطفال','Oral magnesium dose for children'],
-59:['UK SmPC (electronic medicines compendium)','Ferinject (ferric carboxymaltose): Summary of Product Characteristics','https://www.medicines.org.uk/emc/product/5910/smpc','جدول جرعات Ferinject المبسّط','Simplified Ferinject dosing table']
+59:['UK SmPC (electronic medicines compendium)','Ferinject (ferric carboxymaltose): Summary of Product Characteristics','https://www.medicines.org.uk/emc/product/5910/smpc','جدول جرعات Ferinject المبسّط','Simplified Ferinject dosing table'],
+60:['U.S. FDA (Tivicay label)','TIVICAY (dolutegravir): Full Prescribing Information','https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/204790s031%2C213983s004lbl.pdf','فاصل Dolutegravir عن الحديد والكالسيوم ومضادات الحموضة','Spacing dolutegravir from iron, calcium and antacids']
 };
 let REFS=DEF_REFS;
 const DEF_REFGROUP={d:[1,2,3,4],b12:[5,6,7,8,29],fol:[9,10,11,28],fe:[12,13,14,15,16,17,27,51,52,59],ca:[18,19,27],mg:[20,21,22,58],c:[23,24],zn:[25,26],

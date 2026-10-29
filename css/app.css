@@ -643,3 +643,13 @@ body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{d
 .sched li div{display:grid;gap:2px}.sched li small{color:var(--mute);font-size:13px}
 .sch .chk{margin-top:0}
 .gaps{margin:4px 0 0;padding-inline-start:18px;display:grid;gap:3px;font-size:13px;color:var(--mute)}.gaps b{color:var(--ink);font-weight:700}
+/* 1.9.0 interactions in the result, card buttons, my medicines */
+.rinter{display:grid;gap:6px;margin-top:10px}.rinter .btn{justify-self:start}
+.ri{display:grid;gap:3px;padding:8px 11px;border:1px solid var(--line);border-radius:10px;font-size:14px}.ri .sev{justify-self:start}.ri span:last-child{color:var(--mute);font-size:13px}
+.iact{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.iact .btn{font-size:13px;padding:6px 10px}
+.mymed{display:grid;gap:6px;margin:4px 0 12px;padding:10px;border:1px solid var(--line);border-radius:12px}
+.mmrow{display:flex;gap:6px}.mmrow input{flex:1;min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:500 16px var(--f-body)}
+.mmchips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.mmchips:empty{display:none}
+.mchip{display:inline-flex;align-items:center;gap:4px;padding:4px 6px 4px 10px;border-radius:99px;background:var(--chip);color:var(--royal);font-weight:700;font-size:14px}
+.mchip button{border:0;background:none;color:inherit;font-size:18px;line-height:1;cursor:pointer;min-width:28px;min-height:28px}
+.mmsum{font-size:13px;color:var(--mute)}.gaps .own{font-size:11px;color:var(--royal)}

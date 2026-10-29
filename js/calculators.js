@@ -104,7 +104,6 @@ function fB12(){
   }else r={badge:sT==='ind'?L('نقص غير مرجّح (Active B12 أعلى من 70 pmol/L)','Deficiency unlikely (active B12 above 70 pmol/L)'):L('ضمن الطبيعي','Normal'),tone:'ok',title:L(`الاحتياج اليومي ${rda} mcg`,`Daily need ${rda} mcg`),sub:L('من الغذاء أو متعدد الفيتامينات','From food or a multivitamin'),refs:sA?[5,8]:[8],pt:L('مستوى B12 طبيعي، ولا تحتاج علاجاً.','Your B12 level is normal; no treatment is needed.')};
   if(st==='ind'&&sA==='ind')notes.push({t:L('حسب NICE: عند Active B12 بين 25 و70 pmol/L مع أعراض، يُفحص MMA وتُفسَّر نتيجته حسب حدود المختبر.','Per NICE: with active B12 of 25–70 pmol/L and symptoms, test MMA and read it against the laboratory limits.'),r:[5]});
   if(sT==='ind'&&sA==null)notes.push({t:L('أدخل نتيجة Active B12 إن توفرت: أقل من 25 pmol/L يؤكد النقص، وأعلى من 70 يجعله غير مرجّح.','Enter an active B12 result if available: below 25 pmol/L confirms deficiency, above 70 makes it unlikely.'),r:[5],i:1});
-  notes.push({t:L('Metformin ومثبطات مضخة البروتون تخفض B12 مع الاستعمال الطويل.','Metformin and proton pump inhibitors lower B12 with long-term use.'),r:[8],i:1});
   r.kv=kv;r.notes=notes;render(r);
 }
 
@@ -131,7 +130,6 @@ function fFol(){
       opts:[{h:L('البداية الشائعة','Common starting dose'),b:L('1 ملغ يومياً','1 mg daily'),d:L('الحالات المقاومة قد تحتاج أكثر','Resistant cases may need more'),r:[9]},{h:L('البروتوكول البريطاني','UK regimen'),b:L('5 ملغ يومياً لمدة 4 أشهر','5 mg daily for 4 months'),r:[28]}]};
     notes.push({t:L('استبعد نقص B12 قبل البدء بالجرعات العلاجية.','Exclude B12 deficiency before starting treatment doses.'),r:[28],u:1});
   }
-  notes.push({t:L('Methotrexate ومضادات الصرع وSulfasalazine تتداخل مع حمض الفوليك.','Methotrexate, anticonvulsants and sulfasalazine interact with folic acid.'),r:[11,28],i:1});
   if(g==='plan'){r.tool='pills';PILL={k:'fol',dose:0.4,tab:0.4};r.ul=[['fol',400]]}
   else if(g==='ntd'||(g==='def'&&age>=18)){r.tool='pills';PILL={k:'fol',dose:5,tab:5}}
   r.kv=kv;r.notes=notes;render(r);
@@ -206,7 +204,6 @@ function fFe(){
       pt:L('حبة حديد (60 ملغ حديد) صباحاً يوماً بعد يوم، ثم تحليل Ferritin بعد 3 أشهر.','One iron tablet (60 mg of iron) in the morning every other day, then a ferritin test after 3 months.'),
       plan:[{h:L('العلاج: 3 أشهر','Treatment: 3 months'),d:L('60 ملغ يوماً بعد يوم','60 mg every other day')},{h:L('إعادة التحليل','Retest'),d:'Ferritin'}]};
   }
-  notes.push({t:L('افصل الحديد عن Levothyroxine بـ 4 ساعات على الأقل.','Separate iron from levothyroxine by at least 4 hours.'),r:[27]});
   if(sx==='p')notes.push({t:L('في الحمل الاحتياج 27 ملغ يومياً، ويحدد طبيب النساء جرعة العلاج.','In pregnancy the need is 27 mg daily; the obstetrician sets any treatment dose.'),r:[15]});
   r.kv=kv;r.notes=notes;r.tool='pills';PILL={k:'fe',dose};r.sch=['fe'];
   if(g==='rda'&&typeof rda==='number'&&age>=1)r.ul=[['fe',rda]];
@@ -237,7 +234,7 @@ function fCa(){
       opts:[{h:'Calcium carbonate',b:L('مع الطعام','With food'),d:L('يحتاج حمض المعدة للامتصاص','Needs stomach acid to be absorbed'),r:[18]},{h:'Calcium citrate',b:L('مع الطعام أو بدونه','With or without food'),d:L('أنسب لمن يتناول أدوية تقلل حمض المعدة','Better for people on acid-reducing medicines'),r:[18]}]};
       r.tool='pills';PILL={k:'ca',dose:Math.min(500,Math.ceil(gap/doses))};r.sch=doses>1?['ca','ca2']:['ca'];if(age>=1)r.ul=[['ca',diet+gap]];}
   }
-  r.notes=[{t:L('الإجمالي (غذاء + مكمل) يجب ألا يتجاوز الحد الأعلى. افصل الكالسيوم عن Levothyroxine بـ 4 ساعات.','Total intake (food + supplement) should stay under the upper limit. Separate calcium from levothyroxine by 4 hours.'),r:[18,27]}];
+  r.notes=[{t:L('الإجمالي (غذاء + مكمل) يجب ألا يتجاوز الحد الأعلى.','Total intake (food + supplement) should stay under the upper limit.'),r:[18]}];
   if(sx==='p')r.notes.push({t:L('توصي منظمة الصحة العالمية بـ 1,500 – 2,000 ملغ يومياً للحوامل ذوات المدخول المنخفض لتقليل خطر تسمم الحمل.','WHO recommends 1,500–2,000 mg daily for pregnant women with low intake to reduce pre-eclampsia risk.'),r:[18],i:1});
   r.kv=kv;render(r);
 }
@@ -276,7 +273,6 @@ function fMg(){
   if(r.refs&&r.refs.includes(22)&&!sev&&mgdl>=1.22){r.tool='pills';PILL={k:'mg',dose:243};r.sch=['mg']}
   if(r.refs&&r.refs.includes(22)&&!sev&&mgdl>=1.22)notes.push({t:L('الجرعة العلاجية أعلى من الحد الأعلى للمكملات (350 ملغ) لأنها علاج مؤقت بإشراف طبي، وليست مكملاً دائماً.','The treatment dose is above the supplement upper limit (350 mg) because it is short-term treatment under medical supervision, not a long-term supplement.'),r:[20,22]});
   if(ren)notes.push({t:L('في القصور الكلوي يرتفع خطر تراكم المغنيسيوم، فتُراقب المستويات عن قرب وتُخفض الجرعة الوريدية.','Kidney impairment raises the risk of magnesium build-up: monitor closely and reduce IV doses.'),r:[20,22],u:1});
-  notes.push({t:L('مدرات البول ومثبطات مضخة البروتون قد تسبب نقص المغنيسيوم.','Diuretics and proton pump inhibitors can cause low magnesium.'),r:[20],i:1});
   r.kv=kv;r.notes=notes;render(r);
 }
 
@@ -310,8 +306,7 @@ function fZn(){
     pt:L('الزنك قد يقصّر البرد يومين تقريباً، لكن الدليل ضعيف. إن استخدمته فلأيام قليلة فقط، فقد يسبب غثياناً وتغيراً في الطعم.','Zinc may shorten a cold by about 2 days, but the evidence is weak. If you use it, only for a few days; it can cause nausea and a changed taste.'),
     opts:[{h:L('إن استُخدم','If used'),b:L('دورة قصيرة فقط','Short course only'),d:L('الجرعات المدروسة في أقراص الاستحلاب تتجاوز غالباً الحد الأعلى اليومي، ومن آثارها الغثيان وتغير الطعم','Doses studied in lozenges often exceed the daily upper limit; side effects include nausea and altered taste'),r:[26,25]}]};
   if(g==='rda'&&typeof rda==='number'&&age>=1){r.ul=[['zn',rda]];r.sch=['zn']}
-  r.kv=kv;r.notes=[{t:L('الاستعمال الطويل فوق الحد الأعلى قد يسبب نقص النحاس. والحديد بجرعة 25 ملغ فأكثر يقلل امتصاص الزنك إذا أُخذا معاً.','Long-term use above the upper limit can cause copper deficiency. Iron at 25 mg or more lowers zinc absorption when taken together.'),r:[25]},
-    {t:L('المضاد الحيوي (كينولون أو تتراسيكلين) قبل الزنك بساعتين أو بعده بـ 4 إلى 6 ساعات.','Take quinolone or tetracycline antibiotics 2 hours before or 4–6 hours after zinc.'),r:[25],i:1}];render(r);
+  r.kv=kv;r.notes=[{t:L('الاستعمال الطويل فوق الحد الأعلى قد يسبب نقص النحاس. والحديد بجرعة 25 ملغ فأكثر يقلل امتصاص الزنك إذا أُخذا معاً.','Long-term use above the upper limit can cause copper deficiency. Iron at 25 mg or more lowers zinc absorption when taken together.'),r:[25]}];render(r);
 }
 
 /* ===================== Infant (0–24 months): vitamin K, vitamin D, iron ===================== */

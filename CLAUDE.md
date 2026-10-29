@@ -67,7 +67,13 @@ node tests/worker_test.mjs       # edge worker
 ```
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
-## Where we are (2026-10-29)
+## Where we are (2026-10-30)
+- **1.9.0 in preview** (same branch): interactions integration. `interactions.gap` jsonb {d: schedule item, b, a hours} — migration
+  `20261030000000_interaction_timing.sql` (he runs it; also content: sources 60, Dolutegravir, Mg–levothyroxine, timings).
+  Client: INTER[i][9] = timing; `schRules()` in tools.js (interaction timing beats `SCDEF`); `interHTML()` in render.js (result shows
+  the supplement's interactions, `IKEYS` for preg/inf/vac); `icActs()`/`schPair()`/«أدويتي» (`MEDS`, `MEDSCH`, localStorage vw-meds) in lists.js;
+  owner dialog editInter has the timing fields. Compatible with the live DB before the migration (save_content ignores "g").
+- **Live: 1.8.0.** The content file `content_review_vitamins.sql` was run (2026-10-29); its 35 items wait in 🔔 for approval.
 - **Live: 1.8.0** (he said «جاهز» on 2026-10-29; includes 1.7.0 and 1.6.9; main fast-forwarded from this branch): his 12 tool proposals. tools.js: `SALTS` (tablet counter, salts
   per element), `ferTable()` (Ferinject SmPC table, source 59), `mlc()` syrup/drops tool `#tool-ml`, daily schedule `#tool-sch`
   (`SCI` items, `SCGAP` minimum gaps, `schSolve()` search). Results open tools filled: render.js reads `r.ml`, `r.sch`, `r.ca`,
@@ -77,7 +83,7 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   `ferCut()` AAP/WHO), Active B12 (NICE), Mg children by weight (RCH, source 58), new built-in calculators `preg` (fPreg), `inf` (fInf),
   `vac` (fVA, WHO vitamin A) in BUILTIN; tools `#tool-ul` (UL checker, `ULT` in tools.js) and `#tool-u` (unit converter, `UCV`);
   review stamp `CFG.review` (owner: menu → site → ختم المراجعة الطبية; default his name + 2026-10-29). Fields shown per calculator by
-  `showFor()` (data-for / data-not). Sources 51–58 are in DEF_REFS and in `content_review_vitamins.sql` (not yet run). Next: he examines the tools.
+  `showFor()` (data-for / data-not). Sources 51–58 are in DEF_REFS and in `content_review_vitamins.sql` (run by him).
 - **1.6.9** (preview, under 1.7.0): scientific review of all vitamin content (he approved all fixes). Code: vitamin D adult
   from 19 (ES 2011 children 1–18), infant weekly option; DEF_REFS 14/27 URLs. Content: `content_review_vitamins.sql` (he runs
   it): Ca–quinolone timing fix (2 h before / 6 h after, FDA Cipro label = source 45), 12 new interactions, B5/chromium/

@@ -36,6 +36,11 @@ document.querySelectorAll('.tab[data-p]').forEach(t=>{
 document.addEventListener('click',e=>{
   const ex=e.target.closest('[data-ex]');if(ex){e.preventDefault();fillExample();return}
   const tl=e.target.closest('[data-tool]');if(tl){e.preventDefault();openTool(tl.dataset.tool);return}
+  // interactions ↔ calculator ↔ daily schedule
+  const gc=e.target.closest('[data-gocalc]');if(gc){e.preventDefault();K=gc.dataset.gocalc;try{localStorage.setItem('vw-k',K)}catch(e){}apply();go('calc');return}
+  const gs=e.target.closest('[data-gosch]');if(gs){e.preventDefault();SCI.forEach(x=>{const c=$('sc-'+x[0]);if(c)c.checked=false});SCHSET=gs.dataset.gosch.split(',');openTool('sch');return}
+  const gi=e.target.closest('[data-goint]');if(gi){e.preventDefault();IF=gi.dataset.goint;renderInter();go('interactions');return}
+  const dm=e.target.closest('[data-delmed]');if(dm){e.preventDefault();MEDS.splice(+dm.dataset.delmed,1);saveMeds();renderInter();return}
   const a=e.target.closest('[data-ref]');if(!a)return;e.preventDefault();
   const back=cur;SF='all';renderRefs();go('sources');
   $('back').hidden=back==='sources';$('back').dataset.to=back;
@@ -149,6 +154,7 @@ function apply(){
 }
 $('nsearch').addEventListener('input',filterNuts);
 $('isearch').addEventListener('input',renderInter);
+$('medform').addEventListener('submit',e=>{e.preventDefault();const v=$('medin').value.replace(/[<>]/g,'').trim().slice(0,60);if(v&&!MEDS.includes(v)&&MEDS.length<20){MEDS.push(v);saveMeds()}$('medin').value='';renderInter()});
 $('picker').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;K=b.dataset.k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()});
 ['age','sex','wt','ht','dlab','dunit','mal','med','ren','b12v','b12u','b12c','neuro','ab12','folg','feg','hb','fer','infl','cadiet','mgv','mgu','mgsx','mgren','czg','smk','mon','feed','pre','vag','tri','ntd','lowca','veg']
   .forEach(i=>{$(i).addEventListener('input',()=>{if(i==='age')syncSex();F[K]()});$(i).addEventListener('change',()=>{if(i==='age')syncSex();F[K]()})});

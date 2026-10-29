@@ -34,7 +34,7 @@ function buildData(){
   const hide=NHIDE(),vis=BUILTIN.filter(k=>!hide.includes(k)),custIds=VC.map(c=>c.id);
   KEYS=['all',...ordered([...vis,...custIds])];
   const il=Array.isArray(CFG.inter)?[...CFG.inter.map(ver),...DL('inter')]:defInterList();
-  INTER=il.map((x,i)=>[x.k,[x.a.ar,x.a.en||x.a.ar],[x.b.ar,x.b.en||x.b.ar],[x.d.ar,x.d.en||x.d.ar],x.r||[],i,x.sev||'moderate',x.rv!==false,!!x.hidden]).filter(x=>KEYS.includes(x[0])&&(all||(x[7]&&!x[8])));
+  INTER=il.map((x,i)=>[x.k,[x.a.ar,x.a.en||x.a.ar],[x.b.ar,x.b.en||x.b.ar],[x.d.ar,x.d.en||x.d.ar],x.r||[],i,x.sev||'moderate',x.rv!==false,!!x.hidden,x.g&&x.g.d?x.g:null]).filter(x=>KEYS.includes(x[0])&&(all||(x[7]&&!x[8])));
   REFGROUP={};
   KEYS.slice(1).forEach(k=>{const g=new Set(DEF_REFGROUP[k]||(CUST[k]?CUST[k].r||[]:[]));INTER.filter(x=>x[0]===k).forEach(x=>x[4].forEach(n=>g.add(n)));REFGROUP[k]=[...g].filter(n=>REFS[n])});
   // picker

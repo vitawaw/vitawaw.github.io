@@ -12,6 +12,14 @@ const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 /** the medical review stamp chosen by the owner: «تمت المراجعة الطبية بواسطة الصيدلاني سيف الدين · 2026-10-29» */
 const REV=()=>{const v=CFG.review||{},n=v.n?tx2(v.n):'';return {name:n?esc(n):'',date:v.date||''}};
 function reviewHTML(){const v=REV();return v.name?`<div class="reviewed">${CHECK}${T('rev')} ${v.name}${v.date?' · <span dir="ltr">'+v.date+'</span>':''}</div>`:''}
+/** the interactions of the calculator on screen, read from the interactions page (so an approved edit shows here too) */
+const IKEYS={preg:['fe','ca','fol','iodine','d','omega3','vita'],inf:['fe','d','vitk'],vac:['vita']};
+function interHTML(){
+  const ks=IKEYS[K]||[K],list=(typeof INTER!=='undefined'?INTER:[]).filter(x=>ks.includes(x[0])&&x[7]&&!x[8]).sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]);
+  if(!list.length)return '';
+  return `<div class="rinter"><p class="plan-h">${T('ri_t')} (${list.length})</p>${list.map(x=>`<div class="ri sevb-${x[6]}"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span><b>${ks.length>1?esc(L(x[1][0],x[1][1]))+' + ':''}${esc(L(x[2][0],x[2][1]))}</b><span>${esc(L(x[3][0],x[3][1]))}${R(x[4])}</span></div>`).join('')}
+    <button class="btn" type="button" data-goint="${esc(ks.length>1?'all':K)}">${T('ri_all')}</button></div>`;
+}
 function render(r){
   LAST=r;
   const pt=MODE==='pt';
@@ -41,6 +49,7 @@ function render(r){
      (pt&&r.pt?`<h3 style="font-size:17px">${r.title}${R(r.refs||[])}</h3><p class="sub">${r.sub||''}</p>`:'')+
      (r.kv&&r.kv.length?`<div class="kv">${r.kv.map(x=>`<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div>`:'')+
      (r.opts&&r.opts.length?`<div class="opts">${r.opts.map(o=>`<div class="opt"><small>${o.h}</small><b>${o.b}${R(o.r||[])}</b>${o.d?`<span>${o.d}</span>`:''}</div>`).join('')}</div>`:'')+
+     interHTML()+
      (rest.length?`<div class="notes">${rest.map(n=>`<div class="note${n.i?' i':''}">${n.t}${R(n.r||[])}</div>`).join('')}</div>`:'')+
      `<div class="src">${T('srcs')} ${all.filter(n=>REFS[n]).map(n=>`<a href="#" data-ref="${n}">${esc(REFS[n][0])}</a>`).join(' · ')}</div>`+
    `</details>`+

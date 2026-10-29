@@ -68,5 +68,18 @@ with sync_playwright() as p:
     calc('d', {'age':40,'dlab':120}); check('D >100 -> corrected calcium button', T('res'), 'الكالسيوم المصحح')
     calc('preg', {'age':28,'tri':'t2'}); tool('sch'); check('pregnancy -> schedule', T('schout'), 'الحديد'); pg.click('#sheet-x')
     calc('fol', {'age':28,'folg':'plan'}); tool('pills'); check('folic acid -> tablets', T('ntabs'), '1 حبة'); pg.click('#sheet-x')
+    # 1.9.0 interactions <-> calculator <-> schedule
+    calc('fe', {'age':30,'feg':'rda'}); check('interactions in the result', T('res'), 'Levothyroxine')
+    pg.click('#res [data-goint]'); pg.wait_for_timeout(150); check('-> interactions page filtered', pg.evaluate('IF'), 'fe')
+    card = pg.locator('#ilist .icard', has_text='Levothyroxine').first
+    card.locator('[data-gosch]').click(); pg.wait_for_timeout(150)
+    check('card -> schedule', ','.join(pg.evaluate("SCI.map(x=>x[0]).filter(id=>$('sc-'+id).checked)")), 'levo,fe'); pg.click('#sheet-x')
+    pg.goto('http://app.test/#interactions'); pg.wait_for_timeout(150); pg.evaluate("IF='all';renderInter()")
+    pg.fill('#medin','ليفوثيروكسين'); pg.click('#medform button'); pg.wait_for_timeout(150)
+    check('my medicines filter', T('medchips'), '2'); check('only matching cards', str(pg.locator('#ilist .icard').count()), '2')
+    pg.click('[data-delmed="0"]'); pg.wait_for_timeout(100)
+    # a timing set on an interaction replaces the built-in rule
+    r = pg.evaluate("(()=>{const x=INTER.find(t=>t[0]==='ca'&&/Levothyroxine/.test(t[2][1]));x[9]={d:'levo',b:5,a:5};const o=schRules().find(o=>o.x==='levo'&&o.y==='ca');x[9]=null;return o.b+'/'+o.a})()")
+    check('owner timing wins', r, '5/5')
     print('page errors:', errs)
 sys.exit(1 if fails or errs else 0)
