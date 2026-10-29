@@ -21,7 +21,7 @@ window.addEventListener('hashchange',()=>{if(routeSpecial())return;show(location
 function routeSpecial(){
   let h=location.hash.slice(1);try{h=decodeURIComponent(h)}catch(e){}
   if(h==='owner'){openOwner();return true}
-  if(h==='join'||h.startsWith('join=')){openOwner({join:h.slice(5)});return true}
+  if(h==='join'||h.startsWith('join=')){const [em,k]=h.slice(5).split('&k=');openOwner({join:em||'',key:k||''});return true}
   if(h.startsWith('info-')){history.replaceState(null,'',location.pathname+location.search+'#'+cur);openPage(h.slice(5));return true}
   return false;
 }

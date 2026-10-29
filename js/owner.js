@@ -11,10 +11,11 @@ function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent=whoLabel();
   const d=dirty();$('odot').classList.toggle('dirty',d||OWN.saved);
-  $('ostate').textContent=T(d?'o_dirty':OWN.saved?'o_saved':'o_clean');
-  $('o-save').textContent=T(ISOWNER()?'o_save':'mr_savemine');$('o-publish').textContent=T('o_publish');$('o-pvexit').textContent=T('o_pvexit');
-  $('o-preview').textContent=T('o_preview');$('o-discard').title=$('o-discard').ariaLabel=T('o_discard');
+  const st=d?'o_dirty':OWN.saved?'o_saved':'o_clean';$('ostate').textContent=T(innerWidth<600?st+'_s':st);
+  const nar=innerWidth<600;$('o-save').textContent=T(nar?'o_save_s':ISOWNER()?'o_save':'mr_savemine');$('o-publish').textContent=T('o_publish');$('o-pvexit').textContent=T('o_pvexit');
+  $('o-preview').textContent=T('o_preview');$('o-discard').title=$('o-discard').ariaLabel=T('o_discard');$('o-discard-l').textContent=T('o_discard_s');
   $('o-publish').hidden=$('o-preview').hidden=!ISOWNER();
+  $('o-texts').hidden=!CAN('text');$('o-texts-l').textContent=T('o_texts');$('o-texts').title=T('o_texts_t');$('o-texts').setAttribute('aria-pressed',document.body.classList.contains('textedit'));
   // what this account may edit: hides the edit buttons it cannot use (the database refuses them anyway)
   ['nut','inter','refs','text'].forEach(k=>document.body.classList.toggle('cant-'+k,!CAN(k)));
   document.body.classList.toggle('not-owner',!ISOWNER());
@@ -38,9 +39,10 @@ function decorate(){
 }
 
 /* ----- generic dialog ----- */
-function dialog({title,fields=[],info='',buttons}){
+/** err: {i: field index, msg} shows the problem under that field (or {msg} for the whole form) */
+function dialog({title,fields=[],info='',buttons,err=null}){
   return new Promise(res=>{
-    $('dlg-t').textContent=title;$('dlg-m').hidden=true;
+    $('dlg-t').textContent=title;$('dlg-m').hidden=!(err&&err.i==null);$('dlg-m').textContent=err&&err.i==null?err.msg:'';
     $('dlg-b').innerHTML=(info?`<p class="info">${esc(info)}</p>`:'')+fields.map((f,i)=>{
       const id='dlgf'+i,lab=`<label class="l" for="${id}">${esc(f.label)}</label>`;
       if(f.type==='textarea')return `<div class="row">${lab}<textarea id="${id}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${f.ltr?' dir="ltr"':''}>${esc(f.value)}</textarea></div>`;
@@ -49,14 +51,16 @@ function dialog({title,fields=[],info='',buttons}){
       if(f.type==='colors')return `<div class="cols"><div class="row"><label class="l" for="${id}a">${esc(f.labels[0])}</label><input type="color" id="${id}a" value="${f.value[0]}"></div><div class="row"><label class="l" for="${id}b">${esc(f.labels[1])}</label><input type="color" id="${id}b" value="${f.value[1]}"></div></div>`;
       return `<div class="row">${lab}<input type="${f.type||'text'}" id="${id}" value="${esc(f.value)}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${f.ltr||['tel','email','url'].includes(f.type)?' dir="ltr"':''}></div>`;
     }).join('');
-    $('dlg-a').innerHTML=buttons.map((b,i)=>`<button class="btn${b.pri?' pri':''}" type="${b.pri?'submit':'button'}" data-bi="${i}">${esc(b.label)}</button>`).join('');
+    if(err&&err.i!=null){const f=$('dlgf'+err.i)||$('dlgf'+err.i+'a');const row=f&&f.closest('.row');if(row){row.classList.add('bad');row.insertAdjacentHTML('beforeend',`<p class="ferr" role="alert">${esc(err.msg)}</p>`)}}
+    $('dlg-a').innerHTML=buttons.map((b,i)=>`<button class="btn${b.pri?' pri':''}${b.danger?' danger':''}" type="${b.pri?'submit':'button'}" data-bi="${i}">${esc(b.label)}</button>`).join('');
     const read=()=>fields.map((f,i)=>f.type==='colors'?[$('dlgf'+i+'a').value,$('dlgf'+i+'b').value]:f.type==='checks'?[...$('dlgf'+i).querySelectorAll('input:checked')].map(x=>+x.value):$('dlgf'+i).value);
     const finish=v=>{$('dlg').hidden=true;$('dlgf').onsubmit=null;$('dlg-a').onclick=null;res(v)};
     $('dlg-a').onclick=e=>{const b=e.target.closest('[data-bi]');if(!b||b.type==='submit')return;finish({action:buttons[+b.dataset.bi].action,values:read()})};
     $('dlgf').onsubmit=e=>{e.preventDefault();const b=buttons.find(x=>x.pri);finish({action:b.action,values:read()})};
     dialog.msg=m=>{$('dlg-m').textContent=m;$('dlg-m').hidden=false};
     dialog.cancel=()=>finish({action:'cancel',values:read()});
-    $('dlg').hidden=false;const first=$('dlg-b').querySelector('input,textarea,select');(first||$('dlg-a').querySelector('button')).focus();
+    $('dlg').hidden=false;const bad=$('dlg-b').querySelector('.row.bad input,.row.bad textarea,.row.bad select,.row.bad .checks input');const first=bad||$('dlg-b').querySelector('input,textarea,select');
+    (first||$('dlg-a').querySelector('button')).focus();if(bad)bad.closest('.row').scrollIntoView({block:'center'});
   });
 }
 // Escape = Cancel (never Reset or Delete), and only the dialog closes, not the window underneath
@@ -81,7 +85,7 @@ async function editContact(){
   const c=CFG.contact;
   const r=await dialog({title:T('o_contact'),fields:[{label:T('o_email'),type:'email',value:c.email},{label:T('o_phone'),type:'tel',value:c.phone||''}],
     buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
-  if(r.action==='ok'){const [e,ph]=r.values.map(x=>x.trim());if(!e&&!ph){toast(T('o_contact_need'));return}CFG.contact={email:e,phone:ph};changed()}
+  if(r.action==='ok'){const [e,ph]=r.values.map(x=>x.trim());if(!e&&!ph){toast(T('o_contact_need'));return editContact()}CFG.contact={email:e,phone:ph};changed()}
 }
 const STATUSES=()=>[['dev',T('st_dev')],['plan',T('st_plan')],['idea',T('st_idea')]];
 const ICONS=()=>Object.keys(IC).map(k=>[k,{bell:'🔔',chart:'📈',plus:'➕',pill:'💊',clock:'⏰',share:'📤',cam:'📷',baby:'👶'}[k]+' '+k]);
@@ -94,7 +98,7 @@ async function editFeature(i){
   const item={st,ic,t:{ar:t,en:te},d:{ar:d,en:de},...(x.hidden?{hidden:true}:{})};
   if(isNew)CFG.roadmap.push(item);else CFG.roadmap[i]=item;changed();
 }
-async function delFeature(i){const q=await dialog({title:T('o_delq'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_del'),action:'ok',pri:1}]});if(q.action==='ok'){CFG.roadmap.splice(i,1);changed()}}
+async function delFeature(i){if(await confirmDel(tx2(CFG.roadmap[i].t))){CFG.roadmap.splice(i,1);changed()}}
 function hideFeature(i){const x=CFG.roadmap[i];if(!x)return;x.hidden=!x.hidden;changed()}
 function moveFeature(i,d){const j=i+d;if(j<0||j>=CFG.roadmap.length)return;const a=CFG.roadmap;[a[i],a[j]]=[a[j],a[i]];changed()}
 document.addEventListener('click',e=>{
@@ -114,18 +118,18 @@ document.addEventListener('click',e=>{
 const refOpts=()=>Object.entries(REFS).sort((a,b)=>a[0]-b[0]).map(([n,x])=>[+n,`${n}. ${x[0]} — ${x[1]}`]);
 const ensureRefs=()=>{if(!Array.isArray(CFG.refs))CFG.refs=defRefList()};
 const ensureInter=()=>{if(!Array.isArray(CFG.inter))CFG.inter=defInterList()};
-async function confirmDel(info){const q=await dialog({title:T('o_delq2'),info:info||'',buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_del'),action:'ok',pri:1}]});return q.action==='ok'}
+async function confirmDel(info){const q=await dialog({title:T('o_delq2'),info:info||'',buttons:[{label:T('o_back'),action:'cancel'},{label:T('o_yesdel'),action:'ok',pri:1,danger:1}]});return q.action==='ok'}
 const RTYPES=()=>[['',T('o_rt_auto')],...['g','o','d','s','c','x'].map(k=>[k,T('rt_'+k)])];
 async function editRef(id){
   ensureRefs();const isNew=id==null,o=isNew?{org:'',title:'',url:'',ar:'',en:'',kind:''}:CFG.refs.find(x=>x.id===id);if(!o)return;
-  let v=[o.org,o.title,o.url,o.kind||'',o.ar||'',o.en||''];
+  let v=[o.org,o.title,o.url,o.kind||'',o.ar||'',o.en||''],err=null;
   while(true){
-    const r=await dialog({title:T(isNew?'o_radd':'o_redit'),info:T('o_rinfo'),fields:[{label:T('o_rorg'),value:v[0]},{label:T('o_rtitle'),type:'textarea',value:v[1]},{label:T('o_rurl'),type:'url',value:v[2]},
+    const r=await dialog({err,title:T(isNew?'o_radd':'o_redit'),info:T('o_rinfo'),fields:[{label:T('o_rorg'),value:v[0]},{label:T('o_rtitle'),type:'textarea',value:v[1]},{label:T('o_rurl'),type:'url',value:v[2]},
       {label:T('o_rtype'),type:'select',options:RTYPES(),value:v[3]},{label:T('o_ruse'),value:v[4]},{label:T('o_ruse_en'),value:v[5],ltr:1}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return;
     v=r.values.map(x=>x.trim());
-    if(!v[0]||!v[1]){toast(T('o_rneed'));continue}
-    if(v[2]&&!/^https?:\/\//i.test(v[2])){toast(T('o_rbadurl'));continue}
+    if(!v[0]||!v[1]){err={i:v[0]?1:0,msg:T('o_rneed')};continue}
+    if(v[2]&&!/^https?:\/\//i.test(v[2])){err={i:2,msg:T('o_rbadurl')};continue}
     const item={...(isNew?{}:{hidden:!!o.hidden}),id:isNew?Math.max(29,(OWN.nextRef||1)-1,...CFG.refs.map(x=>x.id))+1:id,org:v[0],title:v[1],url:v[2],kind:v[3],ar:v[4],en:v[5],rv:CANAPPROVE()};
     if(isNew)CFG.refs.push(item);else CFG.refs[CFG.refs.findIndex(x=>x.id===id)]=item;
     changed();if(isNew)toast(T('o_radded')+' '+item.id);return;
@@ -143,17 +147,17 @@ const hideRef=id=>{ensureRefs();toggleHidden(CFG.refs.find(x=>x.id===id))};
 async function editInter(i){
   ensureInter();const isNew=i==null,o=isNew?null:CFG.inter[i];
   const nuts=KEYS.slice(1).map(k=>[k,kname(k)]);if(!nuts.length)return;
-  let v=o?[o.k,o.sev||'moderate',o.a.ar,o.a.en||'',o.b.ar,o.b.en||'',o.d.ar,o.d.en||'',(o.r||[]).slice()]:[nuts[0][0],'moderate','','','','','','',[]];
+  let v=o?[o.k,o.sev||'moderate',o.a.ar,o.a.en||'',o.b.ar,o.b.en||'',o.d.ar,o.d.en||'',(o.r||[]).slice()]:[nuts[0][0],'moderate','','','','','','',[]],err=null;
   while(true){
-    const r=await dialog({title:T(isNew?'o_iadd':'o_iedit'),fields:[{label:T('o_inut'),type:'select',options:nuts,value:v[0]},{label:T('o_isev'),type:'select',options:[['major',T('sev_major')],['moderate',T('sev_moderate')],['minor',T('sev_minor')]],value:v[1]},
+    const r=await dialog({err,title:T(isNew?'o_iadd':'o_iedit'),fields:[{label:T('o_inut'),type:'select',options:nuts,value:v[0]},{label:T('o_isev'),type:'select',options:[['major',T('sev_major')],['moderate',T('sev_moderate')],['minor',T('sev_minor')]],value:v[1]},
       {label:T('o_ia'),value:v[2],ph:T('o_ia_ph')},{label:T('o_ia_en'),value:v[3],ltr:1},{label:T('o_ib'),value:v[4]},{label:T('o_ib_en'),value:v[5],ltr:1},
       {label:T('o_id'),type:'textarea',value:v[6]},{label:T('o_id_en'),type:'textarea',value:v[7],ltr:1},{label:T('o_isrc'),type:'checks',options:refOpts(),value:v[8]}],
       buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return;
     v=[...r.values.slice(0,8).map(x=>x.trim()),r.values[8]];
     if(!v[2])v[2]=kname(v[0]);
-    if(!v[4]||!v[6]){toast(T('o_ineed'));continue}
-    if(!v[8].length){toast(T('o_srcneed'));continue}
+    if(!v[4]||!v[6]){err={i:v[4]?6:4,msg:T('o_ineed')};continue}
+    if(!v[8].length){err={i:8,msg:T('o_srcneed')};continue}
     const item={hidden:!!(o&&o.hidden),k:v[0],sev:v[1],a:{ar:v[2],en:v[3]},b:{ar:v[4],en:v[5]},d:{ar:v[6],en:v[7]},r:v[8],rv:CANAPPROVE()};if(o&&o.id!=null)item.id=o.id;
     if(isNew)CFG.inter.push(item);else CFG.inter[i]=item;changed();return;
   }
@@ -173,6 +177,8 @@ function notifList(){
   const add=(t,list,useIdx)=>list.forEach((x,i)=>{if(x.rv===false)out.push({t,id:x.id,idx:useIdx?i:null,kind:x.pv?'edit':'new',label:NLBL[t](x),was:x.pv?NLBL[t](x.pv):'',by:x.by||''})});
   add('n',NCUST());add('i',CFG.inter||[],true);add('r',CFG.refs||[]);
   ['nut','inter','refs'].forEach((k,j)=>(d[k]||[]).forEach(x=>out.push({t:'nir'[j],id:x.id,idx:null,kind:'del',label:NLBL['nir'[j]](x),was:'',by:x.by||''})));
+  const tm=typeof OWN!=='undefined'&&OWN.team;
+  if(tm){const m=TEAM.list&&TEAM.list.members.find(x=>x.id===tm.by);out.push({t:'x',id:'texts',idx:null,kind:'edit',label:T('nt_texts'),was:textChanges(tm).join(' · '),by:m?(m.name||m.email):''})}
   return out;
 }
 const pendingCount=()=>notifList().length;
@@ -185,7 +191,16 @@ async function loadNotes(){
 }
 /** number on the 🔔 tab: owner = changes to decide, pharmacist = unread decisions */
 const notifCount=()=>!(typeof OWN!=='undefined'&&OWN.on)?0:ISOWNER()?pendingCount():NOTE.mine.filter(n=>!n.read).length;
-const NKIND={r:'tab_src',i:'tab_int',n:'ad_vit'};
+const NKIND={r:'tab_src',i:'tab_int',n:'ad_vit',x:'nt_texts_k'};
+/** what a pharmacist's texts proposal changes: page texts and info pages (titles) */
+function textChanges(tm){
+  const out=[],cur=CFG.text||{},pg=CFG.pages||[],np=tm.pages||[];
+  const tx=Object.keys({...cur,...(tm.text||{})}).filter(k=>JSON.stringify(cur[k]||null)!==JSON.stringify((tm.text||{})[k]||null));
+  if(tx.length)out.push(T('nt_tx_n').replace('{n}',tx.length));
+  const ch=np.filter(p=>JSON.stringify(pg.find(x=>x.id===p.id)||null)!==JSON.stringify(p)).length+pg.filter(p=>!np.some(x=>x.id===p.id)).length;
+  if(ch)out.push(T('nt_pg_n').replace('{n}',ch));
+  return out;
+}
 const NICO={new:'<path d="M12 5v14M5 12h14"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',del:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',approved:'<path d="M5 12l5 5 9-10"/>',rejected:'<path d="M6 6l12 12M18 6L6 18"/>'};
 const nico=k=>`<span class="nic nic-${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">${NICO[k]}</svg></span>`;
 function renderNotif(opening){
@@ -196,7 +211,7 @@ function renderNotif(opening){
     h+=`<p class="hint">${T('nt_hint')}</p>`;
     if(list.length>1)h+=`<div class="ntop"><b>${list.length} ${T('nt_waiting')}</b><div class="filters">${S({label:T('nt_all'),cls:'pri',f:()=>decideAll(list)})}</div></div>`;
     h+=list.length?list.map(n=>`<div class="ncard">${nico(n.kind)}<div class="nb"><div class="nh"><b>${esc(T('nt_'+n.kind))}</b> · ${esc(T(NKIND[n.t]))}${n.by?` · <span class="nby">${esc(T('nt_by'))} ${esc(n.by)}</span>`:''}</div>
-      <div class="nl">${esc(n.label)}</div>${n.was&&n.was!==n.label?`<div class="nw">${esc(T('rc_was'))} ${esc(n.was)}</div>`:''}
+      <div class="nl" dir="auto">${esc(n.label)}</div>${n.was&&n.was!==n.label?`<div class="nw">${esc(T('rc_was'))} ${esc(n.was)}</div>`:''}
       <div class="filters">${S({label:T(n.kind==='del'?'rc_okdel':'o_approve'),cls:'pri',f:()=>decide(n,true)})}${S({label:T(n.kind==='del'?'rc_restore':'nt_reject'),f:()=>decide(n,false)})}${n.kind!=='del'?S({label:T('nt_view'),f:()=>viewItem(n)}):''}</div></div></div>`).join('')
       :`<div class="nempty">${nico('approved')}<b>${T('nt_none')}</b></div>`;
   }else{
@@ -213,6 +228,10 @@ function renderNotif(opening){
 }
 /** show the item where it lives */
 function viewItem(n){
+  if(n.t==='x'){const tm=OWN.team||{},cur=CFG.text||{},nt=tm.text||{};
+    const rows=Object.keys({...cur,...nt}).filter(k=>JSON.stringify(cur[k]||null)!==JSON.stringify(nt[k]||null)).map(k=>`<div class="ncard"><div class="nb"><div class="nh">${esc(T('nt_was'))} ${esc((cur[k]&&cur[k].ar)||(I18N[k]||[''])[0])}</div><div class="nl">${esc((nt[k]&&nt[k].ar)||(I18N[k]||[''])[0])}</div></div></div>`);
+    const pg=(tm.pages||[]).filter(p=>JSON.stringify((CFG.pages||[]).find(x=>x.id===p.id)||null)!==JSON.stringify(p)).map(p=>`<div class="ncard"><div class="nb"><div class="nh">${esc(T('ad_pages'))}</div><div class="nl">${esc(tx2(p.t))}</div><div class="nw">${esc(tx2(p.b)).slice(0,300)}</div></div></div>`);
+    openSheet(T('nt_texts'),rows.concat(pg).join('')||`<p class="inone">${T('nt_none')}</p>`);return}
   if(n.t==='r'){SF='all';renderRefs();go('sources');setTimeout(()=>{const el=$('ref-'+n.id);if(el){el.scrollIntoView({block:'center'});el.classList.add('hl')}},80);return}
   if(n.t==='i'){IF='all';$('isearch').value='';renderInter();go('interactions');setTimeout(()=>{const el=document.querySelector(`#ilist [data-act][data-kind="i"][data-id="${n.idx}"]`);if(el)el.closest('.icard').scrollIntoView({block:'center'})},80);return}
   pickNut(n.id);setTimeout(()=>{const el=document.querySelector(`#nadm [data-kind="n"][data-id="${n.id}"]`);if(el)el.scrollIntoView({block:'center'})},80);
@@ -220,7 +239,7 @@ function viewItem(n){
 /** decide on one change: saved in the database at once (unsaved edits are saved first) */
 async function decide(n,accept,quiet){
   if(!ISOWNER()||(OWN.busy&&!quiet))return false;
-  if(!accept&&!quiet){const q=await dialog({title:T(n.kind==='del'?'rc_restore':'nt_rejq'),info:T(n.kind==='del'?'nt_restore_i':'nt_rej_i'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T(n.kind==='del'?'rc_restore':'nt_reject'),action:'ok',pri:1}]});if(q.action!=='ok')return false}
+  if(!accept&&!quiet){const q=await dialog({title:T(n.kind==='del'?'rc_restore':'nt_rejq'),info:T(n.kind==='del'?'nt_restore_i':'nt_rej_i'),buttons:[{label:T('o_back'),action:'cancel'},{label:T(n.kind==='del'?'rc_restore':'nt_reject'),action:'ok',pri:1,danger:n.kind!=='del'}]});if(q.action!=='ok')return false}
   if(OWN.local){ // no database: decide in the local draft
     const list=n.t==='r'?CFG.refs:n.t==='i'?CFG.inter:NCUST();const j=n.t==='i'?n.idx:list.findIndex(x=>x.id===n.id);const x=list[j];
     if(x){if(accept){x.rv=true;delete x.pv}else if(x.pv)list[j]={...x.pv,rv:true};else list.splice(j,1)}
@@ -230,11 +249,22 @@ async function decide(n,accept,quiet){
   return _decide(n,accept,true);
 }
 async function _decide(n,accept,quiet){
+  if(n.t==='x')return decideTexts(accept,quiet);
   if(dirty()&&!(await _saveDraft()))return false;
   const id=n.t==='i'&&n.id==null?(CFG.inter[n.idx]||{}).id:n.id;
   const {error}=await OWN.client.rpc('review_change',{p_kind:n.t,p_id:String(id),p_accept:accept});
   if(error){console.error(error);toast(T('o_neterr'));return false}
   if(!quiet)await reloadContent(accept?'o_approved':'rc_restored');
+  return true;
+}
+/** approve: the pharmacist's texts/pages become the draft's; reject: they are dropped. Saved at once. */
+async function decideTexts(accept,quiet){
+  const tm=OWN.team;if(!tm)return true;
+  if(dirty()&&!(await _saveDraft()))return false;
+  if(accept){if(tm.text)CFG.text=clone(tm.text);if(Array.isArray(tm.pages))CFG.pages=clone(tm.pages)}
+  if(!OWN.local){const data=JSON.parse(cfgJSON());const {error}=await OWN.client.from('site_config').upsert({id:'draft',data:{...settingsOf(data),team_done:true},updated_at:new Date().toISOString()});if(error){toast(T('o_neterr'));return false}}
+  OWN.team=null;OWN.base=cfgJSON();OWN.parts=partsOf();OWN.saved=true;
+  if(!quiet){changed();renderNotif();toast(T(accept?'o_approved':'rc_restored'))}
   return true;
 }
 async function reloadContent(msg){
@@ -273,17 +303,17 @@ const UNITTXT={mg:{ar:'ملغ',en:'mg'},mcg:{ar:'ميكروغرام',en:'mcg'},g
 async function editNut(id){
   CFG.nut=CFG.nut||{hide:[],custom:[]};const isNew=id==null,o=isNew?null:CFG.nut.custom.find(c=>c.id===id);if(!isNew&&!o)return;
   const g=(x,l)=>(x&&x[l])||'';
-  let v=o?[o.n.ar,g(o.n,'en'),g(o.h,'ar'),g(o.h,'en'),o.uk||'mg',fmtRows(o.rows),g(o.plan,'ar'),g(o.plan,'en'),g(o.note,'ar'),g(o.note,'en'),(o.r||[]).slice()]:['','','','','mg','','','','','',[]];
+  let v=o?[o.n.ar,g(o.n,'en'),g(o.h,'ar'),g(o.h,'en'),o.uk||'mg',fmtRows(o.rows),g(o.plan,'ar'),g(o.plan,'en'),g(o.note,'ar'),g(o.note,'en'),(o.r||[]).slice()]:['','','','','mg','','','','','',[]],err=null;
   while(true){
-    const r=await dialog({title:T(isNew?'o_nadd':'o_nedit'),info:T('o_ninfo'),fields:[{label:T('o_nname'),value:v[0]},{label:T('o_nname_en'),value:v[1],ltr:1},{label:T('o_nh'),value:v[2]},{label:T('o_nh_en'),value:v[3],ltr:1},
+    const r=await dialog({err,title:T(isNew?'o_nadd':'o_nedit'),info:T('o_ninfo'),fields:[{label:T('o_nname'),value:v[0]},{label:T('o_nname_en'),value:v[1],ltr:1},{label:T('o_nh'),value:v[2]},{label:T('o_nh_en'),value:v[3],ltr:1},
       {label:T('o_nunit'),type:'select',options:UNITS(),value:v[4]},{label:T('o_nrows'),type:'textarea',value:v[5],ph:T('o_nrows_ph')},
       {label:T('o_nplan'),type:'textarea',value:v[6]},{label:T('o_nplan_en'),type:'textarea',value:v[7],ltr:1},{label:T('o_nnote'),type:'textarea',value:v[8]},{label:T('o_nnote_en'),type:'textarea',value:v[9],ltr:1},
       {label:T('o_isrc'),type:'checks',options:refOpts(),value:v[10]}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return;
     v=[...r.values.slice(0,10).map((x,j)=>j===4||j===5?x:x.trim()),r.values[10]];
-    if(!v[0]){toast(T('o_nneedname'));continue}
-    const pr=parseRows(v[5]);if(pr.err){toast(T('o_nbadrow')+' '+pr.err);continue}
-    if(!v[10].length){toast(T('o_srcneed'));continue}
+    if(!v[0]){err={i:0,msg:T('o_nneedname')};continue}
+    const pr=parseRows(v[5]);if(pr.err){err={i:5,msg:T('o_nbadrow')+' '+pr.err};continue}
+    if(!v[10].length){err={i:10,msg:T('o_srcneed')};continue}
     const nid=isNew?'c'+Date.now().toString(36).slice(-8):id;
     const item={id:nid,n:{ar:v[0],en:v[1]},h:{ar:v[2],en:v[3]},uk:v[4],u:UNITTXT[v[4]],rows:pr.rows,plan:{ar:v[6],en:v[7]},note:{ar:v[8],en:v[9]},r:v[10],rv:CANAPPROVE(),hidden:!!(o&&o.hidden)};
     if(isNew)CFG.nut.custom.push(item);else CFG.nut.custom[CFG.nut.custom.findIndex(c=>c.id===id)]=item;
@@ -332,28 +362,38 @@ async function openOwner(opt={}){
   OWN.client=OWN.client||window.supabase.createClient(SB.url,SB.key);
   const {data:{session}}=await OWN.client.auth.getSession();
   if(session)return afterLogin();
-  if(opt.join!=null){if(await firstSetup(opt.join))return afterLogin();return}
+  if(opt.join!=null){if(await firstSetup(opt.join,opt.key))return afterLogin();return}
+  let err=null,em='';
   while(true){
-    const r=await dialog({title:T('o_login'),fields:[{label:T('o_email'),type:'email',value:''},{label:T('o_pass'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_first'),action:'first'},{label:T('o_in'),action:'ok',pri:1}]});
-    if(r.action==='first'){if(await firstSetup(r.values[0]))return afterLogin();continue}
+    const r=await dialog({err,title:T('o_login'),fields:[{label:T('o_email'),type:'email',value:em},{label:T('o_pass'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_first'),action:'first'},{label:T('o_in'),action:'ok',pri:1}]});
+    if(r.action==='first'){if(await firstSetup(r.values[0],''))return afterLogin();continue}
     if(r.action!=='ok')return;
-    const {error}=await OWN.client.auth.signInWithPassword({email:r.values[0].trim(),password:r.values[1]});
+    em=r.values[0].trim();
+    const {error}=await OWN.client.auth.signInWithPassword({email:em,password:r.values[1]});
     if(!error)return afterLogin();
-    toast(T('o_badlogin'));
+    err={msg:T('o_badlogin')};
   }
 }
-async function firstSetup(email0){
+async function firstSetup(email0,key){
+  let err=null;
   while(true){
-    const r=await dialog({title:T('o_firstt'),info:T('o_firsti'),fields:[{label:T('o_email'),type:'email',value:email0||''},{label:T('o_pass'),type:'password',value:''},{label:T('o_pass2'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    const r=await dialog({err,title:T('o_firstt'),info:T('o_firsti'),fields:[{label:T('o_email'),type:'email',value:email0||''},{label:T('o_pass'),type:'password',value:''},{label:T('o_pass2'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return false;
     const email=r.values[0].trim(),p1=r.values[1],p2=r.values[2];email0=email;
-    if(p1.length<8){toast(T('o_short'));continue}
-    if(p1!==p2){toast(T('o_mismatch'));continue}
-    let up;try{up=await OWN.client.auth.signUp({email,password:p1})}catch(e){up={error:e}}
+    if(p1.length<8){err={i:1,msg:T('o_short')};continue}
+    if(p1!==p2){err={i:2,msg:T('o_mismatch')};continue}
+    let up;try{up=await OWN.client.auth.signUp({email,password:p1,options:{data:{invite:key||''}}})}catch(e){up={error:e}}
     const {error}=await OWN.client.auth.signInWithPassword({email,password:p1});
     if(!error)return true;
-    toast(T('o_notinvited'));
+    err={msg:T(key?'o_notinvited':'tm_needkey')};
   }
+}
+/** The draft as this account should see it. Texts/info pages a pharmacist changed wait under "team":
+   the owner sees his own texts (and the proposal in 🔔), the pharmacist sees his proposal. */
+function draftFor(d,role){
+  OWN.team=d&&d.team?clean(d.team):null;
+  if(!d||!d.team||role==='owner')return d&&d.team?Object.fromEntries(Object.entries(d).filter(([k])=>k!=='team')):d;
+  return {...d,text:d.team.text||d.text,pages:d.team.pages||d.pages};
 }
 async function afterLogin(){
   const c=OWN.client;const {data:{user}}=await c.auth.getUser();if(!user){toast(T('o_badlogin'));return}
@@ -363,7 +403,7 @@ async function afterLogin(){
   OWN.perms=clean(m.perms||{});OWN.name=clean(m.name||'');
   const {data:dr}=await c.from('site_config').select('data').eq('id','draft').maybeSingle();
   const {data:ct,error}=await c.rpc('get_content');if(error||!ct){toast(T('o_neterr'));return}
-  startOwner({local:false,role:m.role,draft:dr&&dr.data,content:ct});
+  startOwner({local:false,role:m.role,draft:draftFor(dr&&dr.data,m.role),content:ct});
   if(m.role==='owner')teamLoad().then(()=>renderNav());else loadNotes();
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null;OWN.parts=partsOf()}
@@ -405,10 +445,28 @@ async function _saveDraft(){
   }
   OWN.base=cfgJSON();OWN.parts=partsOf();OWN.saved=true;ownerBar();toast(T('o_savedone'));return true;
 }
+/** what «Publish» will change for visitors (approved content and page settings) and what still waits for review */
+function pubSummary(){
+  const st=v=>v&&typeof v==='object'?Array.isArray(v)?'['+v.map(st).join(',')+']':'{'+Object.keys(v).filter(k=>v[k]!==undefined&&v[k]!=='').sort().map(k=>JSON.stringify(k)+':'+st(v[k])).join(',')+'}':JSON.stringify(v??'');
+  const ok=x=>x.rv===false?x.pv||null:x,live=x=>x&&!x.hidden;
+  const P=PUBLISHED||{},d=DELS();
+  const nutHide=NHIDE(),nut=[...NCUST(),...(d.nut||[])].map(ok).filter(live);
+  const keys=new Set(['d','b12','fol','fe','ca','mg','c','zn'].filter(k=>!nutHide.includes(k)).concat(nut.map(c=>c.id)));
+  const A={refs:[...(CFG.refs||[]),...(d.refs||[])].map(ok).filter(live).map(x=>st({id:x.id,org:x.org,title:x.title,url:x.url,ar:x.ar,en:x.en,kind:x.kind})),
+    inter:[...(CFG.inter||[]),...(d.inter||[])].map(ok).filter(x=>live(x)&&keys.has(x.k)).map(x=>st({k:x.k,a:x.a,b:x.b,d:x.d,sev:x.sev,r:x.r})),
+    nut:nut.map(c=>st({id:c.id,n:c.n,h:c.h,uk:c.uk,rows:c.rows,plan:c.plan,note:c.note,r:c.r}))};
+  const B={refs:(P.refs||[]).map(st),inter:(P.inter||[]).map(st),nut:((P.nut&&P.nut.custom)||[]).map(st)};
+  let n=0;for(const k of ['refs','inter','nut']){const a=new Set(A[k]),b=new Set(B[k]);n+=Math.max([...a].filter(x=>!b.has(x)).length,[...b].filter(x=>!a.has(x)).length)}
+  if(st(nutHide)!==st((P.nut&&P.nut.hide)||[]))n++;
+  for(const k of ['contact','colors','text','roadmap','pages'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
+  return {n,wait:pendingCount()};
+}
 async function publish(){
   if(!(OWN.local||OWN.role==='owner')){toast(T('o_onlyowner'));return}
   if(OWN.busy)return;
-  const r=await dialog({title:T('o_pubq'),info:T('o_pubi'),fields:[{label:T('o_note'),value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_publish'),action:'ok',pri:1}]});
+  const sm=pubSummary(),info=(sm.n?T('o_pub_will').replace('{n}',sm.n):T('o_pub_none'))+(sm.wait?'\n'+T('o_pub_wait').replace('{n}',sm.wait):'');
+  const r=await dialog({title:T('o_pubq'),info,fields:[{label:T('o_note'),value:''}],buttons:[...(sm.wait?[{label:T('nt_open'),action:'notif'}]:[]),{label:T('o_cancel'),action:'cancel'},{label:T('o_publish'),action:'ok',pri:1}]});
+  if(r.action==='notif'){go('notif');return}
   if(r.action!=='ok')return;
   return locked(async()=>{
   if(!(await _saveDraft()))return;
@@ -424,35 +482,39 @@ async function publish(){
   });
 }
 async function discard(){
-  const q=await dialog({title:T('o_discq'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_discard'),action:'ok',pri:1}]});if(q.action!=='ok')return;
+  const q=await dialog({title:T('o_discq'),info:T('o_disc_i'),buttons:[{label:T('o_back'),action:'cancel'},{label:T('o_discyes'),action:'ok',pri:1,danger:1}]});if(q.action!=='ok')return;
   if(OWN.local){try{localStorage.removeItem('vw-draft')}catch(e){}CFG=mergeCfg(DEFAULT_CFG,PUBLISHED)}
   else{
     const c=OWN.client;const {data:dr}=await c.from('site_config').select('data').eq('id','draft').maybeSingle();
     const {data:ct,error}=await c.rpc('get_content');if(error||!ct){toast(T('o_neterr'));return}
-    CFG=mergeCfg(DEFAULT_CFG,(dr&&dr.data)||PUBLISHED);applyContent(ct);
+    CFG=mergeCfg(DEFAULT_CFG,draftFor(dr&&dr.data,OWN.role)||PUBLISHED);applyContent(ct);
     OWN.saved=!!(dr&&dr.data);OWN.base=cfgJSON();changed();toast(T('o_discdone'));return;
   }
   OWN.base=cfgJSON();OWN.saved=false;changed();toast(T('o_discdone'));
 }
 async function changePass(){
+  let err=null;
   while(true){
-    const r=await dialog({title:T('o_chpt'),fields:[{label:T('o_newpass'),type:'password',value:''},{label:T('o_pass2'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    const r=await dialog({err,title:T('o_chpt'),fields:[{label:T('o_newpass'),type:'password',value:''},{label:T('o_pass2'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return;
     const [p1,p2]=r.values;
-    if(p1.length<8){toast(T('o_short'));continue}
-    if(p1!==p2){toast(T('o_mismatch'));continue}
+    if(p1.length<8){err={i:0,msg:T('o_short')};continue}
+    if(p1!==p2){err={i:1,msg:T('o_mismatch')};continue}
     const {error}=await OWN.client.auth.updateUser({password:p1});
-    if(error){toast(T('o_neterr'));continue}
+    if(error){err={msg:T('o_neterr')};continue}
     toast(T('o_chdone'));return;
   }
 }
 async function logout(){
-  if(dirty()){const q=await dialog({title:T('o_leave'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_logout'),action:'ok',pri:1}]});if(q.action!=='ok')return}
+  if(dirty()){const q=await dialog({title:T('o_leave'),buttons:[{label:T('o_back'),action:'cancel'},{label:T('o_leaveyes'),action:'ok',pri:1,danger:1}]});if(q.action!=='ok')return}
   if(!OWN.local&&OWN.client)try{await OWN.client.auth.signOut()}catch(e){}
   closeSheet(false);TEAM.list=null;
-  OWN.on=false;OWN.preview=false;OWN.perms={};OWN.name='';OWN.role=null;OWN.del=null;NOTE.mine=[];if(cur==='notif')go('calc');
+  OWN.on=false;OWN.preview=false;OWN.perms={};OWN.name='';OWN.role=null;OWN.del=null;OWN.team=null;NOTE.mine=[];if(cur==='notif')go('calc');
   document.body.classList.remove('owner','preview','not-owner','cant-nut','cant-inter','cant-refs','cant-text');CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);refreshAll();
 }
 $('o-save').addEventListener('click',saveDraft);$('o-publish').addEventListener('click',publish);
-$('o-pvexit').addEventListener('click',()=>setPreview(false));$('o-preview').addEventListener('click',()=>setPreview(true));$('o-discard').addEventListener('click',discard);
+$('o-pvexit').addEventListener('click',()=>setPreview(false));
+// page texts are edited only after «✎ النصوص» is switched on (the page stays calm otherwise)
+$('o-texts').addEventListener('click',()=>{document.body.classList.toggle('textedit');ownerBar()});
+addEventListener('resize',()=>{if(OWN.on)ownerBar()});$('o-preview').addEventListener('click',()=>setPreview(true));$('o-discard').addEventListener('click',discard);
 addEventListener('beforeunload',e=>{if(OWN.on&&dirty()){e.preventDefault();e.returnValue=''}});

@@ -67,8 +67,13 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-29)
-- **1.6.5 in preview** (same branch): fixes from a 4-agent full review (frontend, speed/worker, DB, UX). DB part =
-  `supabase/migrations/review_hardening.sql`, to be run by him in the SQL editor, then renamed with the time applied.
+- **1.6.6 in preview** (same branch): he approved all 10 review proposals («كلها»): 44px touch targets, larger small text,
+  patient mode hides pills/IV-iron tools, inline dialog errors (`dialog({err:{i,msg}})`) + sticky actions, red destructive
+  buttons (`danger`), publish summary (`pubSummary()`), phone owner bar (short status, discard first), calm edit mode
+  (`#o-texts` toggles body.textedit), invite key (`#join=email&k=key`, checked by guard_signup), pharmacists' texts/pages
+  wait under draft.team (owner decides in 🔔, `decideTexts()`). Migration `invite_key_and_text_review.sql` must be run by him.
+- **1.6.5** (same branch, not yet live): fixes from a 4-agent full review (frontend, speed/worker, DB, UX). DB part =
+  `20261029160710_review_hardening.sql` (applied by him, checked).
   UX proposals from that review were sent to him and wait for his choice (touch targets 44px, inline dialog errors, red
   destructive buttons, publish summary, phone owner bar status, calmer edit mode…).
 - **Live: 1.6.4** (he said «جاهز» on 2026-10-29; main fast-forwarded from branch `ccr-cad26eca-o7h5hm`). Contents: 1.6.4 = 🔔 notifications page (`#notif`, `renderNotif()`/`decide()` in

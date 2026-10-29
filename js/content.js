@@ -14,9 +14,9 @@ const CANAPPROVE=()=>typeof OWN!=='undefined'&&(OWN.role==='owner'||OWN.local);
    (for the owner it opens 🔔 notifications, where changes are approved or rejected).
    kind: r = source, i = interaction, n = added vitamin, m = roadmap feature. The database checks every change. */
 function actBtns(kind,id,{rv=true,hidden=false,edit=true,del=true}={}){
-  const b=(a,lbl,cls='')=>`<button class="btn${cls}" type="button" data-act="${a}" data-kind="${kind}" data-id="${esc(String(id))}">${lbl}</button>`;
+  const b=(a,ico,lbl,cls='')=>`<button class="btn${cls}" type="button" data-act="${a}" data-kind="${kind}" data-id="${esc(String(id))}" aria-label="${esc(lbl)}" title="${esc(lbl)}">${ico}<span class="lbl">${esc(lbl)}</span></button>`;
   return (rv?'':CANAPPROVE()?`<button class="pend" type="button" data-gonotif="1">${T('o_pending')} ›</button>`:`<span class="pend">${T('o_pending')}</span>`)+(hidden?`<span class="hidb">${T('o_hiddenb')}</span>`:'')+
-    (edit?b('edit',PEN+T('o_edit')):'')+b('hide',T(hidden?'o_nshow':'o_nhide'))+(del?b('del',T('o_del'),' danger'):'');
+    (edit?b('edit',PEN,T('o_edit')):'')+b('hide',hidden?EYE:EYEOFF,T(hidden?'o_nshow':'o_nhide'))+(del?b('del',TRASH,T('o_del'),' danger'):'');
 }
 const actBar=(kind,id,o)=>`<div class="oedit acts">${actBtns(kind,id,o)}</div>`;
 const NHIDE=()=>(CFG.nut&&CFG.nut.hide)||[];

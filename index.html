@@ -14,7 +14,7 @@
 <link rel="preload" href="fonts/tajawal-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/cairo-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.6.5-78f658d9">
+<link rel="stylesheet" href="css/app.css?v=1.6.6-fe6918b3">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu"></h2><div id="side-b"></div></aside>
@@ -34,11 +34,12 @@
   <div class="obar" id="obar">
     <span class="who"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/></svg><span id="owho"></span></span>
     <span class="stt"><span class="dot" id="odot"></span> <span id="ostate"></span></span>
+    <button class="btn ico danger" type="button" id="o-discard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7"/><path d="M4 4v4.5h4.5"/></svg><span class="lbl" id="o-discard-l"></span></button>
     <span class="sp"></span>
+    <button class="btn" type="button" id="o-texts" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg><span class="lbl" id="o-texts-l"></span></button>
     <button class="btn" type="button" id="o-preview"></button>
     <button class="btn" type="button" id="o-save"></button>
     <button class="btn pri" type="button" id="o-publish"></button>
-    <button class="btn ico danger" type="button" id="o-discard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7"/><path d="M4 4v4.5h4.5"/></svg></button>
   </div>
 </header>
 
@@ -57,7 +58,7 @@
    <section>
     <h2><span class="n">1</span><span data-t="s1"></span></h2>
     <div class="nadm" id="nadm"></div>
-    <div class="nsearch" id="nsw" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="nsearch" autocomplete="off" data-ph="ph_ns"></div>
+    <div class="nsearch" id="nsw" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="nsearch" dir="auto" autocomplete="off" data-ph="ph_ns"></div>
     <div class="picker" id="picker">
       <button data-k="d" aria-pressed="true"><span data-t="n_d"></span><small data-t="h_d"></small></button>
       <button data-k="b12" aria-pressed="false"><span data-t="n_b12"></span><small data-t="h_b12"></small></button>
@@ -208,7 +209,7 @@
   <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 4v13M7 17l-3-3M7 17l3-3M17 20V7M17 7l-3 3M17 7l3 3"/></svg></span><h2 data-t="ti_t"></h2></div><p data-t="hi_l"></p></section>
   <section>
     <p class="lead" style="margin-top:0" data-t="ti_l"></p>
-    <div class="nsearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="isearch" autocomplete="off" data-ph="ph_is" placeholder="—" aria-labelledby="t-interactions"></div>
+    <div class="nsearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="isearch" dir="auto" autocomplete="off" data-ph="ph_is" placeholder="—" aria-labelledby="t-interactions"></div>
     <div class="filters" id="filters"></div>
     <div class="ilist" id="ilist" aria-live="polite"></div>
   </section>
@@ -261,21 +262,21 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see"></span></div>
 
-<script src="js/config.js?v=1.6.5-eab06d46" defer></script>
-<script src="js/i18n.js?v=1.6.5-049f6116" defer></script>
-<script src="js/data.js?v=1.6.5-8cd09a7b" defer></script>
-<script src="js/util.js?v=1.6.5-dbf2951a" defer></script>
-<script src="js/validation.js?v=1.6.5-a04550f9" defer></script>
-<script src="js/render.js?v=1.6.5-d1cd5800" defer></script>
-<script src="js/calculators.js?v=1.6.5-a7e74cee" defer></script>
-<script src="js/content.js?v=1.6.5-0ae40063" defer></script>
-<script src="js/tools.js?v=1.6.5-de864cbb" defer></script>
-<script src="js/lists.js?v=1.6.5-48ba577d" defer></script>
-<script src="js/ui.js?v=1.6.5-30791157" defer></script>
-<script src="js/published.js?v=1.6.5-87f710f2" defer></script>
-<script src="js/owner.js?v=1.6.5-d9c3f3d3" defer></script>
-<script src="js/nav.js?v=1.6.5-69e8c584" defer></script>
-<script src="js/team.js?v=1.6.5-cc0702ac" defer></script>
-<script src="js/boot.js?v=1.6.5-aa24558c" defer></script>
+<script src="js/config.js?v=1.6.6-bf40ae2a" defer></script>
+<script src="js/i18n.js?v=1.6.6-a4ea4681" defer></script>
+<script src="js/data.js?v=1.6.6-8cd09a7b" defer></script>
+<script src="js/util.js?v=1.6.6-4ec1bfa6" defer></script>
+<script src="js/validation.js?v=1.6.6-a04550f9" defer></script>
+<script src="js/render.js?v=1.6.6-def00943" defer></script>
+<script src="js/calculators.js?v=1.6.6-a7e74cee" defer></script>
+<script src="js/content.js?v=1.6.6-a97c16ab" defer></script>
+<script src="js/tools.js?v=1.6.6-de864cbb" defer></script>
+<script src="js/lists.js?v=1.6.6-eb8333cc" defer></script>
+<script src="js/ui.js?v=1.6.6-2b0314d9" defer></script>
+<script src="js/published.js?v=1.6.6-87f710f2" defer></script>
+<script src="js/owner.js?v=1.6.6-40c805f5" defer></script>
+<script src="js/nav.js?v=1.6.6-08ce61e6" defer></script>
+<script src="js/team.js?v=1.6.6-1865209f" defer></script>
+<script src="js/boot.js?v=1.6.6-aa24558c" defer></script>
 </body>
 </html>

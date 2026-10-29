@@ -16,10 +16,11 @@ function render(r){
   const urgent=(r.notes||[]).filter(n=>n.u),rest=(r.notes||[]).filter(n=>!n.u);
   const all=[...new Set([...(r.refs||[]),...(r.opts||[]).flatMap(o=>o.r||[]),...(r.notes||[]).flatMap(o=>o.r||[]),...(r.plan||[]).flatMap(o=>o.r||[])])].sort((a,b)=>a-b);
   const acts=[];
-  if(r.tool==='pills')acts.push(`<button class="btn" type="button" data-tool="pills">${T('pills')}</button>`);
+  // patient mode: the tablet counter and the IV-iron (Ganzoni) calculator are pharmacist tools
+  if(r.tool==='pills'&&!pt)acts.push(`<button class="btn" type="button" data-tool="pills">${T('pills')}</button>`);
   if(r.tool==='drops')acts.push(`<button class="btn" type="button" data-tool="drops">${T('drops')}</button>`);
   acts.push(`<button class="btn" type="button" data-card><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h6M7 14h10"/></svg>${T('card')}</button>`);
-  if(r.tool2==='ganz')acts.push(`<button class="btn" type="button" data-tool="ganz">${T('ganz')}</button>`);
+  if(r.tool2==='ganz'&&!pt)acts.push(`<button class="btn" type="button" data-tool="ganz">${T('ganz')}</button>`);
   $('res').innerHTML=
    `<div class="res-head"><span class="badge t-${r.tone}">${ICON[r.tone]}${r.badge}</span><button class="btn" id="copy" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg><span>${T('copy')}</span></button></div>`+
    (pt&&r.pt?`<p class="ptxt">${r.pt}</p>`:`<h3>${r.title}${R(r.refs||[])}</h3><p class="sub">${r.sub||''}</p>`)+

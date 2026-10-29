@@ -5,6 +5,7 @@
 -- 3. A pharmacist could reorder approved items without review. Now only the owner changes the order.
 -- 4. Pharmacists could read colleagues' names/e-mails through get_content's "by". Now only the owner sees "by".
 -- 5. A removed pharmacist could not be invited again. Now inviting the same e-mail re-activates the account.
+-- Applied 2026-10-29 by the owner in the SQL editor (not in list_migrations); named with the time it was checked.
 -- Compatible with the 1.6.0–1.6.4 pages (no change in what they send or receive).
 
 -- 1–3: content guard ----------------------------------------------------------------------------------------

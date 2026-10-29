@@ -190,15 +190,14 @@ async function editPage(id){
   if(!CAN('text')){toast(T('tm_noperm'));return}
   if(!Array.isArray(CFG.pages))CFG.pages=clone(DEFAULT_CFG.pages);
   const isNew=id==null,o=isNew?{t:{ar:'',en:''},b:{ar:'',en:''},hidden:false}:CFG.pages.find(x=>x.id===id);if(!o)return;
-  let v=[o.t.ar,o.t.en||'',o.b.ar,o.b.en||'',o.hidden?'h':'s'];
+  let v=[o.t.ar,o.t.en||'',o.b.ar,o.b.en||'',o.hidden?'h':'s'],err=null;
   while(true){
-    const btns=[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}];if(!isNew)btns.unshift({label:T('o_del'),action:'del'});
-    const r=await dialog({title:T(isNew?'pg_new':'pg_edit'),fields:[{label:T('pg_t'),value:v[0]},{label:T('pg_ten'),value:v[1],ltr:1},{label:T('pg_b'),type:'textarea',value:v[2]},{label:T('pg_ben'),type:'textarea',value:v[3],ltr:1},
+    const btns=[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}];
+    const r=await dialog({err,title:T(isNew?'pg_new':'pg_edit'),fields:[{label:T('pg_t'),value:v[0]},{label:T('pg_ten'),value:v[1],ltr:1},{label:T('pg_b'),type:'textarea',value:v[2]},{label:T('pg_ben'),type:'textarea',value:v[3],ltr:1},
       {label:T('pg_vis'),type:'select',options:[['s',T('pg_shown')],['h',T('pg_hiddenv')]],value:v[4]}],buttons:btns});
-    if(r.action==='del'){if(await confirmDel(T('pg_delq'))){CFG.pages=CFG.pages.filter(x=>x.id!==id);changed()}return}
     if(r.action!=='ok')return;
     v=r.values.map(x=>x.trim());
-    if(!v[0]||!v[2]){toast(T('pg_need'));continue}
+    if(!v[0]||!v[2]){err={i:v[0]?2:0,msg:T('pg_need')};continue}
     const item={id:isNew?'p'+Date.now().toString(36).slice(-7):id,t:{ar:v[0],en:v[1]},b:{ar:v[2],en:v[3]},hidden:v[4]==='h'};
     if(isNew)CFG.pages.push(item);else CFG.pages[CFG.pages.findIndex(x=>x.id===id)]=item;
     changed();if(isNew||!item.hidden)openPage(item.id);return;
