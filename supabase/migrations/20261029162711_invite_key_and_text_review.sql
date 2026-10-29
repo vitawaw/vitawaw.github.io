@@ -1,4 +1,5 @@
 -- VITAWAW 1.6.6: two decisions of the owner after the full review.
+-- Applied 2026-10-29 by the owner in the SQL editor (not in list_migrations); named with the time it was checked.
 -- 1. Invitation key: the invitation link carries a secret key, and an account can be created only with it.
 --    Before, anyone who knew (or guessed) the invited e-mail could create the account first.
 -- 2. Page texts and info pages changed by a pharmacist wait for the owner's approval (🔔), like medical content.

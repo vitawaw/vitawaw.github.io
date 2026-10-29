@@ -67,16 +67,16 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-29)
-- **1.6.6 in preview** (same branch): he approved all 10 review proposals («كلها»): 44px touch targets, larger small text,
+- **Live: 1.6.6** (he said «تم و جاهز» on 2026-10-29; includes 1.6.5). 1.6.6: he approved all 10 review proposals («كلها»): 44px touch targets, larger small text,
   patient mode hides pills/IV-iron tools, inline dialog errors (`dialog({err:{i,msg}})`) + sticky actions, red destructive
   buttons (`danger`), publish summary (`pubSummary()`), phone owner bar (short status, discard first), calm edit mode
   (`#o-texts` toggles body.textedit), invite key (`#join=email&k=key`, checked by guard_signup), pharmacists' texts/pages
-  wait under draft.team (owner decides in 🔔, `decideTexts()`). Migration `invite_key_and_text_review.sql` must be run by him.
-- **1.6.5** (same branch, not yet live): fixes from a 4-agent full review (frontend, speed/worker, DB, UX). DB part =
+  wait under draft.team (owner decides in 🔔, `decideTexts()`). Migration `20261029162711_invite_key_and_text_review.sql` is applied (checked).
+- **1.6.5** (live with 1.6.6): fixes from a 4-agent full review (frontend, speed/worker, DB, UX). DB part =
   `20261029160710_review_hardening.sql` (applied by him, checked).
   UX proposals from that review were sent to him and wait for his choice (touch targets 44px, inline dialog errors, red
   destructive buttons, publish summary, phone owner bar status, calmer edit mode…).
-- **Live: 1.6.4** (he said «جاهز» on 2026-10-29; main fast-forwarded from branch `ccr-cad26eca-o7h5hm`). Contents: 1.6.4 = 🔔 notifications page (`#notif`, `renderNotif()`/`decide()` in
+- 1.6.4 (published before 1.6.5/1.6.6; main fast-forwarded from branch `ccr-cad26eca-o7h5hm`). Contents: 1.6.4 = 🔔 notifications page (`#notif`, `renderNotif()`/`decide()` in
   owner.js; owner approves/rejects there via `review_change`, pharmacists see decisions from table `notifications`) and one
   publishing bar (`#obar`: preview · save · publish · discard), removed from the menu. Migration `20261029133847_notifications.sql`
   **is applied** (he ran it in the SQL editor; checked: table + RLS, names in get_content, review_change notifies). 1.6.3 = Facebook-style menus he approved, on top of 1.6.2: he asked to redesign the interface and menus to be easy and like other
