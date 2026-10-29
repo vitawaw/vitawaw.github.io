@@ -154,7 +154,10 @@ function apply(){
 }
 $('nsearch').addEventListener('input',filterNuts);
 $('isearch').addEventListener('input',renderInter);
-$('medform').addEventListener('submit',e=>{e.preventDefault();const v=$('medin').value.replace(/[<>]/g,'').trim().slice(0,60);if(v&&!MEDS.includes(v)&&MEDS.length<20){MEDS.push(v);saveMeds()}$('medin').value='';renderInter()});
+// «أدويتي»: only medicines the site knows can be added (picked from the suggestions; Enter takes the first one)
+$('medform').addEventListener('submit',e=>{e.preventDefault();const s=medSuggest($('medin').value);if(s.length)addMed(s[0].en);else renderSug()});
+$('medin').addEventListener('input',renderSug);
+$('medsug').addEventListener('click',e=>{const b=e.target.closest('[data-addmed]');if(b)addMed(b.dataset.addmed)});
 $('picker').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;K=b.dataset.k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()});
 ['age','sex','wt','ht','dlab','dunit','mal','med','ren','b12v','b12u','b12c','neuro','ab12','folg','feg','hb','fer','infl','cadiet','mgv','mgu','mgsx','mgren','czg','smk','mon','feed','pre','vag','tri','ntd','lowca','veg']
   .forEach(i=>{$(i).addEventListener('input',()=>{if(i==='age')syncSex();F[K]()});$(i).addEventListener('change',()=>{if(i==='age')syncSex();F[K]()})});

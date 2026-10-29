@@ -653,3 +653,5 @@ body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{d
 .mchip{display:inline-flex;align-items:center;gap:4px;padding:4px 6px 4px 10px;border-radius:99px;background:var(--chip);color:var(--royal);font-weight:700;font-size:14px}
 .mchip button{border:0;background:none;color:inherit;font-size:18px;line-height:1;cursor:pointer;min-width:28px;min-height:28px}
 .mmsum{font-size:13px;color:var(--mute)}.gaps .own{font-size:11px;color:var(--royal)}
+.medsug{display:grid;gap:4px;max-height:260px;overflow-y:auto}.medsug button{text-align:start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:600 15px var(--f-body);cursor:pointer;min-height:44px}
+.medsug button:hover,.medsug button:focus-visible{border-color:var(--royal);background:var(--chip)}

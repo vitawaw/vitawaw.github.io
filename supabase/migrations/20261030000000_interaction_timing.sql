@@ -160,6 +160,11 @@ insert into public.sources (id, org, title, url, use_ar, use_en, kind, reviewed)
       'فاصل Dolutegravir عن الحديد والكالسيوم ومضادات الحموضة', 'Spacing dolutegravir from iron, calcium and antacids', 'd', false)
 on conflict (id) do nothing;
 
+-- source 27: the patient-information page now returns 404; the label's drug-interactions page states the 4-hour gap
+update public.sources t set title = 'LEVOXYL (levothyroxine sodium): Drug Interactions', url = 'https://www.pfizermedical.com/levoxyl/drug-interactions',
+  pub = case when t.reviewed then to_jsonb(t) - 'pub' else t.pub end, reviewed = false
+ where id = 27 and not deleted;
+
 -- timing for the daily schedule on the existing interactions (d = schedule item, b / a = hours before / after the supplement)
 update public.interactions t set gap = x.g::jsonb, pub = case when t.reviewed then to_jsonb(t) - 'pub' else t.pub end, reviewed = false
   from (values

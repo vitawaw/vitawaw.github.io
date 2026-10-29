@@ -14,7 +14,7 @@
 <link rel="preload" href="fonts/tajawal-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/cairo-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.9.0-e726d883">
+<link rel="stylesheet" href="css/app.css?v=1.9.0-4cbcfbb8">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu"></h2><div id="side-b"></div></aside>
@@ -285,7 +285,8 @@
     <p class="lead" style="margin-top:0" data-t="ti_l"></p>
     <div class="mymed" id="mymed">
       <label class="l" for="medin" data-t="mm_t"></label>
-      <form class="mmrow" id="medform"><input type="text" id="medin" dir="auto" autocomplete="off" data-ph="mm_ph"><button class="btn" type="submit" data-t="mm_add"></button></form>
+      <form class="mmrow" id="medform"><input type="text" id="medin" dir="auto" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="medsug" aria-expanded="false" data-ph="mm_ph"><button class="btn" type="submit" data-t="mm_add"></button></form>
+      <div class="medsug" id="medsug" role="listbox" hidden></div>
       <div class="mmchips" id="medchips"></div>
       <p class="hint" data-t="mm_h"></p>
     </div>
@@ -343,16 +344,16 @@
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see"></span></div>
 
 <script src="js/config.js?v=1.9.0-50d40cf9" defer></script>
-<script src="js/i18n.js?v=1.9.0-bdad37e2" defer></script>
-<script src="js/data.js?v=1.9.0-1a7caf65" defer></script>
+<script src="js/i18n.js?v=1.9.0-875e15dc" defer></script>
+<script src="js/data.js?v=1.9.0-2af338ad" defer></script>
 <script src="js/util.js?v=1.9.0-19fde934" defer></script>
 <script src="js/validation.js?v=1.9.0-0db6be41" defer></script>
 <script src="js/render.js?v=1.9.0-77841528" defer></script>
 <script src="js/calculators.js?v=1.9.0-dd59965b" defer></script>
 <script src="js/content.js?v=1.9.0-66528bb2" defer></script>
 <script src="js/tools.js?v=1.9.0-1f16d104" defer></script>
-<script src="js/lists.js?v=1.9.0-4669d294" defer></script>
-<script src="js/ui.js?v=1.9.0-41e8d6a2" defer></script>
+<script src="js/lists.js?v=1.9.0-2b6c30a8" defer></script>
+<script src="js/ui.js?v=1.9.0-febbd73c" defer></script>
 <script src="js/published.js?v=1.9.0-87f710f2" defer></script>
 <script src="js/owner.js?v=1.9.0-c0f9235d" defer></script>
 <script src="js/nav.js?v=1.9.0-ee5fac9b" defer></script>

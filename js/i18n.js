@@ -69,7 +69,7 @@ o_ig:['التوقيت في جدول المكملات (اختياري)','Timing i
 o_igb:['يؤخذ قبل المكمل بـ (ساعات)','Taken before the supplement by (hours)'],o_iga:['أو بعده بـ (ساعات، 24 = لا يؤخذ بعده)','Or after it by (hours, 24 = never after)'],o_igbad:['اكتب عدد ساعات من 0 إلى 24','Enter hours from 0 to 24'],
 sc_own:['من صفحة التداخلات','from the interactions page'],ri_t:['تداخلات هذا المكمل','Interactions of this supplement'],ri_all:['كل التداخلات','All interactions'],
 ic_calc:['افتح الحاسبة','Open the calculator'],ic_sch:['رتّب في جدول المكملات','Arrange in the schedule'],
-mm_t:['أدويتي','My medicines'],mm_ph:['اكتب اسم الدواء، مثلاً ليفوثيروكسين','Type a medicine, e.g. levothyroxine'],mm_add:['إضافة','Add'],
+mm_t:['أدويتي','My medicines'],mm_ph:['اكتب اسم الدواء، مثلاً ليفوثيروكسين','Type a medicine, e.g. levothyroxine'],mm_add:['إضافة','Add'],mm_nomatch:['لا يوجد دواء بهذا الاسم في التداخلات المسجّلة. جرّب الاسم العلمي أو اسماً آخر.','No medicine with this name in the recorded interactions. Try the generic name or another spelling.'],
 mm_h:['تظهر عندها التداخلات التي تخص أدويتك فقط. القائمة تبقى على جهازك ولا تُرسل لأي جهة.','Only the interactions that concern your medicines are shown. The list stays on your device and is not sent anywhere.'],
 mm_n:['{n} تداخل مع أدويتك','{n} interaction(s) with your medicines'],mm_none:['لا توجد تداخلات مسجّلة مع أدويتك. هذا لا يعني عدم وجود تداخل، اسأل الصيدلي.','No recorded interactions with your medicines. That does not mean there are none; ask the pharmacist.'],
 ampiu:['تركيز الأمبولة','Ampoule strength'],o_gtab:['Ferinject: الجدول المبسّط','Ferinject: simplified table'],

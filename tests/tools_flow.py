@@ -75,7 +75,11 @@ with sync_playwright() as p:
     card.locator('[data-gosch]').click(); pg.wait_for_timeout(150)
     check('card -> schedule', ','.join(pg.evaluate("SCI.map(x=>x[0]).filter(id=>$('sc-'+id).checked)")), 'levo,fe'); pg.click('#sheet-x')
     pg.goto('http://app.test/#interactions'); pg.wait_for_timeout(150); pg.evaluate("IF='all';renderInter()")
-    pg.fill('#medin','ليفوثيروكسين'); pg.click('#medform button'); pg.wait_for_timeout(150)
+    pg.fill('#medin','ليفو'); pg.dispatch_event('#medin','input'); pg.wait_for_timeout(100)
+    sug = T('medsug'); check('suggestions: levothyroxine', sug, 'Levothyroxine')
+    pg.fill('#medin','xyzq'); pg.dispatch_event('#medin','input'); check('no match message', T('medsug'), 'لا يوجد')
+    pg.click('#medform button'); check('unknown name not added', T('medchips'), '')
+    pg.fill('#medin','ثيروكس'); pg.dispatch_event('#medin','input'); pg.click('#medsug [data-addmed="levothyroxine"]'); pg.wait_for_timeout(150)
     check('my medicines filter', T('medchips'), '2'); check('only matching cards', str(pg.locator('#ilist .icard').count()), '2')
     pg.click('[data-delmed="0"]'); pg.wait_for_timeout(100)
     # a timing set on an interaction replaces the built-in rule

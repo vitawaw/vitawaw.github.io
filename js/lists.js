@@ -7,7 +7,7 @@ const BUILTIN=['d','b12','fol','fe','ca','mg','c','zn','preg','inf','vac'];
 let KEYS=['all',...BUILTIN],INTER=[],REFGROUP={},CUST={};
 const tx2=o=>o?(LANG==='ar'?o.ar:(o.en||o.ar)):'';
 const kname=k=>k==='all'?T('all'):CUST[k]?tx2(CUST[k].n):T('n_'+k);
-const DRUG_AR={"وارفارين": "warfarin", "ليفوثيروكسين": "levothyroxine", "ثيروكسين": "levothyroxine", "ميتفورمين": "metformin", "ميثوتريكسات": "methotrexate", "اورليستات": "orlistat", "بنسيلامين": "penicillamine", "سيمفاستاتين": "simvastatin", "ثيوفيلين": "theophylline", "ليفودوبا": "levodopa", "ليثيوم": "lithium", "دولوتغرافير": "dolutegravir", "دولوتجرافير": "dolutegravir", "سيسبلاتين": "cisplatin", "فلورويوراسيل": "fluorouracil", "ايزونيازيد": "isoniazid", "سيكلوسيرين": "cycloserine", "فوروسيمايد": "furosemide", "فيوروسمايد": "furosemide", "لازكس": "furosemide", "كوليسترامين": "cholestyramine", "اليندرونات": "alendronate", "سيبروفلوكساسين": "ciprofloxacin", "موكسيفلوكساسين": "moxifloxacin", "اوميبرازول": "omeprazole", "لانسوبرازول": "lansoprazole", "سبيرونولاكتون": "spironolactone", "اميلورايد": "amiloride", "لوسارتان": "losartan", "بينازيبريل": "benazepril", "ليسينوبريل": "lisinopril", "فوسينوبريل": "fosinopril", "كاربامازيبين": "carbamazepine", "فينيتوين": "phenytoin", "فينوباربيتال": "phenobarbital", "بريميدون": "primidone", "فالبروات": "valproate", "ديباكين": "valproate", "ميثيمازول": "methimazole", "سلفاسالازين": "sulfasalazine", "بيرازيناميد": "pyrazinamide", "اسيتريتين": "acitretin", "بيكساروتين": "bexarotene", "بيوميتانيد": "bumetanide", "ميتولازون": "metolazone", "كلوروثيازيد": "chlorothiazide", "تتراسايكلين": "tetracycline", "تتراسيكلين": "tetracycline", "سيفالوسبورين": "cephalosporin", "ستيرويد": "glucocorticoid", "كورتيزون": "glucocorticoid", "بريدنيزولون": "glucocorticoid", "اسبرين": "antiplatelet", "كلوبيدوغريل": "antiplatelet", "تروبونين": "troponin", "نياسين": "niacin", "كوليستيبول": "colestipol", "دوكسيسايكلين": "doxycycline", "دوكسيسيكلين": "doxycycline", "ليفوفلوكساسين": "levofloxacin", "ريسيدرونات": "risedronate", "ريزيدرونات": "risedronate", "فوساماكس": "alendronate", "يوثيروكس": "levothyroxine", "التروكسين": "levothyroxine", "دولوتيغرافير": "dolutegravir", "تيفيكاي": "dolutegravir", "انسولين": "insulin", "ثيازيد": "thiazide", "هيدروكلوروثيازيد": "thiazide", "مضاد حموضه": "antacid", "مضادات الحموضه": "antacid", "بانتوبرازول": "proton pump", "ايزوميبرازول": "proton pump", "نيكسيوم": "proton pump", "سيفوبيرازون": "cefoperazone", "كيموثيرابي": "chemotherapy", "علاج كيميائي": "chemotherapy"};
+const DRUG_AR={"وارفارين": "warfarin", "ليفوثيروكسين": "levothyroxine", "ثيروكسين": "levothyroxine", "ميتفورمين": "metformin", "ميثوتريكسات": "methotrexate", "اورليستات": "orlistat", "بنسيلامين": "penicillamine", "سيمفاستاتين": "simvastatin", "ثيوفيلين": "theophylline", "ليفودوبا": "levodopa", "ليثيوم": "lithium", "دولوتغرافير": "dolutegravir", "دولوتجرافير": "dolutegravir", "سيسبلاتين": "cisplatin", "فلورويوراسيل": "fluorouracil", "ايزونيازيد": "isoniazid", "سيكلوسيرين": "cycloserine", "فوروسيمايد": "furosemide", "فيوروسمايد": "furosemide", "لازكس": "furosemide", "كوليسترامين": "cholestyramine", "اليندرونات": "alendronate", "سيبروفلوكساسين": "ciprofloxacin", "موكسيفلوكساسين": "moxifloxacin", "اوميبرازول": "omeprazole", "لانسوبرازول": "lansoprazole", "سبيرونولاكتون": "spironolactone", "اميلورايد": "amiloride", "لوسارتان": "losartan", "بينازيبريل": "benazepril", "ليسينوبريل": "lisinopril", "فوسينوبريل": "fosinopril", "كاربامازيبين": "carbamazepine", "فينيتوين": "phenytoin", "فينوباربيتال": "phenobarbital", "بريميدون": "primidone", "فالبروات": "valproate", "ديباكين": "valproate", "ميثيمازول": "methimazole", "سلفاسالازين": "sulfasalazine", "بيرازيناميد": "pyrazinamide", "اسيتريتين": "acitretin", "بيكساروتين": "bexarotene", "بيوميتانيد": "bumetanide", "ميتولازون": "metolazone", "كلوروثيازيد": "chlorothiazide", "تتراسايكلين": "tetracycline", "تتراسيكلين": "tetracycline", "سيفالوسبورين": "cephalosporin", "ستيرويد": "glucocorticoid", "كورتيزون": "glucocorticoid", "بريدنيزولون": "glucocorticoid", "اسبرين": "antiplatelet", "كلوبيدوغريل": "antiplatelet", "تروبونين": "troponin", "نياسين": "niacin", "كوليستيبول": "colestipol", "دوكسيسايكلين": "doxycycline", "دوكسيسيكلين": "doxycycline", "ليفوفلوكساسين": "levofloxacin", "ريسيدرونات": "risedronate", "ريزيدرونات": "risedronate", "فوساماكس": "alendronate", "يوثيروكس": "levothyroxine", "التروكسين": "levothyroxine", "دولوتيغرافير": "dolutegravir", "تيفيكاي": "dolutegravir", "انسولين": "insulin", "ثيازيد": "thiazide", "هيدروكلوروثيازيد": "thiazide", "مضاد حموضه": "antacid", "مضادات الحموضه": "antacid", "بانتوبرازول": "proton pump", "ايزوميبرازول": "proton pump", "نيكسيوم": "proton pump", "سيفوبيرازون": "cefoperazone", "كيموثيرابي": "chemotherapy", "علاج كيميائي": "chemotherapy", "رانيتيدين": "h2 blocker", "فاموتيدين": "h2 blocker", "كابتوبريل": "ace inhibitor", "اينالابريل": "ace inhibitor", "ريفاروكسابان": "anticoagulant", "ابيكسابان": "anticoagulant", "انوكسابارين": "anticoagulant", "هيبارين": "anticoagulant"};
 const iTerms=q=>{if(!q)return[];const t=[q];if(q.length>=3)for(const[a,e]of Object.entries(DRUG_AR))if(normAr(a).includes(q))t.push(e);return t};
 function renderInter(){
   $('filters').innerHTML=KEYS.filter(k=>k==='all'||INTER.some(x=>x[0]===k)).map(k=>`<button data-f="${esc(k)}" aria-pressed="${k===IF}">${esc(kname(k))}</button>`).join('');
@@ -43,12 +43,34 @@ const MEDSCH={levo:['levothyroxine','ليفوثيروكسين','ثيروكسين
 /** the schedule item of a medicine name (Arabic or English), or null */
 const medSch=t=>{const h=normAr(t);for(const [id,words] of Object.entries(MEDSCH))if(words.some(w=>h.includes(normAr(w))))return id;return null};
 const medMatch=x=>{const h=normAr([x[2][0],x[2][1],x[3][0],x[3][1]].join(' '));return MEDS.some(m=>iTerms(normAr(m)).some(q=>h.includes(q)))};
+/** the medicines the site knows (Arabic and English names of every drug in DRUG_AR that appears in a published interaction):
+    the visitor picks from these suggestions instead of having to spell the name exactly */
+const MEDSKIP=['troponin'];
+function medCatalog(){
+  const by={};
+  Object.entries(DRUG_AR).forEach(([ar,en])=>{if(MEDSKIP.includes(en))return;(by[en]=by[en]||{en,ar:[]}).ar.push(ar)});
+  const live=INTER.filter(x=>x[7]&&!x[8]).map(x=>normAr([x[2][0],x[2][1],x[3][0],x[3][1]].join(' ')));
+  return Object.values(by).filter(m=>live.some(h=>h.includes(m.en)));
+}
+const medLabel=m=>{const en=m.en.charAt(0).toUpperCase()+m.en.slice(1);return LANG==='ar'?`${m.ar[0]} · ${en}`:`${en} · ${m.ar[0]}`};
+/** suggestions for what was typed (any spelling of the Arabic name, or the English name) */
+function medSuggest(q){
+  q=normAr(q);if(q.length<2)return[];
+  return medCatalog().filter(m=>!MEDS.includes(m.en)&&(m.en.includes(q)||m.ar.some(a=>normAr(a).includes(q)))).slice(0,8);
+}
+function renderSug(){
+  const box=$('medsug'),list=medSuggest($('medin').value),typed=normAr($('medin').value).length>=2;
+  box.hidden=!typed;$('medin').setAttribute('aria-expanded',String(typed&&!!list.length));
+  box.innerHTML=list.length?list.map(m=>`<button type="button" role="option" data-addmed="${esc(m.en)}">${esc(medLabel(m))}</button>`).join(''):`<p class="hint">${T('mm_nomatch')}</p>`;
+}
+function addMed(en){if(en&&!MEDS.includes(en)&&MEDS.length<20){MEDS.push(en);saveMeds()}$('medin').value='';renderSug();renderInter()}
 function saveMeds(){try{localStorage.setItem('vw-meds',JSON.stringify(MEDS))}catch(e){}}
 function renderMeds(){
   const el=$('medchips');if(!el)return;
   const hits=MEDS.length?INTER.filter(x=>x[7]&&!x[8]&&medMatch(x)):[];
   const ids=[...new Set([...MEDS.map(medSch).filter(Boolean),...hits.map(x=>x[0]).filter(k=>SCI.some(s=>s[0]===k))])];
-  el.innerHTML=MEDS.map((m,i)=>`<span class="mchip">${esc(m)}<button type="button" data-delmed="${i}" aria-label="${esc(T('o_del'))}">×</button></span>`).join('')+
+  const cat=Object.fromEntries(medCatalog().map(m=>[m.en,m]));
+  el.innerHTML=MEDS.map((m,i)=>`<span class="mchip">${esc(cat[m]?medLabel(cat[m]):m)}<button type="button" data-delmed="${i}" aria-label="${esc(T('o_del'))}">×</button></span>`).join('')+
     (MEDS.length?`<span class="mmsum">${hits.length?T('mm_n').replace('{n}',hits.length):T('mm_none')}</span>`+(ids.length>1?`<button class="btn" type="button" data-gosch="${esc(ids.join(','))}">${T('ic_sch')}</button>`:''):'');
 }
 const IC={
