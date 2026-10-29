@@ -10,25 +10,33 @@ const SHOWALL=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview;
 const SEVORD={major:0,moderate:1,minor:2};
 const bulkBar=(t,n)=>n&&CANAPPROVE()?`<div class="oedit bulk"><span class="pend">${n} ${T('o_pendn')}</span><button class="btn" type="button" data-approveall="${t}">${T('o_approveall')}</button></div>`:'';
 const CANAPPROVE=()=>typeof OWN!=='undefined'&&(OWN.role==='owner'||OWN.local);
+/** The same buttons on every editable item: approve (owner, when waiting), edit, hide/show, delete.
+   kind: r = source, i = interaction, n = added vitamin, m = roadmap feature. The database checks every change. */
+function actBtns(kind,id,{rv=true,hidden=false,edit=true,del=true}={}){
+  const b=(a,lbl,cls='')=>`<button class="btn${cls}" type="button" data-act="${a}" data-kind="${kind}" data-id="${esc(String(id))}">${lbl}</button>`;
+  return (rv?'':`<span class="pend">${T('o_pending')}</span>`)+(hidden?`<span class="hidb">${T('o_hiddenb')}</span>`:'')+
+    (!rv&&CANAPPROVE()?b('ok',T('o_approve'),' pri'):'')+(edit?b('edit',PEN+T('o_edit')):'')+b('hide',T(hidden?'o_nshow':'o_nhide'))+(del?b('del',T('o_del'),' danger'):'');
+}
+const actBar=(kind,id,o)=>`<div class="oedit acts">${actBtns(kind,id,o)}</div>`;
 const NHIDE=()=>(CFG.nut&&CFG.nut.hide)||[];
 const NCUST=()=>(CFG.nut&&CFG.nut.custom)||[];
 function buildData(){
   const all=SHOWALL();
   // preview / visitors: an item a pharmacist changed shows its approved version, and a proposed deletion is still shown
   const ver=x=>!all&&x.rv===false&&x.pv?x.pv:x,DL=k=>all?[]:DELS()[k]||[];
-  REFS=Array.isArray(CFG.refs)?Object.fromEntries([...CFG.refs.map(ver),...DL('refs')].filter(o=>all||o.rv!==false).map(o=>[o.id,[o.org||'',o.title||'',o.url||'',o.ar||'',o.en||o.ar||'',o.rv!==false]])):DEF_REFS;
+  REFS=Array.isArray(CFG.refs)?Object.fromEntries([...CFG.refs.map(ver),...DL('refs')].filter(o=>all||(o.rv!==false&&!o.hidden)).map(o=>[o.id,[o.org||'',o.title||'',o.url||'',o.ar||'',o.en||o.ar||'',o.rv!==false,!!o.hidden,o.kind||'']])):DEF_REFS;
   const NC=[...NCUST().map(ver),...DL('nut')];
   CUST={};NC.forEach(c=>{CUST[c.id]=c});
-  const VC=NC.filter(c=>!c.hidden&&(all||c.rv!==false));
+  const VC=NC.filter(c=>all||(!c.hidden&&c.rv!==false));
   const hide=NHIDE(),vis=BUILTIN.filter(k=>!hide.includes(k)),custIds=VC.map(c=>c.id);
   KEYS=['all',...vis,...custIds];
   const il=Array.isArray(CFG.inter)?[...CFG.inter.map(ver),...DL('inter')]:defInterList();
-  INTER=il.map((x,i)=>[x.k,[x.a.ar,x.a.en||x.a.ar],[x.b.ar,x.b.en||x.b.ar],[x.d.ar,x.d.en||x.d.ar],x.r||[],i,x.sev||'moderate',x.rv!==false]).filter(x=>KEYS.includes(x[0])&&(all||x[7]));
+  INTER=il.map((x,i)=>[x.k,[x.a.ar,x.a.en||x.a.ar],[x.b.ar,x.b.en||x.b.ar],[x.d.ar,x.d.en||x.d.ar],x.r||[],i,x.sev||'moderate',x.rv!==false,!!x.hidden]).filter(x=>KEYS.includes(x[0])&&(all||(x[7]&&!x[8])));
   REFGROUP={};
   KEYS.slice(1).forEach(k=>{const g=new Set(DEF_REFGROUP[k]||(CUST[k]?CUST[k].r||[]:[]));INTER.filter(x=>x[0]===k).forEach(x=>x[4].forEach(n=>g.add(n)));REFGROUP[k]=[...g].filter(n=>REFS[n])});
   // picker
   document.querySelectorAll('#picker button[data-k]').forEach(b=>{if(BUILTIN.includes(b.dataset.k))b.hidden=hide.includes(b.dataset.k);else b.remove()});
-  VC.forEach(c=>{const b=document.createElement('button');b.dataset.k=c.id;b.className='cnut';b.innerHTML=`<span>${esc(tx2(c.n))}</span><small>${esc(tx2(c.h))}</small>${c.rv===false?`<em class="pend">${T('o_pending')}</em>`:''}`;$('picker').appendChild(b);F[c.id]=()=>fCustom(c.id);EX[c.id]={age:30,sex:'f'}});
+  VC.forEach(c=>{const b=document.createElement('button');b.dataset.k=c.id;b.className='cnut';b.innerHTML=`<span>${esc(tx2(c.n))}</span><small>${esc(tx2(c.h))}</small>${c.rv===false?`<em class="pend">${T('o_pending')}</em>`:''}${c.hidden?`<em class="hidb">${T('o_hiddenb')}</em>`:''}`;$('picker').appendChild(b);F[c.id]=()=>fCustom(c.id);EX[c.id]={age:30,sex:'f'}});
   Object.keys(F).forEach(k=>{if(!BUILTIN.includes(k)&&!CUST[k])delete F[k]});
   if(!KEYS.includes(K)||K==='all')K=KEYS[1]||'d';
   document.querySelectorAll('[data-for]').forEach(el=>{el.hidden=!el.dataset.for.split(' ').includes(K)});
@@ -43,7 +51,7 @@ function renderNutAdmin(){
   const hide=NHIDE();
   el.innerHTML=`<p class="nadm-h">${T('o_nman')}</p><div class="nadm-l">`+
     BUILTIN.map(k=>`<span class="nchip${hide.includes(k)?' off':''}">${esc(T('n_'+k))}<button type="button" data-nhide="${k}">${T(hide.includes(k)?'o_nshow':'o_nhide')}</button></span>`).join('')+
-    NCUST().map(c=>`<span class="nchip cust${c.rv===false?' pending':''}">${esc(tx2(c.n))}${c.rv===false&&CANAPPROVE()?`<button type="button" class="appr" data-approve="n:${c.id}">${T('o_approve')}</button>`:''}<button type="button" data-nedit="${c.id}">${T('o_edit')}</button></span>`).join('')+
+    NCUST().map(c=>`<span class="nchip cust${c.rv===false?' pending':''}${c.hidden?' off':''}">${esc(tx2(c.n))}${actBtns('n',c.id,{rv:c.rv!==false,hidden:!!c.hidden})}</span>`).join('')+
     `</div>${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<button class="btn pri" type="button" id="nadd">${T('o_nadd')}</button><p class="hint">${T('o_nhint')}</p>`;
 }
 /* custom nutrient calculator: dose table by age and sex */

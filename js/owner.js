@@ -48,7 +48,7 @@ function dialog({title,fields=[],info='',buttons}){
       if(f.type==='checks')return `<div class="row"><label class="l" for="${id}">${esc(f.label)}</label><div class="checks" id="${id}">${f.options.map(o=>`<label class="ck"><input type="checkbox" value="${o[0]}"${f.value.includes(o[0])?' checked':''}><span>${esc(o[1])}</span></label>`).join('')}</div></div>`;
       if(f.type==='select')return `<div class="row">${lab}<select id="${id}">${f.options.map(o=>`<option value="${o[0]}"${o[0]===f.value?' selected':''}>${esc(o[1])}</option>`).join('')}</select></div>`;
       if(f.type==='colors')return `<div class="cols"><div class="row"><label class="l" for="${id}a">${esc(f.labels[0])}</label><input type="color" id="${id}a" value="${f.value[0]}"></div><div class="row"><label class="l" for="${id}b">${esc(f.labels[1])}</label><input type="color" id="${id}b" value="${f.value[1]}"></div></div>`;
-      return `<div class="row">${lab}<input type="${f.type||'text'}" id="${id}" value="${esc(f.value)}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${['tel','email','url'].includes(f.type)?' dir="ltr"':''}></div>`;
+      return `<div class="row">${lab}<input type="${f.type||'text'}" id="${id}" value="${esc(f.value)}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${f.ltr||['tel','email','url'].includes(f.type)?' dir="ltr"':''}></div>`;
     }).join('');
     $('dlg-a').innerHTML=buttons.map((b,i)=>`<button class="btn${b.pri?' pri':''}" type="${b.pri?'submit':'button'}" data-bi="${i}">${esc(b.label)}</button>`).join('');
     const read=()=>fields.map((f,i)=>f.type==='colors'?[$('dlgf'+i+'a').value,$('dlgf'+i+'b').value]:f.type==='checks'?[...$('dlgf'+i).querySelectorAll('input:checked')].map(x=>+x.value):$('dlgf'+i).value);
@@ -86,13 +86,15 @@ const STATUSES=()=>[['dev',T('st_dev')],['plan',T('st_plan')],['idea',T('st_idea
 const ICONS=()=>Object.keys(IC).map(k=>[k,{bell:'🔔',chart:'📈',plus:'➕',pill:'💊',clock:'⏰',share:'📤',cam:'📷',baby:'👶'}[k]+' '+k]);
 async function editFeature(i){
   const isNew=i==null,x=isNew?{st:'plan',ic:'plus',t:{ar:'',en:''},d:{ar:'',en:''}}:CFG.roadmap[i];
-  const btns=[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}];if(!isNew)btns.unshift({label:T('o_del'),action:'del'});
-  const r=await dialog({title:T(isNew?'o_add':'o_feat'),fields:[{label:T('o_ftitle'),value:x.t.ar},{label:T('o_fdesc'),type:'textarea',value:x.d.ar},{label:T('o_fst'),type:'select',options:STATUSES(),value:x.st},{label:T('o_fic'),type:'select',options:ICONS(),value:x.ic}],buttons:btns});
-  if(r.action==='ok'){const [t,d,st,ic]=r.values;if(!t.trim())return;
-    const item={st,ic,t:{ar:t.trim(),en:(x.t.ar===t.trim()?x.t.en:'')},d:{ar:d.trim(),en:(x.d.ar===d.trim()?x.d.en:'')}};
-    if(isNew)CFG.roadmap.push(item);else CFG.roadmap[i]=item;changed()}
-  if(r.action==='del'){const q=await dialog({title:T('o_delq'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_del'),action:'ok',pri:1}]});if(q.action==='ok'){CFG.roadmap.splice(i,1);changed()}}
+  const r=await dialog({title:T(isNew?'o_add':'o_feat'),fields:[{label:T('o_ftitle'),value:x.t.ar},{label:T('o_ftitle_en'),value:x.t.en||'',ltr:1},{label:T('o_fdesc'),type:'textarea',value:x.d.ar},{label:T('o_fdesc_en'),type:'textarea',value:x.d.en||'',ltr:1},
+    {label:T('o_fst'),type:'select',options:STATUSES(),value:x.st},{label:T('o_fic'),type:'select',options:ICONS(),value:x.ic}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  if(r.action!=='ok')return;
+  const [t,te,d,de,st,ic]=r.values.map(v=>v.trim());if(!t)return;
+  const item={st,ic,t:{ar:t,en:te},d:{ar:d,en:de},...(x.hidden?{hidden:true}:{})};
+  if(isNew)CFG.roadmap.push(item);else CFG.roadmap[i]=item;changed();
 }
+async function delFeature(i){const q=await dialog({title:T('o_delq'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_del'),action:'ok',pri:1}]});if(q.action==='ok'){CFG.roadmap.splice(i,1);changed()}}
+function hideFeature(i){const x=CFG.roadmap[i];if(!x)return;x.hidden=!x.hidden;changed()}
 function moveFeature(i,d){const j=i+d;if(j<0||j>=CFG.roadmap.length)return;const a=CFG.roadmap;[a[i],a[j]]=[a[j],a[i]];changed()}
 document.addEventListener('click',e=>{
   if(!OWN.on)return;const t=e.target.closest('[data-edtext],[data-edcolor],[data-edcontact],[data-rmedit],[data-rmup],[data-rmdown],#rmadd');if(!t)return;
@@ -112,44 +114,52 @@ document.addEventListener('click',e=>{
 const refOpts=()=>Object.entries(REFS).sort((a,b)=>a[0]-b[0]).map(([n,x])=>[+n,`${n}. ${x[0]} — ${x[1]}`]);
 const ensureRefs=()=>{if(!Array.isArray(CFG.refs))CFG.refs=defRefList()};
 const ensureInter=()=>{if(!Array.isArray(CFG.inter))CFG.inter=defInterList()};
-const keep=(o,ar)=>({ar,en:o&&o.ar===ar?(o.en||''):''});
-async function confirmDel(info){const q=await dialog({title:T('o_delq'),info:info||'',buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_del'),action:'ok',pri:1}]});return q.action==='ok'}
+async function confirmDel(info){const q=await dialog({title:T('o_delq2'),info:info||'',buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_del'),action:'ok',pri:1}]});return q.action==='ok'}
+const RTYPES=()=>[['',T('o_rt_auto')],...['g','o','d','s','c','x'].map(k=>[k,T('rt_'+k)])];
 async function editRef(id){
-  ensureRefs();const isNew=id==null,o=isNew?{org:'',title:'',url:'',ar:'',en:''}:CFG.refs.find(x=>x.id===id);if(!o)return;
-  let v=[o.org,o.title,o.url,o.ar];
+  ensureRefs();const isNew=id==null,o=isNew?{org:'',title:'',url:'',ar:'',en:'',kind:''}:CFG.refs.find(x=>x.id===id);if(!o)return;
+  let v=[o.org,o.title,o.url,o.kind||'',o.ar||'',o.en||''];
   while(true){
-    const btns=[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}];if(!isNew)btns.unshift({label:T('o_del'),action:'del'});
-    const r=await dialog({title:T(isNew?'o_radd':'o_redit'),info:T('o_rinfo'),fields:[{label:T('o_rorg'),value:v[0]},{label:T('o_rtitle'),type:'textarea',value:v[1]},{label:T('o_rurl'),type:'url',value:v[2]},{label:T('o_ruse'),value:v[3]}],buttons:btns});
-    if(r.action==='del'){
-      const uses=[...(CFG.inter||[]).filter(x=>(x.r||[]).includes(id)).map(x=>x.a.ar+' + '+x.b.ar),...NCUST().filter(c=>(c.r||[]).includes(id)).map(c=>c.n.ar),...BUILTIN.filter(k=>(DEF_REFGROUP[k]||[]).includes(id)).map(k=>T('n_'+k))];
-      if(!(await confirmDel(uses.length?T('o_rused')+' '+uses.join(L('، ',', ')):'')))return;
-      CFG.refs=CFG.refs.filter(x=>x.id!==id);if(Array.isArray(CFG.inter))CFG.inter.forEach(x=>{x.r=(x.r||[]).filter(n=>n!==id)});NCUST().forEach(c=>{c.r=(c.r||[]).filter(n=>n!==id)});changed();return}
+    const r=await dialog({title:T(isNew?'o_radd':'o_redit'),info:T('o_rinfo'),fields:[{label:T('o_rorg'),value:v[0]},{label:T('o_rtitle'),type:'textarea',value:v[1]},{label:T('o_rurl'),type:'url',value:v[2]},
+      {label:T('o_rtype'),type:'select',options:RTYPES(),value:v[3]},{label:T('o_ruse'),value:v[4]},{label:T('o_ruse_en'),value:v[5],ltr:1}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return;
     v=r.values.map(x=>x.trim());
     if(!v[0]||!v[1]){toast(T('o_rneed'));continue}
     if(v[2]&&!/^https?:\/\//i.test(v[2])){toast(T('o_rbadurl'));continue}
-    const item={...(isNew?{}:{hidden:!!o.hidden,kind:o.kind||''}),id:isNew?Math.max(29,(OWN.nextRef||1)-1,...CFG.refs.map(x=>x.id))+1:id,org:v[0],title:v[1],url:v[2],ar:v[3],en:o.ar===v[3]?(o.en||''):'',rv:OWN.role==='owner'||OWN.local};
+    const item={...(isNew?{}:{hidden:!!o.hidden}),id:isNew?Math.max(29,(OWN.nextRef||1)-1,...CFG.refs.map(x=>x.id))+1:id,org:v[0],title:v[1],url:v[2],kind:v[3],ar:v[4],en:v[5],rv:CANAPPROVE()};
     if(isNew)CFG.refs.push(item);else CFG.refs[CFG.refs.findIndex(x=>x.id===id)]=item;
     changed();if(isNew)toast(T('o_radded')+' '+item.id);return;
   }
 }
+async function delRef(id){
+  ensureRefs();
+  const uses=[...(CFG.inter||[]).filter(x=>(x.r||[]).includes(id)).map(x=>x.a.ar+' + '+x.b.ar),...NCUST().filter(c=>(c.r||[]).includes(id)).map(c=>c.n.ar),...BUILTIN.filter(k=>(DEF_REFGROUP[k]||[]).includes(id)).map(k=>T('n_'+k))];
+  if(!(await confirmDel(uses.length?T('o_rused')+' '+uses.join(L('، ',', ')):'')))return;
+  CFG.refs=CFG.refs.filter(x=>x.id!==id);if(Array.isArray(CFG.inter))CFG.inter.forEach(x=>{x.r=(x.r||[]).filter(n=>n!==id)});NCUST().forEach(c=>{c.r=(c.r||[]).filter(n=>n!==id)});changed();
+}
+/** hide/show: the owner's choice is final; a pharmacist's waits for the owner's review */
+function toggleHidden(o){if(!o)return;o.hidden=!o.hidden;if(!CANAPPROVE())o.rv=false;changed()}
+const hideRef=id=>{ensureRefs();toggleHidden(CFG.refs.find(x=>x.id===id))};
 async function editInter(i){
   ensureInter();const isNew=i==null,o=isNew?null:CFG.inter[i];
   const nuts=KEYS.slice(1).map(k=>[k,kname(k)]);if(!nuts.length)return;
-  let v=o?[o.k,o.sev||'moderate',o.a.ar,o.b.ar,o.d.ar,(o.r||[]).slice()]:[nuts[0][0],'moderate','','','',[]];
+  let v=o?[o.k,o.sev||'moderate',o.a.ar,o.a.en||'',o.b.ar,o.b.en||'',o.d.ar,o.d.en||'',(o.r||[]).slice()]:[nuts[0][0],'moderate','','','','','','',[]];
   while(true){
-    const btns=[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}];if(!isNew)btns.unshift({label:T('o_del'),action:'del'});
-    const r=await dialog({title:T(isNew?'o_iadd':'o_iedit'),fields:[{label:T('o_inut'),type:'select',options:nuts,value:v[0]},{label:T('o_isev'),type:'select',options:[['major',T('sev_major')],['moderate',T('sev_moderate')],['minor',T('sev_minor')]],value:v[1]},{label:T('o_ia'),value:v[2],ph:T('o_ia_ph')},{label:T('o_ib'),value:v[3]},{label:T('o_id'),type:'textarea',value:v[4]},{label:T('o_isrc'),type:'checks',options:refOpts(),value:v[5]}],buttons:btns});
-    if(r.action==='del'){if(await confirmDel()){CFG.inter.splice(i,1);changed()}return}
+    const r=await dialog({title:T(isNew?'o_iadd':'o_iedit'),fields:[{label:T('o_inut'),type:'select',options:nuts,value:v[0]},{label:T('o_isev'),type:'select',options:[['major',T('sev_major')],['moderate',T('sev_moderate')],['minor',T('sev_minor')]],value:v[1]},
+      {label:T('o_ia'),value:v[2],ph:T('o_ia_ph')},{label:T('o_ia_en'),value:v[3],ltr:1},{label:T('o_ib'),value:v[4]},{label:T('o_ib_en'),value:v[5],ltr:1},
+      {label:T('o_id'),type:'textarea',value:v[6]},{label:T('o_id_en'),type:'textarea',value:v[7],ltr:1},{label:T('o_isrc'),type:'checks',options:refOpts(),value:v[8]}],
+      buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return;
-    v=[r.values[0],r.values[1],r.values[2].trim(),r.values[3].trim(),r.values[4].trim(),r.values[5]];
+    v=[...r.values.slice(0,8).map(x=>x.trim()),r.values[8]];
     if(!v[2])v[2]=kname(v[0]);
-    if(!v[3]||!v[4]){toast(T('o_ineed'));continue}
-    if(!v[5].length){toast(T('o_srcneed'));continue}
-    const item={hidden:!!(o&&o.hidden),k:v[0],sev:v[1],a:keep(o&&o.a,v[2]),b:keep(o&&o.b,v[3]),d:keep(o&&o.d,v[4]),r:v[5],rv:OWN.role==='owner'||OWN.local};if(o&&o.id!=null)item.id=o.id;
+    if(!v[4]||!v[6]){toast(T('o_ineed'));continue}
+    if(!v[8].length){toast(T('o_srcneed'));continue}
+    const item={hidden:!!(o&&o.hidden),k:v[0],sev:v[1],a:{ar:v[2],en:v[3]},b:{ar:v[4],en:v[5]},d:{ar:v[6],en:v[7]},r:v[8],rv:CANAPPROVE()};if(o&&o.id!=null)item.id=o.id;
     if(isNew)CFG.inter.push(item);else CFG.inter[i]=item;changed();return;
   }
 }
+async function delInter(i){ensureInter();if(!CFG.inter[i])return;if(await confirmDel(CFG.inter[i].a.ar+' + '+CFG.inter[i].b.ar)){CFG.inter.splice(i,1);changed()}}
+const hideInter=i=>{ensureInter();toggleHidden(CFG.inter[i])};
 function approve(key){
   if(!(OWN.role==='owner'||OWN.local)){toast(T('o_onlyowner'));return}
   const [t,id]=[key.slice(0,1),key.slice(2)];
@@ -215,23 +225,41 @@ const UNITS=()=>[['mg',T('o_u_mg')],['mcg',T('o_u_mcg')],['g',T('o_u_g')],['iu',
 const UNITTXT={mg:{ar:'ملغ',en:'mg'},mcg:{ar:'ميكروغرام',en:'mcg'},g:{ar:'غرام',en:'g'},iu:{ar:'وحدة دولية',en:'IU'}};
 async function editNut(id){
   CFG.nut=CFG.nut||{hide:[],custom:[]};const isNew=id==null,o=isNew?null:CFG.nut.custom.find(c=>c.id===id);if(!isNew&&!o)return;
-  let v=o?[o.n.ar,(o.h&&o.h.ar)||'',o.uk||'mg',fmtRows(o.rows),(o.plan&&o.plan.ar)||'',(o.note&&o.note.ar)||'',(o.r||[]).slice()]:['','','mg','','','',[]];
+  const g=(x,l)=>(x&&x[l])||'';
+  let v=o?[o.n.ar,g(o.n,'en'),g(o.h,'ar'),g(o.h,'en'),o.uk||'mg',fmtRows(o.rows),g(o.plan,'ar'),g(o.plan,'en'),g(o.note,'ar'),g(o.note,'en'),(o.r||[]).slice()]:['','','','','mg','','','','','',[]];
   while(true){
-    const btns=[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}];if(!isNew)btns.unshift({label:T('o_del'),action:'del'});
-    const r=await dialog({title:T(isNew?'o_nadd':'o_nedit'),info:T('o_ninfo'),fields:[{label:T('o_nname'),value:v[0]},{label:T('o_nh'),value:v[1]},{label:T('o_nunit'),type:'select',options:UNITS(),value:v[2]},{label:T('o_nrows'),type:'textarea',value:v[3],ph:T('o_nrows_ph')},{label:T('o_nplan'),type:'textarea',value:v[4]},{label:T('o_nnote'),type:'textarea',value:v[5]},{label:T('o_isrc'),type:'checks',options:refOpts(),value:v[6]}],buttons:btns});
-    if(r.action==='del'){if(await confirmDel(T('o_ndelinfo'))){CFG.nut.custom=CFG.nut.custom.filter(c=>c.id!==id);if(Array.isArray(CFG.inter))CFG.inter=CFG.inter.filter(x=>x.k!==id);changed()}return}
+    const r=await dialog({title:T(isNew?'o_nadd':'o_nedit'),info:T('o_ninfo'),fields:[{label:T('o_nname'),value:v[0]},{label:T('o_nname_en'),value:v[1],ltr:1},{label:T('o_nh'),value:v[2]},{label:T('o_nh_en'),value:v[3],ltr:1},
+      {label:T('o_nunit'),type:'select',options:UNITS(),value:v[4]},{label:T('o_nrows'),type:'textarea',value:v[5],ph:T('o_nrows_ph')},
+      {label:T('o_nplan'),type:'textarea',value:v[6]},{label:T('o_nplan_en'),type:'textarea',value:v[7],ltr:1},{label:T('o_nnote'),type:'textarea',value:v[8]},{label:T('o_nnote_en'),type:'textarea',value:v[9],ltr:1},
+      {label:T('o_isrc'),type:'checks',options:refOpts(),value:v[10]}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return;
-    v=[r.values[0].trim(),r.values[1].trim(),r.values[2],r.values[3],r.values[4].trim(),r.values[5].trim(),r.values[6]];
+    v=[...r.values.slice(0,10).map((x,j)=>j===4||j===5?x:x.trim()),r.values[10]];
     if(!v[0]){toast(T('o_nneedname'));continue}
-    const pr=parseRows(v[3]);if(pr.err){toast(T('o_nbadrow')+' '+pr.err);continue}
-    if(!v[6].length){toast(T('o_srcneed'));continue}
+    const pr=parseRows(v[5]);if(pr.err){toast(T('o_nbadrow')+' '+pr.err);continue}
+    if(!v[10].length){toast(T('o_srcneed'));continue}
     const nid=isNew?'c'+Date.now().toString(36).slice(-8):id;
-    const item={id:nid,n:keep(o&&o.n,v[0]),h:keep(o&&o.h,v[1]),uk:v[2],u:UNITTXT[v[2]],rows:pr.rows,plan:keep(o&&o.plan,v[4]),note:keep(o&&o.note,v[5]),r:v[6],rv:OWN.role==='owner'||OWN.local,hidden:!!(o&&o.hidden)};
+    const item={id:nid,n:{ar:v[0],en:v[1]},h:{ar:v[2],en:v[3]},uk:v[4],u:UNITTXT[v[4]],rows:pr.rows,plan:{ar:v[6],en:v[7]},note:{ar:v[8],en:v[9]},r:v[10],rv:CANAPPROVE(),hidden:!!(o&&o.hidden)};
     if(isNew)CFG.nut.custom.push(item);else CFG.nut.custom[CFG.nut.custom.findIndex(c=>c.id===id)]=item;
     if(isNew){K=nid}
     changed();return;
   }
 }
+async function delNut(id){
+  CFG.nut=CFG.nut||{hide:[],custom:[]};if(!(await confirmDel(T('o_ndelinfo'))))return;
+  CFG.nut.custom=CFG.nut.custom.filter(c=>c.id!==id);if(Array.isArray(CFG.inter))CFG.inter=CFG.inter.filter(x=>x.k!==id);changed();
+}
+const hideNut=id=>toggleHidden(NCUST().find(c=>c.id===id));
+/* the same buttons on every item (actBtns in content.js): approve, edit, hide/show, delete */
+document.addEventListener('click',e=>{
+  if(!OWN.on)return;const t=e.target.closest('[data-act]');if(!t)return;
+  e.preventDefault();e.stopPropagation();
+  const k=t.dataset.kind,id=t.dataset.id,a=t.dataset.act,need={r:'refs',i:'inter',n:'nut',m:'owner'}[k];
+  if(a==='ok'||need==='owner'?!ISOWNER():!CAN(need)){toast(T(a==='ok'?'o_onlyowner':'tm_noperm'));return}
+  if(a==='ok'){approve(k+':'+id);return}
+  const F={r:{edit:()=>editRef(+id),hide:()=>hideRef(+id),del:()=>delRef(+id)},i:{edit:()=>editInter(+id),hide:()=>hideInter(+id),del:()=>delInter(+id)},
+    n:{edit:()=>editNut(id),hide:()=>hideNut(id),del:()=>delNut(id)},m:{edit:()=>editFeature(+id),hide:()=>hideFeature(+id),del:()=>delFeature(+id)}}[k];
+  if(F&&F[a])F[a]();
+},true);
 document.addEventListener('click',e=>{
   if(!OWN.on)return;const t=e.target.closest('[data-redit],#radd,[data-iedit],#iadd,[data-nhide],[data-nedit],#nadd,[data-approve],[data-approveall]');if(!t)return;
   e.preventDefault();e.stopPropagation();

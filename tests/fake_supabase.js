@@ -23,8 +23,8 @@ window.__calls=[];
       if(p.refs)st.refs=p.refs.map(x=>({...x,rv:role==='owner'?x.rv:false}));if(p.inter)st.inter=p.inter.map(x=>{const y={...x};if(y.id==null)y.id=nextI++;if(role!=='owner'&&old[y.id]!==JSON.stringify(x))y.rv=false;return y});if(p.nut)st.nut=p.nut;st.next_ref=Math.max(st.next_ref,...st.refs.map(x=>x.id+1));save();return{error:null}}
     if(n==='publish_site'){if((window.__ROLE||'owner')!=='owner')return{error:{message:'only owner'}};
       const vc=st.nut.custom.filter(c=>c.rv!==false&&!c.hidden);const ks=new Set(['d','b12','fol','fe','ca','mg','c','zn'].filter(k=>!st.nut.hide.includes(k)).concat(vc.map(c=>c.id)));
-      const inter=st.inter.map(x=>x.rv===false&&x.pv?x.pv:x).filter(x=>x.rv!==false&&ks.has(x.k)).map(({id,rv,pv,...r})=>r);
-      const refs=st.refs.map(x=>x.rv===false&&x.pv?x.pv:x).filter(x=>x.rv!==false).map(({rv,pv,...r})=>r); // approved versions only (1.6.1)
+      const inter=st.inter.map(x=>x.rv===false&&x.pv?x.pv:x).filter(x=>x.rv!==false&&!x.hidden&&ks.has(x.k)).map(({id,rv,pv,hidden,...r})=>r);
+      const refs=st.refs.map(x=>x.rv===false&&x.pv?x.pv:x).filter(x=>x.rv!==false&&!x.hidden).map(({rv,pv,hidden,...r})=>r); // approved, not hidden (like the database)
       st.cfg=st.cfg||{};st.cfg.published={...(st.cfg.draft||{}),refs,inter,nut:{hide:st.nut.hide,custom:vc.map(({rv,hidden,...r})=>r)}};save();window.__PUB=st.cfg.published;return{data:{},error:null}}
     // pharmacist accounts (owner only)
     st.team=st.team||{members:[{id:'u1',email:'owner@x.com',name:'',role:'owner',status:'active',perms:{}}],invites:[]};

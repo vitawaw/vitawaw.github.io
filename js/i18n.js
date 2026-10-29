@@ -94,7 +94,10 @@ e_range:['تحقق من القيمة: المدى المقبول','Check this val
 };
 /* ----- 1.6.0: side menu (☰), More menu (⋯), info pages, pharmacist accounts ----- */
 Object.assign(I18N,{
-nav_menu:['القائمة','Menu'],nav_more:['المزيد','More'],mr_settings:['الإعدادات','Settings'],mn_short:['اختصارات','Shortcuts'],mn_team:['فريق VITAWAW','VITAWAW team'],mn_guest:['للمالك والصيادلة المدعوين فقط','Owner and invited pharmacists only'],
+nav_menu:['القائمة','Menu'],nav_more:['المزيد','More'],mr_settings:['الإعدادات','Settings'],o_hiddenb:['مخفي عن الزوار','Hidden from visitors'],o_delq2:['حذف هذا العنصر؟','Delete this item?'],o_rtype:['نوع المصدر','Source type'],o_rt_auto:['تلقائي (حسب الجهة)','Automatic (from the publisher)'],
+o_ruse_en:['ماذا يُستخدم منه (English)','What it is used for (English)'],o_ia_en:['اسم المكمل (English)','Supplement name (English)'],o_ib_en:['يتداخل مع (English)','Interacts with (English)'],o_id_en:['ماذا يحدث وما التوصية (English)','What happens and what to do (English)'],
+o_nname_en:['اسم الفيتامين أو المعدن (English)','Nutrient name (English)'],o_nh_en:['وصف قصير (English)','Short description (English)'],o_nplan_en:['التوجيه العلاجي (English)','Treatment guidance (English)'],o_nnote_en:['تحذيرات وملاحظات (English)','Warnings and notes (English)'],
+o_ftitle_en:['العنوان (English)','Title (English)'],o_fdesc_en:['الوصف (English)','Description (English)'],mn_short:['اختصارات','Shortcuts'],mn_team:['فريق VITAWAW','VITAWAW team'],mn_guest:['للمالك والصيادلة المدعوين فقط','Owner and invited pharmacists only'],
 nv_sections:['الأقسام','Sections'],nv_info:['معلومات','Information'],nv_admin:['الإدارة','Management'],
 tl_pill:['عدد الحبات','Tablet count'],tl_d:['محوّل فيتامين D','Vitamin D converter'],tl_ca:['الكالسيوم المصحح','Corrected calcium'],tl_gz:['عجز الحديد (Ganzoni)','Iron deficit (Ganzoni)'],
 mr_lang:['اللغة','Language'],mr_theme:['المظهر','Appearance'],mr_light:['فاتح','Light'],mr_dark:['داكن','Dark'],mr_mode:['وضع العرض','View as'],

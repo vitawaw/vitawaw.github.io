@@ -51,18 +51,18 @@ with sync_playwright() as p:
     # preview hides pending
     more(pg,'معاينة');print('PREVIEW icount:',pg.inner_text('#icount'),'vk in picker:',pg.locator('#picker [data-k="vk"]').count());pg.click('#o-pvexit');pg.wait_for_timeout(300);pg.click('#t-interactions');pg.wait_for_timeout(200)
     # edit an interaction severity
-    pg.click('[data-iedit="0"]');pg.wait_for_timeout(200);pg.select_option('#dlgf1','major');ok(pg)
+    pg.click('[data-act="edit"][data-kind="i"][data-id="0"]');pg.wait_for_timeout(200);pg.select_option('#dlgf1','major');ok(pg)
     # add interaction
-    pg.click('#iadd');pg.wait_for_timeout(200);pg.select_option('#dlgf0','ca');pg.fill('#dlgf3','Ciprofloxacin');pg.fill('#dlgf4','يقلل امتصاص المضاد؛ افصل بينهما');pg.check('#dlgf5 input[value="18"]');ok(pg)
+    pg.click('#iadd');pg.wait_for_timeout(200);pg.select_option('#dlgf0','ca');pg.fill('#dlgf4','Ciprofloxacin');pg.fill('#dlgf6','يقلل امتصاص المضاد؛ افصل بينهما');pg.check('#dlgf8 input[value="18"]');ok(pg)
     # save
     pg.click('#o-save');pg.wait_for_timeout(600);print('after save toast:',pg.inner_text('#toast'),'| new ids:',pg.evaluate("CFG.inter.filter(x=>x.b.ar==='Ciprofloxacin').map(x=>x.id+'/'+x.rv)"))
     # publish without approving -> pending excluded
     pg.click('#o-publish');pg.wait_for_timeout(200);ok(pg);pg.wait_for_timeout(500)
     pub=pg.evaluate('window.__PUB');print('PUB1: inter',len(pub['inter']),'custom',len(pub['nut']['custom']),'refs',len(pub['refs']),'has warfarin:',any(x['b']['ar']=='Warfarin' for x in pub['inter']))
     # approve pending (nutrient, interaction, source) then publish
-    pg.click('#t-calc');pg.wait_for_timeout(200);pg.click('[data-approve="n:vk"]');pg.wait_for_timeout(200)
-    pg.click('#t-interactions');pg.wait_for_timeout(200);pg.click('[data-approve^="i:"]');pg.wait_for_timeout(200)
-    pg.click('#t-sources');pg.wait_for_timeout(200);pg.click('[data-approve="r:30"]');pg.wait_for_timeout(200)
+    pg.click('#t-calc');pg.wait_for_timeout(200);pg.click('[data-act="ok"][data-kind="n"][data-id="vk"]');pg.wait_for_timeout(200)
+    pg.click('#t-interactions');pg.wait_for_timeout(200);pg.click('#ilist [data-act="ok"][data-kind="i"]');pg.wait_for_timeout(200)
+    pg.click('#t-sources');pg.wait_for_timeout(200);pg.click('[data-act="ok"][data-kind="r"][data-id="30"]');pg.wait_for_timeout(200)
     print('bar after approvals:',pg.inner_text('#ostate'))
     pg.click('#o-publish');pg.wait_for_timeout(200);ok(pg);pg.wait_for_timeout(500)
     pub=pg.evaluate('window.__PUB');print('PUB2: inter',len(pub['inter']),'custom',len(pub['nut']['custom']),'refs',len(pub['refs']),'warfarin sev:',[x['sev'] for x in pub['inter'] if x['b']['ar']=='Warfarin'])
@@ -72,12 +72,12 @@ with sync_playwright() as p:
     setup(v,json.dumps([{'data':pub}]));v.goto('http://app.test/');v.wait_for_timeout(800)
     v.click('#picker [data-k="vk"]');v.fill('#age','40');v.select_option('#sex','m');v.dispatch_event('#age','input');v.wait_for_timeout(200)
     print('VISITOR vk:',v.inner_text('#res h3'))
-    v.click('#t-interactions');v.wait_for_timeout(200);print('VISITOR first:',v.locator('#ilist .icard').first.inner_text().replace('\n',' | ')[:100],'| pend shown:',v.locator('.pend:visible').count(),'| edit btns:',v.locator('[data-iedit]:visible').count())
+    v.click('#t-interactions');v.wait_for_timeout(200);print('VISITOR first:',v.locator('#ilist .icard').first.inner_text().replace('\n',' | ')[:100],'| pend shown:',v.locator('.pend:visible').count(),'| edit btns:',v.locator('[data-act]:visible').count())
     v.screenshot(path='tests/out_visitor.png')
     print('visitor errors',verr)
     # editor: edits reset review, cannot publish
     e=b.new_context(viewport={'width':390,'height':844}).new_page();e.add_init_script("window.__ROLE='editor'");setup(e);e.add_init_script("window.__PERMS={inter:true}");e.goto('http://app.test/');e.wait_for_timeout(500);login(e)
-    print('EDITOR publish btn visible:',e.is_visible('#o-publish'),'| approve btns:',e.locator('[data-approve]').count())
+    print('EDITOR publish btn visible:',e.is_visible('#o-publish'),'| approve btns:',e.locator('[data-act="ok"],[data-approve]').count())
     print('EDITOR classes:',e.evaluate("['cant-nut','cant-inter','cant-refs','cant-text','not-owner'].filter(c=>document.body.classList.contains(c)).join(',')"))
-    e.click('#t-interactions');e.wait_for_timeout(200);e.click('[data-iedit="0"]');e.wait_for_timeout(200);e.select_option('#dlgf1','minor');ok(e)
+    e.click('#t-interactions');e.wait_for_timeout(200);e.click('[data-act="edit"][data-kind="i"][data-id="0"]');e.wait_for_timeout(200);e.select_option('#dlgf1','minor');ok(e)
     e.click('#o-save');e.wait_for_timeout(600);print('EDITOR saved parts:',e.evaluate('window.__SAVED'),'| draft written:',e.evaluate("__calls.some(c=>c[0]==='upsert')"),'| toast:',e.inner_text('#toast'))

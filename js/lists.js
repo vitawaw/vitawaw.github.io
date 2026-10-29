@@ -14,7 +14,7 @@ function renderInter(){
   if(IF!=='all'&&!INTER.some(x=>x[0]===IF))IF='all';
   const iq=iTerms(normAr($('isearch')&&$('isearch').value)),im=x=>{if(!(IF==='all'||x[0]===IF))return false;if(!iq.length)return true;const h=normAr([x[1][0],x[1][1],x[2][0],x[2][1],x[3][0],x[3][1]].join(' '));return iq.some(q=>h.includes(q))};
   const ish=INTER.filter(im);
-  $('ilist').innerHTML=(ish.length?'':`<p class="inone">${T('i_none')}</p>`)+bulkBar('i',ish.filter(x=>!x[7]).length)+ish.sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]).map(x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div><div class="oedit">${x[7]?'':`<span class="pend">${T('o_pending')}</span>${CANAPPROVE()?`<button class="btn pri" type="button" data-approve="i:${x[5]}">${T('o_approve')}</button>`:''}`}<button class="btn" type="button" data-iedit="${x[5]}">${PEN}${T('o_edit')}</button></div></div>`).join('')+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
+  $('ilist').innerHTML=(ish.length?'':`<p class="inone">${T('i_none')}</p>`)+bulkBar('i',ish.filter(x=>!x[7]).length)+ish.sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]).map(x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}${x[8]?' hid':''}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div>${actBar('i',x[5],{rv:x[7],hidden:x[8]})}</div>`).join('')+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
   $('icount').textContent=INTER.length;
 }
 const IC={
@@ -45,20 +45,21 @@ function renderRoadmap(){
   const st=k=>`<span class="st st-${esc(k)}">${esc(T('st_'+k))}</span>`;
   $('rmlegend').innerHTML=['dev','plan','idea'].map(st).join('');
   const tx=o=>LANG==='ar'?o.ar:(o.en||o.ar);
-  const pen='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
-  $('rmgrid').innerHTML=CFG.roadmap.map((x,i)=>`<div class="rm"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${IC[x.ic]||IC.plus}</svg></div><h3>${esc(tx(x.t))}</h3><p>${esc(tx(x.d))}</p>${st(x.st)}<div class="rmact"><button class="btn" type="button" data-rmedit="${i}">${pen}${T('o_edit')}</button><button class="btn" type="button" data-rmup="${i}" aria-label="${T('o_up')}">↑</button><button class="btn" type="button" data-rmdown="${i}" aria-label="${T('o_down')}">↓</button></div></div>`).join('')+`<button class="oadd" type="button" id="rmadd"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>${T('o_add')}</button>`;
+  $('rmgrid').innerHTML=CFG.roadmap.map((x,i)=>x.hidden&&!SHOWALL()?'':`<div class="rm${x.hidden?' hid':''}"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${IC[x.ic]||IC.plus}</svg></div><h3>${esc(tx(x.t))}</h3><p>${esc(tx(x.d))}</p>${st(x.st)}<div class="rmact">${actBtns('m',i,{hidden:!!x.hidden})}<button class="btn" type="button" data-rmup="${i}" aria-label="${T('o_up')}">↑</button><button class="btn" type="button" data-rmdown="${i}" aria-label="${T('o_down')}">↓</button></div></div>`).join('')+`<button class="oadd" type="button" id="rmadd"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>${T('o_add')}</button>`;
 }
 /* Source type from the organisation name, used to order the list (strongest first) and label it. */
 const REFTYPES=[[/Society|NICE|Academy of Pediatrics|WHO|World Health/i,'g'],[/NIH|National Institutes|BNF|National Formulary|Specialist Pharmacy/i,'o'],
   [/SmPC|label|Medsafe|data sheet|Food and Drug|FDA/i,'d'],[/Cochrane|Lancet|BMJ|Journal|J Clin/i,'s'],[/Medscape|StatPearls|MSD|Manual/i,'c']];
 const RTORD={g:0,o:1,d:2,s:3,c:4,x:5};
 const refType=org=>{for(const[re,t]of REFTYPES)if(re.test(org||''))return t;return 'x'};
+/** the type chosen in the source dialog, or guessed from the organisation */
+const rtOf=x=>RTORD[x[7]]!=null?x[7]:refType(x[0]);
 function renderRefs(){
   $('sfilters').innerHTML=KEYS.map(k=>`<button data-sf="${esc(k)}" aria-pressed="${k===SF}">${esc(kname(k))}</button>`).join('');
   if(!KEYS.includes(SF))SF='all';
   const show=SF==='all'?null:REFGROUP[SF];
-  $('reflist').innerHTML=(SHOWALL()?`<li class="oaddli">${bulkBar('r',(CFG.refs||[]).filter(x=>x.rv===false).length)}</li>`:'')+Object.entries(REFS).sort((a,b)=>RTORD[refType(a[1][0])]-RTORD[refType(b[1][0])]||a[0]-b[0]).filter(([n])=>!show||show.includes(+n)).map(([n,x])=>
-    `<li id="ref-${n}"><span class="num">${n}</span><div><div class="org"><span class="rtype rt-${refType(x[0])}">${T('rt_'+refType(x[0]))}</span>${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div><div class="oedit">${x[5]===false?`<span class="pend">${T('o_pending')}</span>${CANAPPROVE()?`<button class="btn pri" type="button" data-approve="r:${n}">${T('o_approve')}</button>`:''}`:''}<button class="btn" type="button" data-redit="${n}">${PEN}${T('o_edit')}</button></div></div></li>`).join('')+`<li class="oaddli"><button class="oadd" type="button" id="radd">${PLUS}${T('o_radd')}</button></li>`;
+  $('reflist').innerHTML=(SHOWALL()?`<li class="oaddli">${bulkBar('r',(CFG.refs||[]).filter(x=>x.rv===false).length)}</li>`:'')+Object.entries(REFS).sort((a,b)=>RTORD[rtOf(a[1])]-RTORD[rtOf(b[1])]||a[0]-b[0]).filter(([n])=>!show||show.includes(+n)).map(([n,x])=>
+    `<li id="ref-${n}"${x[6]?' class="hid"':''}><span class="num">${n}</span><div><div class="org"><span class="rtype rt-${rtOf(x)}">${T('rt_'+rtOf(x))}</span>${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div>${actBar('r',n,{rv:x[5]!==false,hidden:x[6]})}</div></li>`).join('')+`<li class="oaddli"><button class="oadd" type="button" id="radd">${PLUS}${T('o_radd')}</button></li>`;
   $('rcount').textContent=Object.keys(REFS).length;
   $('rev2').hidden=!REVIEW.name;if(REVIEW.name)$('rev2').innerHTML=reviewHTML().replace(/^<div class="reviewed">|<\/div>$/g,'');
 }
