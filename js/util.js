@@ -41,3 +41,5 @@ const DRAG=t=>`<button type="button" class="drag" aria-label="${esc(t)}" title="
 const fmt=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:1});
 const R=a=>(a||[]).filter(n=>REFS[n]).map(n=>`<a class="ref" href="#" data-ref="${n}" title="${esc(REFS[n][0])}">${n}</a>`).join('');
 let K='d',LAST=null;
+/** show the form fields of the chosen calculator: data-for = only for these, data-not = all except these */
+function showFor(){document.querySelectorAll('[data-for]').forEach(el=>{el.hidden=!el.dataset.for.split(' ').includes(K)});document.querySelectorAll('[data-not]').forEach(el=>{el.hidden=el.dataset.not.split(' ').includes(K)})}

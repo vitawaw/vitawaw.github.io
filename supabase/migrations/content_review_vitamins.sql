@@ -17,7 +17,24 @@ insert into public.sources (id, org, title, url, use_ar, use_en, kind, reviewed)
  (49, 'NIH Office of Dietary Supplements', 'Molybdenum: Fact Sheet for Health Professionals', 'https://ods.od.nih.gov/factsheets/Molybdenum-HealthProfessional/',
       'الاحتياج اليومي والحد الأعلى', 'Daily needs, upper limit', 'o', false),
  (50, 'NIH Office of Dietary Supplements', 'Phosphorus: Fact Sheet for Health Professionals', 'https://ods.od.nih.gov/factsheets/Phosphorus-HealthProfessional/',
-      'الاحتياج اليومي والحد الأعلى والتداخلات', 'Daily needs, upper limit, interactions', 'o', false)
+      'الاحتياج اليومي والحد الأعلى والتداخلات', 'Daily needs, upper limit, interactions', 'o', false),
+ -- sources of the new calculators in 1.7.0 (pregnancy, infant, vitamin A for children, iron by Hb + ferritin, magnesium for children)
+ (51, 'World Health Organization, 2024', 'Guideline on haemoglobin cutoffs to define anaemia in individuals and populations', 'https://www.who.int/publications/i/item/9789240088542',
+      'حدود الهيموغلوبين لفقر الدم حسب العمر والحمل', 'Haemoglobin cut-offs for anaemia by age and pregnancy', 'g', false),
+ (52, 'World Health Organization, 2020', 'WHO guideline on use of ferritin concentrations to assess iron status in individuals and populations', 'https://www.who.int/publications/i/item/9789240000124',
+      'حدود Ferritin ومع وجود الالتهاب', 'Ferritin cut-offs, including with inflammation', 'g', false),
+ (53, 'World Health Organization, 2011', 'Guideline: Vitamin A supplementation in infants and children 6–59 months of age', 'https://www.who.int/publications/i/item/9789241501767',
+      'جرعات فيتامين A الوقائية للأطفال', 'Preventive vitamin A doses for children', 'g', false),
+ (54, 'WHO / UNICEF / IVACG, 1997', 'Vitamin A supplements: a guide to their use in the treatment and prevention of vitamin A deficiency and xerophthalmia, 2nd ed.', 'https://www.who.int/publications/i/item/9241545062',
+      'علاج جفاف العين والحصبة بفيتامين A', 'Vitamin A for xerophthalmia and measles', 'g', false),
+ (55, 'American Academy of Pediatrics, 2008', 'Wagner CL, Greer FR. Prevention of rickets and vitamin D deficiency in infants, children, and adolescents. Pediatrics 2008;122(5):1142–1152', 'https://doi.org/10.1542/peds.2008-1862',
+      'فيتامين D 400 IU للرضّع', 'Vitamin D 400 IU for infants', 'g', false),
+ (56, 'American Academy of Pediatrics, 2022', 'Hand I, et al. Vitamin K and the newborn infant. Pediatrics 2022;149(3):e2021056036', 'https://doi.org/10.1542/peds.2021-056036',
+      'فيتامين K عند الولادة', 'Vitamin K at birth', 'g', false),
+ (57, 'World Health Organization, 2016', 'WHO recommendations on antenatal care for a positive pregnancy experience', 'https://www.who.int/publications/i/item/9789241549912',
+      'الحديد وحمض الفوليك والكالسيوم في الحمل', 'Iron, folic acid and calcium in pregnancy', 'g', false),
+ (58, 'The Royal Children''s Hospital Melbourne', 'Clinical Practice Guideline: Hypomagnesaemia', 'https://www.rch.org.au/clinicalguide/guideline_index/Hypomagnesaemia/',
+      'جرعة المغنيسيوم الفموية للأطفال', 'Oral magnesium dose for children', 'g', false)
 on conflict (id) do nothing;
 
 -- 2. Corrections to approved content (the approved version stays live until the owner approves) ------------------

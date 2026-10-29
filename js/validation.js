@@ -2,11 +2,12 @@
    Input checks for the calculator fields (allowed ranges, error messages, the 'missing data' state).
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== input validation ===================== */
-const RANGE={age:[0,110],wt:[2,250],ht:[40,230],b12v:[20,3000],cadiet:[0,4000]};
+const RANGE={age:[0,110],wt:[2,250],ht:[40,230],b12v:[20,3000],cadiet:[0,4000],ab12:[5,300],hb:[3,25],fer:[1,5000]};
 function rangeOf(id){
   if(id==='dlab')return $('dunit').value==='nmol'?[2,1000]:[1,400];
   if(id==='mgv')return $('mgu').value==='mmol'?[0.1,3]:[0.2,6];
   if(id==='b12v')return $('b12u').value==='pmol'?[15,2200]:[20,3000];
+  if(id==='mon')return K==='vac'?[0,59]:[0,24];
   return RANGE[id];
 }
 function errEl(id){let e=$('e-'+id);if(!e){e=document.createElement('p');e.className='err';e.id='e-'+id;e.hidden=true;const host=$(id).closest('.unit')||$(id);host.after(e)}return e}
@@ -24,7 +25,7 @@ function req(list,opt=[]){
   if(bad.length||missing.length){emptyState(missing,bad);return null}
   return out;
 }
-const FIELDNAME={age:'age',wt:'wt',ht:'ht',dlab:'dlab',b12v:'b12v',mgv:'mgv',cadiet:'cadiet'};
+const FIELDNAME={age:'age',wt:'wt',ht:'ht',dlab:'dlab',b12v:'b12v',mgv:'mgv',cadiet:'cadiet',ab12:'ab12',hb:'hb',fer:'fer',mon:'mon'};
 function emptyState(missing,bad){
   LAST=null;
   const items=[...missing.map(id=>`<li>${T(FIELDNAME[id])}</li>`),...bad.map(id=>`<li style="color:var(--bad)">${T(FIELDNAME[id])}: ${T('e_range').split(':')[0]}</li>`)].join('');

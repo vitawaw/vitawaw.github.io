@@ -67,7 +67,12 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-29)
-- **1.6.9 in preview** (same branch): scientific review of all vitamin content (he approved all fixes). Code: vitamin D adult
+- **1.7.0 in preview** (same branch, on top of 1.6.9): his 9 approved scientific proposals. Iron Hb + ferritin (`hbCut()` WHO 2024,
+  `ferCut()` AAP/WHO), Active B12 (NICE), Mg children by weight (RCH, source 58), new built-in calculators `preg` (fPreg), `inf` (fInf),
+  `vac` (fVA, WHO vitamin A) in BUILTIN; tools `#tool-ul` (UL checker, `ULT` in tools.js) and `#tool-u` (unit converter, `UCV`);
+  review stamp `CFG.review` (owner: menu → site → ختم المراجعة الطبية; default his name + 2026-10-29). Fields shown per calculator by
+  `showFor()` (data-for / data-not). Sources 51–58 are in DEF_REFS and in `content_review_vitamins.sql` (not yet run). Next: he examines the tools.
+- **1.6.9** (preview, under 1.7.0): scientific review of all vitamin content (he approved all fixes). Code: vitamin D adult
   from 19 (ES 2011 children 1–18), infant weekly option; DEF_REFS 14/27 URLs. Content: `content_review_vitamins.sql` (he runs
   it): Ca–quinolone timing fix (2 h before / 6 h after, FDA Cipro label = source 45), 12 new interactions, B5/chromium/
   manganese/molybdenum/phosphorus (NIH, sources 46–50), sources 14/27 updated. All of it lands as waiting items in 🔔.

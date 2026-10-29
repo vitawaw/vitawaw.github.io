@@ -6,7 +6,7 @@
 const OWN={on:false,local:false,role:null,client:null,base:'',preview:false,perms:{},name:''};
 // texts editable from their own page
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
-function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,nutOrder:CFG.nutOrder,brand:CFG.brand,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
+function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,nutOrder:CFG.nutOrder,brand:CFG.brand,review:CFG.review,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
 function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent=whoLabel();
@@ -105,6 +105,19 @@ async function editBrand(){
       for(const [i,k] of [[0,'l1'],[1,'l2']]){const v=r.values[i];if(v.remove)b[k]='';if(v.file)b[k]=await shrinkImage(v.file)}
     }catch(e){err={msg:T('br_bad')};continue}
     b.url=url;CFG.brand=b;changed();toast(T('br_done'));return;
+  }
+}
+/** owner: the medical review stamp under every result («تمت المراجعة الطبية بواسطة …» and the date) */
+async function editReview(){
+  if(!ISOWNER()){toast(T('o_onlyowner'));return}
+  const v=CFG.review||DEFAULT_CFG.review;let err=null,vals=[v.n.ar,v.n.en||'',v.date||''];
+  while(true){
+    const r=await dialog({err,title:T('rv_t'),info:T('rv_i'),fields:[{label:T('rv_n'),value:vals[0],ph:T('rv_ph')},{label:T('rv_ne'),value:vals[1],ltr:1},{label:T('rv_d'),type:'date',value:vals[2],ltr:1}],
+      buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    if(r.action!=='ok')return;
+    vals=r.values.map(x=>x.trim());
+    if(vals[2]&&!/^\d{4}-\d{2}-\d{2}$/.test(vals[2])){err={i:2,msg:T('rv_bad')};continue}
+    CFG.review={n:{ar:vals[0],en:vals[1]},date:vals[2]};changed();refreshAll();toast(T('br_done'));return;
   }
 }
 async function editContact(){
@@ -440,7 +453,7 @@ async function afterLogin(){
   if(m.role==='owner')teamLoad().then(()=>renderNav());else loadNotes();
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null;OWN.parts=partsOf()}
-const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[],brand:c.brand||DEFAULT_CFG.brand});
+const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[],brand:c.brand||DEFAULT_CFG.brand,review:c.review||DEFAULT_CFG.review});
 function startOwner({local,role,draft,content}){
   OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;OWN.preview=false;
   CFG=mergeCfg(DEFAULT_CFG,draft||PUBLISHED);if(content)applyContent(content);
@@ -484,14 +497,14 @@ function pubSummary(){
   const ok=x=>x.rv===false?x.pv||null:x,live=x=>x&&!x.hidden;
   const P=PUBLISHED||{},d=DELS();
   const nutHide=NHIDE(),nut=[...NCUST(),...(d.nut||[])].map(ok).filter(live);
-  const keys=new Set(['d','b12','fol','fe','ca','mg','c','zn'].filter(k=>!nutHide.includes(k)).concat(nut.map(c=>c.id)));
+  const keys=new Set(BUILTIN.filter(k=>!nutHide.includes(k)).concat(nut.map(c=>c.id)));
   const A={refs:[...(CFG.refs||[]),...(d.refs||[])].map(ok).filter(live).map(x=>st({id:x.id,org:x.org,title:x.title,url:x.url,ar:x.ar,en:x.en,kind:x.kind})),
     inter:[...(CFG.inter||[]),...(d.inter||[])].map(ok).filter(x=>live(x)&&keys.has(x.k)).map(x=>st({k:x.k,a:x.a,b:x.b,d:x.d,sev:x.sev,r:x.r})),
     nut:nut.map(c=>st({id:c.id,n:c.n,h:c.h,uk:c.uk,rows:c.rows,plan:c.plan,note:c.note,r:c.r}))};
   const B={refs:(P.refs||[]).map(st),inter:(P.inter||[]).map(st),nut:((P.nut&&P.nut.custom)||[]).map(st)};
   let n=0;for(const k of ['refs','inter','nut']){const a=new Set(A[k]),b=new Set(B[k]);n+=Math.max([...a].filter(x=>!b.has(x)).length,[...b].filter(x=>!a.has(x)).length)}
   if(st(nutHide)!==st((P.nut&&P.nut.hide)||[]))n++;
-  for(const k of ['contact','colors','text','roadmap','pages','nutOrder','brand'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
+  for(const k of ['contact','colors','text','roadmap','pages','nutOrder','brand','review'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
   return {n,wait:pendingCount()};
 }
 async function publish(){

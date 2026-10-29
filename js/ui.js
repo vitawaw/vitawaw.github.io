@@ -84,7 +84,7 @@ function openCard(){
    <div class="pc-b"><div class="pc-k" id="pc-title">${name} · ${strip(r.badge)}</div><p class="pc-main">${strip(r.pt||r.title)}</p>
    ${urgent.map(n=>`<div class="pc-alert">${strip(n.t)}</div>`).join('')}
    ${(r.plan&&r.plan.length)?`<div class="pc-k">${T('pc_plan')}</div><ol class="pc-plan">${r.plan.map(x=>`<li><b>${strip(x.h)}</b>${x.d?' — '+strip(x.d):''}</li>`).join('')}</ol>`:''}</div>
-   <div class="pc-f">${T('pc_f')}${REVIEW.name?'<br>'+T('rev')+' '+REVIEW.name:''}<br>${T('pc_shot')}</div>`;
+   <div class="pc-f">${T('pc_f')}${REV().name?'<br>'+T('rev')+' '+REV().name+(REV().date?' · '+REV().date:''):''}<br>${T('pc_shot')}</div>`;
   $('pc-wa').href='https://wa.me/?text='+encodeURIComponent(cardText());
   lastFocus=document.activeElement;$('ov').hidden=false;$('pc-close').focus();document.body.style.overflow='hidden';
 }
@@ -104,8 +104,8 @@ function setTheme(t){document.documentElement.dataset.theme=t;try{localStorage.s
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',themeIcon);
 
 /* ===================== examples / clear ===================== */
-const NUMS=['age','wt','ht','dlab','b12v','cadiet','mgv'];
-const EX={d:{age:45,sex:'f',wt:68,ht:162,dlab:14},b12:{age:55,sex:'f',b12v:160},fol:{age:28,sex:'f',folg:'plan'},fe:{age:30,sex:'f',wt:60,feg:'ida'},ca:{age:60,sex:'f',cadiet:400},mg:{age:50,sex:'m',mgv:1.4},c:{age:30,sex:'m',czg:'rda'},zn:{age:30,sex:'m',czg:'rda'}};
+const NUMS=['age','wt','ht','dlab','b12v','ab12','hb','fer','cadiet','mgv','mon'];
+const EX={d:{age:45,sex:'f',wt:68,ht:162,dlab:14},b12:{age:55,sex:'f',b12v:160},fol:{age:28,sex:'f',folg:'plan'},fe:{age:30,sex:'f',wt:60,feg:'ida'},ca:{age:60,sex:'f',cadiet:400},mg:{age:50,sex:'m',mgv:1.4},c:{age:30,sex:'m',czg:'rda'},zn:{age:30,sex:'m',czg:'rda'},preg:{age:28,tri:'t2',hb:10.2},inf:{mon:5,wt:7,feed:'bf'},vac:{mon:18,vag:'prev'}};
 function fillExample(){
   const e=EX[K];
   if($('dunit').value!=='ng')$('dunit').value='ng';if($('b12u').value!=='pg')$('b12u').value='pg';if($('mgu').value!=='mgdl')$('mgu').value='mgdl';
@@ -113,7 +113,7 @@ function fillExample(){
   syncSex();F[K]();
 }
 $('example').addEventListener('click',fillExample);
-$('clear').addEventListener('click',()=>{NUMS.forEach(id=>{$(id).value='';$(id).classList.remove('bad');const er=$('e-'+id);if(er)er.hidden=true});['mal','med','ren','neuro','mgsx','mgren','smk'].forEach(id=>$(id).checked=false);syncSex();F[K]();$('age').focus()});
+$('clear').addEventListener('click',()=>{$('fegw').hidden=false;NUMS.forEach(id=>{$(id).value='';$(id).classList.remove('bad');const er=$('e-'+id);if(er)er.hidden=true});['mal','med','ren','neuro','mgsx','mgren','smk','infl','pre','ntd','lowca','veg'].forEach(id=>$(id).checked=false);syncSex();F[K]();($('age').offsetParent?$('age'):$('mon')).focus()});
 
 /* hide pregnancy options for young ages */
 function syncSex(){
@@ -137,20 +137,20 @@ function setLang(l){
   try{localStorage.setItem('vw-lang',l)}catch(e){}
   $('pc-wa').textContent=T('pc_wa');$('pc-copy').textContent=T('pc_cp');$('pc-close').textContent=T('pc_x');themeIcon();
   renderInter();renderRefs();renderRoadmap();renderContact();renderNav();
-  if(typeof OWN!=='undefined'&&OWN.on){decorate();ownerBar()}conv();cca();gz();pills();F[K]();
+  if(typeof OWN!=='undefined'&&OWN.on){decorate();ownerBar()}conv();cca();gz();pills();ulBuild();ucvBuild();F[K]();
 }
 
 /* ===================== wiring ===================== */
-const F={d:fD,b12:fB12,fol:fFol,fe:fFe,ca:fCa,mg:fMg,c:fC,zn:fZn};
+const F={d:fD,b12:fB12,fol:fFol,fe:fFe,ca:fCa,mg:fMg,c:fC,zn:fZn,preg:fPreg,inf:fInf,vac:fVA};
 function apply(){
-  document.querySelectorAll('[data-for]').forEach(el=>{el.hidden=!el.dataset.for.split(' ').includes(K)});
+  showFor();
   document.querySelectorAll('#picker button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===K));
   F[K]();
 }
 $('nsearch').addEventListener('input',filterNuts);
 $('isearch').addEventListener('input',renderInter);
 $('picker').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;K=b.dataset.k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()});
-['age','sex','wt','ht','dlab','dunit','mal','med','ren','b12v','b12u','b12c','neuro','folg','feg','cadiet','mgv','mgu','mgsx','mgren','czg','smk']
+['age','sex','wt','ht','dlab','dunit','mal','med','ren','b12v','b12u','b12c','neuro','ab12','folg','feg','hb','fer','infl','cadiet','mgv','mgu','mgsx','mgren','czg','smk','mon','feed','pre','vag','tri','ntd','lowca','veg']
   .forEach(i=>{$(i).addEventListener('input',()=>{if(i==='age')syncSex();F[K]()});$(i).addEventListener('change',()=>{if(i==='age')syncSex();F[K]()})});
 $('wt').addEventListener('input',()=>{const w=nv('wt');if(w){$('gw').value=w;gz()}});
 $('dunit').addEventListener('change',()=>{const v=nv('dlab');if(v!=null)$('dlab').value=$('dunit').value==='nmol'?Math.round(v*2.5):Math.round(v/2.5*10)/10;F[K]()});
@@ -160,6 +160,7 @@ $('b12u').addEventListener('change',()=>{const v=nv('b12v');if(v!=null)$('b12v')
 ['salt','tabmg','needmg'].forEach(i=>{$(i).addEventListener('input',pills);$(i).addEventListener('change',pills)});
 ['tca','alb'].forEach(i=>$(i).addEventListener('input',cca));
 ['gw','gha'].forEach(i=>$(i).addEventListener('input',gz));
+$('ulage').addEventListener('change',ul);$('ulin').addEventListener('input',ul);$('ucv').addEventListener('change',ucv);$('uval').addEventListener('input',ucv);
 $('ght').addEventListener('input',()=>{gtTouched=true;gz()});
 
 /* ===================== colours ===================== */

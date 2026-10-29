@@ -9,7 +9,9 @@ const ICON={
  bad:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.5h.01"/></svg>',
  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5h.01"/></svg>'};
 const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>';
-function reviewHTML(){return REVIEW.name?`<div class="reviewed">${CHECK}${T('rev')} ${REVIEW.name}${REVIEW.role?' · '+REVIEW.role:''}${REVIEW.date?' · '+REVIEW.date:''}</div>`:''}
+/** the medical review stamp chosen by the owner: «تمت المراجعة الطبية بواسطة الصيدلاني سيف الدين · 2026-10-29» */
+const REV=()=>{const v=CFG.review||{},n=v.n?tx2(v.n):'';return {name:n?esc(n):'',date:v.date||''}};
+function reviewHTML(){const v=REV();return v.name?`<div class="reviewed">${CHECK}${T('rev')} ${v.name}${v.date?' · <span dir="ltr">'+v.date+'</span>':''}</div>`:''}
 function render(r){
   LAST=r;
   const pt=MODE==='pt';

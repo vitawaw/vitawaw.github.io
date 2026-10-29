@@ -14,7 +14,7 @@ if(PAGES.includes(location.hash.slice(1)))startPage=location.hash.slice(1);
 $('welcome').hidden=welcomeSeen;
 try{$('rmnew').hidden=localStorage.getItem('vw-rm')==='3'}catch(e){}
 document.querySelectorAll('#modeg [data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===MODE));
-document.querySelectorAll('[data-for]').forEach(el=>{el.hidden=!el.dataset.for.split(' ').includes(K)});
+showFor();
 document.querySelectorAll('#picker button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===K));
 applyColors();
 setLang(startLang);

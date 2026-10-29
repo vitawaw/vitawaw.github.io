@@ -3,8 +3,8 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.6.9';
-const REVIEW={name:'',role:'',date:''}; // e.g. {name:'د. ...', role:'صيدلي سريري', date:'2026-11-01'}
+const APP_VERSION='1.7.0';
+/* the medical review stamp is set by the owner (menu → site → «ختم المراجعة الطبية») and published with the settings: CFG.review */
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
 const SB={url:'https://zrlapysswtqrwfsywbvl.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybGFweXNzd3Rxcndmc3l3YnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMjIxODcsImV4cCI6MjEwODY5ODE4N30.b8tbg5S8g4ojb3Iams4_nik8K6AvLlV5rNZHe2Nthiw'}; // e.g. {url:'https://xxxx.supabase.co', key:'eyJ... (anon public key)'}
@@ -16,7 +16,8 @@ const DEFAULT_CFG={
   colors:{calc:['#0B6B6E','#8E1B54'],tools:['#00167a','#075BFF'],interactions:['#7a2e00','#d9731f'],sources:['#0a4a2c','#17915a'],roadmap:['#3a1678','#7c4dff']},
   text:{},
   nutOrder:[], /* order of the vitamins (ids); empty = default order. Owner only. */
-  brand:{l1:'',l2:'',url:''}, /* footer logos: l1 = app logo (empty = built-in), l2 = parent company logo, url = company site */
+  brand:{l1:'',l2:'',url:''},
+  review:{n:{ar:'الصيدلاني سيف الدين',en:'Pharmacist Saifaldeen'},date:'2026-10-29'}, /* medical review stamp under each result; empty name = hidden. Owner only. */ /* footer logos: l1 = app logo (empty = built-in), l2 = parent company logo, url = company site */
   /* info pages in the side menu (☰ → معلومات). The owner can edit, hide, add and delete them. Plain text: an empty line starts a new paragraph. */
   pages:[
    {id:'about',t:{ar:'حول التطبيق',en:'About the app'},b:{ar:'VITAWAW حاسبة لجرعات الفيتامينات والمعادن مبنية على مصادر طبية موثوقة، مع التداخلات الدوائية وأدوات صيدلانية مساعدة.\n\nكل رقم في النتيجة مرتبط بمصدره، ويمكنك فتح المصدر بالضغط على رقمه.\n\nيراجع صيدلي كل إضافة جديدة قبل أن تظهر للزوار.',en:'VITAWAW is a vitamin and mineral dose calculator based on trusted medical sources, with drug interactions and pharmacy tools.\n\nEvery number in a result is linked to its source; tap the number to open it.\n\nA pharmacist reviews every new addition before visitors can see it.'}},
@@ -68,6 +69,7 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   if(Array.isArray(over.roadmap))out.roadmap=over.roadmap;
   if(Array.isArray(over.pages))out.pages=over.pages;
   if(Array.isArray(over.nutOrder))out.nutOrder=over.nutOrder;
+  if(over.review&&over.review.n)out.review={n:{ar:over.review.n.ar||'',en:over.review.n.en||''},date:/^\d{4}-\d{2}-\d{2}$/.test(over.review.date||'')?over.review.date:''};
   if(over.brand)out.brand={l1:over.brand.l1||'',l2:over.brand.l2||'',url:over.brand.url||''};
   if(Array.isArray(over.refs))out.refs=over.refs;
   if(Array.isArray(over.inter))out.inter=over.inter;

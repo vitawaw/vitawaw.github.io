@@ -108,7 +108,7 @@ body.owner.preview .pvexit{display:inline-flex!important}
 .dlg .box{width:100%;max-width:460px;background:var(--card);color:var(--ink);border-radius:16px;padding:18px;display:grid;gap:12px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 .dlg h3{margin:0;font:800 17px var(--f-display)}
 .dlg .row{display:grid;gap:4px}
-.dlg textarea,.dlg input[type=text],.dlg input[type=email],.dlg input[type=password],.dlg input[type=tel],.dlg input[type=url]{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:500 15px var(--f-body)}
+.dlg textarea,.dlg input[type=text],.dlg input[type=email],.dlg input[type=password],.dlg input[type=tel],.dlg input[type=url],.dlg input[type=date]{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:500 15px var(--f-body)}
 .dlg textarea{min-height:90px;resize:vertical}
 .dlg input[type=color]{width:100%;height:42px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:3px}
 .dlg .acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
@@ -176,6 +176,7 @@ input[type=number]::placeholder{color:var(--mute);font-weight:500;opacity:.7}
 input.bad{border-color:var(--bad);background:var(--bad-bg)}
 .err{margin:4px 0 0;font-size:12px;color:var(--bad);font-weight:700}
 .unit{display:flex;gap:6px}.unit input{flex:1;min-width:0}.unit select{width:auto;flex:none}
+.unit .u{flex:none;display:flex;align-items:center;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--mute);font:600 14px var(--f-body);direction:ltr}
 .chk{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px;cursor:pointer;margin-top:8px}
 .chk input{margin-top:5px;width:16px;height:16px;flex:none;accent-color:var(--royal)}
 .chk small{display:block;color:var(--mute);font-size:12px}
@@ -623,3 +624,12 @@ body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{d
 .grid .f{display:flex;flex-direction:column;justify-content:flex-end}
 .tool .grid label.l,section[id^="tool-"] .grid label.l{font-size:12px;line-height:1.35}
 @media (max-width:600px){section[id^="tool-"] .grid{grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px}section[id^="tool-"] select,section[id^="tool-"] input{font-size:15px}}
+/* 1.7.0 supplement total vs upper limit */
+.ulg{margin-top:10px}.ulg .l small{color:var(--mute);font-weight:600}
+.ulout{display:grid;gap:8px;margin-top:12px}
+.ulsum{padding:10px 12px;border-radius:12px;font-weight:800;font-size:15px}.ulsum.ok{background:var(--ok-bg);color:var(--ok)}.ulsum.bad{background:var(--bad-bg);color:var(--bad)}
+.ulr{padding:9px 11px;border:1px solid var(--line);border-radius:12px;display:grid;gap:5px}
+.ulh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:14px}.ulh span{font-variant-numeric:tabular-nums;color:var(--mute);font-weight:700}
+.ulbar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}.ulbar i{display:block;height:100%;border-radius:99px;background:var(--ok)}
+.ulr.warn .ulbar i{background:var(--warn)}.ulr.bad .ulbar i{background:var(--bad)}.ulr.bad{border-color:var(--bad);background:var(--bad-bg)}
+.ulr small{font-size:13px;color:var(--mute)}.ulr.bad small{color:var(--bad);font-weight:700}
