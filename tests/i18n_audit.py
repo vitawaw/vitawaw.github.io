@@ -50,7 +50,7 @@ def scan(pg,label,lang):
         if key not in found: found[key]=label
 def fill_all(pg):
     pg.evaluate('''()=>{const set=(id,v)=>{const e=document.getElementById(id);if(e){e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))}};
-      set('age','35');set('wt','70');set('ht','165');set('dlab','14');set('b12v','160');set('cadiet','500');set('mgv','1.5')}''')
+      set('age','35');set('wt','70');set('ht','165');set('dlab','14');set('b12v','160');set('cadiet','500');set('mgv','1.5');set('mon','5');set('hb','10.5');set('fer','12');set('ab12','40')}''')
 def nutrients(pg):
     return pg.evaluate("[...document.querySelectorAll('#picker button[data-k]')].map(b=>b.dataset.k)")
 def walk(pg,lang,tag):
@@ -65,16 +65,16 @@ def walk(pg,lang,tag):
                 try: pg.select_option('#sex',sx)
                 except Exception: pass
                 pg.wait_for_timeout(30);scan(pg,f'{tag} calc {mode} {k} {sx}',lang)
-            for cb in ['mal','med','ren','neuro','mgsx','mgren','smk']:
+            for cb in ['mal','med','ren','neuro','mgsx','mgren','smk','infl','pre','ntd','lowca','veg']:
                 pg.evaluate(f"(()=>{{const e=document.getElementById('{cb}');if(e){{e.checked=true;e.dispatchEvent(new Event('change',{{bubbles:true}}))}}}})()")
-            for sel in ['folg','feg','czg','dunit','b12u','mgu']:
+            for sel in ['folg','feg','czg','dunit','b12u','mgu','tri','feed','vag']:
                 opts=pg.evaluate(f"(()=>{{const e=document.getElementById('{sel}');return e?[...e.options].map(o=>o.value):[]}})()")
                 for o in opts:
                     pg.evaluate(f"(()=>{{const e=document.getElementById('{sel}');e.value='{o}';e.dispatchEvent(new Event('change',{{bubbles:true}}))}})()");pg.wait_for_timeout(20)
                     scan(pg,f'{tag} calc {mode} {k} {sel}={o}',lang)
             # infant / child
             for a in ['0','5']:
-                pg.fill('#age',a);pg.dispatch_event('#age','input');pg.wait_for_timeout(30);scan(pg,f'{tag} calc {k} age{a}',lang)
+                f='#age' if pg.is_visible('#age') else '#mon';pg.fill(f,a);pg.dispatch_event(f,'input');pg.wait_for_timeout(30);scan(pg,f'{tag} calc {k} age{a}',lang)
             if pg.locator('#res [data-card]:visible').count():
                 pg.locator('#res [data-card]').first.click(timeout=2000);pg.wait_for_timeout(100);scan(pg,f'{tag} card {k}',lang)
                 txt=pg.evaluate('typeof cardText==="function"?cardText():""')
