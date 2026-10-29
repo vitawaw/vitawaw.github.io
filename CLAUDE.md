@@ -60,6 +60,7 @@ and where the project stands. Details: `README.md` (architecture, file map, test
 python3 tests/owner_flow.py      # owner / visitor / pharmacist flows (fake Supabase: tests/fake_supabase.js)
 python3 tests/menu_flow.py       # menus, floating windows, info pages, pharmacist accounts, 3 screen sizes → tests/shots/
 python3 tests/medical_cases.py   # dose results against expected values
+python3 tests/tools_flow.py      # tool formulas + calculator → tools links
 python3 tests/i18n_audit.py en   # and `ar`: nothing left in the other language (slow, ~5 min each)
 python3 tests/check_assets.py    # asset hashes match (forgot set_version.py?)
 node tests/worker_test.mjs       # edge worker
@@ -67,6 +68,11 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-29)
+- **1.8.0 in preview** (same branch, on top of 1.7.0 and 1.6.9): his 12 tool proposals. tools.js: `SALTS` (tablet counter, salts
+  per element), `ferTable()` (Ferinject SmPC table, source 59), `mlc()` syrup/drops tool `#tool-ml`, daily schedule `#tool-sch`
+  (`SCI` items, `SCGAP` minimum gaps, `schSolve()` search). Results open tools filled: render.js reads `r.ml`, `r.sch`, `r.ca`,
+  `r.units`, `r.ul` (button labels `tb_*`). render() keeps #res when the HTML is unchanged (first tap after typing was lost).
+  Test: `python3 tests/tools_flow.py`.
 - **1.7.0 in preview** (same branch, on top of 1.6.9): his 9 approved scientific proposals. Iron Hb + ferritin (`hbCut()` WHO 2024,
   `ferCut()` AAP/WHO), Active B12 (NICE), Mg children by weight (RCH, source 58), new built-in calculators `preg` (fPreg), `inf` (fInf),
   `vac` (fVA, WHO vitamin A) in BUILTIN; tools `#tool-ul` (UL checker, `ULT` in tools.js) and `#tool-u` (unit converter, `UCV`);

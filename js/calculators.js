@@ -63,7 +63,7 @@ function fD(){
     notes.push({t:L('حسب NIH يرتبط التسمم عادة بمستويات أعلى من 150 ng/mL (375 nmol/L)، ومع ذلك لا مبرر لاستمرار الجرعات العالية.','Per NIH, toxicity is typically associated with levels above 150 ng/mL (375 nmol/L); even so, continuing high doses is not justified.'),r:[4]});
     if(ng>150)notes.unshift({t:L('المستوى ضمن نطاق التسمم المحتمل: يحتاج تقييماً طبياً عاجلاً للكالسيوم ووظائف الكلى.','This level is in the possible toxicity range: urgent medical assessment of calcium and kidney function is needed.'),r:[4],u:1});
   }
-  r.kv=kv;r.notes=notes;if(rec)r.tool='drops';render(r);
+  r.kv=kv;r.notes=notes;if(rec)r.tool='drops';if(rec&&age>=1)r.ul=[['d',rec]];if(ng>100)r.ca=1;render(r);
   if(rec){$('iu').value=rec;conv()}
 }
 
@@ -132,6 +132,8 @@ function fFol(){
     notes.push({t:L('استبعد نقص B12 قبل البدء بالجرعات العلاجية.','Exclude B12 deficiency before starting treatment doses.'),r:[28],u:1});
   }
   notes.push({t:L('Methotrexate ومضادات الصرع وSulfasalazine تتداخل مع حمض الفوليك.','Methotrexate, anticonvulsants and sulfasalazine interact with folic acid.'),r:[11,28],i:1});
+  if(g==='plan'){r.tool='pills';PILL={k:'fol',dose:0.4,tab:0.4};r.ul=[['fol',400]]}
+  else if(g==='ntd'||(g==='def'&&age>=18)){r.tool='pills';PILL={k:'fol',dose:5,tab:5}}
   r.kv=kv;r.notes=notes;render(r);
 }
 
@@ -206,8 +208,12 @@ function fFe(){
   }
   notes.push({t:L('افصل الحديد عن Levothyroxine بـ 4 ساعات على الأقل.','Separate iron from levothyroxine by at least 4 hours.'),r:[27]});
   if(sx==='p')notes.push({t:L('في الحمل الاحتياج 27 ملغ يومياً، ويحدد طبيب النساء جرعة العلاج.','In pregnancy the need is 27 mg daily; the obstetrician sets any treatment dose.'),r:[15]});
-  r.kv=kv;r.notes=notes;r.tool='pills';PILL={k:'fe',dose};render(r);
+  r.kv=kv;r.notes=notes;r.tool='pills';PILL={k:'fe',dose};r.sch=['fe'];
+  if(g==='rda'&&typeof rda==='number'&&age>=1)r.ul=[['fe',rda]];
+  if(young&&w)r.ml={wt:w,mgkg:3,q:1};
+  render(r);
   if(w){$('gw').value=w;gz()}
+  if(hb!=null){$('gha').value=hb;gz()}
 }
 
 /* ===================== Calcium ===================== */
@@ -229,7 +235,7 @@ function fCa(){
     else{r={badge:L('نقص في المدخول','Intake below need'),tone:'warn',title:L(`مكمل ${fmt(gap)} ملغ كالسيوم عنصري يومياً`,`Supplement ${fmt(gap)} mg elemental calcium daily`),sub:doses>1?L(`مقسّمة على ${doses===2?'جرعتين':doses+' جرعات'}، لا تزيد الجرعة الواحدة على 500 ملغ`,`Split into ${doses} doses, no more than 500 mg each`):L('جرعة واحدة لا تزيد على 500 ملغ','One dose of no more than 500 mg'),refs:[18],
       pt:doses>1?L(`تحتاج ${fmt(gap)} ملغ كالسيوم إضافية يومياً، مقسّمة على ${doses===2?'مرتين':doses+' مرات'} (لا تزيد كل مرة على 500 ملغ).`,`You need ${fmt(gap)} mg more calcium a day, split into ${doses} doses (no more than 500 mg each).`):L(`تحتاج ${fmt(gap)} ملغ كالسيوم إضافية يومياً في جرعة واحدة.`,`You need ${fmt(gap)} mg more calcium a day in one dose.`),
       opts:[{h:'Calcium carbonate',b:L('مع الطعام','With food'),d:L('يحتاج حمض المعدة للامتصاص','Needs stomach acid to be absorbed'),r:[18]},{h:'Calcium citrate',b:L('مع الطعام أو بدونه','With or without food'),d:L('أنسب لمن يتناول أدوية تقلل حمض المعدة','Better for people on acid-reducing medicines'),r:[18]}]};
-      r.tool='pills';PILL={k:'ca',dose:Math.min(500,Math.ceil(gap/doses))};}
+      r.tool='pills';PILL={k:'ca',dose:Math.min(500,Math.ceil(gap/doses))};r.sch=doses>1?['ca','ca2']:['ca'];if(age>=1)r.ul=[['ca',diet+gap]];}
   }
   r.notes=[{t:L('الإجمالي (غذاء + مكمل) يجب ألا يتجاوز الحد الأعلى. افصل الكالسيوم عن Levothyroxine بـ 4 ساعات.','Total intake (food + supplement) should stay under the upper limit. Separate calcium from levothyroxine by 4 hours.'),r:[18,27]}];
   if(sx==='p')r.notes.push({t:L('توصي منظمة الصحة العالمية بـ 1,500 – 2,000 ملغ يومياً للحوامل ذوات المدخول المنخفض لتقليل خطر تسمم الحمل.','WHO recommends 1,500–2,000 mg daily for pregnant women with low intake to reduce pre-eclampsia risk.'),r:[18],i:1});
@@ -261,11 +267,13 @@ function fMg(){
       plan:[{h:L('العلاج','Treatment'),d:L(`${fmt(lo)} – ${fmt(hi)} ملغ 3 مرات يومياً`,`${fmt(lo)}–${fmt(hi)} mg three times a day`)},{h:L('إعادة التحليل','Retest'),d:L('حسب طبيب الأطفال والسبب','As the pediatrician decides, depending on the cause')}],
       opts:[{h:L('الأثر الجانبي الأشيع','Most common side effect'),b:L('الإسهال','Diarrhea'),d:L('ابدأ بالجرعة الأقل','Start with the lower dose'),r:[58]}]};
     if(hi>=195)notes.push({t:L('الجرعة محددة بجرعة البالغين (24 mmol يومياً تقريباً 580 ملغ مقسّمة على 3).','The dose is capped at the adult dose (about 24 mmol, 580 mg a day, in 3 doses).'),r:[22]});
+    r.tool='pills';PILL={k:'mg',dose:lo};r.sch=['mg'];
     if(age<1)notes.unshift({t:L('للرضّع تحت سنة: العلاج والجرعة بقرار طبيب الأطفال فقط.','Infants under 1 year: treatment and dose are for the pediatrician only.'),r:[58],u:1});}
   else r={badge:L('منخفض (0.5 – 0.74 mmol/L)','Low (0.5–0.74 mmol/L)'),tone:'warn',title:L('10 – 24 mmol مغنيسيوم فموياً يومياً','10–24 mmol oral magnesium daily'),sub:L('أي نحو 240 – 580 ملغ مغنيسيوم عنصري، مقسّمة على جرعات مع الطعام','About 240–580 mg elemental magnesium, in divided doses with meals'),refs:[22],
     pt:L('حبوب مغنيسيوم مقسّمة على اليوم مع الطعام حسب ما يحدده الطبيب، ثم تحليل جديد خلال أسبوع تقريباً. قد تسبب إسهالاً خفيفاً.','Magnesium tablets split through the day with meals, as your doctor sets, then a new blood test in about a week. They can cause mild diarrhea.'),
     plan:[{h:L('العلاج: حتى 7 أيام','Treatment: up to 7 days'),d:L('10 – 24 mmol يومياً مقسّمة مع الطعام','10–24 mmol daily, divided, with meals')},{h:L('إعادة التحليل','Retest'),d:L('بعد 7 أيام، ثم بعد 1 – 3 أشهر حسب السبب','After 7 days, then after 1–3 months depending on the cause')},{h:L('بعد التصحيح','After correction'),d:L('الاستمرار يوماً أو يومين بعد عودة المستوى طبيعياً','Continue 1–2 days after the level normalises')}],
     opts:[{h:L('متى يكون العلاج ضرورياً','When treatment is needed'),b:L('عند وجود أعراض أو استمرار انخفاض المستوى','With symptoms, or a persistently low level'),r:[21]},{h:L('الأثر الجانبي الأشيع','Most common side effect'),b:L('الإسهال','Diarrhea'),d:L('ابدأ بجرعة منخفضة وارفعها تدريجياً','Start low and increase gradually'),r:[22]}]};
+  if(r.refs&&r.refs.includes(22)&&!sev&&mgdl>=1.22){r.tool='pills';PILL={k:'mg',dose:243};r.sch=['mg']}
   if(r.refs&&r.refs.includes(22)&&!sev&&mgdl>=1.22)notes.push({t:L('الجرعة العلاجية أعلى من الحد الأعلى للمكملات (350 ملغ) لأنها علاج مؤقت بإشراف طبي، وليست مكملاً دائماً.','The treatment dose is above the supplement upper limit (350 mg) because it is short-term treatment under medical supervision, not a long-term supplement.'),r:[20,22]});
   if(ren)notes.push({t:L('في القصور الكلوي يرتفع خطر تراكم المغنيسيوم، فتُراقب المستويات عن قرب وتُخفض الجرعة الوريدية.','Kidney impairment raises the risk of magnesium build-up: monitor closely and reduce IV doses.'),r:[20,22],u:1});
   notes.push({t:L('مدرات البول ومثبطات مضخة البروتون قد تسبب نقص المغنيسيوم.','Diuretics and proton pump inhibitors can cause low magnesium.'),r:[20],i:1});
@@ -285,6 +293,7 @@ function fC(){
   else r={badge:L('نزلات البرد','Common cold'),tone:'info',title:L('لا توجد جرعة علاجية مثبتة بعد بدء البرد','No proven treatment dose once a cold starts'),sub:L('تجارب أخذ فيتامين C بعد ظهور الأعراض لم تُظهر أثراً ثابتاً','Trials of vitamin C started after symptoms showed no consistent effect'),refs:[24],
     pt:L('أخذ فيتامين C بعد بدء البرد لم يثبت أنه يفيد. أخذه بانتظام قد يقصّر البرد قليلاً.','Taking vitamin C after a cold starts has not been shown to help. Taking it regularly may shorten colds a little.'),
     opts:[{h:L('الاستعمال المنتظم (200 ملغ يومياً فأكثر)','Regular use (200 mg daily or more)'),b:L('لا يقلل عدد مرات الإصابة لدى عامة الناس','Does not reduce how often people catch colds'),d:L('لكنه قصّر مدة البرد قليلاً بشكل ثابت في التجارب','But it consistently shortened colds slightly in trials'),r:[24]}]};
+  if(g==='rda'&&typeof rda==='number'&&age>=1)r.ul=[['c',rda]];
   r.kv=kv;r.notes=[{t:L('الجرعات العالية قد تسبب اضطراباً هضمياً، ويرتبط الاستعمال العالي بخطر حصى الكلى لدى بعض الأشخاص.','High doses can upset the stomach, and high intake is linked to kidney stone risk in some people.'),r:[23]}];render(r);
 }
 
@@ -300,6 +309,7 @@ function fZn(){
   else r={badge:L('نزلات البرد','Common cold'),tone:'warn',title:L('فائدة محتملة لكنها غير مؤكدة','Possible benefit, not proven'),sub:L('مراجعة Cochrane 2024: قد يقصّر الزنك مدة البرد بنحو يومين، والثقة في الأدلة منخفضة، ولم يثبت أنه يمنع الإصابة','Cochrane 2024: zinc may shorten colds by about 2 days, with low-certainty evidence; it has not been shown to prevent colds'),refs:[26],
     pt:L('الزنك قد يقصّر البرد يومين تقريباً، لكن الدليل ضعيف. إن استخدمته فلأيام قليلة فقط، فقد يسبب غثياناً وتغيراً في الطعم.','Zinc may shorten a cold by about 2 days, but the evidence is weak. If you use it, only for a few days; it can cause nausea and a changed taste.'),
     opts:[{h:L('إن استُخدم','If used'),b:L('دورة قصيرة فقط','Short course only'),d:L('الجرعات المدروسة في أقراص الاستحلاب تتجاوز غالباً الحد الأعلى اليومي، ومن آثارها الغثيان وتغير الطعم','Doses studied in lozenges often exceed the daily upper limit; side effects include nausea and altered taste'),r:[26,25]}]};
+  if(g==='rda'&&typeof rda==='number'&&age>=1){r.ul=[['zn',rda]];r.sch=['zn']}
   r.kv=kv;r.notes=[{t:L('الاستعمال الطويل فوق الحد الأعلى قد يسبب نقص النحاس. والحديد بجرعة 25 ملغ فأكثر يقلل امتصاص الزنك إذا أُخذا معاً.','Long-term use above the upper limit can cause copper deficiency. Iron at 25 mg or more lowers zinc absorption when taken together.'),r:[25]},
     {t:L('المضاد الحيوي (كينولون أو تتراسيكلين) قبل الزنك بساعتين أو بعده بـ 4 إلى 6 ساعات.','Take quinolone or tetracycline antibiotics 2 hours before or 4–6 hours after zinc.'),r:[25],i:1}];render(r);
 }
@@ -333,6 +343,7 @@ function fInf(){
   const r={badge:L('المكملات الوقائية للرضيع','Infant preventive supplements'),tone:'info',title:bf||m>=12?L(`فيتامين D ${DI} IU يومياً`+(fe?' + حديد':''),`Vitamin D ${DI} IU daily`+(fe?' + iron':'')):L('فيتامين D حسب كمية الحليب الصناعي','Vitamin D depending on formula intake'),
     sub:pre?L('خديج: الحديد من عمر أسبوعين','Preterm: iron from 2 weeks of age'):feed==='bf'?L('رضاعة طبيعية كاملة','Exclusively breastfed'):feed==='mix'?L('رضاعة مختلطة','Mixed feeding'):L('حليب صناعي','Formula-fed'),refs:[55,14,56],plan,
     pt:L(`قطرات فيتامين D ${DI} وحدة يومياً`+(fe?'، وقطرات حديد يومياً بالجرعة التي يحددها طبيب الأطفال حسب الوزن.':'.'),`Vitamin D drops, ${DI} units a day`+(fe?', and iron drops daily at the dose the pediatrician sets by weight.':'.'))};
+  if(fe&&w)r.ml={wt:w,mgkg:pre?2:1,q:1};
   r.kv=kv;r.notes=notes;r.tool='drops';render(r);$('iu').value=m<12?400:600;conv();
 }
 
@@ -354,6 +365,7 @@ function fVA(){
       pt:L(`جرعة فيتامين A بالفم (${D}) في اليوم الأول والثاني`+(xer?' واليوم 14':'')+'، يعطيها الطبيب أو المركز الصحي.',`An oral vitamin A dose (${D}) on day 1 and day 2`+(xer?' and day 14':'')+', given by the doctor or health centre.')};
     if(xer)notes.push({t:L('جفاف العين بسبب نقص فيتامين A حالة طارئة قد تسبب العمى: لا يؤخَّر العلاج.','Xerophthalmia from vitamin A deficiency is an emergency that can cause blindness: do not delay treatment.'),r:[54],u:1});
   }
+  r.units=['a',dose];
   if(m>59)notes.unshift({t:L('هذه الجرعات لعمر 6 – 59 شهراً. للأكبر يحدد الطبيب الجرعة.','These doses are for 6–59 months. For older children the doctor decides.'),r:[53],u:1});
   r.kv=kv;r.notes=notes;render(r);
 }
@@ -392,5 +404,8 @@ function fPreg(){
     pt:lac?L('حبة يود 150 ميكروغرام يومياً، مع غذاء متوازن وسمك قليل الزئبق مرتين أسبوعياً.','A 150-microgram iodine tablet a day, with a balanced diet and low-mercury fish twice a week.'):
       preg?L('يومياً: حمض الفوليك، وحبة حديد، ويود 150 ميكروغرام، حسب ما تحدده طبيبة النساء. افصلي الحديد عن الكالسيوم بساعتين.','Every day: folic acid, an iron tablet and 150 micrograms of iodine, as your obstetrician advises. Take iron and calcium 2 hours apart.'):
       L('ابدئي حمض الفوليك 400 ميكروغرام ويود 150 ميكروغرام يومياً قبل الحمل بشهر على الأقل.','Start folic acid 400 micrograms and iodine 150 micrograms a day at least a month before pregnancy.')};
+  if(preg){r.tool='pills';PILL={k:'fe',dose:anem?120:60}}
+  r.sch=preg||lac?['fe','ca',...(preg&&lowca?['ca2']:[])]:['ca'];
+  r.ul=[...(st!=='lac'&&!ntd?[['fol',400]]:[]),['io',150],['d',600]];
   r.kv=kv;r.notes=notes;render(r);
 }

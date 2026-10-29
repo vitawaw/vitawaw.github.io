@@ -23,7 +23,15 @@ function render(r){
   if(r.tool==='drops')acts.push(`<button class="btn" type="button" data-tool="drops">${T('drops')}</button>`);
   acts.push(`<button class="btn" type="button" data-card><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h6M7 14h10"/></svg>${T('card')}</button>`);
   if(r.tool2==='ganz'&&!pt)acts.push(`<button class="btn" type="button" data-tool="ganz">${T('ganz')}</button>`);
-  $('res').innerHTML=
+  // more tools, opened already filled in from this result (patient mode keeps the ones a patient can use)
+  const tb=k=>`<button class="btn" type="button" data-tool="${k}">${T('tb_'+k)}</button>`;
+  if(r.ml){ML=r.ml;acts.push(tb('ml'))}
+  if(r.sch){SCHSET=r.sch;acts.push(tb('sch'))}
+  if(r.ca&&!pt)acts.push(tb('ca'));
+  if(r.units&&!pt){UCVSET=r.units;acts.push(tb('units'))}
+  if(r.ul&&!pt){const a=parseFloat($('age').value);ULSET={g:ulGroup(isNaN(a)?30:a),v:r.ul};acts.push(tb('ul'))}
+  // same result as on screen (e.g. the 'change' event when a field loses focus): keep the buttons, so the tap that caused the blur still lands
+  const html=
    `<div class="res-head"><span class="badge t-${r.tone}">${ICON[r.tone]}${r.badge}</span><button class="btn" id="copy" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg><span>${T('copy')}</span></button></div>`+
    (pt&&r.pt?`<p class="ptxt">${r.pt}</p>`:`<h3>${r.title}${R(r.refs||[])}</h3><p class="sub">${r.sub||''}</p>`)+
    (urgent.length?`<div class="alerts">${urgent.map(n=>`<div class="alert">${ICON.bad}<div>${n.t}${pt?'':R(n.r||[])}</div></div>`).join('')}</div>`:'')+
@@ -38,7 +46,7 @@ function render(r){
    `</details>`+
    `<p class="disc">${T(pt?'disc_pt':'disc_all')}</p>`+reviewHTML()+
    `<p class="flag"><a href="${esc(msgLink('VITAWAW – '+L('ملاحظة على نتيجة','Result feedback')+': '+document.querySelector('#picker [aria-pressed="true"] span').textContent, plain(r.title)))}" target="_blank" rel="noopener">${T('flag')}</a></p>`;
-  $('copy').addEventListener('click',copyRes);
+  if(html!==$('res').dataset.h||!$('copy')){$('res').innerHTML=html;$('res').dataset.h=html;$('copy').addEventListener('click',copyRes)}
   $('rdot').style.background=TONE[r.tone];$('rtx').textContent=(pt&&r.ptShort)||plain(r.title);
   updateBar();
 }

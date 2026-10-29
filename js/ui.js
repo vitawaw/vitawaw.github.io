@@ -137,7 +137,7 @@ function setLang(l){
   try{localStorage.setItem('vw-lang',l)}catch(e){}
   $('pc-wa').textContent=T('pc_wa');$('pc-copy').textContent=T('pc_cp');$('pc-close').textContent=T('pc_x');themeIcon();
   renderInter();renderRefs();renderRoadmap();renderContact();renderNav();
-  if(typeof OWN!=='undefined'&&OWN.on){decorate();ownerBar()}conv();cca();gz();pills();ulBuild();ucvBuild();F[K]();
+  if(typeof OWN!=='undefined'&&OWN.on){decorate();ownerBar()}saltBuild();conv();cca();gz();mlc();schBuild();ulBuild();ucvBuild();F[K]();
 }
 
 /* ===================== wiring ===================== */
@@ -156,7 +156,11 @@ $('wt').addEventListener('input',()=>{const w=nv('wt');if(w){$('gw').value=w;gz(
 $('dunit').addEventListener('change',()=>{const v=nv('dlab');if(v!=null)$('dlab').value=$('dunit').value==='nmol'?Math.round(v*2.5):Math.round(v/2.5*10)/10;F[K]()});
 $('mgu').addEventListener('change',()=>{const v=nv('mgv');if(v!=null)$('mgv').value=$('mgu').value==='mmol'?Math.round(v/2.43*100)/100:Math.round(v*2.43*100)/100;F[K]()});
 $('b12u').addEventListener('change',()=>{const v=nv('b12v');if(v!=null)$('b12v').value=$('b12u').value==='pmol'?Math.round(v*0.738):Math.round(v/0.738);F[K]()});
-['iu','cc'].forEach(i=>{$(i).addEventListener('input',conv);$(i).addEventListener('change',conv)});
+['iu','cc','ampiu'].forEach(i=>{$(i).addEventListener('input',conv);$(i).addEventListener('change',conv)});
+['mlwt','mlmgkg','mlfreq','mlconc','mlper','mldpm'].forEach(i=>{$(i).addEventListener('input',mlc);$(i).addEventListener('change',mlc)});
+$('schk').addEventListener('change',sch);$('schw').addEventListener('change',sch);
+$('tcau').addEventListener('change',()=>{const v=nv('tca');if(v!=null)$('tca').value=$('tcau').value==='mmol'?Math.round(v/4.008*100)/100:Math.round(v*4.008*10)/10;cca()});
+$('albu').addEventListener('change',()=>{const v=nv('alb');if(v!=null)$('alb').value=$('albu').value==='gl'?Math.round(v*10):Math.round(v)/10;cca()});
 ['salt','tabmg','needmg'].forEach(i=>{$(i).addEventListener('input',pills);$(i).addEventListener('change',pills)});
 ['tca','alb'].forEach(i=>$(i).addEventListener('input',cca));
 ['gw','gha'].forEach(i=>$(i).addEventListener('input',gz));

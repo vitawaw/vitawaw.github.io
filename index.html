@@ -14,7 +14,7 @@
 <link rel="preload" href="fonts/tajawal-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/cairo-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.7.0-27a11298">
+<link rel="stylesheet" href="css/app.css?v=1.8.0-bb940054">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu"></h2><div id="side-b"></div></aside>
@@ -181,17 +181,10 @@
     <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2.5" y="8" width="19" height="8" rx="4" transform="rotate(-35 12 12)"/><path d="M8.6 7.2l6.8 9.6"/></svg></span><span data-t="tt_t"></span></h2>
     <p class="lead" data-t="tt_l"></p>
     <div class="grid">
-      <div class="f"><label class="l" for="salt" data-t="salt"></label>
-        <select id="salt">
-          <option value="direct" data-t="salt_direct"></option>
-          <option value="0.20" data-t="salt_fs"></option>
-          <option value="0.33" data-t="salt_ff"></option>
-          <option value="0.12" data-t="salt_fg"></option>
-          <option value="0.40" data-t="salt_cc"></option>
-          <option value="0.21" data-t="salt_ci"></option>
-        </select></div>
-      <div class="f"><label class="l" for="tabmg" id="tabmg-l"></label><input type="number" id="tabmg" value="65" min="1" step="1" inputmode="decimal"></div>
-      <div class="f"><label class="l" for="needmg" data-t="needmg"></label><input type="number" id="needmg" value="60" min="1" step="1" inputmode="decimal"></div>
+      <div class="f" style="grid-column:1/-1"><label class="l" for="salt" data-t="salt"></label>
+        <select id="salt"></select></div>
+      <div class="f"><label class="l" for="tabmg" id="tabmg-l"></label><input type="number" id="tabmg" value="65" min="0.01" step="any" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="needmg" data-t="needmg"></label><input type="number" id="needmg" value="60" min="0.01" step="any" inputmode="decimal"></div>
     </div>
     <div class="out">
       <div><small data-t="o_el"></small><b id="elper"></b><i id="elperi"></i></div>
@@ -205,20 +198,21 @@
     <div class="grid">
       <div class="f"><label class="l" for="iu" data-t="iu"></label><input type="number" id="iu" value="6000" min="100" step="100" inputmode="numeric"></div>
       <div class="f"><label class="l" for="cc" data-t="cc"></label><select id="cc"><option value="100" data-t="cc100"></option><option value="200" data-t="cc200"></option><option value="400" data-t="cc400" selected></option><option value="1000" data-t="cc1000"></option><option value="ml400" data-t="ccml"></option></select></div>
+      <div class="f"><label class="l" for="ampiu" data-t="ampiu"></label><select id="ampiu"><option value="100000">100,000 IU</option><option value="200000" selected>200,000 IU</option><option value="300000">300,000 IU</option><option value="600000">600,000 IU</option></select></div>
     </div>
     <div class="out">
       <div><small data-t="o_dr"></small><b id="dr"></b><i id="drs"></i></div>
       <div><small data-t="o_cp1"></small><b id="cp1"></b><i data-t="o_cp1s"></i></div>
       <div><small data-t="o_cp50"></small><b id="cp50"></b><i><span data-t="o_wk"></span> <span id="wk"></span></i></div>
-      <div><small data-t="o_amp"></small><b id="amp"></b><i data-t="o_amps"></i></div>
+      <div><small id="ampl"></small><b id="amp"></b><i data-t="o_amps"></i></div>
     </div>
     <p class="hint" data-th="td_h"></p>
   </section>
   <section id="tool-ca">
     <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg></span><span data-t="tp_t"></span></h2>
     <div class="grid">
-      <div class="f"><label class="l" for="tca" data-t="tca"></label><input type="number" id="tca" value="8.6" step="0.1" inputmode="decimal"></div>
-      <div class="f"><label class="l" for="alb" data-t="alb"></label><input type="number" id="alb" value="3.2" step="0.1" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="tca" data-t="tca"></label><div class="unit"><input type="number" id="tca" value="8.6" step="any" inputmode="decimal"><select id="tcau" aria-label="unit"><option value="mgdl">mg/dL</option><option value="mmol">mmol/L</option></select></div></div>
+      <div class="f"><label class="l" for="alb" data-t="alb"></label><div class="unit"><input type="number" id="alb" value="3.2" step="any" inputmode="decimal"><select id="albu" aria-label="unit"><option value="gdl">g/dL</option><option value="gl">g/L</option></select></div></div>
     </div>
     <div class="out"><div><small data-t="o_cca"></small><b id="cca"></b><i id="ccat"></i></div></div>
     <p class="hint" data-th="tp_h"></p>
@@ -235,8 +229,34 @@
       <div><small data-t="o_gmg"></small><b id="gmg"></b><i id="gform"></i></div>
       <div><small>Iron sucrose (Venofer) 100 mg</small><b id="gven"></b><i data-t="o_gvens"></i></div>
       <div><small>Ferric carboxymaltose (Ferinject) 500 mg</small><b id="gfer"></b><i id="gfers"></i></div>
+      <div><small data-t="o_gtab"></small><b id="gtab"></b><i id="gtabi"></i></div>
     </div>
     <p class="hint" data-th="tg_h"></p>
+  </section>
+  <section id="tool-ml">
+    <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 3h6M10 3v4l-4 3v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V10l-4-3V3"/><path d="M6 14h12"/></svg></span><span data-t="ml_t"></span></h2>
+    <p class="lead" data-t="ml_l"></p>
+    <div class="grid">
+      <div class="f"><label class="l" for="mlwt" data-t="wt"></label><input type="number" id="mlwt" value="10" min="0.5" max="150" step="any" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="mlmgkg" data-t="mlmgkg"></label><input type="number" id="mlmgkg" value="3" min="0" step="any" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="mlfreq" data-t="mlfreq"></label><select id="mlfreq"><option value="1" data-t="fq1"></option><option value="2" data-t="fq2"></option><option value="3" data-t="fq3"></option></select></div>
+      <div class="f"><label class="l" for="mlconc" data-t="mlconc"></label><input type="number" id="mlconc" value="25" min="0" step="any" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="mlper" data-t="mlper"></label><input type="number" id="mlper" value="1" min="0.1" step="any" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="mldpm" data-t="mldpm"></label><input type="number" id="mldpm" min="1" step="any" inputmode="decimal" placeholder="—"></div>
+    </div>
+    <div class="out">
+      <div><small data-t="o_mldose"></small><b id="mldose"></b><i id="mldosei"></i></div>
+      <div><small data-t="o_mlvol"></small><b id="mlvol"></b><i id="mlvoli"></i></div>
+    </div>
+    <p class="hint" data-th="ml_h"></p>
+  </section>
+  <section id="tool-sch">
+    <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span data-t="sc_t"></span></h2>
+    <p class="lead" data-t="sc_l"></p>
+    <div class="checks sch" id="schk"></div>
+    <div class="grid"><div class="f"><label class="l" for="schw" data-t="schw"></label><select id="schw"><option value="5">5:00</option><option value="6">6:00</option><option value="7" selected>7:00</option><option value="8">8:00</option><option value="9">9:00</option></select></div></div>
+    <div id="schout" aria-live="polite"></div>
+    <p class="hint" data-th="sc_h"></p>
   </section>
   <section id="tool-ul">
     <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h16M6 16V9M10 16V5M14 16v-6M18 16V7"/><path d="M3 4h18" stroke-dasharray="2 2"/></svg></span><span data-t="tl_t"></span></h2>
@@ -316,21 +336,21 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see"></span></div>
 
-<script src="js/config.js?v=1.7.0-4281cf32" defer></script>
-<script src="js/i18n.js?v=1.7.0-9d69dc4b" defer></script>
-<script src="js/data.js?v=1.7.0-54a8180e" defer></script>
-<script src="js/util.js?v=1.7.0-19fde934" defer></script>
-<script src="js/validation.js?v=1.7.0-1d8fd6a1" defer></script>
-<script src="js/render.js?v=1.7.0-e3be5c06" defer></script>
-<script src="js/calculators.js?v=1.7.0-9ede3c35" defer></script>
-<script src="js/content.js?v=1.7.0-e8747e4c" defer></script>
-<script src="js/tools.js?v=1.7.0-a33561b9" defer></script>
-<script src="js/lists.js?v=1.7.0-7e149017" defer></script>
-<script src="js/ui.js?v=1.7.0-fc46c033" defer></script>
-<script src="js/published.js?v=1.7.0-87f710f2" defer></script>
-<script src="js/owner.js?v=1.7.0-ae9a07a4" defer></script>
-<script src="js/nav.js?v=1.7.0-fa6bdfe2" defer></script>
-<script src="js/team.js?v=1.7.0-d2185675" defer></script>
-<script src="js/boot.js?v=1.7.0-fa591121" defer></script>
+<script src="js/config.js?v=1.8.0-02a690e4" defer></script>
+<script src="js/i18n.js?v=1.8.0-8d91ccab" defer></script>
+<script src="js/data.js?v=1.8.0-8651a434" defer></script>
+<script src="js/util.js?v=1.8.0-19fde934" defer></script>
+<script src="js/validation.js?v=1.8.0-0db6be41" defer></script>
+<script src="js/render.js?v=1.8.0-3190ac63" defer></script>
+<script src="js/calculators.js?v=1.8.0-c2578173" defer></script>
+<script src="js/content.js?v=1.8.0-e8747e4c" defer></script>
+<script src="js/tools.js?v=1.8.0-2267f6e0" defer></script>
+<script src="js/lists.js?v=1.8.0-7e149017" defer></script>
+<script src="js/ui.js?v=1.8.0-34375704" defer></script>
+<script src="js/published.js?v=1.8.0-87f710f2" defer></script>
+<script src="js/owner.js?v=1.8.0-ae9a07a4" defer></script>
+<script src="js/nav.js?v=1.8.0-ee5fac9b" defer></script>
+<script src="js/team.js?v=1.8.0-d2185675" defer></script>
+<script src="js/boot.js?v=1.8.0-fa591121" defer></script>
 </body>
 </html>

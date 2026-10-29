@@ -34,7 +34,10 @@ insert into public.sources (id, org, title, url, use_ar, use_en, kind, reviewed)
  (57, 'World Health Organization, 2016', 'WHO recommendations on antenatal care for a positive pregnancy experience', 'https://www.who.int/publications/i/item/9789241549912',
       'الحديد وحمض الفوليك والكالسيوم في الحمل', 'Iron, folic acid and calcium in pregnancy', 'g', false),
  (58, 'The Royal Children''s Hospital Melbourne', 'Clinical Practice Guideline: Hypomagnesaemia', 'https://www.rch.org.au/clinicalguide/guideline_index/Hypomagnesaemia/',
-      'جرعة المغنيسيوم الفموية للأطفال', 'Oral magnesium dose for children', 'g', false)
+      'جرعة المغنيسيوم الفموية للأطفال', 'Oral magnesium dose for children', 'g', false),
+ -- 1.8.0 tools: Ferinject simplified dosing table
+ (59, 'UK SmPC (electronic medicines compendium)', 'Ferinject (ferric carboxymaltose): Summary of Product Characteristics', 'https://www.medicines.org.uk/emc/product/5910/smpc',
+      'جدول جرعات Ferinject المبسّط', 'Simplified Ferinject dosing table', 'd', false)
 on conflict (id) do nothing;
 
 -- 2. Corrections to approved content (the approved version stays live until the owner approves) ------------------

@@ -1,34 +1,67 @@
 /* VITAWAW · js/tools.js
-   Tools tab: unit converter, tablets count, corrected calcium, Ganzoni iron deficit.
+   Tools tab: tablets count, vitamin D converter, corrected calcium, IV iron (Ganzoni + Ferinject table), syrup volume,
+   daily supplement schedule, upper-limit check, unit converter. The calculator opens them already filled in (openTool).
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== tools ===================== */
 const nv=id=>{const v=parseFloat($(id).value);return isNaN(v)?null:v};
+/* tablet counter: [id, element, ar, en, elemental fraction] — NIH ODS percentages; magnesium and zinc salts by formula weight */
+const SALTS=[['direct','',  'أعرف الكمية العنصرية من العبوة','I know the elemental amount from the pack',1],
+ ['fs','fe','Ferrous sulfate (حديد 20%)','Ferrous sulfate (20% iron)',0.20],
+ ['fsd','fe','Ferrous sulfate مجفف (حبة 200 ملغ = 65 ملغ حديد، 32%)','Dried ferrous sulfate (200 mg tablet = 65 mg iron, 32%)',0.325],
+ ['ff','fe','Ferrous fumarate (حديد 33%)','Ferrous fumarate (33% iron)',0.33],
+ ['fg','fe','Ferrous gluconate (حديد 12%)','Ferrous gluconate (12% iron)',0.12],
+ ['cc','ca','Calcium carbonate (كالسيوم 40%)','Calcium carbonate (40% calcium)',0.40],
+ ['ci','ca','Calcium citrate (كالسيوم 21%)','Calcium citrate (21% calcium)',0.21],
+ ['cl','ca','Calcium lactate (كالسيوم 13%)','Calcium lactate (13% calcium)',0.13],
+ ['cg','ca','Calcium gluconate (كالسيوم 9%)','Calcium gluconate (9% calcium)',0.09],
+ ['mo','mg','Magnesium oxide (مغنيسيوم 60%)','Magnesium oxide (60% magnesium)',0.60],
+ ['mc','mg','Magnesium citrate (مغنيسيوم 16%)','Magnesium citrate (16% magnesium)',0.16],
+ ['mgl','mg','Magnesium glycinate (مغنيسيوم 14%)','Magnesium glycinate (14% magnesium)',0.14],
+ ['mcl','mg','Magnesium chloride (مغنيسيوم 12%)','Magnesium chloride (12% magnesium)',0.12],
+ ['zs','zn','Zinc sulfate (زنك 23%)','Zinc sulfate (23% zinc)',0.23],
+ ['zg','zn','Zinc gluconate (زنك 14%)','Zinc gluconate (14% zinc)',0.14]];
+const SALTGRP={fe:['الحديد','Iron'],ca:['الكالسيوم','Calcium'],mg:['المغنيسيوم','Magnesium'],zn:['الزنك','Zinc']};
+function saltBuild(){
+  const v=$('salt').value||'direct';
+  $('salt').innerHTML=`<option value="direct">${esc(L(SALTS[0][2],SALTS[0][3]))}</option>`+Object.keys(SALTGRP).map(g=>`<optgroup label="${esc(L(...SALTGRP[g]))}">${SALTS.filter(x=>x[1]===g).map(x=>`<option value="${x[0]}">${esc(L(x[2],x[3]))}</option>`).join('')}</optgroup>`).join('');
+  $('salt').value=v;pills();
+}
 function pills(){
-  const s=$('salt').value,t=nv('tabmg'),need=nv('needmg');
+  const sx=SALTS.find(x=>x[0]===$('salt').value)||SALTS[0],s=sx[0],f=sx[4],t=nv('tabmg'),need=nv('needmg');
   $('tabmg-l').textContent=T(s==='direct'?'tab_el':'tab_salt');
   if(!(t>0)||!(need>0)){$('elper').textContent='—';$('ntabs').textContent='—';$('elperi').textContent='';$('ntabsi').textContent='';return}
-  const el=s==='direct'?t:t*parseFloat(s),n=need/el,half=Math.round(n*2)/2;
-  $('elper').textContent=fmt(Math.round(el*10)/10)+L(' ملغ',' mg');
-  $('elperi').textContent=s==='direct'?'':L(`${fmt(t)} ملغ × ${Math.round(parseFloat(s)*100)}%`,`${fmt(t)} mg × ${Math.round(parseFloat(s)*100)}%`);
+  const el=t*f,n=need/el,half=Math.round(n*2)/2,mmol=sx[1]==='mg'?L(` = ${fmt(Math.round(el/24.3*10)/10)} mmol`,` = ${fmt(Math.round(el/24.3*10)/10)} mmol`):'';
+  $('elper').textContent=fmt(Math.round(el*100)/100)+L(' ملغ',' mg');
+  $('elperi').textContent=(s==='direct'?'':L(`${fmt(t)} ملغ × ${Math.round(f*1000)/10}%`,`${fmt(t)} mg × ${Math.round(f*1000)/10}%`))+mmol;
   $('ntabs').textContent=half<0.5?L('أقل من نصف حبة','Less than half a tablet'):fmt(half)+L(' حبة',' tablet(s)');
-  $('ntabsi').textContent=L(`يعطي ${fmt(Math.round(half*el))} ملغ عنصري`,`Gives ${fmt(Math.round(half*el))} mg elemental`);
+  $('ntabsi').textContent=L(`يعطي ${fmt(Math.round(half*el*10)/10)} ملغ عنصري`,`Gives ${fmt(Math.round(half*el*10)/10)} mg elemental`)+(sx[1]==='mg'?` (${fmt(Math.round(half*el/24.3*10)/10)} mmol)`:'');
 }
 function conv(){
-  let d=nv('iu');if(!(d>0))d=1000;const c=$('cc').value;
+  let d=nv('iu');if(!(d>0))d=1000;const c=$('cc').value,amp=+$('ampiu').value;
   $('dr').textContent=c==='ml400'?fmt(d/400)+L(' مل يومياً',' mL daily'):fmt(d/+c)+L(' قطرة يومياً',' drops daily');
   $('drs').textContent=fmt(d/40)+L(' mcg يومياً',' mcg daily');
   $('cp1').textContent=fmt(d/1000)+L(' كبسولة يومياً',' capsules daily');
   $('wk').textContent=fmt(d*7)+' IU';
-  $('cp50').textContent=d*7>=35000?fmt(d*7/50000)+L(' كبسولة أسبوعياً',' capsules weekly'):L('كل ','Every ')+fmt(50000/d)+L(' يوماً',' days');
-  $('amp').textContent=fmt(100000/d)+L(' يوماً',' days');
+  // a 50,000 IU capsule: whole or half capsules a week when that is close (within 15%), otherwise one capsule every N days
+  const n=d*7/50000,half=Math.round(n*2)/2;
+  $('cp50').textContent=half>=1&&Math.abs(half-n)/n<=0.15?fmt(half)+L(' كبسولة أسبوعياً',' capsule(s) weekly'):L(`كبسولة كل ${fmt(Math.round(50000/d))} يوماً`,`One capsule every ${fmt(Math.round(50000/d))} days`);
+  $('ampl').textContent=L(`أمبولة ${fmt(amp)} IU`,`${fmt(amp)} IU ampoule`);
+  $('amp').textContent=fmt(Math.round(amp/d))+L(' يوماً',' days');
 }
 function cca(){
-  const ca=nv('tca'),al=nv('alb');if(ca==null||al==null)return;
+  let ca=nv('tca'),al=nv('alb');if(ca==null||al==null)return;
+  if($('tcau').value==='mmol')ca*=4.008; if($('albu').value==='gl')al/=10; // work in mg/dL and g/dL (Payne 1973)
   const c=ca+0.8*(4-al);
-  $('cca').textContent=fmt(Math.round(c*100)/100)+' mg/dL = '+fmt(Math.round(c*25)/100)+' mmol/L';
+  const f2=n=>Number(n.toFixed(2)).toLocaleString('en-US');
+  $('cca').textContent=f2(c)+' mg/dL = '+f2(c/4.008)+' mmol/L';
   $('ccat').textContent=c>10.5?L('أعلى من المدى المرجعي الشائع (8.5 – 10.5): لا تبدأ جرعات D العالية قبل تقييم السبب','Above the usual reference range (8.5–10.5): do not start high vitamin D doses before finding the cause'):c<8.5?L('أقل من المدى المرجعي الشائع (8.5 – 10.5)','Below the usual reference range (8.5–10.5)'):L('ضمن المدى المرجعي الشائع (8.5 – 10.5 mg/dL)','Within the usual reference range (8.5–10.5 mg/dL)');
 }
 let gtTouched=false;
+/** Ferinject simplified dosing table of the EU/UK SmPC (cumulative iron, mg) by Hb (g/dL) and weight, for 35 kg and above */
+function ferTable(w,hb){
+  if(w<35)return null; // the table is for 35 kg and above; below that the label uses Ganzoni
+  const hi=w>=70;return {mg:hb<10?(hi?2000:1500):hb<14?(hi?1500:1000):500};
+}
 function gz(){
   const w=nv('gw'),a=nv('gha');if(w==null||a==null)return;
   if(!gtTouched)$('ght').value=w<35?13:15;
@@ -39,14 +72,43 @@ function gz(){
   $('gform').textContent=`${fmt(w)} × (${fmt(t)} − ${fmt(a)}) × 2.4 + ${fmt(store)}`+L(' مخزون',' stores');
   $('gven').textContent=Math.ceil(def/100)+L(' أمبولة',' ampoules');
   $('gfer').textContent=fmt(fer)+MG+' = '+fmt(fer/500)+L(' فيال',' vials');
-  $('gfers').textContent=L(`بعد التقريب. أقصى جرعة مفردة ${fmt(Math.min(1000,Math.round(w*20)))} ملغ، ولا تتجاوز 1,000 ملغ أسبوعياً`,`After rounding. Maximum single dose ${fmt(Math.min(1000,Math.round(w*20)))} mg; no more than 1,000 mg per week`);
+  const mx=Math.min(1000,Math.round(w*20));
+  $('gfers').textContent=L(`بعد التقريب. أقصى جرعة مفردة ${fmt(mx)} ملغ، ولا تتجاوز 1,000 ملغ أسبوعياً`,`After rounding. Maximum single dose ${fmt(mx)} mg; no more than 1,000 mg per week`);
+  const ft=ferTable(w,a);
+  if(!ft){$('gtab').textContent='—';$('gtabi').textContent=L('الجدول لوزن 35 كغم فأكثر؛ تحت ذلك تُستعمل معادلة Ganzoni أعلاه','The table is for 35 kg and above; below that use the Ganzoni result above');return}
+  const doses=Math.ceil(ft.mg/mx);
+  $('gtab').textContent=fmt(ft.mg)+MG;
+  $('gtabi').textContent=L(`على ${doses===1?'جرعة واحدة':doses+' جرعات'} لا تتجاوز كل منها ${fmt(mx)} ملغ، بفاصل أسبوع على الأقل`,`In ${doses} dose(s) of no more than ${fmt(mx)} mg each, at least a week apart`);
 }
+/* syrup / drops volume: dose (mg/kg) × weight → mL from the strength on the pack */
+function mlc(){
+  const w=nv('mlwt'),k=nv('mlmgkg'),q=+$('mlfreq').value,c=nv('mlconc'),per=nv('mlper'),dpm=nv('mldpm');
+  if(!(w>0)||!(k>0)||!(c>0)||!(per>0)){$('mldose').textContent='—';$('mlvol').textContent='—';$('mldosei').textContent='';$('mlvoli').textContent='';return}
+  const mg=w*k,ml=mg/(c/per),r1=n=>Math.round(n*10)/10;
+  $('mldose').textContent=fmt(r1(mg))+L(' ملغ في المرة',' mg per dose');
+  $('mldosei').textContent=L(`${fmt(w)} كغم × ${fmt(k)} ملغ/كغم · ${fmt(r1(mg*q))} ملغ يومياً`,`${fmt(w)} kg × ${fmt(k)} mg/kg · ${fmt(r1(mg*q))} mg a day`);
+  const mlT=Number(ml.toFixed(ml<1?2:1)).toLocaleString('en-US')+L(' مل',' mL'),qT=L(['مرة واحدة يومياً','مرتين يومياً','3 مرات يومياً'][q-1],['once a day','twice a day','3 times a day'][q-1]);
+  $('mlvol').textContent=dpm?fmt(Math.round(ml*dpm))+L(' قطرة',' drops'):mlT;
+  $('mlvoli').textContent=(dpm?mlT+' · ':'')+qT+' · '+L(`التركيز ${fmt(c)} ملغ لكل ${fmt(per)} مل`,`strength ${fmt(c)} mg per ${fmt(per)} mL`);
+}
+let ML={wt:10,mgkg:3,q:1};
+/* the calculator opens a tool already filled in: PILL (tablets), ML (syrup), UCVSET (units), ULSET (upper limit), SCHSET (daily schedule) */
+let UCVSET=null,ULSET=null,SCHSET=null;
 function openTool(kind){
   let sec='tool-d';
-  if(kind==='pills'){sec='tool-pill';$('salt').value=PILL.k==='ca'?'0.40':'0.20';$('tabmg').value=PILL.k==='ca'?1250:325;$('needmg').value=PILL.dose;pills()}
+  if(kind==='pills'){sec='tool-pill';const k=PILL.k;
+    const def={fe:['fsd',200],ca:['cc',1250],mg:['mo',400],zn:['zs',220],fol:['direct',PILL.tab||5]}[k]||['direct',PILL.dose];
+    $('salt').value=def[0];$('tabmg').value=def[1];$('needmg').value=PILL.dose;pills()}
   if(kind==='ganz')sec='tool-gz';
+  if(kind==='ca')sec='tool-ca';
+  if(kind==='ml'){sec='tool-ml';$('mlwt').value=ML.wt;$('mlmgkg').value=ML.mgkg;$('mlfreq').value=String(ML.q);mlc()}
+  if(kind==='units'){sec='tool-u';if(UCVSET){$('ucv').value=UCVSET[0];$('uval').value=UCVSET[1]}ucv()}
+  if(kind==='ul'){sec='tool-ul';if(ULSET){$('ulage').value=String(ULSET.g);ULSET.v.forEach(([id,v])=>{const e=$('ul-'+id);if(e)e.value=v})}ul()}
+  if(kind==='sch'){sec='tool-sch';if(SCHSET)SCHSET.forEach(id=>{const e=$('sc-'+id);if(e)e.checked=true});sch()}
   openToolSheet(sec);
 }
+/** age in years → the UL age group (1–3, 4–8, 9–13, 14–18, 19–50, 51+) */
+const ulGroup=a=>a<=3?0:a<=8?1:a<=13?2:a<=18?3:a<=50?4:5;
 /* supplement total vs the upper limit (UL, NIH / Institute of Medicine); age groups 1–3, 4–8, 9–13, 14–18, 19–50, 51+.
    [id, name ar, name en, unit, ULs, source, note ar, note en] — the UL counts supplements only, except calcium (food + supplements) */
 const ULT=[
@@ -97,4 +159,66 @@ function ucv(){
   const f=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:n<1?4:2});
   $('uout').textContent=`${f(v*c[3])} ${c[5]}`;
   $('uouti').innerHTML=`<bdi dir="ltr">${f(v)} ${c[4]} = ${f(v*c[3])} ${c[5]}</bdi><br>${L('وبالعكس','Reverse')}: <bdi dir="ltr">${f(v)} ${c[5]} = ${f(v/c[3])} ${c[4]}</bdi>${R([c[6]])}`;
+}
+/* ===================== daily supplement schedule =====================
+   Times are minutes after waking (W). Meals are assumed at W+1 h (breakfast), W+6 h (lunch), W+12 h (dinner), bed at W+15 h.
+   Each item: [id, ar, en, candidate times (best first), how to take ar, en, sources]. The search tries every combination
+   and keeps the one with the best-ranked times that respects every minimum gap (SCGAP). */
+const H=60;
+const SCI=[
+ ['levo','Levothyroxine','Levothyroxine',[0,30],'على معدة فارغة مع الماء، قبل الفطور بـ 30 – 60 دقيقة','On an empty stomach with water, 30–60 minutes before breakfast',[27]],
+ ['bis','Alendronate (أسبوعي)','Alendronate (weekly)',[0],'عند الاستيقاظ بكوب ماء كامل، وابقَ جالساً أو واقفاً 30 دقيقة قبل أي طعام أو دواء','On waking with a full glass of water; stay upright 30 minutes before any food or medicine',[20]],
+ ['fe','الحديد','Iron',[3*H,4*H,9*H,10*H,1*H,6*H,12*H],'بين الوجبات مع ماء أو عصير فيه فيتامين C؛ ومع قليل من الطعام إن سبّب اضطراباً','Between meals with water or juice containing vitamin C; with a little food if it upsets the stomach',[15,12]],
+ ['ca','الكالسيوم','Calcium',[6*H,12*H,1*H],'مع الوجبة (Carbonate)، ولا تزيد الجرعة الواحدة على 500 ملغ','With a meal (carbonate); no more than 500 mg at a time',[18]],
+ ['ca2','الكالسيوم (الجرعة الثانية)','Calcium (second dose)',[12*H,6*H,1*H],'مع وجبة أخرى','With another meal',[18]],
+ ['mg','المغنيسيوم','Magnesium',[12*H,15*H,6*H],'مع الطعام أو قبل النوم','With food or at bedtime',[20]],
+ ['zn','الزنك','Zinc',[6*H,12*H,1*H],'مع الوجبة إن سبّب غثياناً','With a meal if it causes nausea',[25]],
+ ['d','فيتامين D','Vitamin D',[6*H,12*H,1*H],'مع أكبر وجبة فيها دهون','With the largest meal containing fat',[4]],
+ ['abx','مضاد حيوي (Ciprofloxacin أو Doxycycline) مرتين يومياً','Antibiotic (ciprofloxacin or doxycycline) twice a day',[1*H,2*H,3*H,0],'كل 12 ساعة؛ إذا وُصف 3 مرات يومياً فاسأل الصيدلاني','Every 12 hours; if prescribed three times a day, ask the pharmacist',[45]]];
+/* minimum gaps in minutes between two items (either order), or [before, after] for directional rules (a before b / a after b) */
+const SCGAP=[['levo','fe',4*H,[27]],['levo','ca',4*H,[27]],['levo','ca2',4*H,[27]],['levo','mg',4*H,[27]],
+ ['fe','ca',2*H,[18,15]],['fe','ca2',2*H,[18,15]],['fe','zn',2*H,[25]],
+ ['bis','levo',30,[20]],['bis','fe',30,[20]],['bis','zn',30,[20]],['bis','d',30,[20]],['bis','ca',2*H,[20]],['bis','ca2',2*H,[20]],['bis','mg',2*H,[20]],['bis','abx',30,[20]],
+ ...['fe','ca','ca2','mg','zn'].map(m=>['abx',m,[2*H,6*H],[45]])];
+const hhmm=(m,W)=>{const t=((W*60+m)%1440+1440)%1440;return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`};
+function schBuild(){
+  const was=Object.fromEntries(SCI.map(x=>[x[0],$('sc-'+x[0])?$('sc-'+x[0]).checked:false]));
+  $('schk').innerHTML=SCI.map(x=>`<label class="chk"><input type="checkbox" id="sc-${x[0]}"${was[x[0]]?' checked':''}><span>${esc(L(x[1],x[2]))}</span></label>`).join('');
+  sch();
+}
+/** does the antibiotic (doses at a and a+12 h) keep 2 h before / 6 h after mineral time m? */
+const abxOk=(a,m,g)=>[a,a+12*H].every(t=>t<=m-g[0]||t>=m+g[1]);
+function schSolve(ids){
+  const items=ids.map(id=>SCI.find(x=>x[0]===id));let best=null;
+  const fits=(asg,id,t)=>SCGAP.every(([x,y,g])=>{
+    const other=id===x?y:id===y?x:null;if(other==null||asg[other]==null)return true;
+    const tx=id===x?t:asg[x],ty=id===y?t:asg[y];
+    if(Array.isArray(g))return abxOk(tx,ty,g);          // x = antibiotic
+    if(x==='bis')return ty>=tx+g;                         // everything after the weekly alendronate
+    return Math.abs(tx-ty)>=g;
+  });
+  const go=(i,asg,cost)=>{
+    if(best&&cost>=best.cost)return;
+    if(i===items.length){best={cost,asg:{...asg}};return}
+    const it=items[i];
+    it[3].forEach((t,rank)=>{
+      if(it[0]==='ca2'&&asg.ca===t)return;                // the two calcium doses go with different meals
+      if(fits(asg,it[0],t)){asg[it[0]]=t;go(i+1,asg,cost+rank);delete asg[it[0]]}
+    });
+  };
+  go(0,{},0);return best&&best.asg;
+}
+function sch(){
+  const W=+$('schw').value,ids=SCI.map(x=>x[0]).filter(id=>$('sc-'+id)&&$('sc-'+id).checked);
+  if(!ids.length){$('schout').innerHTML=`<p class="hint">${T('sc_none')}</p>`;return}
+  const asg=schSolve(ids);
+  if(!asg){$('schout').innerHTML=`<div class="ulsum bad">${T('sc_fail')}</div>`;return}
+  const meals=[[0,L('الاستيقاظ','Wake up')],[H,L('الفطور','Breakfast')],[6*H,L('الغداء','Lunch')],[12*H,L('العشاء','Dinner')],[15*H,L('النوم','Bed')]];
+  const rows=[...meals.map(([t,n])=>({t,meal:n})),...ids.flatMap(id=>{const x=SCI.find(y=>y[0]===id),t=asg[id];
+    return (id==='abx'?[t,t+12*H]:[t]).map(tt=>({t:tt,x}))})].sort((a,b)=>a.t-b.t||(a.meal?-1:1));
+  const pairs=SCGAP.filter(([a,b])=>ids.includes(a)&&ids.includes(b));
+  $('schout').innerHTML=`<ol class="sched">${rows.map(r=>r.meal?`<li class="meal"><time>${hhmm(r.t,W)}</time><span>${esc(r.meal)}</span></li>`:
+    `<li><time>${hhmm(r.t,W)}</time><div><b>${esc(L(r.x[1],r.x[2]))}</b><small>${esc(L(r.x[4],r.x[5]))}${R(r.x[6])}</small></div></li>`).join('')}</ol>`+
+    (pairs.length?`<p class="hint">${T('sc_gaps')}</p><ul class="gaps">${pairs.map(([a,b,g,r])=>{const n=k=>L(...SCI.find(y=>y[0]===k).slice(1,3)).replace(/ \(.*\)$/,'');
+      return `<li><b>${esc(n(a))} ↔ ${esc(n(b))}</b> ${esc(Array.isArray(g)?L('المضاد قبله بساعتين أو بعده بـ 6 ساعات','antibiotic 2 h before or 6 h after'):a==='bis'?L(`بعده بـ ${g>=60?g/60+' ساعة':g+' دقيقة'} على الأقل`,`at least ${g>=60?g/60+' h':g+' min'} after it`):L(`فاصل ${g/60===2?'ساعتين':g/60+' ساعات'} على الأقل`,`at least ${g/60} h apart`))}${R(r)}</li>`}).join('')}</ul>`:'');
 }

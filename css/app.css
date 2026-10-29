@@ -633,3 +633,13 @@ body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{d
 .ulbar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}.ulbar i{display:block;height:100%;border-radius:99px;background:var(--ok)}
 .ulr.warn .ulbar i{background:var(--warn)}.ulr.bad .ulbar i{background:var(--bad)}.ulr.bad{border-color:var(--bad);background:var(--bad-bg)}
 .ulr small{font-size:13px;color:var(--mute)}.ulr.bad small{color:var(--bad);font-weight:700}
+/* 1.8.0 daily supplement schedule */
+.sch{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;margin:6px 0 10px}
+.sched{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+.sched li{display:flex;gap:12px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:12px;background:var(--card,var(--bg))}
+.sched li.meal{border-style:dashed;background:transparent;color:var(--mute);padding:5px 11px;font-size:13px}
+.sched time{flex:none;min-width:48px;font:800 15px var(--f-body);font-variant-numeric:tabular-nums;color:var(--royal);direction:ltr;text-align:center}
+.sched li.meal time{color:var(--mute);font-weight:700;font-size:13px}
+.sched li div{display:grid;gap:2px}.sched li small{color:var(--mute);font-size:13px}
+.sch .chk{margin-top:0}
+.gaps{margin:4px 0 0;padding-inline-start:18px;display:grid;gap:3px;font-size:13px;color:var(--mute)}.gaps b{color:var(--ink);font-weight:700}
