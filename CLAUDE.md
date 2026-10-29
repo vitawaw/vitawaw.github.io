@@ -68,12 +68,12 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-29)
-- **1.8.0 in preview** (same branch, on top of 1.7.0 and 1.6.9): his 12 tool proposals. tools.js: `SALTS` (tablet counter, salts
+- **Live: 1.8.0** (he said «جاهز» on 2026-10-29; includes 1.7.0 and 1.6.9; main fast-forwarded from this branch): his 12 tool proposals. tools.js: `SALTS` (tablet counter, salts
   per element), `ferTable()` (Ferinject SmPC table, source 59), `mlc()` syrup/drops tool `#tool-ml`, daily schedule `#tool-sch`
   (`SCI` items, `SCGAP` minimum gaps, `schSolve()` search). Results open tools filled: render.js reads `r.ml`, `r.sch`, `r.ca`,
   `r.units`, `r.ul` (button labels `tb_*`). render() keeps #res when the HTML is unchanged (first tap after typing was lost).
   Test: `python3 tests/tools_flow.py`.
-- **1.7.0 in preview** (same branch, on top of 1.6.9): his 9 approved scientific proposals. Iron Hb + ferritin (`hbCut()` WHO 2024,
+- **1.7.0** (live with 1.8.0): his 9 approved scientific proposals. Iron Hb + ferritin (`hbCut()` WHO 2024,
   `ferCut()` AAP/WHO), Active B12 (NICE), Mg children by weight (RCH, source 58), new built-in calculators `preg` (fPreg), `inf` (fInf),
   `vac` (fVA, WHO vitamin A) in BUILTIN; tools `#tool-ul` (UL checker, `ULT` in tools.js) and `#tool-u` (unit converter, `UCV`);
   review stamp `CFG.review` (owner: menu → site → ختم المراجعة الطبية; default his name + 2026-10-29). Fields shown per calculator by
@@ -84,7 +84,7 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   manganese/molybdenum/phosphorus (NIH, sources 46–50), sources 14/27 updated. All of it lands as waiting items in 🔔.
   NIH/NICE/Medscape block automated fetching from this environment: values were checked against the reference DRIs and
   sensitive points by web search; suggest he spot-checks a few.
-- **Live: 1.6.8** (he said «جاهز» on 2026-10-29; includes 1.6.7). 1.6.8: owner edits a pharmacist's name + permissions (`teamEdit()`, RPC
+- 1.6.8 (he said «جاهز» on 2026-10-29; includes 1.6.7). 1.6.8: owner edits a pharmacist's name + permissions (`teamEdit()`, RPC
   `team_rename` added to `texts_fix_and_two_step.sql`), roadmap ↑↓ removed, interactions draggable inside a severity group,
   two round footer logos (`CFG.brand` {l1,l2,url}: owner uploads, `shrinkImage()` → 160px data URL, clean() validates;
   `renderBrand()` in lists.js), tool fields aligned. Footer text: he set «Powered by Saifaldeen» himself (draft text `by`).
