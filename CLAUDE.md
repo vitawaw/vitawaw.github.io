@@ -66,8 +66,8 @@ node tests/worker_test.mjs       # edge worker
 ```
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
-## Where we are (2026-10-28)
-- **1.6.4 in preview** (branch `ccr-cad26eca-o7h5hm`): 1.6.4 = 🔔 notifications page (`#notif`, `renderNotif()`/`decide()` in
+## Where we are (2026-10-29)
+- **Live: 1.6.4** (he said «جاهز» on 2026-10-29; main fast-forwarded from branch `ccr-cad26eca-o7h5hm`). Contents: 1.6.4 = 🔔 notifications page (`#notif`, `renderNotif()`/`decide()` in
   owner.js; owner approves/rejects there via `review_change`, pharmacists see decisions from table `notifications`) and one
   publishing bar (`#obar`: preview · save · publish · discard), removed from the menu. Migration `20261029133847_notifications.sql`
   **is applied** (he ran it in the SQL editor; checked: table + RLS, names in get_content, review_change notifies). 1.6.3 = Facebook-style menus he approved, on top of 1.6.2: he asked to redesign the interface and menus to be easy and like other
@@ -81,13 +81,11 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   If a DB change is needed again, give him the raw GitHub link + the SQL editor link (…/project/zrlapysswtqrwfsywbvl/sql/new)
   and tell him to make sure the button says «Run», not «Run selected».
 - He clarified: the pharmacists he invites are limited assistants to the owner (not the pharmacists who visit the site).
-- **Live: 1.6.0**. It includes the new menus (☰ / ⋯ / floating windows), info pages, pharmacist accounts, and the 1.3.0
-  medical fixes.
+- Before that, live was 1.6.0 (☰ / ⋯ menus, info pages, pharmacist accounts, 1.3.0 medical fixes).
 - Old branches `release/1.4.0` (1.4.1) and `release/1.5.0` were **not** published. 1.5.0 was rejected; don't reuse it.
   1.4.x ideas not yet in 1.6.0: changing the app name/logo from the owner panel, an owner-chosen source type,
   the medical review stamp, and a link checker on the worker. Bring any of them back only if he asks, re-done in the 1.6.0 style.
-- He has **more feedback on 1.6.0** that he will give in the next session. Start by asking for it, and don't change the
-  layout before he gives it.
+- Next session: ask what he wants next (his remaining feedback, the ~60 items in 🔔, or the academic material).
 - About 60 content items wait for his review in the owner view (vitamins, interactions, sources).
 
 ## Backlog he mentioned (not started)
