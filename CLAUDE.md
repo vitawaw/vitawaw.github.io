@@ -67,17 +67,17 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-29)
-- **1.6.8 in preview** (same branch, on top of 1.6.7): owner edits a pharmacist's name + permissions (`teamEdit()`, RPC
+- **Live: 1.6.8** (he said «جاهز» on 2026-10-29; includes 1.6.7). 1.6.8: owner edits a pharmacist's name + permissions (`teamEdit()`, RPC
   `team_rename` added to `texts_fix_and_two_step.sql`), roadmap ↑↓ removed, interactions draggable inside a severity group,
   two round footer logos (`CFG.brand` {l1,l2,url}: owner uploads, `shrinkImage()` → 160px data URL, clean() validates;
   `renderBrand()` in lists.js), tool fields aligned. Footer text: he set «Powered by Saifaldeen» himself (draft text `by`).
-- **1.6.7** (same branch, not yet live): his notes after 1.6.6 — session resumes after refresh (`resumeSession()` in boot),
+- **1.6.7** (live with 1.6.8): his notes after 1.6.6 — session resumes after refresh (`resumeSession()` in boot),
   draft_guard upsert double-pass bug fixed (pharmacist texts were lost), account & security sheet (`openAccount()`:
   password with current-password check, TOTP two-step with QR via supabase auth.mfa, sign out other devices; DB enforces
   aal2 through `private.mfa_ok()` in my_role/can_edit), drag-to-reorder (`sortable()` in util.js: vitamins → CFG.nutOrder
-  published with settings, info pages, roadmap), label الصيدلاني, small logo in footer. Migration `texts_fix_and_two_step.sql`
-  must be run by him in the SQL editor.
-- **Live: 1.6.6** (he said «تم و جاهز» on 2026-10-29; includes 1.6.5). 1.6.6: he approved all 10 review proposals («كلها»): 44px touch targets, larger small text,
+  published with settings, info pages, roadmap), label الصيدلاني, small logo in footer. Migration `20261029203200_texts_fix_and_two_step.sql`
+  is applied (checked: draft_guard fix, mfa_ok in my_role/can_edit, team_rename).
+- 1.6.6 (published 2026-10-29; includes 1.6.5). 1.6.6: he approved all 10 review proposals («كلها»): 44px touch targets, larger small text,
   patient mode hides pills/IV-iron tools, inline dialog errors (`dialog({err:{i,msg}})`) + sticky actions, red destructive
   buttons (`danger`), publish summary (`pubSummary()`), phone owner bar (short status, discard first), calm edit mode
   (`#o-texts` toggles body.textedit), invite key (`#join=email&k=key`, checked by guard_signup), pharmacists' texts/pages

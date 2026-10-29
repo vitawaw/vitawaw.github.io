@@ -1,4 +1,5 @@
 -- VITAWAW 1.6.7–1.6.8: (1) fix — a pharmacist's page texts were lost instead of waiting for review; (2) two-step verification enforced by the database; (3) the owner can rename a pharmacist.
+-- Applied 2026-10-29 by the owner in the SQL editor (not in list_migrations); named with the time it was checked.
 -- Cause: the page saves the draft with an "upsert" (INSERT … ON CONFLICT DO UPDATE). The guard ran twice: first as
 -- INSERT (comparing with the published copy and moving the texts under "team"), then as UPDATE, where it read the texts
 -- from the top level again (already replaced) and dropped the proposal. The owner's «approve/reject» flag (team_done)
