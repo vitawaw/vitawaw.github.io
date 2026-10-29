@@ -115,6 +115,7 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
 
 ## Backlog he mentioned (not started)
 - Academic material for the presentation: validation document, algorithm flowcharts, academic write-up, slide deck.
+  He asked to be reminded about the validation document (reminder set for 2026-10-30 ~21:00 UTC, scheduled task «تذكير: وثيقة التحقق»).
   Ask first: university, college, project title, names, template.
 - Optional: an AI translate button (Arabic ↔ English) in edit dialogs (offered, not approved); MFA for the owner;
   leaked-password protection (Supabase dashboard, paid plan).
