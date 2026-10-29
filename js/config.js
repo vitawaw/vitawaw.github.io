@@ -3,7 +3,7 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.6.7';
+const APP_VERSION='1.6.8';
 const REVIEW={name:'',role:'',date:''}; // e.g. {name:'د. ...', role:'صيدلي سريري', date:'2026-11-01'}
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
@@ -16,6 +16,7 @@ const DEFAULT_CFG={
   colors:{calc:['#0B6B6E','#8E1B54'],tools:['#00167a','#075BFF'],interactions:['#7a2e00','#d9731f'],sources:['#0a4a2c','#17915a'],roadmap:['#3a1678','#7c4dff']},
   text:{},
   nutOrder:[], /* order of the vitamins (ids); empty = default order. Owner only. */
+  brand:{l1:'',l2:'',url:''}, /* footer logos: l1 = app logo (empty = built-in), l2 = parent company logo, url = company site */
   /* info pages in the side menu (☰ → معلومات). The owner can edit, hide, add and delete them. Plain text: an empty line starts a new paragraph. */
   pages:[
    {id:'about',t:{ar:'حول التطبيق',en:'About the app'},b:{ar:'VITAWAW حاسبة لجرعات الفيتامينات والمعادن مبنية على مصادر طبية موثوقة، مع التداخلات الدوائية وأدوات صيدلانية مساعدة.\n\nكل رقم في النتيجة مرتبط بمصدره، ويمكنك فتح المصدر بالضغط على رقمه.\n\nيراجع صيدلي كل إضافة جديدة قبل أن تظهر للزوار.',en:'VITAWAW is a vitamin and mineral dose calculator based on trusted medical sources, with drug interactions and pharmacy tools.\n\nEvery number in a result is linked to its source; tap the number to open it.\n\nA pharmacist reviews every new addition before visitors can see it.'}},
@@ -45,6 +46,7 @@ const SAFE_ID_KEYS=new Set(['k','id','st','ic','sev','uk','sx']);
 function clean(v,key){
   if(typeof v==='string'){
     if(key==='url')return /^https?:\/\/[^\s"'<>]+$/i.test(v.trim())?v.trim():'';
+    if(key==='l1'||key==='l2')return /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(v)&&v.length<300000?v:''; // uploaded logo (small picture)
     if(SAFE_ID_KEYS.has(key))return v.replace(/[^\w-]/g,'');
     if(key==='email')return /^[^\s@"'<>]+@[^\s@"'<>]+\.[a-z]{2,}$/i.test(v.trim())?v.trim():'';
     if(key==='phone')return v.replace(/[^+\d\s()-]/g,'');
@@ -66,6 +68,7 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   if(Array.isArray(over.roadmap))out.roadmap=over.roadmap;
   if(Array.isArray(over.pages))out.pages=over.pages;
   if(Array.isArray(over.nutOrder))out.nutOrder=over.nutOrder;
+  if(over.brand)out.brand={l1:over.brand.l1||'',l2:over.brand.l2||'',url:over.brand.url||''};
   if(Array.isArray(over.refs))out.refs=over.refs;
   if(Array.isArray(over.inter))out.inter=over.inter;
   if(over.nut)out.nut={hide:over.nut.hide||[],custom:over.nut.custom||[]};

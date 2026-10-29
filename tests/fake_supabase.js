@@ -50,6 +50,7 @@ window.__calls=[];
     if(n.startsWith('team_')&&(window.__ROLE||'owner')!=='owner')return{error:{message:'only the owner'}};
     if(n==='team_list')return{data:JSON.parse(JSON.stringify(st.team)),error:null};
     if(n==='team_invite'){if(st.team.members.some(m=>m.email===a.p_email))return{error:{message:'already a member'}};st.team.invites=st.team.invites.filter(i=>i.email!==a.p_email);st.team.invites.unshift({email:a.p_email,name:a.p_name,perms:a.p_perms,at:new Date().toISOString(),key:'k123'});save();return{error:null}}
+    if(n==='team_rename'){const m=st.team.members.find(x=>x.id===a.p_user&&x.role==='editor');if(!m)return{error:{message:'not a pharmacist account'}};m.name=a.p_name;save();return{error:null}}
     if(n==='team_revoke_invite'){st.team.invites=st.team.invites.filter(i=>i.email!==a.p_email);save();return{error:null}}
     if(n==='team_update'){const m=st.team.members.find(x=>x.id===a.p_user&&x.role==='editor');if(!m)return{error:{message:'not a pharmacist account'}};if(a.p_perms)m.perms=a.p_perms;if(a.p_status)m.status=a.p_status;if(m.status==='removed')st.team.members=st.team.members.filter(x=>x!==m);save();return{error:null}}
     return{error:{message:'?'}}}}}};

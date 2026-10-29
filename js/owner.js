@@ -6,7 +6,7 @@
 const OWN={on:false,local:false,role:null,client:null,base:'',preview:false,perms:{},name:''};
 // texts editable from their own page
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
-function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,nutOrder:CFG.nutOrder,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
+function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,nutOrder:CFG.nutOrder,brand:CFG.brand,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
 function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent=whoLabel();
@@ -36,6 +36,7 @@ function decorate(){
     b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5 1-1.5 2-1.5h2a4 4 0 0 0 4-4c0-4.5-4-8-9-8z"/></svg>';h.appendChild(b)});
   // contact details are edited from the roadmap's contact card (and Menu → management)
   const c=document.querySelector('#roadmap .contact h2');if(c){const b=document.createElement('button');b.type='button';b.className='edp';b.title=T('o_contact');b.dataset.edcontact='1';b.innerHTML=PEN;c.appendChild(b)}
+  const fl=$('flogos');if(fl){const b3=document.createElement('button');b3.type='button';b3.className='edp';b3.title=T('br_t');b3.dataset.edbrand='1';b3.innerHTML=PEN;fl.after(b3)}
 }
 
 /* ----- generic dialog ----- */
@@ -45,6 +46,7 @@ function dialog({title,fields=[],info='',buttons,err=null}){
     $('dlg-t').textContent=title;$('dlg-m').hidden=!(err&&err.i==null);$('dlg-m').textContent=err&&err.i==null?err.msg:'';
     $('dlg-b').innerHTML=(info?`<p class="info">${esc(info)}</p>`:'')+fields.map((f,i)=>{
       const id='dlgf'+i,lab=`<label class="l" for="${id}">${esc(f.label)}</label>`;
+      if(f.type==='image')return `<div class="row">${lab}<div class="imgf"><span class="imgp">${f.value?`<img src="${esc(f.value)}" alt="">`:(f.empty||'')}</span><input type="file" id="${id}" accept="image/png,image/jpeg,image/webp">${f.value?`<label class="ck"><input type="checkbox" id="${id}x"><span>${esc(T('br_remove'))}</span></label>`:''}</div></div>`;
       if(f.type==='qr')return `<div class="row qr"><img src="${esc(f.value[0])}" alt="QR" width="180" height="180"><code dir="ltr">${esc(f.value[1])}</code></div>`;
       if(f.type==='textarea')return `<div class="row">${lab}<textarea id="${id}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${f.ltr?' dir="ltr"':''}>${esc(f.value)}</textarea></div>`;
       if(f.type==='checks')return `<div class="row"><label class="l" for="${id}">${esc(f.label)}</label><div class="checks" id="${id}">${f.options.map(o=>`<label class="ck"><input type="checkbox" value="${o[0]}"${f.value.includes(o[0])?' checked':''}><span>${esc(o[1])}</span></label>`).join('')}</div></div>`;
@@ -54,7 +56,7 @@ function dialog({title,fields=[],info='',buttons,err=null}){
     }).join('');
     if(err&&err.i!=null){const f=$('dlgf'+err.i)||$('dlgf'+err.i+'a');const row=f&&f.closest('.row');if(row){row.classList.add('bad');row.insertAdjacentHTML('beforeend',`<p class="ferr" role="alert">${esc(err.msg)}</p>`)}}
     $('dlg-a').innerHTML=buttons.map((b,i)=>`<button class="btn${b.pri?' pri':''}${b.danger?' danger':''}" type="${b.pri?'submit':'button'}" data-bi="${i}">${esc(b.label)}</button>`).join('');
-    const read=()=>fields.map((f,i)=>f.type==='qr'?null:f.type==='colors'?[$('dlgf'+i+'a').value,$('dlgf'+i+'b').value]:f.type==='checks'?[...$('dlgf'+i).querySelectorAll('input:checked')].map(x=>+x.value):$('dlgf'+i).value);
+    const read=()=>fields.map((f,i)=>f.type==='qr'?null:f.type==='image'?{file:$('dlgf'+i).files[0]||null,remove:!!($('dlgf'+i+'x')&&$('dlgf'+i+'x').checked)}:f.type==='colors'?[$('dlgf'+i+'a').value,$('dlgf'+i+'b').value]:f.type==='checks'?[...$('dlgf'+i).querySelectorAll('input:checked')].map(x=>+x.value):$('dlgf'+i).value);
     const finish=v=>{$('dlg').hidden=true;$('dlgf').onsubmit=null;$('dlg-a').onclick=null;res(v)};
     $('dlg-a').onclick=e=>{const b=e.target.closest('[data-bi]');if(!b||b.type==='submit')return;finish({action:buttons[+b.dataset.bi].action,values:read()})};
     $('dlgf').onsubmit=e=>{e.preventDefault();const b=buttons.find(x=>x.pri);finish({action:b.action,values:read()})};
@@ -82,6 +84,29 @@ async function editColors(p){
   if(r.action==='ok'){CFG.colors[p]=r.values[0];changed()}
   if(r.action==='reset'){CFG.colors[p]=clone(DEFAULT_CFG.colors[p]);changed()}
 }
+/** a picture chosen by the owner, made small and round-ready: 160×160, centre crop, WebP (or JPEG) */
+function shrinkImage(file){return new Promise((ok,no)=>{const rd=new FileReader(),im=new Image(); // data: URL (the page's security rules allow no blob: pictures)
+  im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=160;const s=Math.min(im.width,im.height),x=c.getContext('2d');
+    x.fillStyle='#fff';x.fillRect(0,0,160,160);x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,160,160);
+    let d=c.toDataURL('image/webp',.85);if(!d.startsWith('data:image/webp'))d=c.toDataURL('image/jpeg',.85);ok(d)};
+  im.onerror=no;rd.onload=()=>{im.src=rd.result};rd.onerror=no;rd.readAsDataURL(file)})}
+/** owner: the two round logos in the footer and the link of the company that made the app */
+async function editBrand(){
+  if(!ISOWNER()){toast(T('o_onlyowner'));return}
+  const b={...DEFAULT_CFG.brand,...(CFG.brand||{})};let err=null,url=b.url;
+  while(true){
+    const r=await dialog({err,title:T('br_t'),info:T('br_i'),fields:[{label:T('br_l1'),type:'image',value:b.l1,empty:`<svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg>`},
+      {label:T('br_l2'),type:'image',value:b.l2,empty:'—'},{label:T('br_url'),type:'url',value:url,ph:'https://'}],
+      buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    if(r.action!=='ok')return;
+    url=r.values[2].trim();
+    if(url&&!/^https?:\/\/[^\s"'<>]+$/i.test(url)){err={i:2,msg:T('o_rbadurl')};continue}
+    try{
+      for(const [i,k] of [[0,'l1'],[1,'l2']]){const v=r.values[i];if(v.remove)b[k]='';if(v.file)b[k]=await shrinkImage(v.file)}
+    }catch(e){err={msg:T('br_bad')};continue}
+    b.url=url;CFG.brand=b;changed();toast(T('br_done'));return;
+  }
+}
 async function editContact(){
   const c=CFG.contact;
   const r=await dialog({title:T('o_contact'),fields:[{label:T('o_email'),type:'email',value:c.email},{label:T('o_phone'),type:'tel',value:c.phone||''}],
@@ -101,16 +126,14 @@ async function editFeature(i){
 }
 async function delFeature(i){if(await confirmDel(tx2(CFG.roadmap[i].t))){CFG.roadmap.splice(i,1);changed()}}
 function hideFeature(i){const x=CFG.roadmap[i];if(!x)return;x.hidden=!x.hidden;changed()}
-function moveFeature(i,d){const j=i+d;if(j<0||j>=CFG.roadmap.length)return;const a=CFG.roadmap;[a[i],a[j]]=[a[j],a[i]];changed()}
 document.addEventListener('click',e=>{
-  if(!OWN.on)return;const t=e.target.closest('[data-edtext],[data-edcolor],[data-edcontact],[data-rmup],[data-rmdown],#rmadd');if(!t)return;
+  if(!OWN.on)return;const t=e.target.closest('[data-edtext],[data-edcolor],[data-edcontact],[data-edbrand],#rmadd');if(!t)return;
   e.preventDefault();e.stopPropagation();
   if(t.dataset.edtext?!CAN('text'):!ISOWNER()){toast(T('tm_noperm'));return}
   if(t.dataset.edtext)editText(t.dataset.edtext);
   else if(t.dataset.edcolor)editColors(t.dataset.edcolor);
   else if(t.dataset.edcontact)editContact();
-  else if(t.dataset.rmup)moveFeature(+t.dataset.rmup,-1);
-  else if(t.dataset.rmdown)moveFeature(+t.dataset.rmdown,1);
+  else if(t.dataset.edbrand)editBrand();
   else if(t.id==='rmadd')editFeature(null);
 },true);
 
@@ -417,7 +440,7 @@ async function afterLogin(){
   if(m.role==='owner')teamLoad().then(()=>renderNav());else loadNotes();
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null;OWN.parts=partsOf()}
-const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[]});
+const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[],brand:c.brand||DEFAULT_CFG.brand});
 function startOwner({local,role,draft,content}){
   OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;OWN.preview=false;
   CFG=mergeCfg(DEFAULT_CFG,draft||PUBLISHED);if(content)applyContent(content);
@@ -468,7 +491,7 @@ function pubSummary(){
   const B={refs:(P.refs||[]).map(st),inter:(P.inter||[]).map(st),nut:((P.nut&&P.nut.custom)||[]).map(st)};
   let n=0;for(const k of ['refs','inter','nut']){const a=new Set(A[k]),b=new Set(B[k]);n+=Math.max([...a].filter(x=>!b.has(x)).length,[...b].filter(x=>!a.has(x)).length)}
   if(st(nutHide)!==st((P.nut&&P.nut.hide)||[]))n++;
-  for(const k of ['contact','colors','text','roadmap','pages','nutOrder'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
+  for(const k of ['contact','colors','text','roadmap','pages','nutOrder','brand'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
   return {n,wait:pendingCount()};
 }
 async function publish(){

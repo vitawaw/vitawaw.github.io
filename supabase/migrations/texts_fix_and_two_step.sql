@@ -1,4 +1,4 @@
--- VITAWAW 1.6.7: (1) fix — a pharmacist's page texts were lost instead of waiting for review; (2) two-step verification enforced by the database.
+-- VITAWAW 1.6.7–1.6.8: (1) fix — a pharmacist's page texts were lost instead of waiting for review; (2) two-step verification enforced by the database; (3) the owner can rename a pharmacist.
 -- Cause: the page saves the draft with an "upsert" (INSERT … ON CONFLICT DO UPDATE). The guard ran twice: first as
 -- INSERT (comparing with the published copy and moving the texts under "team"), then as UPDATE, where it read the texts
 -- from the top level again (already replaced) and dropped the proposal. The owner's «approve/reject» flag (team_done)
@@ -52,3 +52,15 @@ create or replace function private.can_edit(kind text) returns boolean
                  where m.user_id = auth.uid() and m.status = 'active'
                    and (m.role = 'owner' or (m.role = 'editor' and coalesce((m.perms ->> kind)::boolean, false))))
 $$;
+
+-- 3. The owner can rename a pharmacist's account (shown in the menu and in notifications).
+create or replace function public.team_rename(p_user uuid, p_name text) returns void
+  language plpgsql security definer set search_path = '' as $$
+begin
+  if coalesce(private.my_role(), '') <> 'owner' then raise exception 'only the owner'; end if;
+  if coalesce(trim(p_name), '') = '' or p_name ~ '[<>]' then raise exception 'bad name'; end if;
+  update public.members set name = left(trim(p_name), 80) where user_id = p_user and role = 'editor';
+  if not found then raise exception 'not a pharmacist account'; end if;
+end $$;
+revoke all on function public.team_rename(uuid, text) from public, anon;
+grant execute on function public.team_rename(uuid, text) to authenticated;

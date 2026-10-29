@@ -606,6 +606,20 @@ body.not-owner #nadm .drag,body.not-owner #rmgrid .drag,body.preview .drag{displ
 .orow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--card);font:700 15px var(--f-display)}
 .orow.off{opacity:.6}
 @media (pointer:coarse){.drag{width:40px;height:40px}.nchip .drag{width:34px;height:36px}}
-/* footer: small logo above «Powered by Saifaldeen» */
-footer .flogo{width:30px;height:30px;border-radius:9px;background:var(--tile);display:grid;place-items:center;box-shadow:0 1px 2px rgba(15,40,50,.12);margin-bottom:2px}
-footer .flogo svg{width:23px;height:23px}
+body.not-owner #ilist .drag{display:none}
+/* footer: two round logos side by side (app + company), like a profile pair; both link to the company site */
+.flogos{display:flex;align-items:center;justify-content:center;margin-bottom:2px}
+.fl{width:38px;height:38px;border-radius:50%;overflow:hidden;background:var(--tile);display:grid;place-items:center;box-shadow:0 0 0 2px var(--bg),0 1px 4px rgba(15,40,50,.18)}
+.fl+.fl{margin-inline-start:-7px}
+.fl img{width:100%;height:100%;object-fit:cover}
+.fl svg{width:26px;height:26px}
+a.fl:hover{transform:translateY(-1px)}
+.imgf{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.imgp{width:56px;height:56px;border-radius:50%;overflow:hidden;background:var(--tile);display:grid;place-items:center;border:1px solid var(--line);flex:none;color:var(--mute)}
+.imgp img{width:100%;height:100%;object-fit:cover}.imgp svg{width:38px;height:38px}
+.imgf input[type=file]{font-size:13px;max-width:100%}
+body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{display:none!important}
+/* tool fields (e.g. «كم حبة يأخذ المريض؟»): the boxes line up even when a label takes two lines */
+.grid .f{display:flex;flex-direction:column;justify-content:flex-end}
+.tool .grid label.l,section[id^="tool-"] .grid label.l{font-size:12px;line-height:1.35}
+@media (max-width:600px){section[id^="tool-"] .grid{grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px}section[id^="tool-"] select,section[id^="tool-"] input{font-size:15px}}

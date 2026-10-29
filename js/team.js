@@ -64,7 +64,7 @@ function renderTeam(){
       <div class="tmm">${T('tm_last')} ${m.last?esc(fmtDate(m.last)):T('tm_notyet')}${m.pending?` · <span class="pend">${m.pending} ${T('tm_pend')}</span>`:''}</div>
       <p class="tml">${T('tm_perms')} <small>${T('tm_tap')}</small></p>
       <div class="filters">${PERMS.map(k=>S({label:T('p_'+k),pressed:!!p[k],f:()=>teamSet(m,{perms:{...p,[k]:!p[k]}})})).join('')}</div>
-      <div class="filters tma">${S({label:T(on?'tm_suspend':'tm_resume'),f:()=>teamSet(m,{status:on?'suspended':'active'})})}${S({label:T('tm_remove'),cls:'danger',f:()=>teamRemove(m)})}</div></div>`;
+      <div class="filters tma">${S({label:'✎ '+T('tm_edit'),cls:'pri',f:()=>teamEdit(m)})}${S({label:T(on?'tm_suspend':'tm_resume'),f:()=>teamSet(m,{status:on?'suspended':'active'})})}${S({label:T('tm_remove'),cls:'danger',f:()=>teamRemove(m)})}</div></div>`;
   };
   const inv=i=>`<div class="tmc"><div class="tmh"><b>${esc(i.name||i.email)}</b><span class="st st-plan">${T('tm_invited')} ${esc(fmtDate(i.at))}</span></div>
       <div class="tmm" dir="ltr">${esc(i.email)}</div><div class="tmm">${PERMS.filter(k=>i.perms&&i.perms[k]).map(k=>esc(T('p_'+k))).join(' · ')||'—'}</div>
@@ -78,6 +78,19 @@ async function teamSet(m,{perms=null,status=null}){
   const {error}=await OWN.client.rpc('team_update',{p_user:m.id,p_perms:perms,p_status:status});
   if(error){console.error(error);toast(T('o_neterr'));return}
   await teamLoad();renderTeam();renderNav();toast(T('tm_saved'));
+}
+/** owner: change a pharmacist's name and permissions in one dialog (permissions are checked by the database) */
+async function teamEdit(m){
+  const p=m.perms||{};let v=[m.name||'',PERMS.map((k,i)=>p[k]?i:-1).filter(i=>i>=0)],err=null;
+  while(true){
+    const r=await dialog({err,title:T('tm_edit'),info:m.email,fields:[{label:T('tm_name'),value:v[0]},{label:T('tm_perms'),type:'checks',options:PERMS.map((k,i)=>[i,T('pl_'+k)]),value:v[1]}],
+      buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    if(r.action!=='ok')return;
+    v=[r.values[0].trim().replace(/[<>]/g,''),r.values[1]];
+    if(!v[0]){err={i:0,msg:T('tm_err_name')};continue}
+    if(v[0]!==(m.name||'')){const {error}=await OWN.client.rpc('team_rename',{p_user:m.id,p_name:v[0]});if(error){err={msg:T('o_neterr')};continue}}
+    return teamSet(m,{perms:Object.fromEntries(PERMS.map((k,i)=>[k,v[1].includes(i)]))});
+  }
 }
 async function teamRemove(m){if(await confirmDel(T('tm_removeq')+' '+(m.name||m.email)))teamSet(m,{status:'removed'})}
 async function teamRevoke(i){
