@@ -67,6 +67,12 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-29)
+- **1.6.9 in preview** (same branch): scientific review of all vitamin content (he approved all fixes). Code: vitamin D adult
+  from 19 (ES 2011 children 1–18), infant weekly option; DEF_REFS 14/27 URLs. Content: `content_review_vitamins.sql` (he runs
+  it): Ca–quinolone timing fix (2 h before / 6 h after, FDA Cipro label = source 45), 12 new interactions, B5/chromium/
+  manganese/molybdenum/phosphorus (NIH, sources 46–50), sources 14/27 updated. All of it lands as waiting items in 🔔.
+  NIH/NICE/Medscape block automated fetching from this environment: values were checked against the reference DRIs and
+  sensitive points by web search; suggest he spot-checks a few.
 - **Live: 1.6.8** (he said «جاهز» on 2026-10-29; includes 1.6.7). 1.6.8: owner edits a pharmacist's name + permissions (`teamEdit()`, RPC
   `team_rename` added to `texts_fix_and_two_step.sql`), roadmap ↑↓ removed, interactions draggable inside a severity group,
   two round footer logos (`CFG.brand` {l1,l2,url}: owner uploads, `shrinkImage()` → 160px data URL, clean() validates;

@@ -10,7 +10,7 @@ function fD(){
   if(!x)return;
   const age=x.age,w=x.wt,h=x.ht,v=x.dlab,ng=u==='nmol'?v/2.5:v;
   $('dconv').textContent=u==='nmol'?L(`يعادل ${fmt(ng)} ng/mL`,`Equals ${fmt(ng)} ng/mL`):L(`يعادل ${fmt(ng*2.5)} nmol/L`,`Equals ${fmt(ng*2.5)} nmol/L`);
-  const bmi=(w&&h)?w/((h/100)**2):null,adult=age>=18,mal=$('mal').checked,med=$('med').checked;
+  const bmi=(w&&h)?w/((h/100)**2):null,adult=age>=19 /* Endocrine Society 2011: children 1–18, adults from 19 */,mal=$('mal').checked,med=$('med').checked;
   const obese=adult&&bmi!=null&&bmi>=30,risk=obese||mal||med;
   const rda=age<1?'400 IU':age<=70?'600 IU':'800 IU';
   const ul=age<1?'1,000 – 1,500 IU':age<=3?'2,500 IU':age<=8?'3,000 IU':'4,000 IU';
@@ -26,7 +26,7 @@ function fD(){
     if(age<1){rec=2000;r={badge:DEF,tone:'bad',title:L('2,000 IU يومياً لمدة 6 أسابيع','2,000 IU daily for 6 weeks'),sub:L('ثم صيانة 400 إلى 1,000 IU يومياً بعد تجاوز 30 ng/mL','Then 400–1,000 IU daily once above 30 ng/mL'),refs:[2],
       pt:L('قطرات فيتامين D بجرعة 2,000 وحدة يومياً لمدة 6 أسابيع، بإشراف طبيب الأطفال.','Vitamin D drops, 2,000 units a day for 6 weeks, under the pediatrician’s care.'),
       plan:[{h:L('العلاج: 6 أسابيع','Treatment: 6 weeks'),d:'2,000 IU / '+L('يوم','day')},retest,{h:L('الصيانة','Maintenance'),d:'400 – 1,000 IU / '+L('يوم','day')}],
-      opts:[{h:L('الرضّع حتى سنة','Infants up to 1 year'),b:L('2,000 IU يومياً (قطرات)','2,000 IU daily (drops)'),r:[2]}]}}
+      opts:[{h:L('الخيار اليومي','Daily option'),b:L('2,000 IU يومياً (قطرات)','2,000 IU daily (drops)'),r:[2]},{h:L('الخيار الأسبوعي','Weekly option'),b:L('50,000 IU مرة أسبوعياً لمدة 6 أسابيع','50,000 IU once weekly for 6 weeks'),d:L('بديل في الإرشاد نفسه، بقرار طبيب الأطفال','An alternative in the same guideline, as the pediatrician decides'),r:[2]}]}}
     else if(!adult){rec=2000;r={badge:DEF,tone:'bad',title:L('2,000 IU يومياً لمدة 6 أسابيع على الأقل','2,000 IU daily for at least 6 weeks'),sub:L('أو 50,000 IU أسبوعياً لمدة 6 أسابيع، ثم صيانة 600 إلى 1,000 IU يومياً','Or 50,000 IU weekly for 6 weeks, then 600–1,000 IU daily'),refs:[2],
       pt:L('فيتامين D بجرعة 2,000 وحدة يومياً لمدة 6 أسابيع على الأقل، ثم جرعة يومية أقل يحددها الطبيب.','Vitamin D 2,000 units a day for at least 6 weeks, then a lower daily dose set by the doctor.'),
       plan:[{h:L('العلاج: 6 أسابيع على الأقل','Treatment: at least 6 weeks'),d:L('2,000 IU يومياً أو 50,000 IU أسبوعياً','2,000 IU daily or 50,000 IU weekly')},retest,{h:L('الصيانة','Maintenance'),d:'600 – 1,000 IU / '+L('يوم','day')}],

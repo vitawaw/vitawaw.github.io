@@ -17,6 +17,9 @@ CASES = [  # nutrient, fields, sex, expected text somewhere in the result (Arabi
  ('d',  {'age':40,'dlab':55}, 'f', 'أعلى من 50 ng/mL'),                     # NIH >50 note
  ('d',  {'age':40,'dlab':160}, 'f', '150 ng/mL'),                           # NIH toxicity threshold
  ('d',  {'age':0,'dlab':12}, 'f', '2,000 IU يومياً لمدة 6 أسابيع'),
+ ('d',  {'age':0,'dlab':12}, 'f', '50,000 IU مرة أسبوعياً لمدة 6 أسابيع'),       # ES 2011 infant weekly alternative
+ ('d',  {'age':18,'dlab':12}, 'm', '2,000 IU يومياً لمدة 6 أسابيع على الأقل'),  # ES 2011: 18 years = child/adolescent group
+ ('d',  {'age':19,'dlab':12}, 'm', '50,000 IU أسبوعياً أو 6,000 IU يومياً'),     # adults from 19
  ('b12',{'age':0,'b12v':400}, 'm', '0.4 – 0.5'),                            # NIH infant RDA/AI
  ('b12',{'age':40,'b12v':150}, 'f', 'Hydroxocobalamin'),
  ('fe', {'age':0,'feg':'rda'}, 'f', '0.27'),                                            # NIH infant AI
