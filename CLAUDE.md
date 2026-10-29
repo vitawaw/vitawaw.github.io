@@ -69,9 +69,12 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   apps, and to fix everything without asking him back. Includes 1.6.1:, from his request for a full review: a pharmacist's edit or deletion of
   approved content waits for the owner (approved version kept in column `pub`, `get_content()` returns `pv` / `del`,
   owner decides with `review_change()`; window «تعديلات وحذف من الصيادلة»), publish uses approved versions only,
-  SRI on supabase-js. The migration `supabase/migrations/pending_review_versions.sql` is **not applied yet**: the Supabase
-  approval prompt never showed on his tablet. Apply it (then rename the file to the assigned version) before publishing 1.6.1;
-  the 1.6.1 page works without it but the new window stays empty and review_change() is missing.
+  SRI on supabase-js. The migration `20261029121426_pending_review_versions.sql` **is applied** (he ran it in the Supabase
+  SQL editor on 2026-10-29 because the MCP approval prompt never reached his tablet; it is not in list_migrations).
+  Checked: publishing now gives exactly the live content (35 sources / 20 interactions / 2 custom vitamins).
+- Supabase MCP write tools (apply_migration, write execute_sql) need an approval that does not show on his tablet app.
+  If a DB change is needed again, give him the raw GitHub link + the SQL editor link (…/project/zrlapysswtqrwfsywbvl/sql/new)
+  and tell him to make sure the button says «Run», not «Run selected».
 - He clarified: the pharmacists he invites are limited assistants to the owner (not the pharmacists who visit the site).
 - **Live: 1.6.0**. It includes the new menus (☰ / ⋯ / floating windows), info pages, pharmacist accounts, and the 1.3.0
   medical fixes.

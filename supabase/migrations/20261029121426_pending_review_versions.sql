@@ -4,6 +4,8 @@
 -- Now every approved item keeps its last approved version ("pub") while a pharmacist's edit or deletion waits
 -- for review. publish_site() publishes the approved version only; the owner approves or rejects the change.
 -- Compatible with the 1.6.0 page: get_content() only gains keys that 1.6.0 ignores.
+-- Applied 2026-10-29 by the owner in the Supabase SQL editor (the MCP approval prompt did not reach his tablet), so it is
+-- not listed by list_migrations; the file name carries the time it was applied.
 
 -- 1. Last approved version of an item that a pharmacist changed (null = nothing waiting) ---------------
 alter table public.sources      add column if not exists pub jsonb;
