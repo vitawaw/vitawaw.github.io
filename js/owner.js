@@ -133,7 +133,7 @@ async function editRef(id){
 }
 async function delRef(id){
   ensureRefs();
-  const uses=[...(CFG.inter||[]).filter(x=>(x.r||[]).includes(id)).map(x=>x.a.ar+' + '+x.b.ar),...NCUST().filter(c=>(c.r||[]).includes(id)).map(c=>c.n.ar),...BUILTIN.filter(k=>(DEF_REFGROUP[k]||[]).includes(id)).map(k=>T('n_'+k))];
+  const uses=[...(CFG.inter||[]).filter(x=>(x.r||[]).includes(id)).map(x=>tx2(x.a)+' + '+tx2(x.b)),...NCUST().filter(c=>(c.r||[]).includes(id)).map(c=>tx2(c.n)),...BUILTIN.filter(k=>(DEF_REFGROUP[k]||[]).includes(id)).map(k=>T('n_'+k))];
   if(!(await confirmDel(uses.length?T('o_rused')+' '+uses.join(L('، ',', ')):'')))return;
   CFG.refs=CFG.refs.filter(x=>x.id!==id);if(Array.isArray(CFG.inter))CFG.inter.forEach(x=>{x.r=(x.r||[]).filter(n=>n!==id)});NCUST().forEach(c=>{c.r=(c.r||[]).filter(n=>n!==id)});changed();
 }
@@ -158,7 +158,7 @@ async function editInter(i){
     if(isNew)CFG.inter.push(item);else CFG.inter[i]=item;changed();return;
   }
 }
-async function delInter(i){ensureInter();if(!CFG.inter[i])return;if(await confirmDel(CFG.inter[i].a.ar+' + '+CFG.inter[i].b.ar)){CFG.inter.splice(i,1);changed()}}
+async function delInter(i){ensureInter();if(!CFG.inter[i])return;if(await confirmDel(tx2(CFG.inter[i].a)+' + '+tx2(CFG.inter[i].b))){CFG.inter.splice(i,1);changed()}}
 const hideInter=i=>{ensureInter();toggleHidden(CFG.inter[i])};
 function approve(key){
   if(!(OWN.role==='owner'||OWN.local)){toast(T('o_onlyowner'));return}
