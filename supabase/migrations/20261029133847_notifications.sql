@@ -2,6 +2,7 @@
 -- The owner sees which pharmacist made each waiting change ("by" in get_content), and a pharmacist receives a
 -- notification when the owner approves or rejects their change (review_change writes it).
 -- Compatible with 1.6.0–1.6.3: get_content() only gains a "by" key; review_change() keeps its arguments.
+-- Applied 2026-10-29 by the owner in the Supabase SQL editor (not listed by list_migrations); named with the time it was checked.
 
 -- 1. Notifications for pharmacists ------------------------------------------------------------------
 create table if not exists public.notifications (

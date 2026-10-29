@@ -69,9 +69,8 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
 ## Where we are (2026-10-28)
 - **1.6.4 in preview** (branch `ccr-cad26eca-o7h5hm`): 1.6.4 = 🔔 notifications page (`#notif`, `renderNotif()`/`decide()` in
   owner.js; owner approves/rejects there via `review_change`, pharmacists see decisions from table `notifications`) and one
-  publishing bar (`#obar`: preview · save · publish · discard), removed from the menu. Migration `notifications.sql` must be
-  run by him in the SQL editor (then rename it with the time applied); the page works without it (no names, no pharmacist
-  notifications). 1.6.3 = Facebook-style menus he approved, on top of 1.6.2: he asked to redesign the interface and menus to be easy and like other
+  publishing bar (`#obar`: preview · save · publish · discard), removed from the menu. Migration `20261029133847_notifications.sql`
+  **is applied** (he ran it in the SQL editor; checked: table + RLS, names in get_content, review_change notifies). 1.6.3 = Facebook-style menus he approved, on top of 1.6.2: he asked to redesign the interface and menus to be easy and like other
   apps, and to fix everything without asking him back. Includes 1.6.1:, from his request for a full review: a pharmacist's edit or deletion of
   approved content waits for the owner (approved version kept in column `pub`, `get_content()` returns `pv` / `del`,
   owner decides with `review_change()`; window «تعديلات وحذف من الصيادلة»), publish uses approved versions only,
