@@ -405,7 +405,6 @@ body.has-bar footer{padding-bottom:84px}
 .tml{margin:4px 0 0;font:700 12px var(--f-body);color:var(--mute)}
 .tml small{font-weight:500;opacity:.8}
 .tmc .filters{margin:0}
-.opend{border:0;background:var(--warn-bg);color:var(--warn);font:700 12px var(--f-body);border-radius:99px;padding:3px 10px;cursor:pointer}
 .flinks{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 6px;margin-top:6px}
 .flinks a{color:var(--mute);text-decoration:none;font-weight:700}
 .flinks a:hover{color:var(--royal);text-decoration:underline}
@@ -522,3 +521,33 @@ button.mi:hover,a.mi:hover{background:var(--soft)}
 .nchip{flex-wrap:wrap}
 .nchip .pend,.nchip .hidb{padding:1px 7px}
 body.cant-nut [data-act][data-kind="n"],body.cant-inter [data-act][data-kind="i"],body.cant-refs [data-act][data-kind="r"],body.not-owner [data-act][data-kind="m"]{display:none!important}
+/* 🔔 notifications (team only): tab with a count, cards with approve / reject / view */
+.tab.tnotif{display:none}
+body.team .tab.tnotif{display:flex}
+.tcount{position:absolute;top:2px;inset-inline-end:calc(50% - 26px);min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--bad);color:#fff;font:800 11px/18px var(--f-body);text-align:center;box-shadow:0 0 0 2px var(--card)}
+@media (min-width:1024px){.tcount{position:static;box-shadow:none}}
+.ntop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:0 0 10px}
+.ntop .filters{margin:0}
+.ncard{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 10px}
+.ncard.unread{border-color:color-mix(in srgb,var(--royal) 45%,var(--line));background:color-mix(in srgb,var(--royal) 4%,var(--card))}
+.ncard .nb{flex:1;min-width:0}
+.ncard .nh{font-size:12.5px;color:var(--mute);margin-bottom:3px}
+.ncard .nh b{color:var(--ink)}
+.ncard .nby{color:var(--royal);font-weight:700}
+.ncard .nl{font:700 15px var(--f-display);color:var(--ink);overflow-wrap:anywhere}
+.ncard .nw{font-size:12.5px;color:var(--mute);margin-top:3px;overflow-wrap:anywhere}
+.ncard .filters{margin:10px 0 0}
+.nic{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--chip);color:var(--royal)}
+.nic svg{width:18px;height:18px}
+.nic-edit{background:var(--warn-bg);color:var(--warn)}
+.nic-del,.nic-rejected{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad)}
+.nic-approved{background:var(--ok-bg);color:var(--ok)}
+.nempty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:40px 10px;color:var(--mute)}
+.nempty .nic{width:56px;height:56px}.nempty .nic svg{width:26px;height:26px}
+.nsec{margin:16px 4px 8px;font:700 13px var(--f-body);color:var(--mute)}
+button.pend{border:0;cursor:pointer}
+.mcard.solo{border-bottom:1px solid var(--line);border-radius:16px;padding-bottom:14px}
+/* one publishing bar for the team: status · preview · save · publish · discard */
+.obar .btn.ico{width:34px;padding:0;display:inline-grid;place-items:center}
+.obar .btn.ico svg{width:17px;height:17px}
+.obar .btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}

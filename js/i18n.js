@@ -94,7 +94,12 @@ e_range:['تحقق من القيمة: المدى المقبول','Check this val
 };
 /* ----- 1.6.0: side menu (☰), More menu (⋯), info pages, pharmacist accounts ----- */
 Object.assign(I18N,{
-nav_menu:['القائمة','Menu'],nav_more:['المزيد','More'],mr_settings:['الإعدادات','Settings'],o_hiddenb:['مخفي عن الزوار','Hidden from visitors'],o_delq2:['حذف هذا العنصر؟','Delete this item?'],o_rtype:['نوع المصدر','Source type'],o_rt_auto:['تلقائي (حسب الجهة)','Automatic (from the publisher)'],
+nav_menu:['القائمة','Menu'],nav_more:['المزيد','More'],mr_settings:['الإعدادات','Settings'],nt_t:['الإشعارات','Notifications'],nt_new:['إضافة جديدة','New item'],nt_edit:['تعديل على محتوى معتمد','Edit of approved content'],nt_del:['طلب حذف','Deletion request'],nt_by:['بواسطة','by'],
+nt_none:['لا توجد إشعارات جديدة','No new notifications'],nt_hint:['قرارك هنا يُحفظ فوراً، ويظهر للزوار بعد «نشر». الزوار يرون النسخة المعتمدة حتى تقرر.','Your decision here is saved at once and reaches visitors after «Publish». Until then visitors see the approved version.'],
+nt_waiting:['تغييراً بانتظار قرارك','changes waiting for you'],nt_all:['اعتماد الكل','Approve all'],nt_reject:['رفض','Reject'],nt_view:['عرض','View'],nt_open:['افتح الإشعارات','Open notifications'],
+nt_rejq:['رفض هذا التغيير؟','Reject this change?'],nt_rej_i:['تعود النسخة المعتمدة السابقة، أو يُحذف العنصر إذا كان جديداً (حذف مؤقت يمكن استرجاعه).','The previous approved version comes back, or the item is removed if it is new (soft delete, can be restored).'],
+nt_restore_i:['يبقى العنصر ظاهراً للزوار ويُلغى طلب الحذف.','The item stays visible to visitors and the deletion request is cancelled.'],
+nt_mine:['قرارات المالك على تغييراتك','The owner\'s decisions on your changes'],nt_wait:['بانتظار موافقة المالك','Waiting for the owner'],nt_nowait:['لا شيء بانتظار الموافقة','Nothing is waiting'],nt_ok:['اعتُمد','Approved'],nt_no:['رُفض','Rejected'],o_hiddenb:['مخفي عن الزوار','Hidden from visitors'],o_delq2:['حذف هذا العنصر؟','Delete this item?'],o_rtype:['نوع المصدر','Source type'],o_rt_auto:['تلقائي (حسب الجهة)','Automatic (from the publisher)'],
 o_ruse_en:['ماذا يُستخدم منه (English)','What it is used for (English)'],o_ia_en:['اسم المكمل (English)','Supplement name (English)'],o_ib_en:['يتداخل مع (English)','Interacts with (English)'],o_id_en:['ماذا يحدث وما التوصية (English)','What happens and what to do (English)'],
 o_nname_en:['اسم الفيتامين أو المعدن (English)','Nutrient name (English)'],o_nh_en:['وصف قصير (English)','Short description (English)'],o_nplan_en:['التوجيه العلاجي (English)','Treatment guidance (English)'],o_nnote_en:['تحذيرات وملاحظات (English)','Warnings and notes (English)'],
 o_ftitle_en:['العنوان (English)','Title (English)'],o_fdesc_en:['الوصف (English)','Description (English)'],mn_short:['اختصارات','Shortcuts'],mn_team:['فريق VITAWAW','VITAWAW team'],mn_guest:['للمالك والصيادلة المدعوين فقط','Owner and invited pharmacists only'],
@@ -109,9 +114,9 @@ inst_t:['تثبيت التطبيق','Install the app'],
 inst_b:['آيفون وآيباد: افتح الموقع في Safari، اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».\n\nأندرويد: افتح الموقع في Chrome، اضغط ⋮ ثم «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».\n\nالحاسوب: في Chrome أو Edge اضغط أيقونة التثبيت في شريط العنوان.','iPhone and iPad: open the site in Safari, tap Share, then "Add to Home Screen".\n\nAndroid: open the site in Chrome, tap ⋮, then "Install app" or "Add to Home screen".\n\nComputer: in Chrome or Edge, click the install icon in the address bar.'],
 ad_review:['بانتظار المراجعة','Awaiting review'],ad_vit:['الفيتامينات','Vitamins'],ad_pages:['صفحات المعلومات','Info pages'],ad_newpage:['＋ صفحة جديدة','+ New page'],
 ad_team:['الصيادلة','Pharmacists'],ad_invite:['＋ دعوة صيدلي','+ Invite a pharmacist'],ad_accounts:['الحسابات والصلاحيات','Accounts and permissions'],ad_invites:['الدعوات المرسلة','Sent invitations'],
-rc_t:['تعديلات وحذف من الصيادلة','Pharmacist edits and deletions'],rc_hint:['يبقى الزوار يرون النسخة المعتمدة حتى تقرر. «رفض» أو «استرجاع» يعيد النسخة المعتمدة.','Visitors keep seeing the approved version until you decide. Reject or Restore brings the approved version back.'],
-rc_edit:['تعديل','Edit'],rc_del:['حذف مقترح','Proposed deletion'],rc_was:['المعتمد حالياً:','Approved now:'],rc_okdel:['تأكيد الحذف','Confirm deletion'],rc_restore:['استرجاع','Restore'],
-rc_reject:['رفض التعديل','Reject edit'],rc_restored:['أعيدت النسخة المعتمدة','The approved version is back'],rc_savefirst:['احفظ تغييراتك أولاً','Save your changes first'],
+
+rc_was:['المعتمد حالياً:','Approved now:'],rc_okdel:['تأكيد الحذف','Confirm deletion'],rc_restore:['استرجاع','Restore'],
+rc_restored:['أعيدت النسخة المعتمدة','The approved version is back'],
 ad_site:['التواصل والألوان','Contact and colours'],ad_colors:['ألوان','Colours'],ad_none:['لا يوجد شيء بانتظار المراجعة','Nothing awaiting review'],
 pg_new:['صفحة جديدة','New page'],pg_edit:['تعديل الصفحة','Edit page'],pg_t:['العنوان (عربي)','Title (Arabic)'],pg_ten:['العنوان (English)','Title (English)'],
 pg_b:['النص (عربي). اترك سطراً فارغاً بين الفقرات','Text (Arabic). Leave an empty line between paragraphs'],pg_ben:['النص (English)','Text (English)'],

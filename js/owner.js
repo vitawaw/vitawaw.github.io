@@ -13,9 +13,9 @@ function ownerBar(){
   $('owho').textContent=whoLabel();
   const d=dirty();$('odot').classList.toggle('dirty',d||OWN.saved);
   $('ostate').textContent=T(d?'o_dirty':OWN.saved?'o_saved':'o_clean');
-  const pc=ISOWNER()?pendingCount():0;$('o-pend').hidden=!pc;$('o-pend').textContent=`${pc} ${T('o_pendn')} ›`;
   $('o-save').textContent=T(ISOWNER()?'o_save':'mr_savemine');$('o-publish').textContent=T('o_publish');$('o-pvexit').textContent=T('o_pvexit');
-  $('o-publish').hidden=!ISOWNER();
+  $('o-preview').textContent=T('o_preview');$('o-discard').title=$('o-discard').ariaLabel=T('o_discard');
+  $('o-publish').hidden=$('o-preview').hidden=!ISOWNER();
   // what this account may edit: hides the edit buttons it cannot use (the database refuses them anyway)
   ['nut','inter','refs','text'].forEach(k=>document.body.classList.toggle('cant-'+k,!CAN(k)));
   document.body.classList.toggle('not-owner',!ISOWNER());
@@ -160,47 +160,93 @@ async function editInter(i){
 }
 async function delInter(i){ensureInter();if(!CFG.inter[i])return;if(await confirmDel(tx2(CFG.inter[i].a)+' + '+tx2(CFG.inter[i].b))){CFG.inter.splice(i,1);changed()}}
 const hideInter=i=>{ensureInter();toggleHidden(CFG.inter[i])};
-function approve(key){
-  if(!(OWN.role==='owner'||OWN.local)){toast(T('o_onlyowner'));return}
-  const [t,id]=[key.slice(0,1),key.slice(2)];
-  if(t==='r'){const o=(CFG.refs||[]).find(x=>String(x.id)===id);if(o)o.rv=true}
-  if(t==='i'){const o=(CFG.inter||[])[+id];if(o)o.rv=true}
-  if(t==='n'){const o=NCUST().find(x=>x.id===id);if(o)o.rv=true}
-  changed();toast(T('o_approved'));
-}
-async function approveAll(t){
-  if(!CANAPPROVE())return;
-  const list=t==='r'?(CFG.refs||[]):t==='i'?(CFG.inter||[]).filter(x=>{const iq=iTerms(normAr($('isearch').value));if(!(IF==='all'||x.k===IF))return false;if(!iq.length)return true;const h=normAr([x.a,x.b,x.d].map(o=>o?o.ar+' '+o.en:'').join(' '));return iq.some(q=>h.includes(q))}):NCUST();
-  const n=list.filter(x=>x.rv===false).length;if(!n)return;
-  const q=await dialog({title:T('o_approveall'),info:T('o_approveall_i').replace('{n}',n),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_approveall'),action:'ok',pri:1}]});
-  if(q.action!=='ok')return;list.forEach(x=>{if(x.rv===false)x.rv=true});changed();toast(T('o_approved'));
-}
-const pendingCount=()=>(CFG.refs||[]).filter(x=>x.rv===false).length+(CFG.inter||[]).filter(x=>x.rv===false).length+NCUST().filter(x=>x.rv===false).length+delCount();
-/* ----- a pharmacist's change to approved content (owner): visitors keep the approved version until the owner decides ----- */
+/* ===================== notifications (🔔, team only) =====================
+   Owner: every waiting change (new item, edit of an approved item, deletion request) as a card with
+   Approve / Reject / View — the decision is saved at once (review_change); visitors see it after «Publish».
+   Pharmacist: the owner's decisions on their work (table notifications) and what still waits for the owner. */
 const DELS=()=>(typeof OWN!=='undefined'&&OWN.del)||{refs:[],inter:[],nut:[]};
 const delCount=()=>{const d=DELS();return (d.refs||[]).length+(d.inter||[]).length+(d.nut||[]).length};
-/** every waiting change to approved content: edits (the item carries its approved version in pv) and deletions */
-function changeList(){
-  const d=DELS(),lbl={r:x=>`${x.id}. ${x.org} — ${x.title}`,i:x=>`${tx2(x.a)} + ${tx2(x.b)}`,n:x=>tx2(x.n)};
-  const ed=(t,list)=>list.filter(x=>x.rv===false&&x.pv).map(x=>({t,id:x.id,del:false,label:lbl[t](x),was:lbl[t](x.pv)}));
-  const dl=(t,list)=>(list||[]).map(x=>({t,id:x.id,del:true,label:lbl[t](x)}));
-  return [...ed('n',NCUST()),...dl('n',d.nut),...ed('i',CFG.inter||[]),...dl('i',d.inter),...ed('r',CFG.refs||[]),...dl('r',d.refs)];
+const NLBL={r:x=>`${x.id}. ${x.org} — ${x.title}`,i:x=>`${tx2(x.a)} + ${tx2(x.b)}`,n:x=>tx2(x.n)};
+/** every waiting change: {t: r|i|n, id (database id), idx (interactions: list index), kind: new|edit|del, label, was, by} */
+function notifList(){
+  const d=DELS(),out=[];
+  const add=(t,list,useIdx)=>list.forEach((x,i)=>{if(x.rv===false)out.push({t,id:x.id,idx:useIdx?i:null,kind:x.pv?'edit':'new',label:NLBL[t](x),was:x.pv?NLBL[t](x.pv):'',by:x.by||''})});
+  add('n',NCUST());add('i',CFG.inter||[],true);add('r',CFG.refs||[]);
+  ['nut','inter','refs'].forEach((k,j)=>(d[k]||[]).forEach(x=>out.push({t:'nir'[j],id:x.id,idx:null,kind:'del',label:NLBL['nir'[j]](x),was:'',by:x.by||''})));
+  return out;
 }
-function openChanges(){openSheet(T('rc_t'),'',{key:'changes'});renderChanges()}
-function renderChanges(){
-  if(!SHEET||SHEET.key!=='changes')return;
-  ACT.s=[];const S=c=>chipH('s',c),list=changeList(),kind={r:'tab_src',i:'tab_int',n:'ad_vit'};
-  $('sheet-b').innerHTML=`<p class="hint">${T('rc_hint')}</p>`+(list.length?list.map(c=>`<div class="tmc"><div class="tmh"><b>${esc(c.label)}</b><span class="st ${c.del?'st-idea':'st-plan'}">${T(c.del?'rc_del':'rc_edit')}</span></div>
-    <div class="tmm">${esc(T(kind[c.t]))}${c.was&&c.was!==c.label?` · ${T('rc_was')} ${esc(c.was)}`:''}</div>
-    <div class="filters tma">${S({label:T(c.del?'rc_okdel':'o_approve'),cls:'pri',f:()=>decide(c,true)})}${S({label:T(c.del?'rc_restore':'rc_reject'),f:()=>decide(c,false)})}</div></div>`).join(''):`<p class="inone">${T('ad_none')}</p>`);
+const pendingCount=()=>notifList().length;
+const changeList=()=>notifList().filter(n=>n.kind!=='new');
+const NOTE={mine:[],loaded:false}; // pharmacist: the owner's decisions
+async function loadNotes(){
+  if(OWN.local||ISOWNER()||!OWN.client)return;
+  const {data,error}=await OWN.client.from('notifications').select('id,kind,item,label,at,read').order('at',{ascending:false}).limit(50);
+  NOTE.mine=error?[]:clean(data||[]);NOTE.loaded=true;renderNav();
 }
-async function decide(c,accept){
-  if(OWN.local||!ISOWNER())return;
-  if(dirty()){toast(T('rc_savefirst'));return}
-  const {error}=await OWN.client.rpc('review_change',{p_kind:c.t,p_id:String(c.id),p_accept:accept});
-  if(error){console.error(error);toast(T('o_neterr'));return}
-  const {data:ct,error:e2}=await OWN.client.rpc('get_content');if(e2||!ct){toast(T('o_neterr'));return}
-  applyContent(ct);OWN.base=cfgJSON();OWN.saved=true;changed();renderChanges();toast(T(accept?'o_approved':'rc_restored'));
+/** number on the 🔔 tab: owner = changes to decide, pharmacist = unread decisions */
+const notifCount=()=>!(typeof OWN!=='undefined'&&OWN.on)?0:ISOWNER()?pendingCount():NOTE.mine.filter(n=>!n.read).length;
+const NKIND={r:'tab_src',i:'tab_int',n:'ad_vit'};
+const NICO={new:'<path d="M12 5v14M5 12h14"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',del:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',approved:'<path d="M5 12l5 5 9-10"/>',rejected:'<path d="M6 6l12 12M18 6L6 18"/>'};
+const nico=k=>`<span class="nic nic-${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">${NICO[k]}</svg></span>`;
+function renderNotif(opening){
+  if(!$('notif-b')||typeof OWN==='undefined'||!OWN.on)return;
+  ACT.s=[];const S=c=>chipH('s',c);let h='';
+  if(ISOWNER()){
+    const list=notifList();
+    h+=`<p class="hint">${T('nt_hint')}</p>`;
+    if(list.length>1)h+=`<div class="ntop"><b>${list.length} ${T('nt_waiting')}</b><div class="filters">${S({label:T('nt_all'),cls:'pri',f:()=>decideAll(list)})}</div></div>`;
+    h+=list.length?list.map(n=>`<div class="ncard">${nico(n.kind)}<div class="nb"><div class="nh"><b>${esc(T('nt_'+n.kind))}</b> · ${esc(T(NKIND[n.t]))}${n.by?` · <span class="nby">${esc(T('nt_by'))} ${esc(n.by)}</span>`:''}</div>
+      <div class="nl">${esc(n.label)}</div>${n.was&&n.was!==n.label?`<div class="nw">${esc(T('rc_was'))} ${esc(n.was)}</div>`:''}
+      <div class="filters">${S({label:T(n.kind==='del'?'rc_okdel':'o_approve'),cls:'pri',f:()=>decide(n,true)})}${S({label:T(n.kind==='del'?'rc_restore':'nt_reject'),f:()=>decide(n,false)})}${n.kind!=='del'?S({label:T('nt_view'),f:()=>viewItem(n)}):''}</div></div></div>`).join('')
+      :`<div class="nempty">${nico('approved')}<b>${T('nt_none')}</b></div>`;
+  }else{
+    const mine=NOTE.mine,wait=notifList();
+    h+=`<h3 class="nsec">${T('nt_mine')}</h3>`+(mine.length?mine.map(n=>`<div class="ncard${n.read?'':' unread'}">${nico(n.kind)}<div class="nb"><div class="nh"><b>${esc(T(n.kind==='approved'?'nt_ok':'nt_no'))}</b> · ${esc(T(NKIND[n.item]||'tab_src'))} · <span class="nby">${esc(fmtDate(n.at))}</span></div><div class="nl">${esc(n.label)}</div></div></div>`).join('')
+      :`<p class="inone">${T('nt_none')}</p>`);
+    h+=`<h3 class="nsec">${T('nt_wait')}</h3>`+(wait.length?wait.map(n=>`<div class="ncard">${nico(n.kind)}<div class="nb"><div class="nh"><b>${esc(T('nt_'+n.kind))}</b> · ${esc(T(NKIND[n.t]))}</div><div class="nl">${esc(n.label)}</div></div></div>`).join('')
+      :`<p class="inone">${T('nt_nowait')}</p>`);
+    if(opening&&mine.some(n=>!n.read)&&OWN.client&&!OWN.local){ // opening the page marks the owner's decisions as read
+      OWN.client.from('notifications').update({read:true}).eq('read',false).then(()=>{mine.forEach(n=>n.read=true);renderNav()});
+    }
+  }
+  $('notif-b').innerHTML=h;
+}
+/** show the item where it lives */
+function viewItem(n){
+  if(n.t==='r'){SF='all';renderRefs();go('sources');setTimeout(()=>{const el=$('ref-'+n.id);if(el){el.scrollIntoView({block:'center'});el.classList.add('hl')}},80);return}
+  if(n.t==='i'){IF='all';$('isearch').value='';renderInter();go('interactions');setTimeout(()=>{const el=document.querySelector(`#ilist [data-act][data-kind="i"][data-id="${n.idx}"]`);if(el)el.closest('.icard').scrollIntoView({block:'center'})},80);return}
+  pickNut(n.id);setTimeout(()=>{const el=document.querySelector(`#nadm [data-kind="n"][data-id="${n.id}"]`);if(el)el.scrollIntoView({block:'center'})},80);
+}
+/** decide on one change: saved in the database at once (unsaved edits are saved first) */
+async function decide(n,accept,quiet){
+  if(!ISOWNER())return false;
+  if(!accept&&!quiet){const q=await dialog({title:T(n.kind==='del'?'rc_restore':'nt_rejq'),info:T(n.kind==='del'?'nt_restore_i':'nt_rej_i'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T(n.kind==='del'?'rc_restore':'nt_reject'),action:'ok',pri:1}]});if(q.action!=='ok')return false}
+  if(OWN.local){ // no database: decide in the local draft
+    const list=n.t==='r'?CFG.refs:n.t==='i'?CFG.inter:NCUST();const j=n.t==='i'?n.idx:list.findIndex(x=>x.id===n.id);const x=list[j];
+    if(x){if(accept){x.rv=true;delete x.pv}else if(x.pv)list[j]={...x.pv,rv:true};else list.splice(j,1)}
+    if(!quiet){changed();renderNotif();toast(T(accept?'o_approved':'rc_restored'))}return true;
+  }
+  if(dirty()&&!(await saveDraft()))return false;
+  const id=n.t==='i'&&n.id==null?(CFG.inter[n.idx]||{}).id:n.id;
+  const {error}=await OWN.client.rpc('review_change',{p_kind:n.t,p_id:String(id),p_accept:accept});
+  if(error){console.error(error);toast(T('o_neterr'));return false}
+  if(!quiet)await reloadContent(accept?'o_approved':'rc_restored');
+  return true;
+}
+async function reloadContent(msg){
+  const {data:ct,error}=await OWN.client.rpc('get_content');if(error||!ct){toast(T('o_neterr'));return}
+  applyContent(ct);OWN.base=cfgJSON();OWN.saved=true;changed();renderNotif();if(msg)toast(T(msg));
+}
+async function decideAll(list){
+  const q=await dialog({title:T('nt_all'),info:T('o_approveall_i').replace('{n}',list.length),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('nt_all'),action:'ok',pri:1}]});
+  if(q.action!=='ok')return;
+  for(const n of list)if(!(await decide(n,true,true)))break;
+  if(OWN.local){changed();renderNotif();toast(T('o_approved'))}else await reloadContent('o_approved');
+}
+/** «Approve» on an item (key kind:id, interactions by list index) = the same decision as in notifications */
+function approve(key){
+  const [t,id]=[key.slice(0,1),key.slice(2)];
+  const n=notifList().find(x=>x.t===t&&String(t==='i'?x.idx:x.id)===id);if(n)decide(n,true);
 }
 function toggleBuiltin(k){
   CFG.nut=CFG.nut||{hide:[],custom:[]};const h=CFG.nut.hide;const j=h.indexOf(k);
@@ -250,6 +296,7 @@ async function delNut(id){
 }
 const hideNut=id=>toggleHidden(NCUST().find(c=>c.id===id));
 /* the same buttons on every item (actBtns in content.js): approve, edit, hide/show, delete */
+document.addEventListener('click',e=>{if(OWN.on&&e.target.closest('[data-gonotif]')){e.preventDefault();e.stopPropagation();go('notif')}},true);
 document.addEventListener('click',e=>{
   if(!OWN.on)return;const t=e.target.closest('[data-act]');if(!t)return;
   e.preventDefault();e.stopPropagation();
@@ -265,7 +312,7 @@ document.addEventListener('click',e=>{
   e.preventDefault();e.stopPropagation();
   const need=t.dataset.approve||t.dataset.approveall||t.dataset.nhide?'owner':(t.dataset.redit||t.id==='radd')?'refs':(t.dataset.iedit!=null||t.id==='iadd')?'inter':'nut';
   if(need==='owner'?!ISOWNER():!CAN(need)){toast(T(need==='owner'?'o_onlyowner':'tm_noperm'));return}
-  if(t.dataset.approveall)approveAll(t.dataset.approveall);
+  if(t.dataset.approveall)go('notif');
   else if(t.dataset.approve)approve(t.dataset.approve);
   else if(t.dataset.redit)editRef(+t.dataset.redit);
   else if(t.id==='radd')editRef(null);
@@ -324,7 +371,7 @@ async function afterLogin(){
   const {data:dr}=await c.from('site_config').select('data').eq('id','draft').maybeSingle();
   const {data:ct,error}=await c.rpc('get_content');if(error||!ct){toast(T('o_neterr'));return}
   startOwner({local:false,role:m.role,draft:dr&&dr.data,content:ct});
-  if(m.role==='owner')teamLoad().then(()=>renderNav());
+  if(m.role==='owner')teamLoad().then(()=>renderNav());else loadNotes();
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null}
 const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages});
@@ -387,9 +434,9 @@ async function logout(){
   if(dirty()){const q=await dialog({title:T('o_leave'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_logout'),action:'ok',pri:1}]});if(q.action!=='ok')return}
   if(!OWN.local&&OWN.client)await OWN.client.auth.signOut();
   closeSheet(false);TEAM.list=null;
-  OWN.on=false;OWN.preview=false;OWN.perms={};OWN.name='';OWN.role=null;OWN.del=null;
+  OWN.on=false;OWN.preview=false;OWN.perms={};OWN.name='';OWN.role=null;OWN.del=null;NOTE.mine=[];if(cur==='notif')go('calc');
   document.body.classList.remove('owner','preview','not-owner','cant-nut','cant-inter','cant-refs','cant-text');CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);refreshAll();
 }
 $('o-save').addEventListener('click',saveDraft);$('o-publish').addEventListener('click',publish);
-$('o-pvexit').addEventListener('click',()=>setPreview(false));$('o-pend').addEventListener('click',()=>openNav('review'));
+$('o-pvexit').addEventListener('click',()=>setPreview(false));$('o-preview').addEventListener('click',()=>setPreview(true));$('o-discard').addEventListener('click',discard);
 addEventListener('beforeunload',e=>{if(OWN.on&&dirty()){e.preventDefault();e.returnValue=''}});

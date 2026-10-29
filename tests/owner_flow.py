@@ -49,7 +49,7 @@ with sync_playwright() as p:
     print('first card (sorted major first):',pg.locator('#ilist .icard').first.inner_text().replace('\n',' | ')[:120])
     pg.screenshot(path='tests/out_owner.png')
     # preview hides pending
-    more(pg,'معاينة');print('PREVIEW icount:',pg.inner_text('#icount'),'vk in picker:',pg.locator('#picker [data-k="vk"]').count());pg.click('#o-pvexit');pg.wait_for_timeout(300);pg.click('#t-interactions');pg.wait_for_timeout(200)
+    pg.click('#o-preview');pg.wait_for_timeout(300);print('PREVIEW icount:',pg.inner_text('#icount'),'vk in picker:',pg.locator('#picker [data-k="vk"]').count());pg.click('#o-pvexit');pg.wait_for_timeout(300);pg.click('#t-interactions');pg.wait_for_timeout(200)
     # edit an interaction severity
     pg.click('[data-act="edit"][data-kind="i"][data-id="0"]');pg.wait_for_timeout(200);pg.select_option('#dlgf1','major');ok(pg)
     # add interaction
@@ -60,9 +60,8 @@ with sync_playwright() as p:
     pg.click('#o-publish');pg.wait_for_timeout(200);ok(pg);pg.wait_for_timeout(500)
     pub=pg.evaluate('window.__PUB');print('PUB1: inter',len(pub['inter']),'custom',len(pub['nut']['custom']),'refs',len(pub['refs']),'has warfarin:',any(x['b']['ar']=='Warfarin' for x in pub['inter']))
     # approve pending (nutrient, interaction, source) then publish
-    pg.click('#t-calc');pg.wait_for_timeout(200);pg.click('[data-act="ok"][data-kind="n"][data-id="vk"]');pg.wait_for_timeout(200)
-    pg.click('#t-interactions');pg.wait_for_timeout(200);pg.click('#ilist [data-act="ok"][data-kind="i"]');pg.wait_for_timeout(200)
-    pg.click('#t-sources');pg.wait_for_timeout(200);pg.click('[data-act="ok"][data-kind="r"][data-id="30"]');pg.wait_for_timeout(200)
+    pg.click('#t-notif');pg.wait_for_timeout(300);print('NOTIF cards:',pg.locator('#notif-b .ncard').count())
+    pg.locator('#notif-b .ntop button').click();pg.wait_for_timeout(200);ok(pg);pg.wait_for_timeout(800)
     print('bar after approvals:',pg.inner_text('#ostate'))
     pg.click('#o-publish');pg.wait_for_timeout(200);ok(pg);pg.wait_for_timeout(500)
     pub=pg.evaluate('window.__PUB');print('PUB2: inter',len(pub['inter']),'custom',len(pub['nut']['custom']),'refs',len(pub['refs']),'warfarin sev:',[x['sev'] for x in pub['inter'] if x['b']['ar']=='Warfarin'])

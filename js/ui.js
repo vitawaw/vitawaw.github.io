@@ -3,14 +3,15 @@
    language switch (setLang), event wiring, colours and refreshAll().
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
-const PAGES=['calc','tools','interactions','sources','roadmap','menu'];
+const PAGES=['calc','tools','interactions','sources','roadmap','notif','menu'];
 let cur='calc';
 function show(p){
-  if(!PAGES.includes(p)||(p==='menu'&&WIDE()))p='calc'; // wide screens show the menu at the side
+  if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='notif'&&!(typeof OWN!=='undefined'&&OWN.on)))p='calc'; // wide screens show the menu at the side; notifications are for the team
   cur=p;
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1});
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
-  if(p!=='menu')try{localStorage.setItem('vw-p',p)}catch(e){}
+  if(p!=='menu'&&p!=='notif')try{localStorage.setItem('vw-p',p)}catch(e){}
+  if(p==='notif'&&typeof renderNotif==='function')renderNotif(true);
   if(p==='roadmap'){$('rmnew').hidden=true;try{localStorage.setItem('vw-rm','3')}catch(e){}}
   updateBar();if(typeof renderNav==='function')renderNav();
 }

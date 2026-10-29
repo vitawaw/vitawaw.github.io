@@ -8,14 +8,15 @@ const DEF_SEV=['moderate','moderate','minor','moderate','moderate','moderate','m
 const defInterList=()=>DEF_INTER.map((x,i)=>({k:x[0],a:{ar:x[1][0],en:x[1][1]},b:{ar:x[2][0],en:x[2][1]},d:{ar:x[3][0],en:x[3][1]},r:x[4].slice(),sev:DEF_SEV[i]||'moderate'}));
 const SHOWALL=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview;
 const SEVORD={major:0,moderate:1,minor:2};
-const bulkBar=(t,n)=>n&&CANAPPROVE()?`<div class="oedit bulk"><span class="pend">${n} ${T('o_pendn')}</span><button class="btn" type="button" data-approveall="${t}">${T('o_approveall')}</button></div>`:'';
+const bulkBar=(t,n)=>n&&CANAPPROVE()?`<div class="oedit bulk"><span class="pend">${n} ${T('o_pendn')}</span><button class="btn" type="button" data-gonotif="1">${T('nt_open')}</button></div>`:'';
 const CANAPPROVE=()=>typeof OWN!=='undefined'&&(OWN.role==='owner'||OWN.local);
-/** The same buttons on every editable item: approve (owner, when waiting), edit, hide/show, delete.
+/** The same buttons on every editable item: edit, hide/show, delete; a waiting item shows «awaiting review»
+   (for the owner it opens 🔔 notifications, where changes are approved or rejected).
    kind: r = source, i = interaction, n = added vitamin, m = roadmap feature. The database checks every change. */
 function actBtns(kind,id,{rv=true,hidden=false,edit=true,del=true}={}){
   const b=(a,lbl,cls='')=>`<button class="btn${cls}" type="button" data-act="${a}" data-kind="${kind}" data-id="${esc(String(id))}">${lbl}</button>`;
-  return (rv?'':`<span class="pend">${T('o_pending')}</span>`)+(hidden?`<span class="hidb">${T('o_hiddenb')}</span>`:'')+
-    (!rv&&CANAPPROVE()?b('ok',T('o_approve'),' pri'):'')+(edit?b('edit',PEN+T('o_edit')):'')+b('hide',T(hidden?'o_nshow':'o_nhide'))+(del?b('del',T('o_del'),' danger'):'');
+  return (rv?'':CANAPPROVE()?`<button class="pend" type="button" data-gonotif="1">${T('o_pending')} ›</button>`:`<span class="pend">${T('o_pending')}</span>`)+(hidden?`<span class="hidb">${T('o_hiddenb')}</span>`:'')+
+    (edit?b('edit',PEN+T('o_edit')):'')+b('hide',T(hidden?'o_nshow':'o_nhide'))+(del?b('del',T('o_del'),' danger'):'');
 }
 const actBar=(kind,id,o)=>`<div class="oedit acts">${actBtns(kind,id,o)}</div>`;
 const NHIDE=()=>(CFG.nut&&CFG.nut.hide)||[];

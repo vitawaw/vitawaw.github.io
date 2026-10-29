@@ -13,7 +13,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23ffffff%22/%3E%3Cg%20transform%3D%22translate%287%203.5%29%20scale%28.78%29%22%3E%3Cg%20transform%3D%22translate%2830%2058%29%20rotate%28-24%29%22%20opacity%3D%221%22%3E%3Crect%20x%3D%22-9%22%20y%3D%22-44%22%20width%3D%2218%22%20height%3D%2244%22%20rx%3D%229%22%20fill%3D%22%239FDCD8%22/%3E%3Cpath%20d%3D%22M-9%20-22V-35a9%209%200%200%201%2018%200V-22z%22%20fill%3D%22%230E8C8C%22/%3E%3Cpath%20d%3D%22M-9%20-22h18%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.55%22%20stroke-width%3D%221.2%22/%3E%3Cpath%20d%3D%22M-4.8%20-36.5v9%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.45%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M-4.8%20-17v9%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%220.6%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22/%3E%3C/g%3E%3Cg%20transform%3D%22translate%2834%2058%29%20rotate%2824%29%22%20opacity%3D%220.94%22%3E%3Crect%20x%3D%22-9%22%20y%3D%22-44%22%20width%3D%2218%22%20height%3D%2244%22%20rx%3D%229%22%20fill%3D%22%23F1B6CD%22/%3E%3Cpath%20d%3D%22M-9%20-22V-35a9%209%200%200%201%2018%200V-22z%22%20fill%3D%22%239C1F5C%22/%3E%3Cpath%20d%3D%22M-9%20-22h18%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.55%22%20stroke-width%3D%221.2%22/%3E%3Cpath%20d%3D%22M-4.8%20-36.5v9%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.45%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M-4.8%20-17v9%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%220.6%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E">
 <link rel="preload" href="fonts/tajawal-400.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="fonts/cairo-700.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.6.3-28d3da4d">
+<link rel="stylesheet" href="css/app.css?v=1.6.4-ee72d416">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu"></h2><div id="side-b"></div></aside>
@@ -27,15 +27,17 @@
     <button class="tab" role="tab" id="t-interactions" data-p="interactions" aria-controls="interactions" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 4v13M7 17l-3-3M7 17l3-3M17 20V7M17 7l-3 3M17 7l3 3"/></svg><span class="full" data-t="tab_int"></span><span class="short" data-t="tab_int_s"></span><span class="cnt" id="icount"></span></button>
     <button class="tab" role="tab" id="t-sources" data-p="sources" aria-controls="sources" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg><span class="full" data-t="tab_src"></span><span class="short" data-t="tab_src_s"></span><span class="cnt" id="rcount"></span></button>
     <button class="tab trm" role="tab" id="t-roadmap" data-p="roadmap" aria-controls="roadmap" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg><span class="full" data-t="tab_rm"></span><span class="short" data-t="tab_rm_s"></span><span class="new" id="rmnew" aria-hidden="true"></span></button>
-    <button class="tab tmenu" role="tab" id="t-menu" data-p="menu" aria-controls="menu" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span data-t="nav_menu"></span><span class="bdot" id="nav-dot" hidden></span></button>
+    <button class="tab tnotif" role="tab" id="t-notif" data-p="notif" aria-controls="notif" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span data-t="nt_t"></span><span class="tcount" id="nt-count" hidden></span></button>
+    <button class="tab tmenu" role="tab" id="t-menu" data-p="menu" aria-controls="menu" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span data-t="nav_menu"></span></button>
   </nav>
   <div class="obar" id="obar">
     <span class="who"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/></svg><span id="owho"></span></span>
     <span class="stt"><span class="dot" id="odot"></span> <span id="ostate"></span></span>
-    <button class="opend" type="button" id="o-pend" hidden></button>
     <span class="sp"></span>
+    <button class="btn" type="button" id="o-preview"></button>
     <button class="btn" type="button" id="o-save"></button>
     <button class="btn pri" type="button" id="o-publish"></button>
+    <button class="btn ico danger" type="button" id="o-discard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7"/><path d="M4 4v4.5h4.5"/></svg></button>
   </div>
 </header>
 
@@ -241,6 +243,9 @@
   </section>
 </div>
 
+<!-- ================= NOTIFICATIONS (team only) ================= -->
+<div class="page narrow" id="notif" role="tabpanel" aria-labelledby="t-notif" hidden><h2 class="mtitle" data-t="nt_t"></h2><div id="notif-b"></div></div>
+
 <!-- ================= MENU (phones and tablets; on wide screens the side menu shows the same) ================= -->
 <div class="page narrow" id="menu" role="tabpanel" aria-labelledby="t-menu" hidden><h2 class="mtitle" data-t="nav_menu"></h2><div id="menu-b"></div></div>
 
@@ -255,21 +260,21 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see"></span></div>
 
-<script src="js/config.js?v=1.6.3-22e525f3" defer></script>
-<script src="js/i18n.js?v=1.6.3-02217025" defer></script>
-<script src="js/data.js?v=1.6.3-8cd09a7b" defer></script>
-<script src="js/util.js?v=1.6.3-db8d77a4" defer></script>
-<script src="js/validation.js?v=1.6.3-a04550f9" defer></script>
-<script src="js/render.js?v=1.6.3-64df5776" defer></script>
-<script src="js/calculators.js?v=1.6.3-a7e74cee" defer></script>
-<script src="js/content.js?v=1.6.3-e01d5b48" defer></script>
-<script src="js/tools.js?v=1.6.3-de864cbb" defer></script>
-<script src="js/lists.js?v=1.6.3-01fbd4cb" defer></script>
-<script src="js/ui.js?v=1.6.3-076cc2c2" defer></script>
-<script src="js/published.js?v=1.6.3-61cc18dc" defer></script>
-<script src="js/owner.js?v=1.6.3-6d4170a9" defer></script>
-<script src="js/nav.js?v=1.6.3-6dd0d8c8" defer></script>
-<script src="js/team.js?v=1.6.3-cc0702ac" defer></script>
-<script src="js/boot.js?v=1.6.3-aa24558c" defer></script>
+<script src="js/config.js?v=1.6.4-6bbd6464" defer></script>
+<script src="js/i18n.js?v=1.6.4-fcd7bb74" defer></script>
+<script src="js/data.js?v=1.6.4-8cd09a7b" defer></script>
+<script src="js/util.js?v=1.6.4-db8d77a4" defer></script>
+<script src="js/validation.js?v=1.6.4-a04550f9" defer></script>
+<script src="js/render.js?v=1.6.4-64df5776" defer></script>
+<script src="js/calculators.js?v=1.6.4-a7e74cee" defer></script>
+<script src="js/content.js?v=1.6.4-0ae40063" defer></script>
+<script src="js/tools.js?v=1.6.4-de864cbb" defer></script>
+<script src="js/lists.js?v=1.6.4-01fbd4cb" defer></script>
+<script src="js/ui.js?v=1.6.4-3dfb4e22" defer></script>
+<script src="js/published.js?v=1.6.4-61cc18dc" defer></script>
+<script src="js/owner.js?v=1.6.4-6cafbfe6" defer></script>
+<script src="js/nav.js?v=1.6.4-ab423cf1" defer></script>
+<script src="js/team.js?v=1.6.4-cc0702ac" defer></script>
+<script src="js/boot.js?v=1.6.4-aa24558c" defer></script>
 </body>
 </html>

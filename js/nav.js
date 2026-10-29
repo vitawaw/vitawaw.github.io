@@ -47,19 +47,12 @@ function goPending(p){
   if(p==='sources'){SF='all';renderRefs()}
   go(p);setTimeout(()=>{const el=$(p).querySelector('.pending');if(el)el.scrollIntoView({block:'center'})},60);
 }
-function pendCounts(){return {n:NCUST().filter(x=>x.rv===false).length,i:(CFG.inter||[]).filter(x=>x.rv===false).length,r:(CFG.refs||[]).filter(x=>x.rv===false).length,c:changeList().length,d:delCount()}}
 const SECTIONS=['calc','tools','interactions','sources','roadmap'];
-const SECKEY={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm'};
+const SECKEY={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t'};
 /** management groups for the signed-in team (what appears depends on the account's permissions) */
 function adminGroups(){
   const A=[];
   if(!(typeof OWN!=='undefined'&&OWN.on&&!OWN.preview))return A;
-  if(ISOWNER()){
-    const c=pendCounts(),tot=c.n+c.i+c.r+c.d;
-    A.push({id:'review',label:T('ad_review'),ico:ICO.check,n:tot,chips:tot?[
-      c.n&&{label:T('ad_vit'),n:c.n,f:()=>goPending('calc')},c.i&&{label:T('tab_int'),n:c.i,f:()=>goPending('interactions')},c.r&&{label:T('tab_src'),n:c.r,f:()=>goPending('sources')},c.c&&{label:T('rc_t'),n:c.c,f:()=>openChanges()}].filter(Boolean)
-      :[{label:T('ad_none'),cls:'muted',f:()=>{}}]});
-  }
   if(CAN('text'))A.push({id:'pages',label:T('ad_pages'),ico:ICO.page,chips:[{label:T('ad_newpage'),cls:'add',f:()=>editPage(null)},
     ...(CFG.pages||[]).map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>editPage(p.id)}))]});
   if(ISOWNER()&&!OWN.local)A.push({id:'team',label:T('ad_team'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,chips:[
@@ -68,15 +61,17 @@ function adminGroups(){
     ...SECTIONS.map(p=>({label:T('ad_colors')+': '+T(SECKEY[p]),f:()=>editColors(p)}))]});
   return A;
 }
-/** labels and the ☰ dot; redraws the menu page and the side menu */
+/** labels and the 🔔 count; redraws the menu page and the side menu */
 function renderNav(){
   if(!$('side'))return;
   document.querySelectorAll('#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
-  $('nav-dot').hidden=!(ISOWNER()&&!OWN.preview&&pendingCount());
+  const nc=notifCount();$('nt-count').hidden=!nc;$('nt-count').textContent=nc>99?'99+':nc;
+  document.body.classList.toggle('team',typeof OWN!=='undefined'&&OWN.on);
+  if(cur==='notif')renderNotif();
   renderMenu();
 }
 // older names (owner bar «awaiting review ›», tests)
-const openNav=()=>{if(WIDE()){const b=$('side').querySelector('.mg.admin');if(b)b.scrollIntoView({block:'start'})}else go('menu')};
+const openNav=()=>go('notif');
 const openMore=openNav,closeNav=()=>{},closeMore=()=>{};
 
 let INSTALL=null;
@@ -128,17 +123,14 @@ function menuHTML(r){
   };
   const seg=(ico,label,cs)=>`<div class="mi seg"><span class="di">${ico}</span><span class="mt">${esc(label)}</span><div class="segc">${cs.map(x=>chipH(r,x)).join('')}</div></div>`;
   const grp=(title,body,cls='')=>body?`<div class="mg${cls?' '+cls:''}">${title?`<h3>${esc(title)}</h3>`:''}<div class="ml">${body}</div></div>`:'';
-  const pubChips=()=>`<div class="filters">${(ISOWNER()
-      ?[{label:T(OWN.preview?'o_pvexit':'o_preview'),pressed:OWN.preview,f:()=>setPreview(!OWN.preview)},{label:T('o_save'),f:saveDraft},{label:T('o_publish'),cls:'pri',f:publish},{label:T('o_discard'),cls:'danger',f:discard}]
-      :[{label:T('mr_savemine'),cls:'pri',f:saveDraft},{label:T('o_discard'),cls:'danger',f:discard}]).map(x=>chipH(r,x)).join('')}</div>`;
   let h='';
-  // account card (Facebook: your profile at the top)
+  // account card (Facebook: your profile at the top); publishing is in the bar at the top of every page
   h+=own
-    ?`<div class="mcard"><span class="av">${MI2.shield}</span><div class="mt"><b>${esc(whoLabel())}</b><small>${esc(T('mn_team'))}</small></div></div><div class="mcard-a">${pubChips()}</div>`
+    ?`<div class="mcard solo"><span class="av">${MI2.shield}</span><div class="mt"><b>${esc(whoLabel())}</b><small>${esc(T('mn_team'))}</small></div></div>`
     :page?`<div class="mcard"><span class="av">${MI2.user}</span><div class="mt"><b>${esc(T('mr_account'))}</b><small>${esc(T('mn_guest'))}</small></div></div><div class="mcard-a"><div class="filters">${chipH(r,{label:T('o_login'),cls:'pri',f:()=>openOwner()})}${chipH(r,{label:T('mr_join'),f:()=>openOwner({join:''})})}</div></div>`:'';
   // sections (side menu only: on phones they are in the bottom bar)
   if(!page)h=`<div class="slogo"><span class="mk"><svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg></span><span class="wm">VITA<em>WAW</em></span></div>`+
-    grp('',SECTIONS.map(p=>row({label:T(SECKEY[p]),ico:tabIco(p),page:p,on:cur===p,f:()=>go(p)})).join(''),'secs')+h;
+    grp('',[...SECTIONS,...(own?['notif']:[])].map(p=>row({label:T(SECKEY[p]),ico:tabIco(p),page:p,on:cur===p,n:p==='notif'?notifCount():0,f:()=>go(p)})).join(''),'secs')+h;
   const A=own?adminGroups():[];
   if(A.length)h+=grp(T('nv_admin'),A.map(g=>`<div class="mi grp"><span class="di">${g.ico}</span><span class="mt">${esc(g.label)}</span>${g.n?`<span class="cnt">${g.n}</span>`:''}</div><div class="filters mchips">${g.chips.map(c=>chipH(r,c)).join('')}</div>`).join(''),'admin');
   // shortcuts: information pages, app, contact
