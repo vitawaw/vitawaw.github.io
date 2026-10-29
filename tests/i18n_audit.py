@@ -65,7 +65,7 @@ def walk(pg,lang,tag):
                 try: pg.select_option('#sex',sx)
                 except Exception: pass
                 pg.wait_for_timeout(30);scan(pg,f'{tag} calc {mode} {k} {sx}',lang)
-            for cb in ['mal','med','ren','neuro','mgsx','mgren','smk','infl','pre','ntd','lowca','veg']:
+            for cb in ['mal','med','ckd','neuro','mgsx','smk','infl','pre','ntd','lowca','veg']:
                 pg.evaluate(f"(()=>{{const e=document.getElementById('{cb}');if(e){{e.checked=true;e.dispatchEvent(new Event('change',{{bubbles:true}}))}}}})()")
             for sel in ['folg','feg','czg','dunit','b12u','mgu','tri','feed','vag']:
                 opts=pg.evaluate(f"(()=>{{const e=document.getElementById('{sel}');return e?[...e.options].map(o=>o.value):[]}})()")

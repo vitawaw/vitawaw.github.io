@@ -68,6 +68,11 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-30)
+- **1.10.0 in preview** (on top of 1.9.0, same branch, same DB file `20261030000000_interaction_timing.sql`, which now also adds
+  `at` (reviewed date) to sources and sources 61–62 KDIGO). Sources page `usedIn()` + `ISRC` filter in lists.js; `srcLine()` in render.js
+  (copy + patient card); link check: worker `/api/links?ids=` (≤25, only published URLs, cached 1 day) + `linksHTML()/linksCheck()`
+  in owner.js (🔔, weekly, kept in localStorage vw-links); one kidney option `#ckd` → `CKD()` in calculators.js (replaced ren/mgren).
+  Waiting for his choice: replacing secondary sources (Medscape 1, 6, 7, 9, 12; StatPearls 10) with primary ones (list sent).
 - **1.9.0 in preview** (same branch): interactions integration. `interactions.gap` jsonb {d: schedule item, b, a hours} — migration
   `20261030000000_interaction_timing.sql` (he runs it; also content: sources 60, Dolutegravir, Mg–levothyroxine, timings).
   Client: INTER[i][9] = timing; `schRules()` in tools.js (interaction timing beats `SCDEF`); `interHTML()` in render.js (result shows

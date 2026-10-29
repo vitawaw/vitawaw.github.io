@@ -257,6 +257,8 @@ function renderNotif(opening){
       <div class="nl" dir="auto">${esc(n.label)}</div>${n.was&&n.was!==n.label?`<div class="nw">${esc(T('rc_was'))} ${esc(n.was)}</div>`:''}
       <div class="filters">${S({label:T(n.kind==='del'?'rc_okdel':'o_approve'),cls:'pri',f:()=>decide(n,true)})}${S({label:T(n.kind==='del'?'rc_restore':'nt_reject'),f:()=>decide(n,false)})}${n.kind!=='del'?S({label:T('nt_view'),f:()=>viewItem(n)}):''}</div></div></div>`).join('')
       :`<div class="nempty">${nico('approved')}<b>${T('nt_none')}</b></div>`;
+    h+=linksHTML(S);
+    if(opening)linksAuto();
   }else{
     const mine=NOTE.mine,wait=notifList();
     h+=`<h3 class="nsec">${T('nt_mine')}</h3>`+(mine.length?mine.map(n=>`<div class="ncard${n.read?'':' unread'}">${nico(n.kind)}<div class="nb"><div class="nh"><b>${esc(T(n.kind==='approved'?'nt_ok':'nt_no'))}</b> · ${esc(T(NKIND[n.item]||'tab_src'))} · <span class="nby">${esc(fmtDate(n.at))}</span></div><div class="nl">${esc(n.label)}</div></div></div>`).join('')
@@ -268,6 +270,30 @@ function renderNotif(opening){
     }
   }
   $('notif-b').innerHTML=h;
+}
+/* ===================== source links (owner, in 🔔) =====================
+   The worker checks the links of the published sources (/api/links, 25 per request). It runs by itself when 🔔 is opened
+   and the last check is a week old; the result is kept on this device. «blocked» = the site refuses automatic checks
+   (open it yourself), «broken» = page not found. */
+let LINKS=null;try{LINKS=JSON.parse(localStorage.getItem('vw-links')||'null')}catch(e){}
+let linksBusy=false;
+async function linksCheck(){
+  if(linksBusy)return;linksBusy=true;renderNotif();
+  const ids=((PUBLISHED&&PUBLISHED.refs)||[]).filter(r=>/^https?:\/\//.test(r.url||'')).map(r=>r.id),out=[];
+  try{
+    for(let i=0;i<ids.length;i+=25){const r=await fetch('/api/links?ids='+ids.slice(i,i+25).join(','),{signal:AbortSignal.timeout(60000)});if(!r.ok)throw new Error(r.status);out.push(...((await r.json()).links||[]))}
+    LINKS={at:new Date().toISOString().slice(0,10),broken:out.filter(x=>x.state==='broken').map(x=>x.id),blocked:out.filter(x=>x.state==='blocked').map(x=>x.id),n:out.length};
+    try{localStorage.setItem('vw-links',JSON.stringify(LINKS))}catch(e){}
+  }catch(e){toast(T('o_neterr'))}
+  linksBusy=false;renderNotif();
+}
+function linksAuto(){if(!OWN.local&&(!LINKS||Date.now()-Date.parse(LINKS.at)>7*864e5))linksCheck()}
+function linksHTML(S){
+  const L2=LINKS,row=id=>{const x=REFS[id];return x?`<div class="ncard">${nico('rejected')}<div class="nb"><div class="nl" dir="auto">${id}. ${esc(x[0])} — ${esc(x[1])}</div><div class="filters">${S({label:T('o_edit'),f:()=>editRef(id)})}${/^https?:/.test(x[2])?`<a class="btn" href="${esc(x[2])}" target="_blank" rel="noopener">${esc(T('lk_open'))}</a>`:''}</div></div></div>`:''};
+  return `<h3 class="nsec">${T('lk_t')}</h3><p class="hint">${linksBusy?T('lk_busy'):L2?T('lk_last').replace('{d}','<bdi>'+esc(L2.at)+'</bdi>').replace('{n}',L2.n):T('lk_never')}</p>`+
+    (L2&&L2.broken.length?`<p class="hint"><b>${T('lk_broken')}</b></p>`+L2.broken.map(row).join(''):L2?`<p class="inone">${T('lk_okall')}</p>`:'')+
+    (L2&&L2.blocked.length?`<details class="lkb"><summary>${T('lk_blocked').replace('{n}',L2.blocked.length)}</summary>${L2.blocked.map(id=>REFS[id]?`<div class="nl"><a href="${esc(REFS[id][2])}" target="_blank" rel="noopener">${id}. ${esc(REFS[id][0])}</a></div>`:'').join('')}</details>`:'')+
+    `<div class="filters">${S({label:T('lk_now'),f:linksCheck})}</div>`;
 }
 /** show the item where it lives */
 function viewItem(n){

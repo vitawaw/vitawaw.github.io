@@ -9,6 +9,9 @@
  * - After CACHE_SECONDS the copy we have is returned at once and refreshed in the background; if Supabase is slow
  *   or down, visitors keep getting the last good copy (one Supabase request at a time, retried every 30 s).
  * - A daily cron request keeps the free Supabase project from pausing after 7 idle days.
+ * - GET /api/links?ids=1,2,… checks the links of published sources (at most LINKS_MAX per request, the free plan allows
+ *   50 outgoing requests per call). Only URLs that are in the published content can be checked (never a URL from the
+ *   request), and each answer is cached for a day, so the endpoint cannot be used to make the worker fetch other sites.
  *
  * Settings come from wrangler.jsonc "vars": SUPABASE_URL and SUPABASE_ANON_KEY (public key,
  * the database is protected by row level security).
@@ -18,6 +21,8 @@ const RETRY_SECONDS = 30; // when Supabase fails, wait this long before trying a
 let memo = null;     // { body, etag, at } kept in this isolate's memory
 let loading = null;  // the Supabase request in progress, shared by everyone who arrives meanwhile
 let failedAt = 0;
+const LINKS_MAX = 25;
+const LINK_TTL = 86400; // seconds a link check stays cached
 
 async function loadFromSupabase(env) {
   const url = env.SUPABASE_URL.replace(/\/$/, '') + '/rest/v1/site_config?id=eq.published&select=data';
@@ -65,6 +70,35 @@ async function content(request, env, ctx) {
   return new Response(request.method === 'HEAD' ? null : entry.body, { status: 200, headers });
 }
 
+/** ok = page answers; broken = 404/410 or the site does not exist; blocked = the site refuses robots or is busy (not a verdict) */
+async function checkUrl(u) {
+  const go = method => fetch(u, { method, redirect: 'follow', signal: AbortSignal.timeout(8000),
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VITAWAW link check; +https://billowing-glade-6627.vitawaw26.workers.dev)', Accept: 'text/html,application/pdf,*/*' } });
+  try {
+    let r = await go('HEAD');
+    if (r.status === 405 || r.status === 501 || r.status === 403) r = await go('GET'); // some sites refuse HEAD only
+    const s = r.status;
+    return { code: s, state: s < 400 ? 'ok' : (s === 404 || s === 410) ? 'broken' : 'blocked' };
+  } catch (e) {
+    return { code: 0, state: /timeout|abort/i.test(String(e && e.name || e)) ? 'blocked' : 'broken' };
+  }
+}
+async function links(request, env, ctx) {
+  const url = new URL(request.url);
+  const ids = [...new Set((url.searchParams.get('ids') || '').split(',').map(Number).filter(n => Number.isInteger(n) && n > 0))].sort((a, b) => a - b).slice(0, LINKS_MAX);
+  if (!ids.length) return json('{"error":"ids"}', 400, 'no-store');
+  const cache = typeof caches !== 'undefined' ? caches.default : null;
+  const key = new Request(url.origin + '/api/links?ids=' + ids.join(','));
+  if (cache) { const hit = await cache.match(key); if (hit) return hit; }
+  let entry = memo;
+  if (!entry) { try { entry = await refresh(env); } catch (e) { return json('{"error":"content unavailable"}', 503, 'no-store'); } }
+  const refs = (JSON.parse(entry.body)[0].data.refs || []).filter(r => ids.includes(r.id) && /^https?:\/\//.test(r.url || ''));
+  const out = await Promise.all(refs.map(async r => ({ id: r.id, ...(await checkUrl(r.url)) })));
+  const res = json(JSON.stringify({ at: new Date().toISOString(), links: out }), 200, `public, max-age=${LINK_TTL}`);
+  if (cache) ctx.waitUntil(cache.put(key, res.clone()));
+  return res;
+}
+
 const json = (body, status, cache) =>
   new Response(body, { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': cache, 'X-Content-Type-Options': 'nosniff' } });
 
@@ -74,6 +108,10 @@ export default {
     if (url.pathname === '/api/content') {
       if (request.method !== 'GET' && request.method !== 'HEAD') return json('{"error":"method"}', 405, 'no-store');
       return content(request, env, ctx);
+    }
+    if (url.pathname === '/api/links') {
+      if (request.method !== 'GET') return json('{"error":"method"}', 405, 'no-store');
+      return links(request, env, ctx);
     }
     if (url.pathname.startsWith('/api/')) return json('{"error":"not found"}', 404, 'no-store');
     // anything else is the static site (normally served before this code even runs)

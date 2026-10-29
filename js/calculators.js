@@ -3,6 +3,8 @@
    and the groups fPreg (pregnancy/breastfeeding), fInf (infant 0–24 months), fVA (WHO vitamin A for children).
    Each function reads the form, applies the cited guideline and calls render(). Medical changes go here.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
+/** «قصور كلوي متقدم» — one option for every calculator (each adds its own caution) */
+const CKD=()=>!!($('ckd')&&$('ckd').checked);
 /* ===================== Vitamin D ===================== */
 function fD(){
   const x=req(['age','dlab'],['wt','ht']);
@@ -19,7 +21,7 @@ function fD(){
   const kv=[[L('الاحتياج اليومي (RDA)','Daily need (RDA)'),rda+day],[L('الحد الأعلى اليومي (UL)','Upper limit (UL)'),ul+day]];
   if(bmi)kv.push([L('مؤشر كتلة الجسم','BMI'),fmt(bmi)+(obese?L(' (سمنة)',' (obesity)'):'')]);
   const notes=[];let r,rec=null;
-  if($('ren').checked)notes.push({t:L('في القصور الكلوي المتقدم يحدد طبيب الكلى العلاج، وقد يلزم الشكل النشط من فيتامين D مع مراقبة الكالسيوم والفوسفور.','In advanced kidney disease the nephrologist decides treatment; an active form of vitamin D may be needed, with calcium and phosphate monitoring.'),r:[1],u:1});
+  if(CKD())notes.push({t:L('في القصور الكلوي المتقدم يحدد طبيب الكلى العلاج، وقد يلزم الشكل النشط من فيتامين D مع مراقبة الكالسيوم والفوسفور.','In advanced kidney disease the nephrologist decides treatment; an active form of vitamin D may be needed, with calcium and phosphate monitoring.'),r:[61,1],u:1});
   if($('sex').value==='p')notes.push({t:L('في الحمل يوصى بمكمل فيتامين D وقائياً، ويحدد طبيب النساء جرعة العلاج.','In pregnancy, preventive vitamin D is recommended; the obstetrician sets any treatment dose.'),r:[3]});
   const DEF=L('نقص (أقل من 20 ng/mL)','Deficient (below 20 ng/mL)');
   const retest={h:L('إعادة التحليل','Retest'),d:L('للتأكد من تجاوز 30 ng/mL قبل الانتقال للصيانة','To confirm the level is above 30 ng/mL before maintenance')};
@@ -204,6 +206,7 @@ function fFe(){
       pt:L('حبة حديد (60 ملغ حديد) صباحاً يوماً بعد يوم، ثم تحليل Ferritin بعد 3 أشهر.','One iron tablet (60 mg of iron) in the morning every other day, then a ferritin test after 3 months.'),
       plan:[{h:L('العلاج: 3 أشهر','Treatment: 3 months'),d:L('60 ملغ يوماً بعد يوم','60 mg every other day')},{h:L('إعادة التحليل','Retest'),d:'Ferritin'}]};
   }
+  if(CKD())notes.unshift({t:L('في القصور الكلوي المزمن يُعالج فقر الدم بإشراف طبيب الكلى، وقد يُفضَّل الحديد الوريدي، خاصة لمرضى الغسيل.','In chronic kidney disease anemia is managed by the nephrologist; IV iron may be preferred, especially on dialysis.'),r:[62],u:1});
   if(sx==='p')notes.push({t:L('في الحمل الاحتياج 27 ملغ يومياً، ويحدد طبيب النساء جرعة العلاج.','In pregnancy the need is 27 mg daily; the obstetrician sets any treatment dose.'),r:[15]});
   r.kv=kv;r.notes=notes;r.tool='pills';PILL={k:'fe',dose};r.sch=['fe'];
   if(g==='rda'&&typeof rda==='number'&&age>=1)r.ul=[['fe',rda]];
@@ -235,6 +238,7 @@ function fCa(){
       r.tool='pills';PILL={k:'ca',dose:Math.min(500,Math.ceil(gap/doses))};r.sch=doses>1?['ca','ca2']:['ca'];if(age>=1)r.ul=[['ca',diet+gap]];}
   }
   r.notes=[{t:L('الإجمالي (غذاء + مكمل) يجب ألا يتجاوز الحد الأعلى.','Total intake (food + supplement) should stay under the upper limit.'),r:[18]}];
+  if(CKD())r.notes.unshift({t:L('في القصور الكلوي المتقدم يحدد طبيب الكلى الكالسيوم والفوسفات؛ تُتجنّب الجرعات العالية من الكالسيوم لخطر ارتفاعه وترسّبه.','In advanced kidney disease the nephrologist manages calcium and phosphate; high calcium doses are avoided because of hypercalcemia and calcification risk.'),r:[61],u:1});
   if(sx==='p')r.notes.push({t:L('توصي منظمة الصحة العالمية بـ 1,500 – 2,000 ملغ يومياً للحوامل ذوات المدخول المنخفض لتقليل خطر تسمم الحمل.','WHO recommends 1,500–2,000 mg daily for pregnant women with low intake to reduce pre-eclampsia risk.'),r:[18],i:1});
   r.kv=kv;render(r);
 }
@@ -243,7 +247,7 @@ function fCa(){
 function fMg(){
   const kid=parseFloat($('age').value)<18&&!$('mgsx').checked;
   const x=req(kid?['age','mgv','wt']:['age','mgv']);if(!x)return;
-  const age=x.age,w=x.wt,v=x.mgv,sx=$('sex').value,mgdl=$('mgu').value==='mmol'?v*2.43:v,sev=$('mgsx').checked,ren=$('mgren').checked,MG=L(' ملغ',' mg');
+  const age=x.age,w=x.wt,v=x.mgv,sx=$('sex').value,mgdl=$('mgu').value==='mmol'?v*2.43:v,sev=$('mgsx').checked,ren=CKD(),MG=L(' ملغ',' mg');
   let rda;
   if(sx==='p')rda=teen(age)?400:age<=30?350:360;
   else if(sx==='l')rda=teen(age)?360:age<=30?310:320;
@@ -290,7 +294,8 @@ function fC(){
     pt:L('أخذ فيتامين C بعد بدء البرد لم يثبت أنه يفيد. أخذه بانتظام قد يقصّر البرد قليلاً.','Taking vitamin C after a cold starts has not been shown to help. Taking it regularly may shorten colds a little.'),
     opts:[{h:L('الاستعمال المنتظم (200 ملغ يومياً فأكثر)','Regular use (200 mg daily or more)'),b:L('لا يقلل عدد مرات الإصابة لدى عامة الناس','Does not reduce how often people catch colds'),d:L('لكنه قصّر مدة البرد قليلاً بشكل ثابت في التجارب','But it consistently shortened colds slightly in trials'),r:[24]}]};
   if(g==='rda'&&typeof rda==='number'&&age>=1)r.ul=[['c',rda]];
-  r.kv=kv;r.notes=[{t:L('الجرعات العالية قد تسبب اضطراباً هضمياً، ويرتبط الاستعمال العالي بخطر حصى الكلى لدى بعض الأشخاص.','High doses can upset the stomach, and high intake is linked to kidney stone risk in some people.'),r:[23]}];render(r);
+  const ckdC=CKD()?[{t:L('في القصور الكلوي تُتجنّب جرعات فيتامين C فوق الاحتياج إلا بإشراف الطبيب، لأن الجرعات العالية ترفع الأوكسالات في البول.','In kidney disease avoid vitamin C above the daily need unless a doctor supervises, because high doses raise urinary oxalate.'),r:[23],u:1}]:[];
+  r.kv=kv;r.notes=[...ckdC,{t:L('الجرعات العالية قد تسبب اضطراباً هضمياً، ويرتبط الاستعمال العالي بخطر حصى الكلى لدى بعض الأشخاص.','High doses can upset the stomach, and high intake is linked to kidney stone risk in some people.'),r:[23]}];render(r);
 }
 
 /* ===================== Zinc ===================== */

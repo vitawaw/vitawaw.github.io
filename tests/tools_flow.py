@@ -85,5 +85,18 @@ with sync_playwright() as p:
     # a timing set on an interaction replaces the built-in rule
     r = pg.evaluate("(()=>{const x=INTER.find(t=>t[0]==='ca'&&/Levothyroxine/.test(t[2][1]));x[9]={d:'levo',b:5,a:5};const o=schRules().find(o=>o.x==='levo'&&o.y==='ca');x[9]=null;return o.b+'/'+o.a})()")
     check('owner timing wins', r, '5/5')
+    # 1.10.0 kidney option, sources used-in, sources in the copied result / patient card
+    pg.goto('http://app.test/#calc'); pg.wait_for_timeout(150)
+    calc('ca', {'age':60,'cadiet':400}); pg.check('#ckd'); pg.dispatch_event('#ckd','change'); pg.wait_for_timeout(80)
+    check('kidney caution (calcium)', T('res'), 'طبيب الكلى'); pg.uncheck('#ckd'); pg.dispatch_event('#ckd','change')
+    calc('c', {'age':30,'czg':'rda'}); pg.check('#ckd'); pg.dispatch_event('#ckd','change'); pg.wait_for_timeout(80)
+    check('kidney caution (vitamin C)', T('res'), 'الأوكسالات'); pg.uncheck('#ckd'); pg.dispatch_event('#ckd','change')
+    calc('fe', {'age':30,'feg':'rda'}); check('sources line for copy', pg.evaluate('srcLine()'), 'NIH Office of Dietary Supplements')
+    pg.click('#res [data-card]'); pg.wait_for_timeout(100); check('sources on the patient card', T('pcard'), 'NIH'); pg.keyboard.press('Escape')
+    pg.goto('http://app.test/#sources'); pg.wait_for_timeout(150)
+    check('used in (calculator)', T('ref-15'), 'الحديد')
+    pg.click('#ref-27 [data-isrc]'); pg.wait_for_timeout(150)
+    check('source -> its interactions', str(pg.locator('#ilist .icard').count()), '2'); check('source filter chip', T('filters'), 'المصدر 27')
+    pg.click('[data-clrsrc]'); pg.wait_for_timeout(80); check('filter cleared', str(pg.evaluate('ISRC')), 'None')
     print('page errors:', errs)
 sys.exit(1 if fails or errs else 0)

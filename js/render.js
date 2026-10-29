@@ -24,7 +24,8 @@ function render(r){
   LAST=r;
   const pt=MODE==='pt';
   const urgent=(r.notes||[]).filter(n=>n.u),rest=(r.notes||[]).filter(n=>!n.u);
-  const all=[...new Set([...(r.refs||[]),...(r.opts||[]).flatMap(o=>o.r||[]),...(r.notes||[]).flatMap(o=>o.r||[]),...(r.plan||[]).flatMap(o=>o.r||[])])].sort((a,b)=>a-b);
+  const all=r.srcs=[...new Set([...(r.refs||[]),...(r.opts||[]).flatMap(o=>o.r||[]),...(r.notes||[]).flatMap(o=>o.r||[]),...(r.plan||[]).flatMap(o=>o.r||[])])].sort((a,b)=>a-b);
+  r.srcNames=[...new Set(all.filter(n=>REFS[n]).map(n=>REFS[n][0]))];
   const acts=[];
   // patient mode: the tablet counter and the IV-iron (Ganzoni) calculator are pharmacist tools
   if(r.tool==='pills'&&!pt)acts.push(`<button class="btn" type="button" data-tool="pills">${T('pills')}</button>`);
@@ -59,14 +60,16 @@ function render(r){
   $('rdot').style.background=TONE[r.tone];$('rtx').textContent=(pt&&r.ptShort)||plain(r.title);
   updateBar();
 }
+/** one line naming the sources of the result (for the copied text and the patient card) */
+const srcLine=()=>LAST&&LAST.srcNames&&LAST.srcNames.length?T('srcs')+' '+LAST.srcNames.join(' · '):'';
 function copyRes(){
   if(!LAST)return;
   const strip=plain;
   const head='VITAWAW · '+document.querySelector('#picker [aria-pressed="true"] span').textContent;
   let lines;
-  if(MODE==='pt'&&LAST.pt)lines=[head,strip(LAST.badge),strip(LAST.pt),...(LAST.notes||[]).filter(n=>n.u).map(n=>'! '+strip(n.t)),...(LAST.plan||[]).map((s,i)=>(i+1)+'. '+strip(s.h)+(s.d?': '+strip(s.d):'')),'',T('disc_pt')];
+  if(MODE==='pt'&&LAST.pt)lines=[head,strip(LAST.badge),strip(LAST.pt),...(LAST.notes||[]).filter(n=>n.u).map(n=>'! '+strip(n.t)),...(LAST.plan||[]).map((s,i)=>(i+1)+'. '+strip(s.h)+(s.d?': '+strip(s.d):'')),'',srcLine(),T('disc_pt')];
   else lines=[head,strip(LAST.badge),strip(LAST.title),strip(LAST.sub),...(LAST.plan||[]).map((s,i)=>(i+1)+'. '+strip(s.h)+(s.d?': '+strip(s.d):'')),
-    ...(LAST.kv||[]).map(x=>x[0]+': '+x[1]),...(LAST.opts||[]).map(o=>'• '+strip(o.h)+': '+strip(o.b)+(o.d?' ('+strip(o.d)+')':'')),...(LAST.notes||[]).map(n=>'! '+strip(n.t))];
+    ...(LAST.kv||[]).map(x=>x[0]+': '+x[1]),...(LAST.opts||[]).map(o=>'• '+strip(o.h)+': '+strip(o.b)+(o.d?' ('+strip(o.d)+')':'')),...(LAST.notes||[]).map(n=>'! '+strip(n.t)),srcLine()];
   const text=lines.filter(x=>x!==undefined).join('\n'),b=$('copy'),done=()=>{b.lastElementChild.textContent=T('copied');setTimeout(()=>{if(b.isConnected)b.lastElementChild.textContent=T('copy')},1600)};
   try{navigator.clipboard.writeText(text).then(done).catch(()=>fallback(text,done))}catch(e){fallback(text,done)}
 }

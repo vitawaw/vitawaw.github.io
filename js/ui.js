@@ -40,6 +40,8 @@ document.addEventListener('click',e=>{
   const gc=e.target.closest('[data-gocalc]');if(gc){e.preventDefault();K=gc.dataset.gocalc;try{localStorage.setItem('vw-k',K)}catch(e){}apply();go('calc');return}
   const gs=e.target.closest('[data-gosch]');if(gs){e.preventDefault();SCI.forEach(x=>{const c=$('sc-'+x[0]);if(c)c.checked=false});SCHSET=gs.dataset.gosch.split(',');openTool('sch');return}
   const gi=e.target.closest('[data-goint]');if(gi){e.preventDefault();IF=gi.dataset.goint;renderInter();go('interactions');return}
+  const sr=e.target.closest('[data-isrc]');if(sr){e.preventDefault();ISRC=+sr.dataset.isrc;IF='all';renderInter();go('interactions');return}
+  if(e.target.closest('[data-clrsrc]')){e.preventDefault();ISRC=null;renderInter();return}
   const dm=e.target.closest('[data-delmed]');if(dm){e.preventDefault();MEDS.splice(+dm.dataset.delmed,1);saveMeds();renderInter();return}
   const a=e.target.closest('[data-ref]');if(!a)return;e.preventDefault();
   const back=cur;SF='all';renderRefs();go('sources');
@@ -47,7 +49,7 @@ document.addEventListener('click',e=>{
   const li=$('ref-'+a.dataset.ref);if(li){li.classList.add('hl');setTimeout(()=>li.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}),30)}
 });
 $('back').addEventListener('click',()=>{const to=$('back').dataset.to||'calc';go(to);if(to==='calc'&&innerWidth<900)setTimeout(()=>$('resbox').scrollIntoView({block:'start'}),30)});
-$('filters').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;IF=b.dataset.f;renderInter()});
+$('filters').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;IF=b.dataset.f;ISRC=null;renderInter()});
 $('sfilters').addEventListener('click',e=>{const b=e.target.closest('[data-sf]');if(!b)return;SF=b.dataset.sf;renderRefs()});
 
 /* mobile result bar */
@@ -77,6 +79,7 @@ function cardText(){
   const lines=['VITAWAW · '+name,strip(r.pt||r.title)];
   (r.notes||[]).filter(n=>n.u).forEach(n=>lines.push('⚠ '+strip(n.t)));
   (r.plan||[]).forEach((x,i)=>lines.push((i+1)+'. '+strip(x.h)+(x.d?': '+strip(x.d):'')));
+  if(srcLine())lines.push('',srcLine());
   lines.push('',T('pc_f'));return lines.join('\n');
 }
 function openCard(){
@@ -89,7 +92,7 @@ function openCard(){
    <div class="pc-b"><div class="pc-k" id="pc-title">${name} · ${strip(r.badge)}</div><p class="pc-main">${strip(r.pt||r.title)}</p>
    ${urgent.map(n=>`<div class="pc-alert">${strip(n.t)}</div>`).join('')}
    ${(r.plan&&r.plan.length)?`<div class="pc-k">${T('pc_plan')}</div><ol class="pc-plan">${r.plan.map(x=>`<li><b>${strip(x.h)}</b>${x.d?' — '+strip(x.d):''}</li>`).join('')}</ol>`:''}</div>
-   <div class="pc-f">${T('pc_f')}${REV().name?'<br>'+T('rev')+' '+REV().name+(REV().date?' · '+REV().date:''):''}<br>${T('pc_shot')}</div>`;
+   ${srcLine()?`<div class="pc-src">${esc(srcLine())}</div>`:''}<div class="pc-f">${T('pc_f')}${REV().name?'<br>'+T('rev')+' '+REV().name+(REV().date?' · '+REV().date:''):''}<br>${T('pc_shot')}</div>`;
   $('pc-wa').href='https://wa.me/?text='+encodeURIComponent(cardText());
   lastFocus=document.activeElement;$('ov').hidden=false;$('pc-close').focus();document.body.style.overflow='hidden';
 }
@@ -118,7 +121,7 @@ function fillExample(){
   syncSex();F[K]();
 }
 $('example').addEventListener('click',fillExample);
-$('clear').addEventListener('click',()=>{$('fegw').hidden=false;NUMS.forEach(id=>{$(id).value='';$(id).classList.remove('bad');const er=$('e-'+id);if(er)er.hidden=true});['mal','med','ren','neuro','mgsx','mgren','smk','infl','pre','ntd','lowca','veg'].forEach(id=>$(id).checked=false);syncSex();F[K]();($('age').offsetParent?$('age'):$('mon')).focus()});
+$('clear').addEventListener('click',()=>{$('fegw').hidden=false;NUMS.forEach(id=>{$(id).value='';$(id).classList.remove('bad');const er=$('e-'+id);if(er)er.hidden=true});['mal','med','ckd','neuro','mgsx','smk','infl','pre','ntd','lowca','veg'].forEach(id=>$(id).checked=false);syncSex();F[K]();($('age').offsetParent?$('age'):$('mon')).focus()});
 
 /* hide pregnancy options for young ages */
 function syncSex(){
@@ -159,7 +162,7 @@ $('medform').addEventListener('submit',e=>{e.preventDefault();const s=medSuggest
 $('medin').addEventListener('input',renderSug);
 $('medsug').addEventListener('click',e=>{const b=e.target.closest('[data-addmed]');if(b)addMed(b.dataset.addmed)});
 $('picker').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;K=b.dataset.k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()});
-['age','sex','wt','ht','dlab','dunit','mal','med','ren','b12v','b12u','b12c','neuro','ab12','folg','feg','hb','fer','infl','cadiet','mgv','mgu','mgsx','mgren','czg','smk','mon','feed','pre','vag','tri','ntd','lowca','veg']
+['age','sex','wt','ht','dlab','dunit','mal','med','ckd','b12v','b12u','b12c','neuro','ab12','folg','feg','hb','fer','infl','cadiet','mgv','mgu','mgsx','czg','smk','mon','feed','pre','vag','tri','ntd','lowca','veg']
   .forEach(i=>{$(i).addEventListener('input',()=>{if(i==='age')syncSex();F[K]()});$(i).addEventListener('change',()=>{if(i==='age')syncSex();F[K]()})});
 $('wt').addEventListener('input',()=>{const w=nv('wt');if(w){$('gw').value=w;gz()}});
 $('dunit').addEventListener('change',()=>{const v=nv('dlab');if(v!=null)$('dlab').value=$('dunit').value==='nmol'?Math.round(v*2.5):Math.round(v/2.5*10)/10;F[K]()});

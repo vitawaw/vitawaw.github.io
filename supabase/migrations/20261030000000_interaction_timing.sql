@@ -1,4 +1,5 @@
--- VITAWAW 1.9.0: timing on interactions + the interactions review (approved by the owner: «كلها»).
+-- VITAWAW 1.9.0 / 1.10.0: timing on interactions, the date each source was last reviewed, and the content review
+-- of interactions and sources (approved by the owner: «كلها»).
 -- Run the whole file in the Supabase SQL editor (the button must say «Run», not «Run selected»).
 -- Compatible with the live site: pages that do not send the new field keep the stored value.
 
@@ -17,6 +18,13 @@ create or replace function private.j_inter(i public.interactions) returns jsonb
   language sql immutable set search_path = '' as $$
   select jsonb_build_object('id',i.id,'k',i.nutrient_id,'a',jsonb_build_object('ar',i.supp_ar,'en',i.supp_en),'b',jsonb_build_object('ar',i.with_ar,'en',i.with_en),
     'd',jsonb_build_object('ar',i.desc_ar,'en',i.desc_en),'sev',i.severity,'r',to_jsonb(i.source_ids),'rv',i.reviewed,'hidden',i.hidden,'g',coalesce(i.gap,'{}'::jsonb))
+$$;
+
+-- the date a source was last approved, shown on the sources page («رُوجع»)
+create or replace function private.j_src(s public.sources) returns jsonb
+  language sql immutable set search_path = '' as $$
+  select jsonb_build_object('id',s.id,'org',s.org,'title',s.title,'url',s.url,'ar',s.use_ar,'en',s.use_en,'rv',s.reviewed,'hidden',s.hidden,'kind',s.kind,
+    'at',coalesce(to_char(s.reviewed_at,'YYYY-MM-DD'),''))
 $$;
 
 create or replace function public.save_content(p jsonb) returns void
@@ -101,7 +109,7 @@ begin
   select coalesce(jsonb_agg(jsonb_build_object('k',i.nutrient_id,'a',jsonb_build_object('ar',i.supp_ar,'en',i.supp_en),'b',jsonb_build_object('ar',i.with_ar,'en',i.with_en),'d',jsonb_build_object('ar',i.desc_ar,'en',i.desc_en),'sev',i.severity,'r',to_jsonb(i.source_ids),'g',coalesce(i.gap,'{}'::jsonb)) order by i.sort, i.id), '[]'::jsonb)
     into inter from private.pub_interactions() i join private.pub_nutrients() n on n.id = i.nutrient_id
     where not i.deleted and not i.hidden and not n.hidden and not n.deleted;
-  select coalesce(jsonb_agg(jsonb_build_object('id',id,'org',org,'title',title,'url',url,'ar',use_ar,'en',use_en,'kind',kind) order by id), '[]'::jsonb)
+  select coalesce(jsonb_agg(jsonb_build_object('id',id,'org',org,'title',title,'url',url,'ar',use_ar,'en',use_en,'kind',kind,'at',coalesce(to_char(reviewed_at,'YYYY-MM-DD'),'')) order by id), '[]'::jsonb)
     into refs from private.pub_sources() where not deleted and not hidden;
 
   snap := s || jsonb_build_object('refs', refs, 'inter', inter, 'nut', jsonb_build_object('hide', hide, 'custom', nut_custom), 'published_at', now());
@@ -156,6 +164,10 @@ end $$;
 
 -- 2. Content (waits in 🔔 for the owner; the approved version stays live until he approves) ------------------------------
 insert into public.sources (id, org, title, url, use_ar, use_en, kind, reviewed) values
+ (61, 'KDIGO, 2017', 'KDIGO 2017 Clinical Practice Guideline Update for the Diagnosis, Evaluation, Prevention, and Treatment of Chronic Kidney Disease–Mineral and Bone Disorder (CKD-MBD). Kidney Int Suppl 2017;7(1):1–59', 'https://doi.org/10.1016/j.kisu.2017.04.001',
+      'فيتامين D والكالسيوم والفوسفات في القصور الكلوي', 'Vitamin D, calcium and phosphate in kidney disease', 'g', false),
+ (62, 'KDIGO, 2012', 'KDIGO Clinical Practice Guideline for Anemia in Chronic Kidney Disease. Kidney Int Suppl 2012;2(4):279–335', 'https://kdigo.org/guidelines/anemia-in-ckd/',
+      'الحديد وفقر الدم في القصور الكلوي', 'Iron and anemia in kidney disease', 'g', false),
  (60, 'U.S. FDA (Tivicay label)', 'TIVICAY (dolutegravir): Full Prescribing Information', 'https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/204790s031%2C213983s004lbl.pdf',
       'فاصل Dolutegravir عن الحديد والكالسيوم ومضادات الحموضة', 'Spacing dolutegravir from iron, calcium and antacids', 'd', false)
 on conflict (id) do nothing;

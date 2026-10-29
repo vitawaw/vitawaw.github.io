@@ -27,7 +27,7 @@ function buildData(){
   const all=SHOWALL();
   // preview / visitors: an item a pharmacist changed shows its approved version, and a proposed deletion is still shown
   const ver=x=>!all&&x.rv===false&&x.pv?x.pv:x,DL=k=>all?[]:DELS()[k]||[];
-  REFS=Array.isArray(CFG.refs)?Object.fromEntries([...CFG.refs.map(ver),...DL('refs')].filter(o=>all||(o.rv!==false&&!o.hidden)).map(o=>[o.id,[o.org||'',o.title||'',o.url||'',o.ar||'',o.en||o.ar||'',o.rv!==false,!!o.hidden,o.kind||'']])):DEF_REFS;
+  REFS=Array.isArray(CFG.refs)?Object.fromEntries([...CFG.refs.map(ver),...DL('refs')].filter(o=>all||(o.rv!==false&&!o.hidden)).map(o=>[o.id,[o.org||'',o.title||'',o.url||'',o.ar||'',o.en||o.ar||'',o.rv!==false,!!o.hidden,o.kind||'',o.at||'']])):DEF_REFS;
   const NC=[...NCUST().map(ver),...DL('nut')];
   CUST={};NC.forEach(c=>{CUST[c.id]=c});
   const VC=NC.filter(c=>all||(!c.hidden&&c.rv!==false));
@@ -81,5 +81,7 @@ function fCustom(id){
     pt:esc(L(`تحتاج ${row.rda}${u} من ${nm} يومياً.`,`You need ${row.rda}${u} of ${nm} a day.`))};
   if(tx2(c.plan))r.opts=[{h:L('التوجيه العلاجي','Treatment guidance'),b:esc(tx2(c.plan)),r:refs}];
   if(tx2(c.note))r.notes=[{t:esc(tx2(c.note)),r:refs}];
+  // kidney disease: potassium, phosphorus and magnesium build up when the kidneys cannot remove them (NIH fact sheets cited by the vitamin)
+  if(CKD()&&['potassium','phosphorus','mg','magnesium'].includes(id))(r.notes=r.notes||[]).unshift({t:L(`في القصور الكلوي لا تؤخذ مكملات ${nm} إلا بإشراف الطبيب، لخطر تراكمه في الدم.`,`In kidney disease take ${nm} supplements only under medical supervision, because it can build up in the blood.`),r:refs,u:1});
   render(r);
 }

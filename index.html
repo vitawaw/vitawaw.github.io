@@ -14,7 +14,7 @@
 <link rel="preload" href="fonts/tajawal-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/cairo-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.9.0-4cbcfbb8">
+<link rel="stylesheet" href="css/app.css?v=1.10.0-aa4364b8">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu"></h2><div id="side-b"></div></aside>
@@ -90,7 +90,6 @@
       <p class="hint" id="dconv"></p>
       <label class="chk"><input type="checkbox" id="mal"><span><span data-t="mal"></span><small data-t="mal_s"></small></span></label>
       <label class="chk"><input type="checkbox" id="med"><span><span data-t="med"></span><small data-t="med_s"></small></span></label>
-      <label class="chk"><input type="checkbox" id="ren"><span data-t="ren"></span></label>
     </div>
 
     <div data-for="b12" class="block">
@@ -152,7 +151,6 @@
       <label class="l" for="mgv"><span data-t="mgv"></span> <span class="req">*</span></label>
       <div class="unit"><input type="number" id="mgv" min="0.2" max="6" step="0.05" inputmode="decimal" placeholder="—" data-ph="ph_mg"><select id="mgu" aria-label="unit"><option value="mgdl">mg/dL</option><option value="mmol">mmol/L</option></select></div>
       <label class="chk"><input type="checkbox" id="mgsx"><span><span data-t="mgsx"></span><small data-t="mgsx_s"></small></span></label>
-      <label class="chk"><input type="checkbox" id="mgren"><span data-t="mgren"></span></label>
     </div>
 
     <div data-for="c zn" class="block">
@@ -160,6 +158,7 @@
       <select id="czg"><option value="rda" data-t="g_rda"></option><option value="cold" data-t="g_cold"></option></select>
       <label class="chk" data-for="c"><input type="checkbox" id="smk"><span><span data-t="smk"></span><small data-t="smk_s"></small></span></label>
     </div>
+    <label class="chk" data-not="inf vac"><input type="checkbox" id="ckd"><span><span data-t="ckd"></span><small data-t="ckd_s"></small></span></label>
     <p class="privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span data-t="priv"></span></p>
     <div class="ract"><button class="btn" id="example" type="button" data-t="ex"></button><button class="btn" id="clear" type="button" data-t="clr"></button></div>
    </section>
@@ -343,21 +342,21 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see"></span></div>
 
-<script src="js/config.js?v=1.9.0-50d40cf9" defer></script>
-<script src="js/i18n.js?v=1.9.0-875e15dc" defer></script>
-<script src="js/data.js?v=1.9.0-2af338ad" defer></script>
-<script src="js/util.js?v=1.9.0-19fde934" defer></script>
-<script src="js/validation.js?v=1.9.0-0db6be41" defer></script>
-<script src="js/render.js?v=1.9.0-77841528" defer></script>
-<script src="js/calculators.js?v=1.9.0-dd59965b" defer></script>
-<script src="js/content.js?v=1.9.0-66528bb2" defer></script>
-<script src="js/tools.js?v=1.9.0-1f16d104" defer></script>
-<script src="js/lists.js?v=1.9.0-2b6c30a8" defer></script>
-<script src="js/ui.js?v=1.9.0-febbd73c" defer></script>
-<script src="js/published.js?v=1.9.0-87f710f2" defer></script>
-<script src="js/owner.js?v=1.9.0-c0f9235d" defer></script>
-<script src="js/nav.js?v=1.9.0-ee5fac9b" defer></script>
-<script src="js/team.js?v=1.9.0-d2185675" defer></script>
-<script src="js/boot.js?v=1.9.0-fa591121" defer></script>
+<script src="js/config.js?v=1.10.0-52e29505" defer></script>
+<script src="js/i18n.js?v=1.10.0-f77d3897" defer></script>
+<script src="js/data.js?v=1.10.0-9eb89675" defer></script>
+<script src="js/util.js?v=1.10.0-19fde934" defer></script>
+<script src="js/validation.js?v=1.10.0-0db6be41" defer></script>
+<script src="js/render.js?v=1.10.0-f4128517" defer></script>
+<script src="js/calculators.js?v=1.10.0-0879c80d" defer></script>
+<script src="js/content.js?v=1.10.0-43851910" defer></script>
+<script src="js/tools.js?v=1.10.0-1f16d104" defer></script>
+<script src="js/lists.js?v=1.10.0-a9e0aeae" defer></script>
+<script src="js/ui.js?v=1.10.0-6593d4d3" defer></script>
+<script src="js/published.js?v=1.10.0-87f710f2" defer></script>
+<script src="js/owner.js?v=1.10.0-75ce9af7" defer></script>
+<script src="js/nav.js?v=1.10.0-ee5fac9b" defer></script>
+<script src="js/team.js?v=1.10.0-d2185675" defer></script>
+<script src="js/boot.js?v=1.10.0-fa591121" defer></script>
 </body>
 </html>

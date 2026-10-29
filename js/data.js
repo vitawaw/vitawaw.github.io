@@ -41,10 +41,12 @@ const DEF_REFS={
 57:['World Health Organization, 2016','WHO recommendations on antenatal care for a positive pregnancy experience','https://www.who.int/publications/i/item/9789241549912','الحديد وحمض الفوليك والكالسيوم في الحمل','Iron, folic acid and calcium in pregnancy'],
 58:["The Royal Children's Hospital Melbourne","Clinical Practice Guideline: Hypomagnesaemia",'https://www.rch.org.au/clinicalguide/guideline_index/Hypomagnesaemia/','جرعة المغنيسيوم الفموية للأطفال','Oral magnesium dose for children'],
 59:['UK SmPC (electronic medicines compendium)','Ferinject (ferric carboxymaltose): Summary of Product Characteristics','https://www.medicines.org.uk/emc/product/5910/smpc','جدول جرعات Ferinject المبسّط','Simplified Ferinject dosing table'],
-60:['U.S. FDA (Tivicay label)','TIVICAY (dolutegravir): Full Prescribing Information','https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/204790s031%2C213983s004lbl.pdf','فاصل Dolutegravir عن الحديد والكالسيوم ومضادات الحموضة','Spacing dolutegravir from iron, calcium and antacids']
+60:['U.S. FDA (Tivicay label)','TIVICAY (dolutegravir): Full Prescribing Information','https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/204790s031%2C213983s004lbl.pdf','فاصل Dolutegravir عن الحديد والكالسيوم ومضادات الحموضة','Spacing dolutegravir from iron, calcium and antacids'],
+61:['KDIGO, 2017','KDIGO 2017 Clinical Practice Guideline Update for the Diagnosis, Evaluation, Prevention, and Treatment of Chronic Kidney Disease–Mineral and Bone Disorder (CKD-MBD). Kidney Int Suppl 2017;7(1):1–59','https://doi.org/10.1016/j.kisu.2017.04.001','فيتامين D والكالسيوم والفوسفات في القصور الكلوي','Vitamin D, calcium and phosphate in kidney disease'],
+62:['KDIGO, 2012','KDIGO Clinical Practice Guideline for Anemia in Chronic Kidney Disease. Kidney Int Suppl 2012;2(4):279–335','https://kdigo.org/guidelines/anemia-in-ckd/','الحديد وفقر الدم في القصور الكلوي','Iron and anemia in kidney disease']
 };
 let REFS=DEF_REFS;
-const DEF_REFGROUP={d:[1,2,3,4],b12:[5,6,7,8,29],fol:[9,10,11,28],fe:[12,13,14,15,16,17,27,51,52,59],ca:[18,19,27],mg:[20,21,22,58],c:[23,24],zn:[25,26],
+const DEF_REFGROUP={d:[1,2,3,4,61],b12:[5,6,7,8,29],fol:[9,10,11,28],fe:[12,13,14,15,16,17,27,51,52,59,62],ca:[18,19,27,61],mg:[20,21,22,58],c:[23,24],zn:[25,26],
   preg:[57,10,11,15,37,4,3,18,44,42,30,51],inf:[55,14,56,4],vac:[53,54,30]};
 
 const DEF_INTER=[
