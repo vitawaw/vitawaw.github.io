@@ -67,6 +67,10 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-29)
+- **1.6.5 in preview** (same branch): fixes from a 4-agent full review (frontend, speed/worker, DB, UX). DB part =
+  `supabase/migrations/review_hardening.sql`, to be run by him in the SQL editor, then renamed with the time applied.
+  UX proposals from that review were sent to him and wait for his choice (touch targets 44px, inline dialog errors, red
+  destructive buttons, publish summary, phone owner bar status, calmer edit mode…).
 - **Live: 1.6.4** (he said «جاهز» on 2026-10-29; main fast-forwarded from branch `ccr-cad26eca-o7h5hm`). Contents: 1.6.4 = 🔔 notifications page (`#notif`, `renderNotif()`/`decide()` in
   owner.js; owner approves/rejects there via `review_change`, pharmacists see decisions from table `notifications`) and one
   publishing bar (`#obar`: preview · save · publish · discard), removed from the menu. Migration `20261029133847_notifications.sql`

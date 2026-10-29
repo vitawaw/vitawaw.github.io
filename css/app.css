@@ -1,11 +1,11 @@
 /* Fonts are served from our own domain (no Google request, so visitors' IPs are not shared).
    Subset to Arabic + Latin. Licence: SIL OFL, see fonts/OFL-*.txt */
-@font-face{font-family:Cairo;font-style:normal;font-weight:600;font-display:swap;src:url(../fonts/cairo-600.woff) format('woff')}
-@font-face{font-family:Cairo;font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/cairo-700.woff) format('woff')}
-@font-face{font-family:Cairo;font-style:normal;font-weight:800;font-display:swap;src:url(../fonts/cairo-800.woff) format('woff')}
-@font-face{font-family:Tajawal;font-style:normal;font-weight:400;font-display:swap;src:url(../fonts/tajawal-400.woff) format('woff')}
-@font-face{font-family:Tajawal;font-style:normal;font-weight:500;font-display:swap;src:url(../fonts/tajawal-500.woff) format('woff')}
-@font-face{font-family:Tajawal;font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/tajawal-700.woff) format('woff')}
+@font-face{font-family:Cairo;font-style:normal;font-weight:600;font-display:swap;src:url(../fonts/cairo-600.woff2) format('woff2'),url(../fonts/cairo-600.woff) format('woff')}
+@font-face{font-family:Cairo;font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/cairo-700.woff2) format('woff2'),url(../fonts/cairo-700.woff) format('woff')}
+@font-face{font-family:Cairo;font-style:normal;font-weight:800;font-display:swap;src:url(../fonts/cairo-800.woff2) format('woff2'),url(../fonts/cairo-800.woff) format('woff')}
+@font-face{font-family:Tajawal;font-style:normal;font-weight:400;font-display:swap;src:url(../fonts/tajawal-400.woff2) format('woff2'),url(../fonts/tajawal-400.woff) format('woff')}
+@font-face{font-family:Tajawal;font-style:normal;font-weight:500;font-display:swap;src:url(../fonts/tajawal-500.woff2) format('woff2'),url(../fonts/tajawal-500.woff) format('woff')}
+@font-face{font-family:Tajawal;font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/tajawal-700.woff2) format('woff2'),url(../fonts/tajawal-700.woff) format('woff')}
 
 /* Layout: sticky brand bar (text size · centered wordmark · language) with Chrome-style tabs; each tab is its own page.
    Calculator = welcome card, inputs, layered result (headline → alerts → plan → expert details) */
@@ -551,3 +551,7 @@ button.pend{border:0;cursor:pointer}
 .obar .btn.ico{width:34px;padding:0;display:inline-grid;place-items:center}
 .obar .btn.ico svg{width:17px;height:17px}
 .obar .btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+/* while saving / publishing / deciding: team buttons wait (no double taps) */
+body.busy #obar .btn,body.busy #notif-b button,body.busy [data-act],body.busy .mout{pointer-events:none;opacity:.55}
+body.busy .obar .stt{color:var(--royal);font-weight:700}
+body.busy .obar .stt #ostate{display:inline!important}

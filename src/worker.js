@@ -6,14 +6,18 @@
  * - Only GET /api/content runs here. It returns the published content (the same JSON the
  *   site used to read from Supabase directly) and keeps a copy for CACHE_SECONDS, so
  *   thousands of visitors cause only a few Supabase requests per minute.
- * - If Supabase is slow or down, the last good copy is returned (stale) instead of an error.
+ * - After CACHE_SECONDS the copy we have is returned at once and refreshed in the background; if Supabase is slow
+ *   or down, visitors keep getting the last good copy (one Supabase request at a time, retried every 30 s).
  * - A daily cron request keeps the free Supabase project from pausing after 7 idle days.
  *
  * Settings come from wrangler.jsonc "vars": SUPABASE_URL and SUPABASE_ANON_KEY (public key,
  * the database is protected by row level security).
  */
 const CACHE_SECONDS = 60;
-let memo = null; // { body, etag, at } kept in this isolate's memory
+const RETRY_SECONDS = 30; // when Supabase fails, wait this long before trying again (visitors get the last good copy)
+let memo = null;     // { body, etag, at } kept in this isolate's memory
+let loading = null;  // the Supabase request in progress, shared by everyone who arrives meanwhile
+let failedAt = 0;
 
 async function loadFromSupabase(env) {
   const url = env.SUPABASE_URL.replace(/\/$/, '') + '/rest/v1/site_config?id=eq.published&select=data';
@@ -23,22 +27,30 @@ async function loadFromSupabase(env) {
   });
   if (!r.ok) throw new Error('supabase ' + r.status);
   const body = await r.text();
-  JSON.parse(body); // refuse to cache anything that is not valid JSON
+  const rows = JSON.parse(body); // refuse to cache anything that is not valid JSON …
+  if (!Array.isArray(rows) || !rows[0] || !rows[0].data) throw new Error('no published content'); // … or empty
   const hash = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(body));
   const etag = '"' + [...new Uint8Array(hash)].slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('') + '"';
   memo = { body, etag, at: Date.now() };
+  failedAt = 0;
   return memo;
+}
+/** one Supabase request at a time per isolate */
+function refresh(env) {
+  if (!loading) loading = loadFromSupabase(env).catch(e => { failedAt = Date.now(); console.error('content refresh failed:', e.message); throw e; })
+    .finally(() => { loading = null; });
+  return loading;
 }
 
 async function content(request, env, ctx) {
   let entry = memo, stale = false;
-  if (!entry || Date.now() - entry.at > CACHE_SECONDS * 1000) {
-    try {
-      entry = await loadFromSupabase(env);
-    } catch (e) {
-      if (!entry) return json('{"error":"content unavailable"}', 503, 'no-store');
-      stale = true; // serve the last good copy
-    }
+  const old = !entry || Date.now() - entry.at > CACHE_SECONDS * 1000;
+  if (!entry) {
+    try { entry = await refresh(env); } catch (e) { return json('{"error":"content unavailable"}', 503, 'no-store'); }
+  } else if (old) {
+    // answer at once with the copy we have; update it in the background (unless Supabase failed a moment ago)
+    stale = true;
+    if (Date.now() - failedAt > RETRY_SECONDS * 1000) ctx.waitUntil(refresh(env).catch(() => {}));
   }
   const headers = {
     'Content-Type': 'application/json; charset=utf-8',
@@ -47,12 +59,14 @@ async function content(request, env, ctx) {
     'X-Content-Type-Options': 'nosniff',
   };
   if (stale) headers['X-Stale'] = '1';
-  if (request.headers.get('If-None-Match') === entry.etag) return new Response(null, { status: 304, headers });
-  return new Response(entry.body, { status: 200, headers });
+  // browsers send back the weak form W/"…" because Cloudflare compresses the response
+  const inm = (request.headers.get('If-None-Match') || '').split(',').map(s => s.trim().replace(/^W\//, ''));
+  if (inm.includes(entry.etag) || inm.includes('*')) return new Response(null, { status: 304, headers });
+  return new Response(request.method === 'HEAD' ? null : entry.body, { status: 200, headers });
 }
 
 const json = (body, status, cache) =>
-  new Response(body, { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': cache } });
+  new Response(body, { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': cache, 'X-Content-Type-Options': 'nosniff' } });
 
 export default {
   async fetch(request, env, ctx) {
@@ -67,6 +81,6 @@ export default {
   },
   // Daily keep-alive so the free Supabase project never pauses for inactivity.
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(loadFromSupabase(env).catch(() => {}));
+    ctx.waitUntil(loadFromSupabase(env).catch(e => console.error('keep-alive failed (Supabase may pause):', e.message)));
   },
 };

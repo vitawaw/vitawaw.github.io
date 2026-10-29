@@ -5,7 +5,6 @@
 /* ===================== owner mode ===================== */
 const OWN={on:false,local:false,role:null,client:null,base:'',preview:false,perms:{},name:''};
 // texts editable from their own page
-const EDITABLE=['hc_t','hc_l','ht_t','ht_l','ti_t','hi_l','ts_t','hs_l','rm_t','rm_l','sg_t','sg_l','by','priv','w_t'];
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
 function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
 function dirty(){return cfgJSON()!==OWN.base}
@@ -56,10 +55,12 @@ function dialog({title,fields=[],info='',buttons}){
     $('dlg-a').onclick=e=>{const b=e.target.closest('[data-bi]');if(!b||b.type==='submit')return;finish({action:buttons[+b.dataset.bi].action,values:read()})};
     $('dlgf').onsubmit=e=>{e.preventDefault();const b=buttons.find(x=>x.pri);finish({action:b.action,values:read()})};
     dialog.msg=m=>{$('dlg-m').textContent=m;$('dlg-m').hidden=false};
+    dialog.cancel=()=>finish({action:'cancel',values:read()});
     $('dlg').hidden=false;const first=$('dlg-b').querySelector('input,textarea,select');(first||$('dlg-a').querySelector('button')).focus();
   });
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('dlg').hidden){$('dlg-a').querySelector('[data-bi]:not([type=submit])')?.click()}});
+// Escape = Cancel (never Reset or Delete), and only the dialog closes, not the window underneath
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('dlg').hidden&&dialog.cancel){e.stopImmediatePropagation();dialog.cancel()}});
 
 /* ----- editors ----- */
 async function editText(k){
@@ -97,13 +98,12 @@ async function delFeature(i){const q=await dialog({title:T('o_delq'),buttons:[{l
 function hideFeature(i){const x=CFG.roadmap[i];if(!x)return;x.hidden=!x.hidden;changed()}
 function moveFeature(i,d){const j=i+d;if(j<0||j>=CFG.roadmap.length)return;const a=CFG.roadmap;[a[i],a[j]]=[a[j],a[i]];changed()}
 document.addEventListener('click',e=>{
-  if(!OWN.on)return;const t=e.target.closest('[data-edtext],[data-edcolor],[data-edcontact],[data-rmedit],[data-rmup],[data-rmdown],#rmadd');if(!t)return;
+  if(!OWN.on)return;const t=e.target.closest('[data-edtext],[data-edcolor],[data-edcontact],[data-rmup],[data-rmdown],#rmadd');if(!t)return;
   e.preventDefault();e.stopPropagation();
   if(t.dataset.edtext?!CAN('text'):!ISOWNER()){toast(T('tm_noperm'));return}
   if(t.dataset.edtext)editText(t.dataset.edtext);
   else if(t.dataset.edcolor)editColors(t.dataset.edcolor);
   else if(t.dataset.edcontact)editContact();
-  else if(t.dataset.rmedit)editFeature(+t.dataset.rmedit);
   else if(t.dataset.rmup)moveFeature(+t.dataset.rmup,-1);
   else if(t.dataset.rmdown)moveFeature(+t.dataset.rmdown,1);
   else if(t.id==='rmadd')editFeature(null);
@@ -190,7 +190,7 @@ const NICO={new:'<path d="M12 5v14M5 12h14"/>',edit:'<path d="M4 20h4L19 9l-4-4L
 const nico=k=>`<span class="nic nic-${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">${NICO[k]}</svg></span>`;
 function renderNotif(opening){
   if(!$('notif-b')||typeof OWN==='undefined'||!OWN.on)return;
-  ACT.s=[];const S=c=>chipH('s',c);let h='';
+  ACT.n=[];const S=c=>chipH('n',c);let h='';
   if(ISOWNER()){
     const list=notifList();
     h+=`<p class="hint">${T('nt_hint')}</p>`;
@@ -206,7 +206,7 @@ function renderNotif(opening){
     h+=`<h3 class="nsec">${T('nt_wait')}</h3>`+(wait.length?wait.map(n=>`<div class="ncard">${nico(n.kind)}<div class="nb"><div class="nh"><b>${esc(T('nt_'+n.kind))}</b> · ${esc(T(NKIND[n.t]))}</div><div class="nl">${esc(n.label)}</div></div></div>`).join('')
       :`<p class="inone">${T('nt_nowait')}</p>`);
     if(opening&&mine.some(n=>!n.read)&&OWN.client&&!OWN.local){ // opening the page marks the owner's decisions as read
-      OWN.client.from('notifications').update({read:true}).eq('read',false).then(()=>{mine.forEach(n=>n.read=true);renderNav()});
+      OWN.client.from('notifications').update({read:true}).eq('read',false).then(r=>{if(r&&r.error)return;mine.forEach(n=>n.read=true);renderNav()});
     }
   }
   $('notif-b').innerHTML=h;
@@ -219,14 +219,18 @@ function viewItem(n){
 }
 /** decide on one change: saved in the database at once (unsaved edits are saved first) */
 async function decide(n,accept,quiet){
-  if(!ISOWNER())return false;
+  if(!ISOWNER()||(OWN.busy&&!quiet))return false;
   if(!accept&&!quiet){const q=await dialog({title:T(n.kind==='del'?'rc_restore':'nt_rejq'),info:T(n.kind==='del'?'nt_restore_i':'nt_rej_i'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T(n.kind==='del'?'rc_restore':'nt_reject'),action:'ok',pri:1}]});if(q.action!=='ok')return false}
   if(OWN.local){ // no database: decide in the local draft
     const list=n.t==='r'?CFG.refs:n.t==='i'?CFG.inter:NCUST();const j=n.t==='i'?n.idx:list.findIndex(x=>x.id===n.id);const x=list[j];
     if(x){if(accept){x.rv=true;delete x.pv}else if(x.pv)list[j]={...x.pv,rv:true};else list.splice(j,1)}
     if(!quiet){changed();renderNotif();toast(T(accept?'o_approved':'rc_restored'))}return true;
   }
-  if(dirty()&&!(await saveDraft()))return false;
+  if(!quiet)return locked(()=>_decide(n,accept));
+  return _decide(n,accept,true);
+}
+async function _decide(n,accept,quiet){
+  if(dirty()&&!(await _saveDraft()))return false;
   const id=n.t==='i'&&n.id==null?(CFG.inter[n.idx]||{}).id:n.id;
   const {error}=await OWN.client.rpc('review_change',{p_kind:n.t,p_id:String(id),p_accept:accept});
   if(error){console.error(error);toast(T('o_neterr'));return false}
@@ -240,13 +244,10 @@ async function reloadContent(msg){
 async function decideAll(list){
   const q=await dialog({title:T('nt_all'),info:T('o_approveall_i').replace('{n}',list.length),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('nt_all'),action:'ok',pri:1}]});
   if(q.action!=='ok')return;
+  return locked(async()=>{
   for(const n of list)if(!(await decide(n,true,true)))break;
   if(OWN.local){changed();renderNotif();toast(T('o_approved'))}else await reloadContent('o_approved');
-}
-/** «Approve» on an item (key kind:id, interactions by list index) = the same decision as in notifications */
-function approve(key){
-  const [t,id]=[key.slice(0,1),key.slice(2)];
-  const n=notifList().find(x=>x.t===t&&String(t==='i'?x.idx:x.id)===id);if(n)decide(n,true);
+  });
 }
 function toggleBuiltin(k){
   CFG.nut=CFG.nut||{hide:[],custom:[]};const h=CFG.nut.hide;const j=h.indexOf(k);
@@ -301,26 +302,18 @@ document.addEventListener('click',e=>{
   if(!OWN.on)return;const t=e.target.closest('[data-act]');if(!t)return;
   e.preventDefault();e.stopPropagation();
   const k=t.dataset.kind,id=t.dataset.id,a=t.dataset.act,need={r:'refs',i:'inter',n:'nut',m:'owner'}[k];
-  if(a==='ok'||need==='owner'?!ISOWNER():!CAN(need)){toast(T(a==='ok'?'o_onlyowner':'tm_noperm'));return}
-  if(a==='ok'){approve(k+':'+id);return}
+  if(need==='owner'?!ISOWNER():!CAN(need)){toast(T('tm_noperm'));return}
   const F={r:{edit:()=>editRef(+id),hide:()=>hideRef(+id),del:()=>delRef(+id)},i:{edit:()=>editInter(+id),hide:()=>hideInter(+id),del:()=>delInter(+id)},
     n:{edit:()=>editNut(id),hide:()=>hideNut(id),del:()=>delNut(id)},m:{edit:()=>editFeature(+id),hide:()=>hideFeature(+id),del:()=>delFeature(+id)}}[k];
   if(F&&F[a])F[a]();
 },true);
+// «add» buttons and the built-in vitamins' hide/show (item buttons are handled above)
 document.addEventListener('click',e=>{
-  if(!OWN.on)return;const t=e.target.closest('[data-redit],#radd,[data-iedit],#iadd,[data-nhide],[data-nedit],#nadd,[data-approve],[data-approveall]');if(!t)return;
+  if(!OWN.on)return;const t=e.target.closest('#radd,#iadd,[data-nhide],#nadd');if(!t)return;
   e.preventDefault();e.stopPropagation();
-  const need=t.dataset.approve||t.dataset.approveall||t.dataset.nhide?'owner':(t.dataset.redit||t.id==='radd')?'refs':(t.dataset.iedit!=null||t.id==='iadd')?'inter':'nut';
+  const need=t.dataset.nhide?'owner':t.id==='radd'?'refs':t.id==='iadd'?'inter':'nut';
   if(need==='owner'?!ISOWNER():!CAN(need)){toast(T(need==='owner'?'o_onlyowner':'tm_noperm'));return}
-  if(t.dataset.approveall)go('notif');
-  else if(t.dataset.approve)approve(t.dataset.approve);
-  else if(t.dataset.redit)editRef(+t.dataset.redit);
-  else if(t.id==='radd')editRef(null);
-  else if(t.dataset.iedit!=null)editInter(+t.dataset.iedit);
-  else if(t.id==='iadd')editInter(null);
-  else if(t.dataset.nhide)toggleBuiltin(t.dataset.nhide);
-  else if(t.dataset.nedit)editNut(t.dataset.nedit);
-  else if(t.id==='nadd')editNut(null);
+  if(t.id==='radd')editRef(null);else if(t.id==='iadd')editInter(null);else if(t.dataset.nhide)toggleBuiltin(t.dataset.nhide);else editNut(null);
 },true);
 
 /* ----- login / session ----- */
@@ -363,7 +356,7 @@ async function firstSetup(email0){
   }
 }
 async function afterLogin(){
-  const c=OWN.client;const {data:{user}}=await c.auth.getUser();
+  const c=OWN.client;const {data:{user}}=await c.auth.getUser();if(!user){toast(T('o_badlogin'));return}
   const {data:m}=await c.from('members').select('role,status,perms,name').eq('user_id',user.id).maybeSingle();
   if(!m||!['owner','editor'].includes(m.role)||m.status==='removed'){toast(T('o_norole'));await c.auth.signOut();return}
   if(m.status!=='active'){toast(T('tm_susp_msg'));await c.auth.signOut();return}
@@ -373,7 +366,7 @@ async function afterLogin(){
   startOwner({local:false,role:m.role,draft:dr&&dr.data,content:ct});
   if(m.role==='owner')teamLoad().then(()=>renderNav());else loadNotes();
 }
-function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null}
+function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null;OWN.parts=partsOf()}
 const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages});
 function startOwner({local,role,draft,content}){
   OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;OWN.preview=false;
@@ -381,23 +374,44 @@ function startOwner({local,role,draft,content}){
   OWN.base=cfgJSON();OWN.saved=!!draft&&JSON.stringify(draft)!==JSON.stringify(PUBLISHED);
   document.body.classList.add('owner');changed();
 }
-async function saveDraft(){
+/** One save/publish/decision at a time: blocks double taps and edits while it runs, and shows «جارٍ الحفظ…» */
+async function locked(fn){
+  if(OWN.busy)return false;OWN.busy=true;document.body.classList.add('busy');$('ostate').textContent=T('o_busy');
+  try{return await fn()}finally{OWN.busy=false;document.body.classList.remove('busy');ownerBar()}
+}
+/** what was last loaded from / saved to the database, per part — only changed parts are sent */
+const partsOf=()=>({refs:JSON.stringify(CFG.refs||[]),inter:JSON.stringify(CFG.inter||[]),nut:JSON.stringify({hide:NHIDE(),custom:NCUST()}),set:JSON.stringify(settingsOf(JSON.parse(cfgJSON())))});
+const saveDraft=()=>locked(_saveDraft);
+async function _saveDraft(){
   const data=JSON.parse(cfgJSON());
   if(OWN.local){try{localStorage.setItem('vw-draft',JSON.stringify(data))}catch(e){}}
   else{
     const c=OWN.client;
-    if(CAN('text')){const {error}=await c.from('site_config').upsert({id:'draft',data:settingsOf(data),updated_at:new Date().toISOString()});if(error){toast(T('o_neterr'));return false}}
-    const p={};if(CAN('refs'))p.refs=CFG.refs||[];if(CAN('inter'))p.inter=CFG.inter||[];if(CAN('nut'))p.nut={hide:NHIDE(),custom:NCUST()};
+    const now=partsOf(),was=OWN.parts||{};
+    const p={};if(CAN('refs')&&now.refs!==was.refs)p.refs=CFG.refs||[];if(CAN('inter')&&now.inter!==was.inter)p.inter=CFG.inter||[];if(CAN('nut')&&now.nut!==was.nut)p.nut={hide:NHIDE(),custom:NCUST()};
+    if(Object.keys(p).length){
+      // someone else (another pharmacist or another device) saved since this page loaded: do not overwrite their work
+      const {data:srv,error:e0}=await c.rpc('get_content');if(e0||!srv){toast(T('o_neterr'));return false}
+      const cs=clean(srv),ps={refs:JSON.stringify(cs.refs||[]),inter:JSON.stringify(cs.inter||[]),nut:JSON.stringify({hide:(cs.nut&&cs.nut.hide)||[],custom:(cs.nut&&cs.nut.custom)||[]})};
+      if(Object.keys(p).some(k=>was[k]!=null&&ps[k]!==was[k])){
+        const q=await dialog({title:T('o_conflict_t'),info:T('o_conflict_i'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_reload'),action:'ok',pri:1}]});
+        if(q.action==='ok'){applyContent(srv);OWN.base=cfgJSON();changed()}
+        return false;
+      }
+    }
+    if(CAN('text')&&now.set!==was.set){const {error}=await c.from('site_config').upsert({id:'draft',data:settingsOf(data),updated_at:new Date().toISOString()});if(error){toast(T('o_neterr'));return false}}
     if(Object.keys(p).length){const {error:e2}=await c.rpc('save_content',{p});if(e2){console.error(e2);toast(T('o_saveerr'));return false}}
     const {data:ct,error:e3}=await c.rpc('get_content');if(!e3&&ct){applyContent(ct);refreshAll()}
   }
-  OWN.base=cfgJSON();OWN.saved=true;ownerBar();toast(T('o_savedone'));return true;
+  OWN.base=cfgJSON();OWN.parts=partsOf();OWN.saved=true;ownerBar();toast(T('o_savedone'));return true;
 }
 async function publish(){
   if(!(OWN.local||OWN.role==='owner')){toast(T('o_onlyowner'));return}
+  if(OWN.busy)return;
   const r=await dialog({title:T('o_pubq'),info:T('o_pubi'),fields:[{label:T('o_note'),value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_publish'),action:'ok',pri:1}]});
   if(r.action!=='ok')return;
-  if(!(await saveDraft()))return;
+  return locked(async()=>{
+  if(!(await _saveDraft()))return;
   const data=JSON.parse(cfgJSON());
   if(OWN.local){try{localStorage.setItem('vw-cfg',JSON.stringify(data))}catch(e){}}
   else{
@@ -407,6 +421,7 @@ async function publish(){
     OWN.saved=false;ownerBar();toast(T('o_pubdone'));return;
   }
   PUBLISHED=data;OWN.saved=false;ownerBar();toast(T('o_pubdone'));
+  });
 }
 async function discard(){
   const q=await dialog({title:T('o_discq'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_discard'),action:'ok',pri:1}]});if(q.action!=='ok')return;
@@ -415,6 +430,7 @@ async function discard(){
     const c=OWN.client;const {data:dr}=await c.from('site_config').select('data').eq('id','draft').maybeSingle();
     const {data:ct,error}=await c.rpc('get_content');if(error||!ct){toast(T('o_neterr'));return}
     CFG=mergeCfg(DEFAULT_CFG,(dr&&dr.data)||PUBLISHED);applyContent(ct);
+    OWN.saved=!!(dr&&dr.data);OWN.base=cfgJSON();changed();toast(T('o_discdone'));return;
   }
   OWN.base=cfgJSON();OWN.saved=false;changed();toast(T('o_discdone'));
 }
@@ -432,7 +448,7 @@ async function changePass(){
 }
 async function logout(){
   if(dirty()){const q=await dialog({title:T('o_leave'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_logout'),action:'ok',pri:1}]});if(q.action!=='ok')return}
-  if(!OWN.local&&OWN.client)await OWN.client.auth.signOut();
+  if(!OWN.local&&OWN.client)try{await OWN.client.auth.signOut()}catch(e){}
   closeSheet(false);TEAM.list=null;
   OWN.on=false;OWN.preview=false;OWN.perms={};OWN.name='';OWN.role=null;OWN.del=null;NOTE.mine=[];if(cur==='notif')go('calc');
   document.body.classList.remove('owner','preview','not-owner','cant-nut','cant-inter','cant-refs','cant-text');CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);refreshAll();

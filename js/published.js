@@ -9,17 +9,20 @@
 const SBON=()=>!!(SB.url&&SB.key);
 async function fetchPublished(){
   try{
-    const r=await fetch('/api/content',{headers:{Accept:'application/json'}});
+    // same request as the <link rel=preload> in index.html, so the browser reuses it
+    const r=await fetch('/api/content',{credentials:'same-origin',signal:AbortSignal.timeout(8000)});
     if(r.ok){const rows=await r.json();if(Array.isArray(rows))return rows}
   }catch(e){}
   if(!SBON())return null;
-  const r=await fetch(SB.url.replace(/\/$/,'')+'/rest/v1/site_config?id=eq.published&select=data',{headers:{apikey:SB.key,Authorization:'Bearer '+SB.key}});
+  const r=await fetch(SB.url.replace(/\/$/,'')+'/rest/v1/site_config?id=eq.published&select=data',{headers:{apikey:SB.key,Authorization:'Bearer '+SB.key},signal:AbortSignal.timeout(8000)});
   return r.ok?r.json():null;
 }
 async function loadPublished(){
   try{
     const rows=await fetchPublished();
-    if(rows&&rows[0]&&rows[0].data){PUBLISHED=rows[0].data;try{localStorage.setItem('vw-cfg',JSON.stringify(PUBLISHED))}catch(e){}
+    if(rows&&rows[0]&&rows[0].data){
+      const same=JSON.stringify(rows[0].data)===JSON.stringify(PUBLISHED); // already shown from the saved copy: no re-draw
+      PUBLISHED=rows[0].data;if(same)return;try{localStorage.setItem('vw-cfg',JSON.stringify(PUBLISHED))}catch(e){}
       if(!OWN.on){CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);refreshAll()}}
   }catch(e){}
 }

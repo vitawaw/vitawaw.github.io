@@ -19,7 +19,7 @@ function go(p){if(location.hash!=='#'+p)location.hash=p;else show(p);window.scro
 window.addEventListener('hashchange',()=>{if(routeSpecial())return;show(location.hash.slice(1));window.scrollTo(0,0)});
 /* links that open something instead of a tab: #owner (sign in), #join=<email> (invited pharmacist), #info-<page> (info page) */
 function routeSpecial(){
-  const h=decodeURIComponent(location.hash.slice(1));
+  let h=location.hash.slice(1);try{h=decodeURIComponent(h)}catch(e){}
   if(h==='owner'){openOwner();return true}
   if(h==='join'||h.startsWith('join=')){openOwner({join:h.slice(5)});return true}
   if(h.startsWith('info-')){history.replaceState(null,'',location.pathname+location.search+'#'+cur);openPage(h.slice(5));return true}
@@ -28,9 +28,9 @@ function routeSpecial(){
 document.querySelectorAll('.tab[data-p]').forEach(t=>{
   t.addEventListener('click',()=>go(t.dataset.p));
   t.addEventListener('keydown',e=>{
-    const i=PAGES.indexOf(t.dataset.p),rtl=document.documentElement.dir==='rtl';
+    const vis=[...document.querySelectorAll('.tab[data-p]')].filter(x=>x.offsetParent!==null),i=vis.indexOf(t),rtl=document.documentElement.dir==='rtl';
     let j=null;if(e.key==='ArrowRight')j=rtl?i-1:i+1;if(e.key==='ArrowLeft')j=rtl?i+1:i-1;
-    if(j!=null){e.preventDefault();j=(j+PAGES.length)%PAGES.length;go(PAGES[j]);$('t-'+PAGES[j]).focus()}
+    if(j!=null&&vis.length){e.preventDefault();const n=vis[(j+vis.length)%vis.length];go(n.dataset.p);n.focus()}
   });
 });
 document.addEventListener('click',e=>{
@@ -67,7 +67,7 @@ $('wclose').addEventListener('click',closeWelcome);
 const MARKSVG=document.querySelector('.logo .mk svg').innerHTML;
 let lastFocus=null;
 function cardText(){
-  const strip=x=>String(x||'').replace(/<[^>]+>/g,'');
+  const strip=plain;
   const r=LAST,name=document.querySelector('#picker [aria-pressed="true"] span').textContent;
   const lines=['VITAWAW · '+name,strip(r.pt||r.title)];
   (r.notes||[]).filter(n=>n.u).forEach(n=>lines.push('⚠ '+strip(n.t)));
@@ -91,7 +91,7 @@ function openCard(){
 function closeCard(){$('ov').hidden=true;document.body.style.overflow='';if(lastFocus)lastFocus.focus()}
 $('pc-close').addEventListener('click',closeCard);
 $('ov').addEventListener('click',e=>{if(e.target===$('ov')||e.target.classList.contains('ovw'))closeCard()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('ov').hidden)closeCard()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('ov').hidden){e.stopImmediatePropagation();closeCard()}});
 $('pc-copy').addEventListener('click',()=>{const t=cardText(),b=$('pc-copy'),done=()=>{b.textContent=T('copied');setTimeout(()=>b.textContent=T('pc_cp'),1600)};try{navigator.clipboard.writeText(t).then(done).catch(()=>fallback(t,done))}catch(e){fallback(t,done)}});
 document.addEventListener('click',e=>{if(e.target.closest('[data-card]')){e.preventDefault();openCard()}});
 

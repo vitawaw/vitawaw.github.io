@@ -25,8 +25,8 @@ const colorVars=p=>CFG.colors[p]?`--pc:${CFG.colors[p][0]};--pc2:${CFG.colors[p]
 const paras=t=>String(t||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('');
 const visiblePages=(all=SHOWALL())=>(CFG.pages||[]).filter(p=>all||!p.hidden);
 
-/* Every menu button stores its action here; data-na="d3" = side menu action 3, "m" = More, "s" = sheet. */
-const ACT={d:[],m:[],s:[]};
+/* Every menu button stores its action here; data-na="d3" = side menu action 3, "m" = Menu page, "s" = floating window, "n" = notifications. */
+const ACT={d:[],m:[],s:[],n:[]};
 function chipH(r,c){
   if(c.href)return `<a class="chip${c.cls?' '+c.cls:''}" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${esc(c.label)}</a>`;
   const i=ACT[r].push(c.f)-1;
@@ -42,11 +42,6 @@ document.addEventListener('click',e=>{
 // (account card, shortcuts, settings, log out). Wide screens (≥1024px): the same menu is a fixed side menu.
 const WIDE=()=>matchMedia('(min-width:1024px)').matches;
 function pickNut(k){K=k;try{localStorage.setItem('vw-k',k)}catch(e){}apply();go('calc')}
-function goPending(p){
-  if(p==='interactions'){IF='all';$('isearch').value='';renderInter()}
-  if(p==='sources'){SF='all';renderRefs()}
-  go(p);setTimeout(()=>{const el=$(p).querySelector('.pending');if(el)el.scrollIntoView({block:'center'})},60);
-}
 const SECTIONS=['calc','tools','interactions','sources','roadmap'];
 const SECKEY={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t'};
 /** management groups for the signed-in team (what appears depends on the account's permissions) */

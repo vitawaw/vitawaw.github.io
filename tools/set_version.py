@@ -32,12 +32,15 @@ html = re.sub(r'((?:href|src)=")((?:css|js)/[^"?]+)\?v=[\w.-]+"', stamp, html)
 idx.write_text(html, encoding="utf-8")
 
 assets = re.findall(r'(?:href|src)="((?:css|js)/[^"]+\?v=[\w.-]+)"', html)
-fonts = sorted(p.name for p in (ROOT / "fonts").glob("*.woff"))
+# woff2 only (every supported browser reads it); cairo-600 is not used by the first page, so it loads only when needed
+fonts = sorted(p.name for p in (ROOT / "fonts").glob("*.woff2") if p.name != "cairo-600.woff2")
 files = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"] \
         + ["./" + a for a in assets] + ["./fonts/" + f for f in fonts]
 sw = ROOT / "sw.js"
 s = sw.read_text(encoding="utf-8")
-s = re.sub(r"const VERSION='[^']*'", f"const VERSION='vitawaw-{v}'", s)
+# the cache name changes whenever any file changes, so old copies are removed (not only on a new version number)
+tag = hashlib.sha256("".join(assets + fonts).encode()).hexdigest()[:8]
+s = re.sub(r"const VERSION='[^']*'", f"const VERSION='vitawaw-{v}-{tag}'", s)
 s = re.sub(r"const FILES=\[[^\]]*\];", "const FILES=[\n  " + ",\n  ".join(f"'{f}'" for f in files) + "\n];", s)
 sw.write_text(s, encoding="utf-8")
 print(f"version set to {v}: js/config.js, index.html ({len(assets)} links), sw.js ({len(files)} files)")
