@@ -20,5 +20,5 @@ applyColors();
 setLang(startLang);
 show(startPage);
 loadPublished();
-routeSpecial();
+if(!routeSpecial())resumeSession();
 if('serviceWorker' in navigator&&location.protocol==='https:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}

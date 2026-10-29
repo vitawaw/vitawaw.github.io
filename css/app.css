@@ -592,3 +592,20 @@ body.owner:not(.textedit) [data-ed]{outline:none!important}
 @media (max-width:600px){.obar .who{display:none}.obar{gap:5px}.obar .btn{padding-inline:11px}}
 .obar .btn.ico{display:inline-flex;align-items:center;flex-direction:row}
 @media (min-width:1024px){.obar{padding-block:9px}}
+.dlg .row.qr{justify-items:center;gap:8px;background:#fff;border-radius:12px;padding:12px}
+.dlg .row.qr img{width:180px;height:180px}
+.dlg .row.qr code{font:600 13px ui-monospace,monospace;color:#14232b;word-break:break-all;text-align:center}
+/* 1.6.7: drag to reorder (⋮⋮ handle) */
+.drag{display:inline-grid;place-items:center;width:26px;height:30px;border:0;border-radius:8px;background:transparent;color:var(--mute);cursor:grab;touch-action:none;padding:0;flex:none}
+.drag:hover,.drag:focus-visible{background:var(--soft);color:var(--royal)}
+.drag svg{width:16px;height:16px}
+.dragging{opacity:.55;outline:2px dashed var(--royal);outline-offset:2px}
+body.not-owner #nadm .drag,body.not-owner #rmgrid .drag,body.preview .drag{display:none}
+.nchip .drag{width:22px;height:26px}
+.olist{display:grid;gap:8px}
+.orow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--card);font:700 15px var(--f-display)}
+.orow.off{opacity:.6}
+@media (pointer:coarse){.drag{width:40px;height:40px}.nchip .drag{width:34px;height:36px}}
+/* footer: small logo above «Powered by Saifaldeen» */
+footer .flogo{width:30px;height:30px;border-radius:9px;background:var(--tile);display:grid;place-items:center;box-shadow:0 1px 2px rgba(15,40,50,.12);margin-bottom:2px}
+footer .flogo svg{width:23px;height:23px}

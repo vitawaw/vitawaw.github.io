@@ -6,7 +6,7 @@
 const OWN={on:false,local:false,role:null,client:null,base:'',preview:false,perms:{},name:''};
 // texts editable from their own page
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
-function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
+function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,nutOrder:CFG.nutOrder,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
 function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent=whoLabel();
@@ -45,6 +45,7 @@ function dialog({title,fields=[],info='',buttons,err=null}){
     $('dlg-t').textContent=title;$('dlg-m').hidden=!(err&&err.i==null);$('dlg-m').textContent=err&&err.i==null?err.msg:'';
     $('dlg-b').innerHTML=(info?`<p class="info">${esc(info)}</p>`:'')+fields.map((f,i)=>{
       const id='dlgf'+i,lab=`<label class="l" for="${id}">${esc(f.label)}</label>`;
+      if(f.type==='qr')return `<div class="row qr"><img src="${esc(f.value[0])}" alt="QR" width="180" height="180"><code dir="ltr">${esc(f.value[1])}</code></div>`;
       if(f.type==='textarea')return `<div class="row">${lab}<textarea id="${id}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${f.ltr?' dir="ltr"':''}>${esc(f.value)}</textarea></div>`;
       if(f.type==='checks')return `<div class="row"><label class="l" for="${id}">${esc(f.label)}</label><div class="checks" id="${id}">${f.options.map(o=>`<label class="ck"><input type="checkbox" value="${o[0]}"${f.value.includes(o[0])?' checked':''}><span>${esc(o[1])}</span></label>`).join('')}</div></div>`;
       if(f.type==='select')return `<div class="row">${lab}<select id="${id}">${f.options.map(o=>`<option value="${o[0]}"${o[0]===f.value?' selected':''}>${esc(o[1])}</option>`).join('')}</select></div>`;
@@ -53,7 +54,7 @@ function dialog({title,fields=[],info='',buttons,err=null}){
     }).join('');
     if(err&&err.i!=null){const f=$('dlgf'+err.i)||$('dlgf'+err.i+'a');const row=f&&f.closest('.row');if(row){row.classList.add('bad');row.insertAdjacentHTML('beforeend',`<p class="ferr" role="alert">${esc(err.msg)}</p>`)}}
     $('dlg-a').innerHTML=buttons.map((b,i)=>`<button class="btn${b.pri?' pri':''}${b.danger?' danger':''}" type="${b.pri?'submit':'button'}" data-bi="${i}">${esc(b.label)}</button>`).join('');
-    const read=()=>fields.map((f,i)=>f.type==='colors'?[$('dlgf'+i+'a').value,$('dlgf'+i+'b').value]:f.type==='checks'?[...$('dlgf'+i).querySelectorAll('input:checked')].map(x=>+x.value):$('dlgf'+i).value);
+    const read=()=>fields.map((f,i)=>f.type==='qr'?null:f.type==='colors'?[$('dlgf'+i+'a').value,$('dlgf'+i+'b').value]:f.type==='checks'?[...$('dlgf'+i).querySelectorAll('input:checked')].map(x=>+x.value):$('dlgf'+i).value);
     const finish=v=>{$('dlg').hidden=true;$('dlgf').onsubmit=null;$('dlg-a').onclick=null;res(v)};
     $('dlg-a').onclick=e=>{const b=e.target.closest('[data-bi]');if(!b||b.type==='submit')return;finish({action:buttons[+b.dataset.bi].action,values:read()})};
     $('dlgf').onsubmit=e=>{e.preventDefault();const b=buttons.find(x=>x.pri);finish({action:b.action,values:read()})};
@@ -350,6 +351,14 @@ document.addEventListener('click',e=>{
 // the library file must match this fingerprint exactly (Subresource Integrity), otherwise the browser refuses to run it
 const SB_LIB={src:'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js',sri:'sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o'};
 function loadSupabaseLib(){return new Promise((ok,no)=>{if(window.supabase)return ok();const sc=document.createElement('script');sc.src=SB_LIB.src;sc.integrity=SB_LIB.sri;sc.crossOrigin='anonymous';sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)})}
+/** a signed-in owner or pharmacist stays signed in after refreshing the page (Supabase keeps the session in this browser) */
+async function resumeSession(){
+  let has=false;try{has=Object.keys(localStorage).some(k=>/^sb-.+-auth-token$/.test(k))}catch(e){}
+  if(!has||!SBON()||OWN.on)return;
+  try{await loadSupabaseLib()}catch(e){return}
+  OWN.client=OWN.client||window.supabase.createClient(SB.url,SB.key);
+  const {data:{session}}=await OWN.client.auth.getSession();if(session&&!OWN.on)await afterLogin();
+}
 async function openOwner(opt={}){
   history.replaceState(null,'',location.pathname+location.search+'#'+(cur||'calc'));
   if(OWN.on)return;
@@ -397,6 +406,7 @@ function draftFor(d,role){
 }
 async function afterLogin(){
   const c=OWN.client;const {data:{user}}=await c.auth.getUser();if(!user){toast(T('o_badlogin'));return}
+  if(!(await mfaGate())){await c.auth.signOut();return}
   const {data:m}=await c.from('members').select('role,status,perms,name').eq('user_id',user.id).maybeSingle();
   if(!m||!['owner','editor'].includes(m.role)||m.status==='removed'){toast(T('o_norole'));await c.auth.signOut();return}
   if(m.status!=='active'){toast(T('tm_susp_msg'));await c.auth.signOut();return}
@@ -407,7 +417,7 @@ async function afterLogin(){
   if(m.role==='owner')teamLoad().then(()=>renderNav());else loadNotes();
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null;OWN.parts=partsOf()}
-const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages});
+const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[]});
 function startOwner({local,role,draft,content}){
   OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;OWN.preview=false;
   CFG=mergeCfg(DEFAULT_CFG,draft||PUBLISHED);if(content)applyContent(content);
@@ -458,7 +468,7 @@ function pubSummary(){
   const B={refs:(P.refs||[]).map(st),inter:(P.inter||[]).map(st),nut:((P.nut&&P.nut.custom)||[]).map(st)};
   let n=0;for(const k of ['refs','inter','nut']){const a=new Set(A[k]),b=new Set(B[k]);n+=Math.max([...a].filter(x=>!b.has(x)).length,[...b].filter(x=>!a.has(x)).length)}
   if(st(nutHide)!==st((P.nut&&P.nut.hide)||[]))n++;
-  for(const k of ['contact','colors','text','roadmap','pages'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
+  for(const k of ['contact','colors','text','roadmap','pages','nutOrder'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
   return {n,wait:pendingCount()};
 }
 async function publish(){
@@ -492,18 +502,83 @@ async function discard(){
   }
   OWN.base=cfgJSON();OWN.saved=false;changed();toast(T('o_discdone'));
 }
+/* ===================== account & security (owner and pharmacists) =====================
+   Password (the current one is checked first), two-step verification with an authenticator app (TOTP),
+   signing out other devices. With two-step verification on, the database also refuses edits until the code is given. */
 async function changePass(){
   let err=null;
   while(true){
-    const r=await dialog({err,title:T('o_chpt'),fields:[{label:T('o_newpass'),type:'password',value:''},{label:T('o_pass2'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    const r=await dialog({err,title:T('o_chpt'),fields:[{label:T('ac_curpass'),type:'password',value:''},{label:T('o_newpass'),type:'password',value:''},{label:T('o_pass2'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return;
-    const [p1,p2]=r.values;
-    if(p1.length<8){err={i:0,msg:T('o_short')};continue}
-    if(p1!==p2){err={i:1,msg:T('o_mismatch')};continue}
+    const [p0,p1,p2]=r.values;
+    if(p1.length<8){err={i:1,msg:T('o_short')};continue}
+    if(p1!==p2){err={i:2,msg:T('o_mismatch')};continue}
+    const {data:{user}}=await OWN.client.auth.getUser();
+    const chk=await OWN.client.auth.signInWithPassword({email:user.email,password:p0});
+    if(chk.error){err={i:0,msg:T('ac_badcur')};continue}
+    if(!(await mfaGate()))return;
     const {error}=await OWN.client.auth.updateUser({password:p1});
     if(error){err={msg:T('o_neterr')};continue}
     toast(T('o_chdone'));return;
   }
+}
+/** asks for the 6-digit code when this account has two-step verification and the session is not verified yet */
+async function mfaGate(){
+  const c=OWN.client;if(!c||!c.auth.mfa)return true;
+  const {data:l}=await c.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(!l||l.nextLevel!=='aal2'||l.currentLevel==='aal2')return true;
+  const {data:f}=await c.auth.mfa.listFactors();const fac=f&&f.totp&&f.totp.find(x=>x.status==='verified');if(!fac)return true;
+  let err=null;
+  while(true){
+    const r=await dialog({err,title:T('ac_code_t'),info:T('ac_code_i'),fields:[{label:T('ac_code'),value:'',ph:'123456',ltr:1}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    if(r.action!=='ok')return false;
+    const code=r.values[0].replace(/\D/g,'');
+    const {error}=await c.auth.mfa.challengeAndVerify({factorId:fac.id,code});
+    if(!error)return true;
+    err={i:0,msg:T('ac_badcode')};
+  }
+}
+const ACC={user:null,factors:[]};
+async function openAccount(){
+  if(OWN.local)return;
+  openSheet(T('ac_t'),`<p class="inone">${T('o_busy')}</p>`,{key:'account'});
+  const c=OWN.client;const {data:{user}}=await c.auth.getUser();ACC.user=user;
+  const {data:f}=await c.auth.mfa.listFactors();ACC.factors=((f&&f.totp)||[]).filter(x=>x.status==='verified');
+  renderAccount();
+}
+function renderAccount(){
+  if(!SHEET||SHEET.key!=='account'||!ACC.user)return;
+  ACT.s=[];const S=c=>chipH('s',c),u=ACC.user,on=ACC.factors.length>0;
+  $('sheet-b').innerHTML=`<div class="tmc"><div class="tmh"><b>${esc(OWN.name||u.email)}</b><span class="st st-dev">${esc(T(ISOWNER()?'o_owner':'o_editor'))}</span></div>
+    <div class="tmm" dir="ltr">${esc(u.email)}</div><div class="tmm">${T('tm_last')} ${esc(fmtDate(u.last_sign_in_at))}</div></div>
+    <h4 class="tms">${T('ac_pass')}</h4><div class="filters">${S({label:T('o_chpass'),f:changePass})}</div>
+    <h4 class="tms">${T('ac_mfa')} <span class="st ${on?'st-dev':'st-idea'}">${T(on?'ac_on':'ac_off')}</span></h4><p class="hint">${T('ac_mfa_i')}</p>
+    <div class="filters">${on?S({label:T('ac_mfa_off'),cls:'danger',f:mfaDisable}):S({label:T('ac_mfa_on'),cls:'pri',f:mfaEnable})}</div>
+    <h4 class="tms">${T('ac_devices')}</h4><p class="hint">${T('ac_devices_i')}</p><div class="filters">${S({label:T('ac_others'),f:signOutOthers})}</div>`;
+}
+async function mfaEnable(){
+  const c=OWN.client;
+  const {data:old}=await c.auth.mfa.listFactors();for(const x of ((old&&old.all)||[]).filter(x=>x.status!=='verified'))await c.auth.mfa.unenroll({factorId:x.id}); // unfinished tries
+  const {data,error}=await c.auth.mfa.enroll({factorType:'totp',friendlyName:'VITAWAW'});if(error||!data){toast(T('o_neterr'));return}
+  const qr=String(data.totp.qr_code||''),secret=String(data.totp.secret||'');
+  let err=null;
+  while(true){
+    const r=await dialog({err,title:T('ac_mfa_on'),info:T('ac_scan'),fields:[{type:'qr',value:[qr,secret]},{label:T('ac_code'),value:'',ph:'123456',ltr:1}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('ac_activate'),action:'ok',pri:1}]});
+    if(r.action!=='ok'){await c.auth.mfa.unenroll({factorId:data.id});return}
+    const {error:e2}=await c.auth.mfa.challengeAndVerify({factorId:data.id,code:r.values[1].replace(/\D/g,'')});
+    if(!e2)break;
+    err={i:1,msg:T('ac_badcode')};
+  }
+  toast(T('ac_mfa_done'));openAccount();
+}
+async function mfaDisable(){
+  if(!(await confirmDel(T('ac_mfa_off_i'))))return;
+  if(!(await mfaGate()))return;
+  const c=OWN.client;for(const x of ACC.factors){const {error}=await c.auth.mfa.unenroll({factorId:x.id});if(error){toast(T('o_neterr'));return}}
+  toast(T('ac_mfa_offdone'));openAccount();
+}
+async function signOutOthers(){
+  const {error}=await OWN.client.auth.signOut({scope:'others'});toast(T(error?'o_neterr':'ac_others_done'));
 }
 async function logout(){
   if(dirty()){const q=await dialog({title:T('o_leave'),buttons:[{label:T('o_back'),action:'cancel'},{label:T('o_leaveyes'),action:'ok',pri:1,danger:1}]});if(q.action!=='ok')return}

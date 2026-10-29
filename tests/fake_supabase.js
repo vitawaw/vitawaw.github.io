@@ -17,7 +17,16 @@ window.__calls=[];
        else{const base=old||st.cfg.published||{},t=d.text||base.text||{},p=d.pages||base.pages||[];d={...base};
          if(JSON.stringify(t)!==JSON.stringify(base.text||{})||JSON.stringify(p)!==JSON.stringify(base.pages||[]))d.team={text:t,pages:p,by:'u2',at:new Date().toISOString()}}}
      st.cfg[r.id]=d;save();window.__calls.push(['upsert',r.id]);return Promise.resolve({error:null})}};return api};
-  return {auth:{getSession:async()=>({data:{session:sess}}),getUser:async()=>({data:{user:{id:'u1'}}}),signOut:async()=>{sess=null},signInWithPassword:async()=>{sess={u:'u1'};return{error:null}},signUp:async()=>({error:null}),updateUser:async()=>({error:null})},from:q,
+  // two-step verification: a verified factor makes the next level aal2; the code 123456 is accepted
+  const mfa=()=>{st.mfa=st.mfa||{factors:[],aal:'aal1'};return st.mfa};
+  return {auth:{getSession:async()=>({data:{session:sess}}),getUser:async()=>({data:{user:sess?{id:'u1',email:'owner@x.com',last_sign_in_at:'2026-10-29T10:00:00Z'}:null}}),
+   signOut:async(o)=>{window.__calls.push(['signOut',(o&&o.scope)||'local']);if(!(o&&o.scope==='others'))sess=null;return{error:null}},
+   signInWithPassword:async(a)=>{if(a&&a.password==='wrong')return{error:{message:'bad'}};sess={u:'u1'};mfa().aal='aal1';return{error:null}},signUp:async(a)=>{window.__SIGNUP=a;return{error:null}},updateUser:async()=>({error:null}),
+   mfa:{getAuthenticatorAssuranceLevel:async()=>({data:{currentLevel:mfa().aal,nextLevel:mfa().factors.some(f=>f.status==='verified')?'aal2':'aal1'}}),
+    listFactors:async()=>({data:{totp:mfa().factors.filter(f=>f.status==='verified'),all:mfa().factors}}),
+    enroll:async()=>{const f={id:'f'+Date.now(),status:'unverified'};mfa().factors.push(f);save();return{data:{id:f.id,totp:{qr_code:'data:image/svg+xml;utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22/%3E',secret:'JBSWY3DPEHPK3PXP'}}}},
+    challengeAndVerify:async(a)=>{if(a.code!=='123456')return{error:{message:'bad code'}};const f=mfa().factors.find(x=>x.id===a.factorId);if(f)f.status='verified';mfa().aal='aal2';save();return{error:null}},
+    unenroll:async(a)=>{st.mfa.factors=mfa().factors.filter(x=>x.id!==a.factorId);save();return{error:null}}}},from:q,
    rpc:async(n,a)=>{window.__calls.push(['rpc',n]);
     if(n==='get_content')return{data:JSON.parse(JSON.stringify({refs:st.refs,inter:st.inter,nut:st.nut,next_ref:st.next_ref,del:st.del||{refs:[],inter:[],nut:[]}})),error:null};
     if(n==='review_change'){if((window.__ROLE||'owner')!=='owner')return{error:{message:'only the owner'}};

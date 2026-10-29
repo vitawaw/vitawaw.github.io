@@ -3,7 +3,7 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.6.6';
+const APP_VERSION='1.6.7';
 const REVIEW={name:'',role:'',date:''}; // e.g. {name:'د. ...', role:'صيدلي سريري', date:'2026-11-01'}
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
@@ -15,6 +15,7 @@ const DEFAULT_CFG={
   refs:null,inter:null,nut:{hide:[],custom:[]},
   colors:{calc:['#0B6B6E','#8E1B54'],tools:['#00167a','#075BFF'],interactions:['#7a2e00','#d9731f'],sources:['#0a4a2c','#17915a'],roadmap:['#3a1678','#7c4dff']},
   text:{},
+  nutOrder:[], /* order of the vitamins (ids); empty = default order. Owner only. */
   /* info pages in the side menu (☰ → معلومات). The owner can edit, hide, add and delete them. Plain text: an empty line starts a new paragraph. */
   pages:[
    {id:'about',t:{ar:'حول التطبيق',en:'About the app'},b:{ar:'VITAWAW حاسبة لجرعات الفيتامينات والمعادن مبنية على مصادر طبية موثوقة، مع التداخلات الدوائية وأدوات صيدلانية مساعدة.\n\nكل رقم في النتيجة مرتبط بمصدره، ويمكنك فتح المصدر بالضغط على رقمه.\n\nيراجع صيدلي كل إضافة جديدة قبل أن تظهر للزوار.',en:'VITAWAW is a vitamin and mineral dose calculator based on trusted medical sources, with drug interactions and pharmacy tools.\n\nEvery number in a result is linked to its source; tap the number to open it.\n\nA pharmacist reviews every new addition before visitors can see it.'}},
@@ -52,7 +53,7 @@ function clean(v,key){
   if(Array.isArray(v)){
     if(key==='calc'||key==='tools'||key==='interactions'||key==='sources'||key==='roadmap'&&typeof v[0]==='string')
       return v.map(c=>/^#[0-9a-f]{3,8}$/i.test(c)?c:'#075BFF');
-    return v.map(x=>clean(x,SAFE_ID_KEYS.has(key)||key==='hide'?'id':undefined));
+    return v.map(x=>clean(x,SAFE_ID_KEYS.has(key)||key==='hide'||key==='nutOrder'?'id':undefined));
   }
   if(v&&typeof v==='object'){const o={};for(const[k,x]of Object.entries(v))o[k]=clean(x,k);return o}
   return v;
@@ -64,6 +65,7 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   if(over.text)out.text=Object.assign({},over.text);
   if(Array.isArray(over.roadmap))out.roadmap=over.roadmap;
   if(Array.isArray(over.pages))out.pages=over.pages;
+  if(Array.isArray(over.nutOrder))out.nutOrder=over.nutOrder;
   if(Array.isArray(over.refs))out.refs=over.refs;
   if(Array.isArray(over.inter))out.inter=over.inter;
   if(over.nut)out.nut={hide:over.nut.hide||[],custom:over.nut.custom||[]};

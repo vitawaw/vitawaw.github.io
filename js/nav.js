@@ -48,7 +48,7 @@ const SECKEY={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'
 function adminGroups(){
   const A=[];
   if(!(typeof OWN!=='undefined'&&OWN.on&&!OWN.preview))return A;
-  if(CAN('text'))A.push({id:'pages',label:T('ad_pages'),ico:ICO.page,chips:[{label:T('ad_newpage'),cls:'add',f:()=>editPage(null)},
+  if(CAN('text'))A.push({id:'pages',label:T('ad_pages'),ico:ICO.page,chips:[{label:T('ad_newpage'),cls:'add',f:()=>editPage(null)},{label:T('pg_order'),f:openPagesOrder},
     ...(CFG.pages||[]).map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>editPage(p.id)}))]});
   if(ISOWNER()&&!OWN.local)A.push({id:'team',label:T('ad_team'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,chips:[
     {label:T('ad_invite'),cls:'add',f:()=>teamInvite()},{label:T('ad_accounts'),f:()=>openTeam()},{label:T('ad_invites'),f:()=>openTeam('inv')}]});
@@ -142,7 +142,7 @@ function menuHTML(r){
     seg(MI.theme,T('mr_theme'),[{label:T('mr_light'),pressed:!isDark(),f:()=>setTheme('light')},{label:T('mr_dark'),pressed:isDark(),f:()=>setTheme('dark')}])+
     seg(MI.mode,T('mr_mode'),[{label:T('m_pro'),pressed:MODE==='pro',f:()=>setMode('pro')},{label:T('m_pt'),pressed:MODE==='pt',f:()=>setMode('pt')}]));
   if(own){
-    h+=grp(T('mr_mine'),[!OWN.local&&row({label:T('o_chpass'),ico:MI.key,f:changePass}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join(''));
+    h+=grp(T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join(''));
     h+=`<button type="button" class="mout" data-na="${r}${ACT[r].push(logout)-1}">${MI.out}<span>${esc(T('o_logout'))}</span></button>`;
   }else if(!page)h+=grp(T('mr_account'),row({label:T('o_login'),ico:MI.login,f:()=>openOwner()})+row({label:T('mr_join'),ico:MI.invite,f:()=>openOwner({join:''})}));
   return h;
@@ -185,6 +185,14 @@ function openPage(id){
   if(CAN('text')&&!OWN.preview)$('sheet-b').insertAdjacentHTML('beforeend',`<div class="sact filters">${chipH('s',{label:T('o_edit'),f:()=>{closeSheet(false);editPage(id)}})}${
     chipH('s',{label:T(p.hidden?'o_nshow':'o_nhide'),f:()=>{p.hidden=!p.hidden;changed();openPage(id)}})}${
     chipH('s',{label:T('o_del'),cls:'danger',f:async()=>{if(await confirmDel(tx2(p.t))){CFG.pages=CFG.pages.filter(x=>x.id!==id);closeSheet(false);changed()}}})}</div>`);
+}
+/** drag the ⋮⋮ handle to change the order of the information pages (menu, footer links) */
+function openPagesOrder(){
+  if(!CAN('text'))return;
+  if(!Array.isArray(CFG.pages))CFG.pages=clone(DEFAULT_CFG.pages);
+  const draw=()=>{$('sheet-b').innerHTML=`<p class="hint">${T('o_drag_p')}</p><div class="olist" id="pg-order">${CFG.pages.map(p=>`<div class="orow${p.hidden?' off':''}" data-sid="${esc(p.id)}">${DRAG(T('o_drag'))}<span>${esc(tx2(p.t))}${p.hidden?` · ${T('pg_hidden')}`:''}</span></div>`).join('')}</div>`;
+    sortable($('pg-order'),'.orow',ids=>{CFG.pages=ids.map(id=>CFG.pages.find(p=>p.id===id));changed();draw()})};
+  openSheet(T('pg_order_t'),'',{key:'pgorder'});draw();
 }
 async function editPage(id){
   if(!CAN('text')){toast(T('tm_noperm'));return}

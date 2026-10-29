@@ -21,6 +21,8 @@ function actBtns(kind,id,{rv=true,hidden=false,edit=true,del=true}={}){
 const actBar=(kind,id,o)=>`<div class="oedit acts">${actBtns(kind,id,o)}</div>`;
 const NHIDE=()=>(CFG.nut&&CFG.nut.hide)||[];
 const NCUST=()=>(CFG.nut&&CFG.nut.custom)||[];
+/** vitamins in the owner's chosen order (CFG.nutOrder); new or unknown ones keep their place at the end */
+const ordered=ids=>{const o=CFG.nutOrder||[];return [...ids].sort((a,b)=>{const i=o.indexOf(a),j=o.indexOf(b);return (i<0?1e3+ids.indexOf(a):i)-(j<0?1e3+ids.indexOf(b):j)})};
 function buildData(){
   const all=SHOWALL();
   // preview / visitors: an item a pharmacist changed shows its approved version, and a proposed deletion is still shown
@@ -30,7 +32,7 @@ function buildData(){
   CUST={};NC.forEach(c=>{CUST[c.id]=c});
   const VC=NC.filter(c=>all||(!c.hidden&&c.rv!==false));
   const hide=NHIDE(),vis=BUILTIN.filter(k=>!hide.includes(k)),custIds=VC.map(c=>c.id);
-  KEYS=['all',...vis,...custIds];
+  KEYS=['all',...ordered([...vis,...custIds])];
   const il=Array.isArray(CFG.inter)?[...CFG.inter.map(ver),...DL('inter')]:defInterList();
   INTER=il.map((x,i)=>[x.k,[x.a.ar,x.a.en||x.a.ar],[x.b.ar,x.b.en||x.b.ar],[x.d.ar,x.d.en||x.d.ar],x.r||[],i,x.sev||'moderate',x.rv!==false,!!x.hidden]).filter(x=>KEYS.includes(x[0])&&(all||(x[7]&&!x[8])));
   REFGROUP={};
@@ -39,6 +41,7 @@ function buildData(){
   document.querySelectorAll('#picker button[data-k]').forEach(b=>{if(BUILTIN.includes(b.dataset.k))b.hidden=hide.includes(b.dataset.k);else b.remove()});
   VC.forEach(c=>{const b=document.createElement('button');b.dataset.k=c.id;b.className='cnut';b.innerHTML=`<span>${esc(tx2(c.n))}</span><small>${esc(tx2(c.h))}</small>${c.rv===false?`<em class="pend">${T('o_pending')}</em>`:''}${c.hidden?`<em class="hidb">${T('o_hiddenb')}</em>`:''}`;$('picker').appendChild(b);F[c.id]=()=>fCustom(c.id);EX[c.id]={age:30,sex:'f'}});
   Object.keys(F).forEach(k=>{if(!BUILTIN.includes(k)&&!CUST[k])delete F[k]});
+  KEYS.slice(1).forEach(k=>{const b=$('picker').querySelector(`button[data-k="${k}"]`);if(b)$('picker').appendChild(b)}); // picker in the same order
   if(!KEYS.includes(K)||K==='all')K=KEYS[1]||'d';
   document.querySelectorAll('[data-for]').forEach(el=>{el.hidden=!el.dataset.for.split(' ').includes(K)});
   document.querySelectorAll('#picker button[data-k]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===K));
@@ -50,10 +53,14 @@ function renderNutAdmin(){
   const el=$('nadm');if(!el)return;
   if(typeof OWN==='undefined'||!OWN.on){el.innerHTML='';return}
   const hide=NHIDE();
-  el.innerHTML=`<p class="nadm-h">${T('o_nman')}</p><div class="nadm-l">`+
-    BUILTIN.map(k=>`<span class="nchip${hide.includes(k)?' off':''}">${esc(T('n_'+k))}<button type="button" data-nhide="${k}">${T(hide.includes(k)?'o_nshow':'o_nhide')}</button></span>`).join('')+
-    NCUST().map(c=>`<span class="nchip cust${c.rv===false?' pending':''}${c.hidden?' off':''}">${esc(tx2(c.n))}${actBtns('n',c.id,{rv:c.rv!==false,hidden:!!c.hidden})}</span>`).join('')+
+  const cust=Object.fromEntries(NCUST().map(c=>[c.id,c]));
+  el.innerHTML=`<p class="nadm-h">${T('o_nman')}</p><p class="hint">${T('o_drag_i')}</p><div class="nadm-l" id="nadm-l">`+
+    ordered([...BUILTIN,...NCUST().map(c=>c.id)]).map(k=>{const c=cust[k];
+      return c?`<span class="nchip cust${c.rv===false?' pending':''}${c.hidden?' off':''}" data-sid="${esc(k)}">${DRAG(T('o_drag'))}${esc(tx2(c.n))}${actBtns('n',c.id,{rv:c.rv!==false,hidden:!!c.hidden})}</span>`
+        :`<span class="nchip${hide.includes(k)?' off':''}" data-sid="${k}">${DRAG(T('o_drag'))}${esc(T('n_'+k))}<button type="button" data-nhide="${k}">${T(hide.includes(k)?'o_nshow':'o_nhide')}</button></span>`}).join('')+
     `</div>${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<button class="btn pri" type="button" id="nadd">${T('o_nadd')}</button><p class="hint">${T('o_nhint')}</p>`;
+  // owner: drag the ⋮⋮ handle to change the vitamins' order (saved with the page settings, then published)
+  sortable($('nadm-l'),'.nchip',ids=>{if(!ISOWNER())return;CFG.nutOrder=ids;changed()});
 }
 /* custom nutrient calculator: dose table by age and sex */
 const SEXES=()=>[['all',T('o_sx_all')],['m',T('sx_m')],['f',T('sx_f')],['p',T('sx_p')],['l',T('sx_l')]];
