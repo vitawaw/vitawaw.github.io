@@ -3,14 +3,14 @@
    language switch (setLang), event wiring, colours and refreshAll().
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
-const PAGES=['calc','tools','interactions','sources','roadmap'];
+const PAGES=['calc','tools','interactions','sources','roadmap','menu'];
 let cur='calc';
 function show(p){
-  if(!PAGES.includes(p))p='calc';
+  if(!PAGES.includes(p)||(p==='menu'&&WIDE()))p='calc'; // wide screens show the menu at the side
   cur=p;
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1});
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
-  try{localStorage.setItem('vw-p',p)}catch(e){}
+  if(p!=='menu')try{localStorage.setItem('vw-p',p)}catch(e){}
   if(p==='roadmap'){$('rmnew').hidden=true;try{localStorage.setItem('vw-rm','3')}catch(e){}}
   updateBar();if(typeof renderNav==='function')renderNav();
 }
@@ -56,7 +56,7 @@ $('rbar').addEventListener('click',toRes);$('rbar').addEventListener('keydown',e
 function setMode(m,save=true){
   MODE=m;document.querySelectorAll('#modeg [data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));
   if(save)try{localStorage.setItem('vw-mode',m)}catch(e){}
-  if(LAST)F[K]();if(typeof renderMore==='function')renderMore();
+  if(LAST)F[K]();if(typeof renderMenu==='function')renderMenu();
 }
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.mode);if(b.closest('#welcome'))closeWelcome()}));
 function closeWelcome(){$('welcome').hidden=true;try{localStorage.setItem('vw-welcome','1')}catch(e){}}
@@ -98,7 +98,7 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-card]')){e.prev
 const SUN='<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
 const MOON='<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>';
 const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches};
-function themeIcon(){if(typeof renderMore==='function')renderMore()}
+function themeIcon(){if(typeof renderMenu==='function')renderMenu()}
 function setTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('vw-theme',t)}catch(e){}themeIcon()}
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',themeIcon);
 

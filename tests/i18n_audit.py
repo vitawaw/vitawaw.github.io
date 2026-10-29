@@ -93,7 +93,7 @@ def walk(pg,lang,tag):
             try: f.click();pg.wait_for_timeout(30);scan(pg,tag+' '+t+' filter',lang)
             except Exception: pass
 def menus(pg,lang,tag):
-    pg.evaluate('openMore()');pg.wait_for_timeout(120);scan(pg,tag+' more',lang);pg.evaluate('closeMore(false)')
+    pg.evaluate("go('menu')");pg.wait_for_timeout(120);scan(pg,tag+' menu',lang)
     for pid in pg.evaluate("(CFG.pages||[]).map(p=>p.id)"):
         pg.evaluate(f"openPage('{pid}')");pg.wait_for_timeout(50);scan(pg,f'{tag} page {pid}',lang);pg.evaluate('closeSheet(false)')
 def owner_dialogs(pg,lang,tag):

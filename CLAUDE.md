@@ -45,10 +45,12 @@ and where the project stands. Details: `README.md` (architecture, file map, test
   each checks the owner role inside.
 
 ## Where things are (no build step; plain scripts loaded in order by `index.html`)
-- Menus (1.6.2, app style): `js/nav.js` — the tab bar (`nav.tabs` in index.html: bottom bar under 900px, top tabs above)
-  holds the sections + «More» (`#more-btn`); `renderMore()` = the one grouped «More» list (bottom sheet on phones),
-  `adminGroups()` = its management part; `openSheet()` = floating window, info pages (`CFG.pages`, defaults in `js/config.js`).
-  The ☰ side drawer was removed in 1.6.2 (he asked for menus like other apps).
+- Menus (1.6.3, like Facebook — he chose this): `js/nav.js`. Phones/tablets (<1024px): tab bar at the bottom (`nav.tabs`:
+  calc, tools, interactions, sources + ☰ `#t-menu`); ☰ opens the page `#menu` (PAGES includes 'menu'): account card,
+  management, shortcut tiles, settings, log out. Wide screens (≥1024px): the same menu as a fixed side menu `#side`
+  with the five sections on top; tab bar hidden. Both are drawn by `menuHTML(r)` ('m' page, 'd' side) via `renderMenu()`;
+  `adminGroups()` = management part. «More» and the ☰ drawer of 1.6.0 no longer exist. `openSheet()` = floating window;
+  info pages = `CFG.pages` (defaults in `js/config.js`).
 - Pharmacist accounts: `js/team.js` (owner only) + migration `*_pharmacist_accounts.sql`.
 - Owner/pharmacist editing, save, publish, login: `js/owner.js`. `CAN(kind)` / `ISOWNER()` in `nav.js`.
 - Texts: `js/i18n.js` (`key:['عربي','English']`). Every visible text must exist in **both** languages.
@@ -65,7 +67,7 @@ node tests/worker_test.mjs       # edge worker
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-28)
-- **1.6.2 in preview** (branch `ccr-cad26eca-o7h5hm`): he asked to redesign the interface and menus to be easy and like other
+- **1.6.3 in preview** (branch `ccr-cad26eca-o7h5hm`; 1.6.3 = Facebook-style menus he approved, on top of 1.6.2): he asked to redesign the interface and menus to be easy and like other
   apps, and to fix everything without asking him back. Includes 1.6.1:, from his request for a full review: a pharmacist's edit or deletion of
   approved content waits for the owner (approved version kept in column `pub`, `get_content()` returns `pv` / `del`,
   owner decides with `review_change()`; window «تعديلات وحذف من الصيادلة»), publish uses approved versions only,

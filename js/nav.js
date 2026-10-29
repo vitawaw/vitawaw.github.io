@@ -1,10 +1,10 @@
 /* VITAWAW · js/nav.js
-   The menus, like a phone app. Same design for visitors, pharmacists and the owner:
-   - Tab bar: the sections (bottom of the screen on phones and tablets, under the logo on wide screens) and «More».
-   - «More»: one grouped list — publishing and management for the team (by permission), settings (language,
-     appearance, view mode), information pages, share/install, contact, account.
+   The menus, like Facebook. Same contents for visitors, pharmacists and the owner:
+   - Phones and tablets: tab bar at the bottom (four sections + ☰ «Menu»); «Menu» is a full page:
+     account card, management (team, by permission), shortcut tiles, settings, log out.
+   - Wide screens (≥1024px): the same menu is a fixed side menu, with the sections at its top.
    - Floating window (sheet) in the middle of the screen: tools, information pages, pharmacists.
-   To add a menu entry, add one row to renderMore() (or a group to adminGroups() for the team).
+   To add a menu entry, add it in menuHTML() (or a group in adminGroups() for the team).
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 
 /* ===================== helpers ===================== */
@@ -37,17 +37,19 @@ document.addEventListener('click',e=>{
   const f=ACT[b.dataset.na[0]][+b.dataset.na.slice(1)];if(f){e.preventDefault();f(b)}
 });
 
-/* ===================== bottom bar + «More» ===================== */
-// Navigation works like a phone app: the tab bar (bottom on phones and tablets, top on wide screens) holds the
-// sections, and «More» opens one grouped list with everything else (settings, information, account, management).
+/* ===================== tab bar + menu (like Facebook) ===================== */
+// Phones and tablets: the tab bar at the bottom holds the four sections and ☰ «Menu», which opens a full page
+// (account card, shortcuts, settings, log out). Wide screens (≥1024px): the same menu is a fixed side menu.
+const WIDE=()=>matchMedia('(min-width:1024px)').matches;
 function pickNut(k){K=k;try{localStorage.setItem('vw-k',k)}catch(e){}apply();go('calc')}
 function goPending(p){
-  closeMore(false);
   if(p==='interactions'){IF='all';$('isearch').value='';renderInter()}
   if(p==='sources'){SF='all';renderRefs()}
   go(p);setTimeout(()=>{const el=$(p).querySelector('.pending');if(el)el.scrollIntoView({block:'center'})},60);
 }
 function pendCounts(){return {n:NCUST().filter(x=>x.rv===false).length,i:(CFG.inter||[]).filter(x=>x.rv===false).length,r:(CFG.refs||[]).filter(x=>x.rv===false).length,c:changeList().length,d:delCount()}}
+const SECTIONS=['calc','tools','interactions','sources','roadmap'];
+const SECKEY={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm'};
 /** management groups for the signed-in team (what appears depends on the account's permissions) */
 function adminGroups(){
   const A=[];
@@ -55,27 +57,28 @@ function adminGroups(){
   if(ISOWNER()){
     const c=pendCounts(),tot=c.n+c.i+c.r+c.d;
     A.push({id:'review',label:T('ad_review'),ico:ICO.check,n:tot,chips:tot?[
-      c.n&&{label:T('ad_vit'),n:c.n,f:()=>goPending('calc')},c.i&&{label:T('tab_int'),n:c.i,f:()=>goPending('interactions')},c.r&&{label:T('tab_src'),n:c.r,f:()=>goPending('sources')},c.c&&{label:T('rc_t'),n:c.c,f:()=>{closeMore(false);openChanges()}}].filter(Boolean)
+      c.n&&{label:T('ad_vit'),n:c.n,f:()=>goPending('calc')},c.i&&{label:T('tab_int'),n:c.i,f:()=>goPending('interactions')},c.r&&{label:T('tab_src'),n:c.r,f:()=>goPending('sources')},c.c&&{label:T('rc_t'),n:c.c,f:()=>openChanges()}].filter(Boolean)
       :[{label:T('ad_none'),cls:'muted',f:()=>{}}]});
   }
-  if(CAN('text'))A.push({id:'pages',label:T('ad_pages'),ico:ICO.page,chips:[{label:T('ad_newpage'),cls:'add',f:()=>{closeMore(false);editPage(null)}},
-    ...(CFG.pages||[]).map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>{closeMore(false);editPage(p.id)}}))]});
+  if(CAN('text'))A.push({id:'pages',label:T('ad_pages'),ico:ICO.page,chips:[{label:T('ad_newpage'),cls:'add',f:()=>editPage(null)},
+    ...(CFG.pages||[]).map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>editPage(p.id)}))]});
   if(ISOWNER()&&!OWN.local)A.push({id:'team',label:T('ad_team'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,chips:[
-    {label:T('ad_invite'),cls:'add',f:()=>{closeMore(false);teamInvite()}},{label:T('ad_accounts'),f:()=>{closeMore(false);openTeam()}},{label:T('ad_invites'),f:()=>{closeMore(false);openTeam('inv')}}]});
-  if(ISOWNER())A.push({id:'site',label:T('ad_site'),ico:ICO.site,chips:[{label:T('o_contact'),f:()=>{closeMore(false);editContact()}},
-    ...PAGES.map(p=>({label:T('ad_colors')+': '+T({calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm'}[p]),f:()=>{closeMore(false);editColors(p)}}))]});
+    {label:T('ad_invite'),cls:'add',f:()=>teamInvite()},{label:T('ad_accounts'),f:()=>openTeam()},{label:T('ad_invites'),f:()=>openTeam('inv')}]});
+  if(ISOWNER())A.push({id:'site',label:T('ad_site'),ico:ICO.site,chips:[{label:T('o_contact'),f:()=>editContact()},
+    ...SECTIONS.map(p=>({label:T('ad_colors')+': '+T(SECKEY[p]),f:()=>editColors(p)}))]});
   return A;
 }
-/** footer links, the «More» dot and labels; refreshes the open «More» list */
+/** labels, the ☰ dot, footer links; redraws the menu page and the side menu */
 function renderNav(){
-  if(!$('more'))return;
-  $('more-t').textContent=T('nav_more');
-  document.querySelectorAll('#more-x,#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
+  if(!$('side'))return;
+  document.querySelectorAll('#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
   $('nav-dot').hidden=!(ISOWNER()&&!OWN.preview&&pendingCount());
   $('flinks').innerHTML=visiblePages(false).map(p=>`<a href="#info-${esc(p.id)}">${esc(tx2(p.t))}</a>`).join('<span aria-hidden="true"> · </span>');
-  renderMore();
+  renderMenu();
 }
-const openNav=()=>openMore(),closeNav=f=>closeMore(f); // older names
+// older names (owner bar «awaiting review ›», tests)
+const openNav=()=>{if(WIDE()){const b=$('side').querySelector('.mg.admin');if(b)b.scrollIntoView({block:'start'})}else go('menu')};
+const openMore=openNav,closeNav=()=>{},closeMore=()=>{};
 
 let INSTALL=null;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();INSTALL=e});
@@ -106,68 +109,71 @@ const MI={
   out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M20 12H9M16 8l4 4-4 4"/></svg>',
   pub:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>'
 };
+const MI2={
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/></svg>'
+};
 const CHEVS='<svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
-/** «More»: one grouped list (like a phone's settings). Rows are buttons or links; settings are segmented controls. */
-function renderMore(){
-  if(!$('more')||$('more').hidden)return;
-  ACT.m=[];const own=typeof OWN!=='undefined'&&OWN.on;
-  const shut=f=>()=>{closeMore(false);f()};
+/** The menu: on the «Menu» page (r='m', Facebook style: account card, shortcut tiles, lists) and in the side menu (r='d', lists). */
+function menuHTML(r){
+  const page=r==='m',own=typeof OWN!=='undefined'&&OWN.on;
   const row=(c)=>{
-    const inner=`<span class="di"${c.page?` style="${colorVars(c.page)}"`:''}>${c.ico||ICO.info}</span><span class="mt">${esc(c.label)}${c.sub?`<small>${esc(c.sub)}</small>`:''}</span>${c.n?`<span class="cnt">${c.n}</span>`:''}${c.href?'':CHEVS}`;
+    const inner=`<span class="di"${c.page?` style="${colorVars(c.page)}"`:''}>${c.ico||ICO.info}</span><span class="mt">${esc(c.label)}${c.sub?`<small>${esc(c.sub)}</small>`:''}</span>${c.n?`<span class="cnt">${c.n}</span>`:''}${c.href||c.on!=null?'':CHEVS}`;
     if(c.href)return `<a class="mi" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`;
-    return `<button type="button" class="mi${c.cls?' '+c.cls:''}" data-na="m${ACT.m.push(c.f)-1}">${inner}</button>`;
+    return `<button type="button" class="mi${c.cls?' '+c.cls:''}${c.on?' on':''}" data-na="${r}${ACT[r].push(c.f)-1}"${c.on?' aria-current="page"':''}>${inner}</button>`;
   };
-  const seg=(ico,label,cs)=>`<div class="mi seg"><span class="di">${ico}</span><span class="mt">${esc(label)}</span><div class="segc">${cs.map(x=>chipH('m',x)).join('')}</div></div>`;
-  const grp=(title,body)=>body?`<div class="mg">${title?`<h3>${esc(title)}</h3>`:''}<div class="ml">${body}</div></div>`:'';
+  const tile=(c)=>{
+    const inner=`<span class="di"${c.page?` style="${colorVars(c.page)}"`:''}>${c.ico||ICO.info}</span><span class="tl">${esc(c.label)}</span>`;
+    if(c.href)return `<a class="mtile" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`;
+    return `<button type="button" class="mtile" data-na="${r}${ACT[r].push(c.f)-1}">${inner}</button>`;
+  };
+  const seg=(ico,label,cs)=>`<div class="mi seg"><span class="di">${ico}</span><span class="mt">${esc(label)}</span><div class="segc">${cs.map(x=>chipH(r,x)).join('')}</div></div>`;
+  const grp=(title,body,cls='')=>body?`<div class="mg${cls?' '+cls:''}">${title?`<h3>${esc(title)}</h3>`:''}<div class="ml">${body}</div></div>`:'';
+  const pubChips=()=>`<div class="filters">${(ISOWNER()
+      ?[{label:T(OWN.preview?'o_pvexit':'o_preview'),pressed:OWN.preview,f:()=>setPreview(!OWN.preview)},{label:T('o_save'),f:saveDraft},{label:T('o_publish'),cls:'pri',f:publish},{label:T('o_discard'),cls:'danger',f:discard}]
+      :[{label:T('mr_savemine'),cls:'pri',f:saveDraft},{label:T('o_discard'),cls:'danger',f:discard}]).map(x=>chipH(r,x)).join('')}</div>`;
   let h='';
-  if(own){
-    h+=`<p class="mwho">${esc(whoLabel())}</p>`;
-    h+=grp('',`<div class="mi chips"><div class="filters">${(ISOWNER()
-      ?[{label:T(OWN.preview?'o_pvexit':'o_preview'),pressed:OWN.preview,f:shut(()=>setPreview(!OWN.preview))},{label:T('o_save'),f:shut(saveDraft)},{label:T('o_publish'),cls:'pri',f:shut(publish)},{label:T('o_discard'),cls:'danger',f:shut(discard)}]
-      :[{label:T('mr_savemine'),cls:'pri',f:shut(saveDraft)},{label:T('o_discard'),cls:'danger',f:shut(discard)}]).map(x=>chipH('m',x)).join('')}</div></div>`);
-    const A=adminGroups();
-    if(A.length)h+=grp(T('nv_admin'),A.map(g=>`<div class="mi grp"><span class="di">${g.ico}</span><span class="mt">${esc(g.label)}</span>${g.n?`<span class="cnt">${g.n}</span>`:''}</div><div class="filters mchips">${g.chips.map(c=>chipH('m',c)).join('')}</div>`).join(''));
-  }
+  // account card (Facebook: your profile at the top)
+  h+=own
+    ?`<div class="mcard"><span class="av">${MI2.shield}</span><div class="mt"><b>${esc(whoLabel())}</b><small>${esc(T('mn_team'))}</small></div></div><div class="mcard-a">${pubChips()}</div>`
+    :page?`<div class="mcard"><span class="av">${MI2.user}</span><div class="mt"><b>${esc(T('mr_account'))}</b><small>${esc(T('mn_guest'))}</small></div></div><div class="mcard-a"><div class="filters">${chipH(r,{label:T('o_login'),cls:'pri',f:()=>openOwner()})}${chipH(r,{label:T('mr_join'),f:()=>openOwner({join:''})})}</div></div>`:'';
+  // sections (side menu only: on phones they are in the bottom bar)
+  if(!page)h=`<div class="slogo"><span class="mk"><svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg></span><span class="wm">VITA<em>WAW</em></span></div>`+
+    grp('',SECTIONS.map(p=>row({label:T(SECKEY[p]),ico:tabIco(p),page:p,on:cur===p,f:()=>go(p)})).join(''),'secs')+h;
+  const A=own?adminGroups():[];
+  if(A.length)h+=grp(T('nv_admin'),A.map(g=>`<div class="mi grp"><span class="di">${g.ico}</span><span class="mt">${esc(g.label)}</span>${g.n?`<span class="cnt">${g.n}</span>`:''}</div><div class="filters mchips">${g.chips.map(c=>chipH(r,c)).join('')}</div>`).join(''),'admin');
+  // shortcuts: information pages, app, contact
+  const info=[...(page?[{label:T('tab_rm'),ico:tabIco('roadmap'),page:'roadmap',f:()=>go('roadmap')}]:[]),
+    ...visiblePages().map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>openPage(p.id)}))];
+  const app=[{label:T('mr_share'),ico:MI.share,f:shareApp},{label:T('mr_install'),ico:MI.install,f:installApp}];
+  if(PHONEF())app.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
+  if(EMAILF())app.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
+  if(PHONEF())app.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
+  if(page)h+=`<div class="mg"><h3>${esc(T('mn_short'))}</h3><div class="mtiles">${[...info,...app].map(tile).join('')}</div></div>`;
+  else h+=grp(T('nv_info'),info.map(row).join(''))+grp(T('mr_app'),app.map(row).join(''));
   h+=grp(T('mr_settings'),
     seg(MI.lang,T('mr_lang'),[{label:'العربية',pressed:LANG==='ar',f:()=>setLang('ar')},{label:'English',pressed:LANG==='en',f:()=>setLang('en')}])+
     seg(MI.theme,T('mr_theme'),[{label:T('mr_light'),pressed:!isDark(),f:()=>setTheme('light')},{label:T('mr_dark'),pressed:isDark(),f:()=>setTheme('dark')}])+
     seg(MI.mode,T('mr_mode'),[{label:T('m_pro'),pressed:MODE==='pro',f:()=>setMode('pro')},{label:T('m_pt'),pressed:MODE==='pt',f:()=>setMode('pt')}]));
-  h+=grp(T('nv_info'),row({label:T('tab_rm'),ico:tabIco('roadmap'),page:'roadmap',f:shut(()=>go('roadmap'))})+
-    visiblePages().map(p=>row({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:shut(()=>openPage(p.id))})).join(''));
-  const c=[];if(PHONEF())c.push(row({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')}));if(EMAILF())c.push(row({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))}));
-  if(PHONEF())c.push(row({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')}));
-  h+=grp(T('mr_app'),row({label:T('mr_share'),ico:MI.share,f:shut(shareApp)})+row({label:T('mr_install'),ico:MI.install,f:shut(installApp)}));
-  if(c.length)h+=grp(T('mr_contact'),c.join(''));
-  h+=grp(T(own?'mr_mine':'mr_account'),own
-    ?[!OWN.local&&row({label:T('o_chpass'),ico:MI.key,f:shut(changePass)}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:shut(showMyPerms)}),row({label:T('o_logout'),ico:MI.out,cls:'danger',f:shut(logout)})].filter(Boolean).join('')
-    :row({label:T('o_login'),ico:MI.login,f:shut(()=>openOwner())})+row({label:T('mr_join'),ico:MI.invite,f:shut(()=>openOwner({join:''}))}));
-  const keep=$('more-b').scrollTop;$('more-b').innerHTML=h;$('more-b').scrollTop=keep;
+  if(own){
+    h+=grp(T('mr_mine'),[!OWN.local&&row({label:T('o_chpass'),ico:MI.key,f:changePass}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join(''));
+    h+=`<button type="button" class="mout" data-na="${r}${ACT[r].push(logout)-1}">${MI.out}<span>${esc(T('o_logout'))}</span></button>`;
+  }else if(!page)h+=grp(T('mr_account'),row({label:T('o_login'),ico:MI.login,f:()=>openOwner()})+row({label:T('mr_join'),ico:MI.invite,f:()=>openOwner({join:''})}));
+  return h;
 }
-const WIDE=()=>matchMedia('(min-width:900px)').matches;
-function openMore(){
-  closeSheet(false);
-  // wide screens: a panel under the «More» tab; phones and tablets: a sheet from the bottom
-  const m=$('more').style;
-  if(WIDE()){const r=$('more-btn').getBoundingClientRect(),rtl=document.documentElement.dir==='rtl';
-    m.top=Math.round(r.bottom+8)+'px';m.left=rtl?Math.max(12,Math.round(r.left))+'px':'auto';m.right=rtl?'auto':Math.max(12,Math.round(innerWidth-r.right))+'px'}
-  else m.top=m.left=m.right='';
-  $('more').hidden=false;$('scrim').hidden=false;$('scrim').classList.toggle('light',WIDE());$('more-btn').setAttribute('aria-expanded','true');document.body.classList.add('menu-open');
-  $('more-b').scrollTop=0;renderMore();$('more-x').focus();
+function renderMenu(){
+  if(!$('side'))return;
+  ACT.d=[];const sb=$('side-b'),keep=sb.scrollTop;sb.innerHTML=menuHTML('d');sb.scrollTop=keep;
+  ACT.m=[];$('menu-b').innerHTML=menuHTML('m');
 }
-function closeMore(focus=true){
-  if($('more').hidden)return;
-  $('more').hidden=true;$('more-b').innerHTML='';$('scrim').hidden=true;$('scrim').classList.remove('light');$('more-btn').setAttribute('aria-expanded','false');document.body.classList.remove('menu-open');
-  if(focus)$('more-btn').focus();
-}
-$('more-btn').addEventListener('click',()=>$('more').hidden?openMore():closeMore());
-$('more-x').addEventListener('click',()=>closeMore());
-$('scrim').addEventListener('click',()=>closeMore(false));
+// switching between phone and wide layouts (rotating a tablet): leave the menu page on wide screens
+matchMedia('(min-width:1024px)').addEventListener('change',()=>{if(WIDE()&&cur==='menu')show('calc');renderNav()});
 
 /* ===================== floating window (sheet) ===================== */
 let SHEET=null;
 /** content: HTML string, or an element that is moved in (and put back on close, keeping its events). */
 function openSheet(title,content,opt={}){
-  closeSheet(false);closeMore(false);
+  closeSheet(false);
   $('sheet-t').textContent=title;const b=$('sheet-b');b.innerHTML='';ACT.s=[];
   SHEET={last:opt.last||document.activeElement,onClose:opt.onClose,key:opt.key};
   if(typeof content==='string')b.innerHTML=content;
@@ -214,5 +220,4 @@ async function editPage(id){
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape'||!$('dlg').hidden||!$('ov').hidden)return;
   if(!$('sheet').hidden){closeSheet();return}
-  if(!$('more').hidden){closeMore();return}
 });

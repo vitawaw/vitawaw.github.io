@@ -94,7 +94,7 @@ e_range:['تحقق من القيمة: المدى المقبول','Check this val
 };
 /* ----- 1.6.0: side menu (☰), More menu (⋯), info pages, pharmacist accounts ----- */
 Object.assign(I18N,{
-nav_menu:['القائمة','Menu'],nav_more:['المزيد','More'],mr_more:['المزيد','More'],mr_settings:['الإعدادات','Settings'],
+nav_menu:['القائمة','Menu'],nav_more:['المزيد','More'],mr_settings:['الإعدادات','Settings'],mn_short:['اختصارات','Shortcuts'],mn_team:['فريق VITAWAW','VITAWAW team'],mn_guest:['للمالك والصيادلة المدعوين فقط','Owner and invited pharmacists only'],
 nv_sections:['الأقسام','Sections'],nv_info:['معلومات','Information'],nv_admin:['الإدارة','Management'],
 tl_pill:['عدد الحبات','Tablet count'],tl_d:['محوّل فيتامين D','Vitamin D converter'],tl_ca:['الكالسيوم المصحح','Corrected calcium'],tl_gz:['عجز الحديد (Ganzoni)','Iron deficit (Ganzoni)'],
 mr_lang:['اللغة','Language'],mr_theme:['المظهر','Appearance'],mr_light:['فاتح','Light'],mr_dark:['داكن','Dark'],mr_mode:['وضع العرض','View as'],

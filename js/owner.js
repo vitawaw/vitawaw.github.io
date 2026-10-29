@@ -19,7 +19,7 @@ function ownerBar(){
   // what this account may edit: hides the edit buttons it cannot use (the database refuses them anyway)
   ['nut','inter','refs','text'].forEach(k=>document.body.classList.toggle('cant-'+k,!CAN(k)));
   document.body.classList.toggle('not-owner',!ISOWNER());
-  renderNav();renderMore();
+  renderNav();
 }
 function setPreview(on){OWN.preview=on;document.body.classList.toggle('preview',on);refreshAll()}
 function changed(){refreshAll();ownerBar()}

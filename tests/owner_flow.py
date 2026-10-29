@@ -30,9 +30,14 @@ def setup(pg,pub='[]'):
     pg.route('http://app.test/**',serve)
     pg.route('http://app.test/api/content',lambda r:r.fulfill(status=200,body=pub,content_type='application/json'))
 def ok(pg): pg.click('#dlg-a .pri'); pg.wait_for_timeout(300)
+def menu(pg):
+    # the menu: ☰ «Menu» page on phones/tablets, the side menu on wide screens; returns its container
+    if pg.evaluate('WIDE()'): return '#side-b'
+    if pg.evaluate('cur')!='menu': pg.click('#t-menu');pg.wait_for_timeout(200)
+    return '#menu-b'
 def more(pg,label):
-    # opens the ⋯ menu and taps the chip with this text
-    pg.click('#more-btn');pg.wait_for_timeout(150);pg.locator('#more-b button',has_text=label).first.click();pg.wait_for_timeout(300)
+    # taps a row, tile or chip with this text in the menu
+    c=menu(pg);pg.locator(f'{c} button, {c} a',has_text=label).first.click();pg.wait_for_timeout(300)
 def login(pg): more(pg,'تسجيل الدخول');pg.wait_for_timeout(600)
 with sync_playwright() as p:
     b=p.chromium.launch();ctx=b.new_context(viewport={'width':390,'height':844});pg=ctx.new_page()
@@ -44,7 +49,7 @@ with sync_playwright() as p:
     print('first card (sorted major first):',pg.locator('#ilist .icard').first.inner_text().replace('\n',' | ')[:120])
     pg.screenshot(path='tests/out_owner.png')
     # preview hides pending
-    more(pg,'معاينة');print('PREVIEW icount:',pg.inner_text('#icount'),'vk in picker:',pg.locator('#picker [data-k="vk"]').count());pg.click('#o-pvexit');pg.wait_for_timeout(300)
+    more(pg,'معاينة');print('PREVIEW icount:',pg.inner_text('#icount'),'vk in picker:',pg.locator('#picker [data-k="vk"]').count());pg.click('#o-pvexit');pg.wait_for_timeout(300);pg.click('#t-interactions');pg.wait_for_timeout(200)
     # edit an interaction severity
     pg.click('[data-iedit="0"]');pg.wait_for_timeout(200);pg.select_option('#dlgf1','major');ok(pg)
     # add interaction
