@@ -68,12 +68,11 @@ function adminGroups(){
     ...SECTIONS.map(p=>({label:T('ad_colors')+': '+T(SECKEY[p]),f:()=>editColors(p)}))]});
   return A;
 }
-/** labels, the ☰ dot, footer links; redraws the menu page and the side menu */
+/** labels and the ☰ dot; redraws the menu page and the side menu */
 function renderNav(){
   if(!$('side'))return;
   document.querySelectorAll('#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
   $('nav-dot').hidden=!(ISOWNER()&&!OWN.preview&&pendingCount());
-  $('flinks').innerHTML=visiblePages(false).map(p=>`<a href="#info-${esc(p.id)}">${esc(tx2(p.t))}</a>`).join('<span aria-hidden="true"> · </span>');
   renderMenu();
 }
 // older names (owner bar «awaiting review ›», tests)

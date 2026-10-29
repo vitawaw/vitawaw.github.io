@@ -5,7 +5,7 @@
 /* ===================== owner mode ===================== */
 const OWN={on:false,local:false,role:null,client:null,base:'',preview:false,perms:{},name:''};
 // texts editable from their own page
-const EDITABLE=['hc_t','hc_l','ht_t','ht_l','ti_t','hi_l','ts_t','hs_l','rm_t','rm_l','sg_t','sg_l','by','priv','w_t','foot2'];
+const EDITABLE=['hc_t','hc_l','ht_t','ht_l','ti_t','hi_l','ts_t','hs_l','rm_t','rm_l','sg_t','sg_l','by','priv','w_t'];
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
 function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
 function dirty(){return cfgJSON()!==OWN.base}
@@ -34,8 +34,8 @@ function decorate(){
   }));
   document.querySelectorAll('.hero .hi').forEach(h=>{const page=h.closest('.page').id;const b=document.createElement('button');b.type='button';b.className='edp';b.title=T('o_colors');b.dataset.edcolor=page;
     b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5 1-1.5 2-1.5h2a4 4 0 0 0 4-4c0-4.5-4-8-9-8z"/></svg>';h.appendChild(b)});
-  const f=document.querySelector('footer');const b=document.createElement('button');b.type='button';b.className='edp';b.title=T('o_contact');b.dataset.edcontact='1';b.innerHTML=PEN;f.appendChild(b);
-  const c=document.querySelector('#roadmap .contact h2');if(c){const b2=b.cloneNode(true);c.appendChild(b2)}
+  // contact details are edited from the roadmap's contact card (and Menu → management)
+  const c=document.querySelector('#roadmap .contact h2');if(c){const b=document.createElement('button');b.type='button';b.className='edp';b.title=T('o_contact');b.dataset.edcontact='1';b.innerHTML=PEN;c.appendChild(b)}
 }
 
 /* ----- generic dialog ----- */

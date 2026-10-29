@@ -29,11 +29,11 @@ const IC={
 function renderContact(){
   const E=CFG.contact.email,P=(CFG.contact.phone||'').trim();
   const subj='VITAWAW – '+L('اقتراح','Suggestion');
-  $('mail1').textContent=E;$('mail2').textContent=E;$('mailrow').hidden=!E;$('mailh').hidden=!E;$('mail2').hidden=!E;
-  $('mail2').href=E?mailto(subj):'';$('mailgo').href=E?mailto(subj):'';
+  $('mail1').textContent=E;$('mailrow').hidden=!E;$('mailh').hidden=!E;
+  $('mailgo').href=E?mailto(subj):'';
   $('vno').textContent=T('vno')+' '+APP_VERSION;
-  $('phonerow').hidden=!P;$('phone2w').hidden=!P;$('footsep').hidden=!E;$('phone1').textContent=P;$('phone2').textContent=P;
-  $('phone2').href=waLink(subj);$('wago').href=waLink(subj);$('callgo').href='tel:'+P.replace(/[^+\d]/g,'');
+  $('phonerow').hidden=!P;$('phone1').textContent=P;
+  $('wago').href=waLink(subj);$('callgo').href='tel:'+P.replace(/[^+\d]/g,'');
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-copymail]');if(!b)return;
   const done=()=>{b.textContent=T('cpd');setTimeout(()=>b.textContent=T('cpm'),1600)};

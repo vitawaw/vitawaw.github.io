@@ -9,7 +9,7 @@ const T=k=>{const o=CFG.text&&CFG.text[k];if(o){const v=LANG==='ar'?o.ar:(o.en||
 const I18N={
 tab_calc:['الحاسبة','Calculator'],tab_tools:['الأدوات','Tools'],tab_int:['التداخلات','Interactions'],tab_src:['المصادر','Sources'],tab_rm:['القادم','Coming next'],sg_t:['اقترح ميزة أو أبلغ عن خطأ','Suggest a feature or report an error'],sg_l:['نقرأ كل رسالة. أخبرنا بما تحتاجه في الحاسبة، أو إذا لاحظت رقماً يحتاج مراجعة.','We read every message. Tell us what you need, or if you notice a number that needs checking.'],
 cpm:['نسخ البريد','Copy email'],cpd:['تم النسخ','Copied'],sendm:['أرسل رسالة','Send an email'],mailh:['إن لم يفتح تطبيق البريد، انسخ العنوان وأرسل منه.','If your mail app does not open, copy the address and write to it.'],
-foot2:['للاقتراحات والإبلاغ عن الأخطاء:','Suggestions and error reports:'],flag:['هل لاحظت خطأ في هذه النتيجة؟ راسلنا','Spotted an error in this result? Email us'],
+flag:['هل لاحظت خطأ في هذه النتيجة؟ راسلنا','Spotted an error in this result? Email us'],
 priv:['بياناتك تبقى على جهازك فقط، ولا تُحفظ ولا تُرسل لأي جهة.','Your data stays on your device only. It is not saved or sent anywhere.'],
 card:['بطاقة المريض','Patient card'],pc_k:['التعليمات','Instructions'],pc_plan:['الخطة','Plan'],pc_wa:['مشاركة عبر واتساب','Share on WhatsApp'],pc_cp:['نسخ','Copy'],pc_x:['إغلاق','Close'],
 pc_f:['معلومات إرشادية من حاسبة VITAWAW المبنية على مصادر طبية. أكّد الجرعة مع طبيبك أو الصيدلي.','Guidance from the VITAWAW calculator, based on medical sources. Confirm the dose with your doctor or pharmacist.'],
