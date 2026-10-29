@@ -69,6 +69,8 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-30)
+- 2026-10-30: he approved all waiting items and published (checked: 0 pending; live content 62 sources, 61 interactions, 15 with timing).
+  Next: ask what he wants next (validation document reminder is due today ~21:00 UTC; optional local product presets for the syrup tool).
 - **Live: 1.10.0** (he said «جاهز» on 2026-10-30; includes 1.9.0; DB file applied and checked: same DB file `20261030000000_interaction_timing.sql`, which now also adds
   `at` (reviewed date) to sources and sources 61–62 KDIGO). Sources page `usedIn()` + `ISRC` filter in lists.js; `srcLine()` in render.js
   (copy + patient card); link check: worker `/api/links?ids=` (≤25, only published URLs, cached 1 day) + `linksHTML()/linksCheck()`
