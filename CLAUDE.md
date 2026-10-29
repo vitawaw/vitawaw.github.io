@@ -64,6 +64,7 @@ python3 tests/tools_flow.py      # tool formulas + calculator → tools links
 python3 tests/i18n_audit.py en   # and `ar`: nothing left in the other language (slow, ~5 min each)
 python3 tests/check_assets.py    # asset hashes match (forgot set_version.py?)
 node tests/worker_test.mjs       # edge worker
+node tests/worker_links_test.mjs # link check
 ```
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
