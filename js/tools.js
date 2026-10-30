@@ -175,7 +175,7 @@ const SCI=[
  ['mg','المغنيسيوم','Magnesium',[12*H,15*H,6*H],'مع الطعام أو قبل النوم','With food or at bedtime',[20]],
  ['zn','الزنك','Zinc',[6*H,12*H,1*H],'مع الوجبة إن سبّب غثياناً','With a meal if it causes nausea',[25]],
  ['d','فيتامين D','Vitamin D',[6*H,12*H,1*H],'مع أكبر وجبة فيها دهون','With the largest meal containing fat',[4]],
- ['abx','مضاد حيوي (Ciprofloxacin أو Doxycycline) مرتين يومياً','Antibiotic (ciprofloxacin or doxycycline) twice a day',[1*H,2*H,3*H,0],'كل 12 ساعة؛ إذا وُصف 3 مرات يومياً فاسأل الصيدلاني','Every 12 hours; if prescribed three times a day, ask the pharmacist',[45]],
+ ['abx','مضاد حيوي (Ciprofloxacin أو Doxycycline) مرتين يومياً','Antibiotic (ciprofloxacin or doxycycline) twice a day',[1*H,2*H,3*H,0],'كل 12 ساعة؛ إذا وُصف 3 مرات يومياً فاسأل الصيدلي','Every 12 hours; if prescribed three times a day, ask the pharmacist',[45]],
  ['dtg','Dolutegravir','Dolutegravir',[0,1*H,2*H,15*H],'مرة يومياً في وقت ثابت؛ ويمكن أخذه مع الحديد أو الكالسيوم إذا كان مع وجبة','Once a day at a fixed time; it can be taken with iron or calcium if taken with a meal',[60]]];
 /* built-in gaps, used when no interaction in the content sets one: [x, y, b, a, sources] = x at least b hours before y or a hours after it
    (b = a for a simple gap; a = 24 means x must come first). The owner sets the same thing on an interaction («التوقيت في الجدول»):

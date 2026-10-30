@@ -84,7 +84,7 @@ async function editColors(p){
   if(r.action==='ok'){CFG.colors[p]=r.values[0];changed()}
   if(r.action==='reset'){CFG.colors[p]=clone(DEFAULT_CFG.colors[p]);changed()}
 }
-/** a picture chosen by the owner, made small and round-ready: 160×160, centre crop, WebP (or JPEG) */
+/** a picture chosen by the owner, made small and round-ready: 160×160, center crop, WebP (or JPEG) */
 function shrinkImage(file){return new Promise((ok,no)=>{const rd=new FileReader(),im=new Image(); // data: URL (the page's security rules allow no blob: pictures)
   im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=160;const s=Math.min(im.width,im.height),x=c.getContext('2d');
     x.fillStyle='#fff';x.fillRect(0,0,160,160);x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,160,160);

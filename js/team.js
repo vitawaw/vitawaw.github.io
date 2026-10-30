@@ -6,7 +6,7 @@
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 const TEAM={list:null};
 const PERMS=['nut','inter','refs','text'];
-/** invitation link: e-mail + the secret key from the database (an account can be created only with it) */
+/** invitation link: email + the secret key from the database (an account can be created only with it) */
 const joinLink=(email,key)=>location.origin+location.pathname+'#join='+encodeURIComponent(email)+(key?'&k='+encodeURIComponent(key):'');
 const fmtDate=d=>d?new Date(d).toLocaleDateString(LANG==='ar'?'ar-IQ-u-nu-latn':'en-GB',{year:'numeric',month:'short',day:'numeric'}):'';
 
@@ -35,7 +35,7 @@ async function teamInvite(prefill){
     return sendInvite(v[1],v[0],inv&&inv.key);
   }
 }
-/** Shows the invitation link with copy / WhatsApp / e-mail buttons. */
+/** Shows the invitation link with copy / WhatsApp / email buttons. */
 async function sendInvite(email,name,key){
   const link=joinLink(email,key),msg=T('tm_msg').replace('{name}',name||'').replace('{email}',email).replace('{link}',link);
   while(true){

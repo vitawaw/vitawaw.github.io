@@ -3,7 +3,7 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.11.0';
+const APP_VERSION='1.11.1';
 /* the medical review stamp is set by the owner (menu → site → «ختم المراجعة الطبية») and published with the settings: CFG.review */
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
@@ -17,12 +17,12 @@ const DEFAULT_CFG={
   text:{},
   nutOrder:[], /* order of the vitamins (ids); empty = default order. Owner only. */
   brand:{l1:'',l2:'',url:''},
-  review:{n:{ar:'الصيدلاني سيف الدين',en:'Pharmacist Saifaldeen'},date:'2026-10-29'}, /* medical review stamp under each result; empty name = hidden. Owner only. */ /* footer logos: l1 = app logo (empty = built-in), l2 = parent company logo, url = company site */
+  review:{n:{ar:'الصيدلي سيف الدين',en:'Pharmacist Saifaldeen'},date:'2026-10-29'}, /* medical review stamp under each result; empty name = hidden. Owner only. */ /* footer logos: l1 = app logo (empty = built-in), l2 = parent company logo, url = company site */
   /* info pages in the side menu (☰ → معلومات). The owner can edit, hide, add and delete them. Plain text: an empty line starts a new paragraph. */
   pages:[
    {id:'about',t:{ar:'حول التطبيق',en:'About the app'},b:{ar:'VITAWAW حاسبة لجرعات الفيتامينات والمعادن مبنية على مصادر طبية موثوقة، مع التداخلات الدوائية وأدوات صيدلانية مساعدة.\n\nكل رقم في النتيجة مرتبط بمصدره، ويمكنك فتح المصدر بالضغط على رقمه.\n\nيراجع صيدلي كل إضافة جديدة قبل أن تظهر للزوار.',en:'VITAWAW is a vitamin and mineral dose calculator based on trusted medical sources, with drug interactions and pharmacy tools.\n\nEvery number in a result is linked to its source; tap the number to open it.\n\nA pharmacist reviews every new addition before visitors can see it.'}},
-   {id:'who',t:{ar:'من نحن',en:'About us'},b:{ar:'VITAWAW مشروع صيدلاني أكاديمي أعدّه الصيدلاني سيف الدين، لتبسيط حساب جرعات الفيتامينات والمعادن للصيادلة والمرضى.',en:'VITAWAW is an academic pharmacy project by pharmacist Saifaldeen, made to simplify vitamin and mineral dosing for pharmacists and patients.'}},
-   {id:'privacy',t:{ar:'سياسة الخصوصية',en:'Privacy policy'},b:{ar:'لا نجمع أي بيانات شخصية. العمر والوزن ونتائج التحاليل التي تدخلها تبقى على جهازك فقط ولا تُرسل لأي جهة.\n\nلا نستخدم أدوات تتبّع ولا إعلانات، والخطوط محمّلة من موقعنا نفسه.\n\nيحفظ متصفحك على جهازك إعداداتك فقط: اللغة والمظهر وآخر قسم فتحته.',en:'We do not collect any personal data. The age, weight and lab results you enter stay on your device and are never sent anywhere.\n\nThere are no trackers or ads, and fonts are served from our own site.\n\nYour browser keeps only your settings on your device: language, appearance and the last section you opened.'}},
+   {id:'who',t:{ar:'من نحن',en:'About us'},b:{ar:'VITAWAW مشروع أكاديمي في الصيدلة أعدّه الصيدلي سيف الدين، لتبسيط حساب جرعات الفيتامينات والمعادن للصيادلة والمرضى.',en:'VITAWAW is an academic pharmacy project by pharmacist Saifaldeen, made to simplify vitamin and mineral dosing for pharmacists and patients.'}},
+   {id:'privacy',t:{ar:'سياسة الخصوصية',en:'Privacy policy'},b:{ar:'لا نجمع أي بيانات شخصية. العمر والوزن ونتائج التحاليل التي تدخلها تبقى على جهازك فقط ولا تُرسل لأي جهة.\n\nلا نستخدم أدوات تتبّع ولا إعلانات، والخطوط محمّلة من موقعنا نفسه.\n\nيحفظ متصفحك على جهازك فقط: إعداداتك (اللغة والمظهر وآخر قسم فتحته)، وما تختار حفظه بنفسك في «سجل تحاليلي» و«أدويتي». تستطيع حذفها في أي وقت من داخل التطبيق.\n\nرابط «شارك برابط» يحمل القيم التي أدخلتها فقط، ولا تُحفظ في أي مكان.',en:'We do not collect any personal data. The age, weight and lab results you enter stay on your device and are never sent anywhere.\n\nThere are no trackers or ads, and fonts are served from our own site.\n\nYour browser keeps on your device only your settings (language, appearance and the last section you opened) and what you choose to save in «My lab results» and «My medicines». You can delete them at any time in the app.\n\nA «Share by link» link carries only the values you entered; they are not stored anywhere.'}},
    {id:'disclaimer',t:{ar:'إخلاء المسؤولية',en:'Disclaimer'},b:{ar:'المعلومات في التطبيق للتثقيف ولمساعدة الصيدلي والطبيب، ولا تغني عن الاستشارة الطبية.\n\nلا تبدأ جرعة علاجية ولا توقفها دون مراجعة الطبيب أو الصيدلي، خاصة للحامل والأطفال ومرضى الكلى.',en:'The information in this app is for education and to support pharmacists and doctors; it does not replace medical advice.\n\nDo not start or stop a treatment dose without a doctor or pharmacist, especially in pregnancy, children and kidney disease.'}}
   ],
   roadmap:[
@@ -42,7 +42,7 @@ const DEFAULT_CFG={
    - "<" and ">" in any text become full-width ‹ › look-alikes (medical text like "<20" still reads fine)
    - links must start with http:// or https:// (blocks javascript: links)
    - ids, status and icon names may only contain letters, numbers, "_" and "-"
-   - colours must be hex (#rrggbb), e-mail and phone must look like an e-mail and a phone number */
+   - colors must be hex (#rrggbb), email and phone must look like an email and a phone number */
 const SAFE_ID_KEYS=new Set(['k','id','st','ic','sev','uk','sx','go']);
 function clean(v,key){
   if(typeof v==='string'){
@@ -81,6 +81,6 @@ const EMAILF=()=>CFG.contact.email||'';
 const PHONEF=()=>(CFG.contact.phone||'').trim();
 /** WhatsApp chat link for the contact phone (digits only, international format). */
 const waLink=(text='')=>{const d=PHONEF().replace(/\D/g,'');return d?`https://wa.me/${d}${text?'?text='+encodeURIComponent(text):''}`:''};
-/** Link to send us a message: e-mail if there is one, otherwise WhatsApp to the phone. */
+/** Link to send us a message: email if there is one, otherwise WhatsApp to the phone. */
 const msgLink=(subj,body='')=>EMAILF()?mailto(subj,body):waLink(subj+(body?'\n'+body:''));
 const mailto=(subj,body='')=>`mailto:${encodeURIComponent(EMAILF()).replace('%40','@')}?subject=${encodeURIComponent(subj)}${body?'&body='+encodeURIComponent(body):''}`;

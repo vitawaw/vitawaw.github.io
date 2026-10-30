@@ -17,7 +17,7 @@
 <link rel="preload" href="fonts/tajawal-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/tajawal-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.11.0-b750ea07">
+<link rel="stylesheet" href="css/app.css?v=1.11.1-b750ea07">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu">القائمة</h2><div id="side-b"></div></aside>
@@ -54,9 +54,9 @@
  <section class="welcome" id="welcome" hidden>
    <div class="wh"><h2 data-t="w_t">أهلاً بك في VITAWAW</h2><button class="x" id="wclose" aria-label="close">×</button></div>
    <ol class="steps"><li data-t="w_1">اختر الفيتامين أو المعدن</li><li data-t="w_2">أدخل العمر ونتيجة التحليل</li><li data-t="w_3">تظهر الجرعة وخطة العلاج ومصدرها</li></ol>
-   <div class="who-row"><span data-t="w_q">من يستخدم الحاسبة؟</span><button class="btn" data-mode="pro" data-t="m_pro">صيدلاني</button><button class="btn" data-mode="pt" data-t="m_pt">مريض</button></div>
+   <div class="who-row"><span data-t="w_q">من يستخدم الحاسبة؟</span><button class="btn" data-mode="pro" data-t="m_pro">صيدلي</button><button class="btn" data-mode="pt" data-t="m_pt">مريض</button></div>
  </section>
- <script src="js/pre.js?v=1.11.0-20f65a20"></script>
+ <script src="js/pre.js?v=1.11.1-20f65a20"></script>
  <div class="calc">
   <div class="col">
    <section>
@@ -142,7 +142,7 @@
 
     <div data-for="vac" class="block">
       <label class="l" for="vag" data-t="vag">السبب</label>
-      <select id="vag"><option value="prev" data-t="va_prev">الوقاية (برنامج WHO)</option><option value="xer" data-t="va_xer">علاج جفاف العين (Xerophthalmia)</option><option value="mea" data-t="va_mea">الحصبة</option></select>
+      <select id="vag"><option value="prev" data-t="va_prev">الوقاية (برنامج WHO)</option><option value="xer" data-t="va_xer">علاج جفاف الملتحمة والقرنية (Xerophthalmia)</option><option value="mea" data-t="va_mea">الحصبة</option></select>
     </div>
 
     <div data-for="ca" class="block">
@@ -170,7 +170,7 @@
 
   <section class="resbox" id="resbox" aria-live="polite">
     <div class="rtop"><h2><span class="n">3</span><span data-t="s3">النتيجة</span></h2>
-      <div class="seg" role="group" id="modeg"><button data-mode="pro" aria-pressed="true" data-t="m_pro">صيدلاني</button><button data-mode="pt" aria-pressed="false" data-t="m_pt">مريض</button></div>
+      <div class="seg" role="group" id="modeg"><button data-mode="pro" aria-pressed="true" data-t="m_pro">صيدلي</button><button data-mode="pt" aria-pressed="false" data-t="m_pt">مريض</button></div>
     </div>
     <div class="res" id="res"></div>
   </section>
@@ -314,9 +314,9 @@
 <!-- ================= SOURCES ================= -->
 <div class="page narrow" id="sources" role="tabpanel" aria-labelledby="t-sources" hidden>
   <button class="btn back" id="back" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path id="backarrow" d="M9 6l6 6-6 6"/></svg><span data-t="back">رجوع</span></button>
-  <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg></span><h2 data-t="ts_t">المصادر العلمية</h2></div><p data-t="hs_l">كل جرعة في الحاسبة مأخوذة من مصدر طبي معروف، مثل Medscape وNIH والجمعيات العلمية ومراجعات Cochrane.</p></section>
+  <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg></span><h2 data-t="ts_t">المصادر العلمية</h2></div><p data-t="hs_l">كل جرعة في الحاسبة مأخوذة من مصدر طبي موثوق: الإرشادات السريرية (Endocrine Society وNICE وWHO وAAP)، وNIH، ونشرات الأدوية الرسمية، ومراجعات Cochrane.</p></section>
   <section>
-    <p class="meta" data-t="ts_m">كل رقم أزرق في الحاسبة يشير إلى أحد هذه المصادر. آخر مراجعة للمصادر: 28 أكتوبر 2026.</p>
+    <p class="meta" data-t="ts_m">كل رقم أزرق في الحاسبة يشير إلى أحد هذه المصادر، وتحت كل مصدر تاريخ آخر مراجعة له.</p>
     <div class="reviewed" id="rev2" hidden></div>
     <div class="filters" id="sfilters"></div>
     <p class="meta" data-t="rt_note">مرتبة من الأقوى: الإرشادات السريرية، ثم المراجع الرسمية، ثم نشرات الأدوية، ثم الدراسات، ثم المراجع السريرية.</p>
@@ -359,21 +359,21 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see">عرض النتيجة</span></div>
 
-<script src="js/config.js?v=1.11.0-e772fb19" defer></script>
-<script src="js/i18n.js?v=1.11.0-b258fddf" defer></script>
-<script src="js/data.js?v=1.11.0-80738b10" defer></script>
-<script src="js/util.js?v=1.11.0-19fde934" defer></script>
-<script src="js/validation.js?v=1.11.0-0db6be41" defer></script>
-<script src="js/render.js?v=1.11.0-ca47386d" defer></script>
-<script src="js/calculators.js?v=1.11.0-a2d71cb6" defer></script>
-<script src="js/content.js?v=1.11.0-43851910" defer></script>
-<script src="js/tools.js?v=1.11.0-6c7eab26" defer></script>
-<script src="js/lists.js?v=1.11.0-3691e0dd" defer></script>
-<script src="js/ui.js?v=1.11.0-d62811ed" defer></script>
-<script src="js/published.js?v=1.11.0-87f710f2" defer></script>
-<script src="js/owner.js?v=1.11.0-8e2e922c" defer></script>
-<script src="js/nav.js?v=1.11.0-d1741d89" defer></script>
-<script src="js/team.js?v=1.11.0-d2185675" defer></script>
-<script src="js/boot.js?v=1.11.0-fa591121" defer></script>
+<script src="js/config.js?v=1.11.1-3d0d65ea" defer></script>
+<script src="js/i18n.js?v=1.11.1-45c88972" defer></script>
+<script src="js/data.js?v=1.11.1-5672c063" defer></script>
+<script src="js/util.js?v=1.11.1-19fde934" defer></script>
+<script src="js/validation.js?v=1.11.1-0db6be41" defer></script>
+<script src="js/render.js?v=1.11.1-b6302095" defer></script>
+<script src="js/calculators.js?v=1.11.1-ed27f643" defer></script>
+<script src="js/content.js?v=1.11.1-3ee5aa74" defer></script>
+<script src="js/tools.js?v=1.11.1-6004d8ff" defer></script>
+<script src="js/lists.js?v=1.11.1-3691e0dd" defer></script>
+<script src="js/ui.js?v=1.11.1-cec8fdc9" defer></script>
+<script src="js/published.js?v=1.11.1-87f710f2" defer></script>
+<script src="js/owner.js?v=1.11.1-d7c63e3d" defer></script>
+<script src="js/nav.js?v=1.11.1-d1741d89" defer></script>
+<script src="js/team.js?v=1.11.1-eb689bb8" defer></script>
+<script src="js/boot.js?v=1.11.1-fa591121" defer></script>
 </body>
 </html>

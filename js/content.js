@@ -76,7 +76,7 @@ function fCustom(id){
   const age=x.age,sx=$('sex').value,u=' '+tx2(c.u||UNITTXT[c.uk]),nm=tx2(c.n),row=pickRow(c.rows||[],age,sx);
   const refs=(c.r||[]).filter(n=>REFS[n]);
   if(!row){render({badge:L('لا توجد قيمة','No value'),tone:'warn',title:esc(L(`لا توجد جرعة مسجّلة لهذا العمر في ${nm}`,`No dose recorded for this age in ${nm}`)),sub:esc(L('راجع الطبيب أو الصيدلي','Ask a doctor or pharmacist')),refs});return}
-  const kv=[[L('الاحتياج اليومي (RDA)','Daily need (RDA)'),esc(row.rda+u)],[L('الحد الأعلى (UL)','Upper limit (UL)'),row.ul?esc(row.ul+u+L(' / يوم',' / day')):L('غير محدد','Not established')]];
+  const kv=[[L('المقدار اليومي الموصى به (RDA)','Recommended Dietary Allowance (RDA)'),esc(row.rda+u)],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),row.ul?esc(row.ul+u+L(' / يوم',' / day')):L('غير محدد','Not established')]];
   const r={badge:L('الاحتياج اليومي','Daily requirement'),tone:'info',title:esc(L(`${row.rda}${u} ${nm} يومياً`,`${row.rda}${u} ${nm} daily`)),sub:esc(tx2(c.h)),refs,kv,
     pt:esc(L(`تحتاج ${row.rda}${u} من ${nm} يومياً.`,`You need ${row.rda}${u} of ${nm} a day.`))};
   if(tx2(c.plan))r.opts=[{h:L('التوجيه العلاجي','Treatment guidance'),b:esc(tx2(c.plan)),r:refs}];

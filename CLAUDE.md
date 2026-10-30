@@ -69,6 +69,8 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-30)
+- **1.11.1 in preview**: full wording review (he chose «الصيدلي» everywhere and American English); glossary: المقدار اليومي الموصى به (RDA),
+  المدخول الكافي (AI), الحد الأعلى الآمن (UL), جرعة المداومة, طبيب النسائية والتوليد. Keep these terms in new texts.
 - **1.11.0 in preview** (same branch): roadmap status `now` + `go` (GO map in lists.js, owner picks in editFeature); calendar .ics
   (`icsFile()/icsDownload()/schCalendar()` in tools.js, `r.cal` in calculators); lab history `#tool-labs` (`LABT`, `LABS` in
   localStorage vw-labs, `labChart()`), `r.lab`; doctor report `openReport()/repHTML()` in render.js (+ print CSS, `#rep`);

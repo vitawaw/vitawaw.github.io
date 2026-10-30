@@ -60,7 +60,7 @@ const DEF_INTER=[
 ['mg',['المغنيسيوم','Magnesium'],['مدرات البول ومثبطات مضخة البروتون','Diuretics and proton pump inhibitors'],['قد تخفض المغنيسيوم مع الاستعمال الطويل، فيُراقب المستوى','May lower magnesium with long-term use; monitor levels'],[20]],
 ['ca',['الكالسيوم','Calcium'],['نوع الملح','Salt form'],['Carbonate مع الطعام، وCitrate مع الطعام أو بدونه، وبجرعة 500 ملغ أو أقل في المرة','Carbonate with food; citrate with or without food; 500 mg or less per dose'],[18]],
 ['d',['فيتامين D','Vitamin D'],['Orlistat وCholestyramine والكورتيزون','Orlistat, cholestyramine, glucocorticoids'],['تقلل امتصاص فيتامين D أو تأثيره','Reduce vitamin D absorption or effect'],[4]],
-['d',['فيتامين D','Vitamin D'],['مدرات Thiazide','Thiazide diuretics'],['تزيد خطر ارتفاع الكالسيوم مع جرعات D العالية','Raise the risk of high calcium with high vitamin D doses'],[4]],
+['d',['فيتامين D','Vitamin D'],['مدرات البول الثيازيدية','Thiazide diuretics'],['تزيد خطر ارتفاع الكالسيوم مع جرعات D العالية','Raise the risk of high calcium with high vitamin D doses'],[4]],
 ['b12',['فيتامين B12','Vitamin B12'],['Metformin ومثبطات مضخة البروتون وحاصرات H2','Metformin, PPIs, H2 blockers'],['تقلل B12 مع الاستعمال الطويل، فيُفحص المستوى دورياً','Lower B12 with long-term use; check levels periodically'],[8]],
 ['fol',['حمض الفوليك','Folic acid'],['Methotrexate ومضادات الصرع وSulfasalazine','Methotrexate, anticonvulsants, sulfasalazine'],['تداخل في الاتجاهين؛ يحدد الطبيب الجرعة','Two-way interaction; the doctor sets the dose'],[11,28]]
 ];

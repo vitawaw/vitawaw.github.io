@@ -1,6 +1,6 @@
 /* VITAWAW · js/ui.js
    Page behaviour: tabs/navigation, professional/patient mode, welcome card, patient card, theme, examples,
-   language switch (setLang), event wiring, colours and refreshAll().
+   language switch (setLang), event wiring, colors and refreshAll().
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
 const PAGES=['calc','tools','interactions','sources','roadmap','notif','menu'];
@@ -168,7 +168,7 @@ function shareLink(){
 async function shareResult(){
   const url=shareLink(),title='VITAWAW · '+document.querySelector('#picker [aria-pressed="true"] span').textContent;
   try{if(navigator.share){await navigator.share({title,url});return}}catch(e){if(e&&e.name==='AbortError')return}
-  const done=()=>toast(T('sh_copied'));try{await navigator.clipboard.writeText(url);done()}catch(e){fallback(url,done)}
+  const done=()=>toast(T('sh_rcopied'));try{await navigator.clipboard.writeText(url);done()}catch(e){fallback(url,done)}
 }
 function loadShared(code){
   let o=null;try{o=JSON.parse(b64u.dec(code))}catch(e){}
@@ -216,7 +216,7 @@ $('albu').addEventListener('change',()=>{const v=nv('alb');if(v!=null)$('alb').v
 $('ulage').addEventListener('change',ul);$('ulin').addEventListener('input',ul);$('ucv').addEventListener('change',ucv);$('uval').addEventListener('input',ucv);
 $('ght').addEventListener('input',()=>{gtTouched=true;gz()});
 
-/* ===================== colours ===================== */
+/* ===================== colors ===================== */
 function applyColors(){
   Object.entries(CFG.colors).forEach(([p,c])=>{const el=$(p);if(!el)return;el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1]);const t=$('t-'+p);if(t)t.style.setProperty('--ti',c[1])});
 }
