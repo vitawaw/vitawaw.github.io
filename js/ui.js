@@ -6,8 +6,8 @@
 const PAGES=['calc','tools','interactions','sources','roadmap','notif','menu'];
 let cur='calc';
 function show(p){
-  if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='notif'&&!(typeof OWN!=='undefined'&&OWN.on)))p='calc'; // wide screens show the menu at the side; notifications are for the team
-  cur=p;
+  if(!PAGES.includes(p)||(p==='menu'&&WIDE()))p='calc'; // wide screens show the menu at the side
+  cur=p;if(typeof rememberRecent==='function')rememberRecent('p:'+p);
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1});
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
   if(p!=='menu'&&p!=='notif')try{localStorage.setItem('vw-p',p)}catch(e){}
@@ -27,7 +27,7 @@ function routeSpecial(){
   return false;
 }
 document.querySelectorAll('.tab[data-p]').forEach(t=>{
-  t.addEventListener('click',()=>go(t.dataset.p));
+  t.addEventListener('click',()=>{if(t.dataset.p==='menu'&&WIDE()){toggleSide();return}go(t.dataset.p)}); // computers: ☰ shows or hides the side menu
   t.addEventListener('keydown',e=>{
     const vis=[...document.querySelectorAll('.tab[data-p]')].filter(x=>x.offsetParent!==null),i=vis.indexOf(t),rtl=document.documentElement.dir==='rtl';
     let j=null;if(e.key==='ArrowRight')j=rtl?i-1:i+1;if(e.key==='ArrowLeft')j=rtl?i+1:i-1;

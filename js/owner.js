@@ -250,8 +250,30 @@ async function loadNotes(){
   const {data,error}=await OWN.client.from('notifications').select('id,kind,item,label,at,read').order('at',{ascending:false}).limit(50);
   NOTE.mine=error?[]:clean(data||[]);NOTE.loaded=true;renderNav();
 }
-/** number on the 🔔 tab: owner = changes to decide, pharmacist = unread decisions */
-const notifCount=()=>!(typeof OWN!=='undefined'&&OWN.on)?0:ISOWNER()?pendingCount():NOTE.mine.filter(n=>!n.read).length;
+/** number on the 🔔 tab: owner = changes to decide, pharmacist = unread decisions, visitor = new features and lab reminders */
+const notifCount=()=>!(typeof OWN!=='undefined'&&OWN.on)?pubNew().length:ISOWNER()?pendingCount():NOTE.mine.filter(n=>!n.read).length;
+/* ----- notifications for everyone (kept on this device only): new features and lab results that are 3 months old ----- */
+let SEEN=[];try{SEEN=JSON.parse(localStorage.getItem('vw-seen')||'[]').filter(x=>typeof x==='string').slice(-200)}catch(e){}
+const LABDUE=90; // days after the last saved result before the reminder (a reminder to ask, not a medical rule)
+function pubItems(){
+  const out=[];
+  (CFG.roadmap||[]).forEach((x,i)=>{if(x.st==='now'&&!x.hidden)out.push({key:'rm:'+String((x.t&&(x.t.en||x.t.ar))||i).slice(0,40),kind:'feat',x})});
+  LABT.forEach(t=>{const pts=LABS.filter(x=>x.k===t[0]),last=pts[pts.length-1];
+    if(last&&(Date.now()-Date.parse(last.d))/864e5>=LABDUE)out.push({key:'lab:'+t[0]+':'+last.d,kind:'lab',t,last})});
+  return out;
+}
+const pubNew=()=>pubItems().filter(n=>!SEEN.includes(n.key));
+function pubSeen(){const k=pubItems().map(n=>n.key);if(k.every(x=>SEEN.includes(x)))return;SEEN=[...new Set([...SEEN,...k])].slice(-200);try{localStorage.setItem('vw-seen',JSON.stringify(SEEN))}catch(e){}}
+function pubNotifHTML(){
+  const it=pubItems(),isNew=n=>!SEEN.includes(n.key),labs=it.filter(n=>n.kind==='lab'),feats=it.filter(n=>n.kind==='feat');
+  let h=`<h3 class="nsec">${T('nn_rem')}</h3>`;
+  h+=labs.length?labs.map(n=>`<div class="ncard${isNew(n)?' unread':''}">${nico('edit')}<div class="nb"><div class="nh"><b>${esc(L(n.t[1],n.t[2]))}</b> · <span class="nby">${esc(T('nn_last'))} <bdi>${esc(n.last.d)}</bdi></span></div>
+    <div class="nl">${esc(T('nn_lab'))}</div><div class="filters"><button type="button" class="btn" data-tool="labs">${esc(T('lb_t'))}</button></div></div></div>`).join('')
+    :`<p class="inone">${T(LABS.length?'nn_labok':'nn_nolab')}</p>`;
+  if(feats.length)h+=`<h3 class="nsec">${T('nn_new')}</h3>`+feats.map(n=>`<div class="ncard${isNew(n)?' unread':''}">${nico('new')}<div class="nb"><div class="nh"><b>${esc(tx2(n.x.t))}</b></div><div class="nl">${esc(tx2(n.x.d))}</div>
+    ${GO[n.x.go]?`<div class="filters"><button type="button" class="btn pri" data-rmgo="${esc(n.x.go)}">${T('rm_try')}</button></div>`:''}</div></div>`).join('');
+  return h;
+}
 const NKIND={r:'tab_src',i:'tab_int',n:'ad_vit',x:'nt_texts_k'};
 /** what a pharmacist's texts proposal changes: page texts and info pages (titles) */
 function textChanges(tm){
@@ -265,9 +287,10 @@ function textChanges(tm){
 const NICO={new:'<path d="M12 5v14M5 12h14"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',del:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',approved:'<path d="M5 12l5 5 9-10"/>',rejected:'<path d="M6 6l12 12M18 6L6 18"/>'};
 const nico=k=>`<span class="nic nic-${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">${NICO[k]}</svg></span>`;
 function renderNotif(opening){
-  if(!$('notif-b')||typeof OWN==='undefined'||!OWN.on)return;
+  if(!$('notif-b'))return;
   ACT.n=[];const S=c=>chipH('n',c);let h='';
-  if(ISOWNER()){
+  if(!OWN.on){} // visitors: only the part below
+  else if(ISOWNER()){
     const list=notifList();
     h+=`<p class="hint">${T('nt_hint')}</p>`;
     if(list.length>1)h+=`<div class="ntop"><b>${list.length} ${T('nt_waiting')}</b><div class="filters">${S({label:T('nt_all'),cls:'pri',f:()=>decideAll(list)})}</div></div>`;
@@ -287,7 +310,8 @@ function renderNotif(opening){
       OWN.client.from('notifications').update({read:true}).eq('read',false).then(r=>{if(r&&r.error)return;mine.forEach(n=>n.read=true);renderNav()});
     }
   }
-  $('notif-b').innerHTML=h;
+  $('notif-b').innerHTML=h;$('notif-p').innerHTML=(OWN.on?`<div class="nsep"></div>`:'')+pubNotifHTML();
+  if(opening){pubSeen();setTimeout(renderNav,0)}
 }
 /* ===================== source links (owner, in 🔔) =====================
    The worker checks the links of the published sources (/api/links, 25 per request). It runs by itself when 🔔 is opened
@@ -670,7 +694,7 @@ async function logout(){
   if(dirty()){const q=await dialog({title:T('o_leave'),buttons:[{label:T('o_back'),action:'cancel'},{label:T('o_leaveyes'),action:'ok',pri:1,danger:1}]});if(q.action!=='ok')return}
   if(!OWN.local&&OWN.client)try{await OWN.client.auth.signOut()}catch(e){}
   closeSheet(false);TEAM.list=null;
-  OWN.on=false;OWN.preview=false;OWN.perms={};OWN.name='';OWN.role=null;OWN.del=null;OWN.team=null;NOTE.mine=[];if(cur==='notif')go('calc');
+  OWN.on=false;OWN.preview=false;OWN.perms={};OWN.name='';OWN.role=null;OWN.del=null;OWN.team=null;NOTE.mine=[];
   document.body.classList.remove('owner','preview','not-owner','cant-nut','cant-inter','cant-refs','cant-text');CFG=mergeCfg(DEFAULT_CFG,PUBLISHED);refreshAll();
 }
 $('o-save').addEventListener('click',saveDraft);$('o-publish').addEventListener('click',publish);

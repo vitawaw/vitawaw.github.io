@@ -69,6 +69,13 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-30)
+- **1.12.0 (second try, preview, waiting for «جاهز»)**: built on 1.11.1 with only the items he picked from the proposals (he pasted them).
+  Bottom bar (<1024px): calc · interactions · tools · 🔔 + ☰ (`.offbar` = sources, roadmap → ☰ tiles). Computers: header shows a
+  Facebook-like top bar (`#hsearch` start side, section tabs as icons in the middle incl. sources, 🔔 `#t-notif` and ☰ `#t-menu`
+  absolute on the end side); ☰ on computers = `toggleSide()` (body.noside, localStorage vw-side). Same `menuHTML()` on the ☰ page
+  and in `#side`: account card, search, «اختصاراتك» (`RECENT` vw-recent via `rememberRecent()` in show()/openTool), shortcut tiles,
+  folding `details.macc` (`MOPEN`): help, settings, privacy, management (`adminGroups()` rows: مظهر الموقع/التواصل/الصيادلة/النشر,
+  `openColors()`, `openPagesOrder()` drag+edit+new), mine; logout. 🔔 for everyone: `pubItems()` in owner.js, visitor part `#notif-p`.
 - **1.12.0 was REJECTED** («ابقى على اخر اصدار تم نشره لم يعجبني هذا»): live stays 1.11.1. The preview branch was set back to 1.11.1
   by a restore commit; the 1.12.0 work (own pages for schedule/labs/UL, CFG.nav menu manager, 🔔 for everyone + header 🔍/🔔,
   tools page as tiles, grouped ☰ with folding lists) is in the commits a3b8546…5f75622 if he ever asks for a piece of it.

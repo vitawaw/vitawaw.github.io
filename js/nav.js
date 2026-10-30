@@ -9,6 +9,8 @@
 
 /* ===================== helpers ===================== */
 const ICO={
+  image:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>',
+  history:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
   chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>',
   info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
@@ -45,18 +47,42 @@ const WIDE=()=>matchMedia('(min-width:1024px)').matches;
 function pickNut(k){K=k;try{localStorage.setItem('vw-k',k)}catch(e){}apply();go('calc')}
 const SECTIONS=['calc','tools','interactions','sources','roadmap'];
 const SECKEY={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t'};
-/** management groups for the signed-in team (what appears depends on the account's permissions) */
+/** management for the signed-in team, in small groups of rows (what appears depends on the account's permissions) */
 function adminGroups(){
   const A=[];
   if(!(typeof OWN!=='undefined'&&OWN.on&&!OWN.preview))return A;
-  if(CAN('text'))A.push({id:'pages',label:T('ad_pages'),ico:ICO.page,chips:[{label:T('ad_newpage'),cls:'add',f:()=>editPage(null)},{label:T('pg_order'),f:openPagesOrder},
-    ...(CFG.pages||[]).map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>editPage(p.id)}))]});
-  if(ISOWNER()&&!OWN.local)A.push({id:'team',label:T('ad_team'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,chips:[
-    {label:T('ad_invite'),cls:'add',f:()=>teamInvite()},{label:T('ad_accounts'),f:()=>openTeam()},{label:T('ad_invites'),f:()=>openTeam('inv')}]});
-  if(ISOWNER())A.push({id:'site',label:T('ad_site'),ico:ICO.site,chips:[{label:T('o_contact'),f:()=>editContact()},{label:T('br_t'),f:()=>editBrand()},{label:T('rv_t'),f:()=>editReview()},{label:T('vh_t'),f:()=>openVersions()},
-    ...SECTIONS.map(p=>({label:T('ad_colors')+': '+T(SECKEY[p]),f:()=>editColors(p)}))]});
+  const look=[];
+  if(CAN('text'))look.push({label:T('pg_order_l'),sub:T('pg_order_s'),ico:ICO.page,n:(CFG.pages||[]).length,f:openPagesOrder});
+  if(ISOWNER())look.push({label:T('ad_colors_l'),ico:ICO.site,f:openColors},{label:T('br_t'),ico:ICO.image,f:()=>editBrand()},{label:T('rv_t'),ico:ICO.check,f:()=>editReview()});
+  if(look.length)A.push({label:T('ad_look'),rows:look});
+  if(ISOWNER())A.push({label:T('ad_contact'),rows:[{label:T('o_contact'),sub:[CFG.contact.email,CFG.contact.phone].filter(Boolean).join(' · '),ico:MI.mail,f:()=>editContact()}]});
+  if(ISOWNER()&&!OWN.local)A.push({label:T('ad_team'),rows:[{label:T('ad_invite_l'),ico:MI.invite,f:()=>teamInvite()},
+    {label:T('ad_accounts'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,f:()=>openTeam()},{label:T('ad_invites'),ico:MI.mail,f:()=>openTeam('inv')}]});
+  if(ISOWNER())A.push({label:T('ad_pub'),rows:[{label:T('vh_t'),ico:ICO.history,f:()=>openVersions()}]});
   return A;
 }
+/** banner colours of each section (owner) */
+function openColors(){
+  if(!ISOWNER())return;
+  openSheet(T('ad_colors_l'),`<div class="olist">${SECTIONS.map(p=>`<div class="orow"><span class="di" style="${colorVars(p)}">${tabIco(p)}</span><span class="nvn">${esc(T(SECKEY[p]))}</span><div class="filters">${chipH('s',{label:T('o_edit'),f:async()=>{closeSheet(false);await editColors(p);openColors()}})}</div></div>`).join('')}</div>`,{key:'colors'});
+}
+/* «your shortcuts»: the last pages and tools this visitor opened (this device only) */
+let RECENT=[];try{RECENT=JSON.parse(localStorage.getItem('vw-recent')||'[]').filter(x=>typeof x==='string').slice(0,8)}catch(e){}
+function rememberRecent(k){if(k==='p:menu'||k==='p:notif')return;RECENT=[k,...RECENT.filter(x=>x!==k)].slice(0,8);try{localStorage.setItem('vw-recent',JSON.stringify(RECENT))}catch(e){}if(k[0]==='t')renderMenu()}
+function recentItem(k){
+  const [t,id]=k.split(':');
+  if(t==='p'&&SECKEY[id])return {label:T(SECKEY[id]),ico:tabIco(id),page:id,f:()=>go(id)};
+  const tl=TOOLS.find(x=>TOOLKIND[x[0]]===id);
+  if(t==='t'&&tl){const ic=$(tl[0])&&$(tl[0]).querySelector('.ttl-ic svg');return {label:T(tl[1]),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openTool(id)}}
+  return null;
+}
+/* computers: ☰ shows or hides the side menu (remembered on this device) */
+function toggleSide(on){
+  on=on==null?document.body.classList.contains('noside'):on;
+  document.body.classList.toggle('noside',!on);$('t-menu').setAttribute('aria-selected',on);
+  try{localStorage.setItem('vw-side',on?'1':'0')}catch(e){}
+}
+try{if(localStorage.getItem('vw-side')==='0')document.body.classList.add('noside')}catch(e){}
 /** labels and the 🔔 count; redraws the menu page and the side menu */
 function renderNav(){
   if(!$('side'))return;
@@ -64,6 +90,9 @@ function renderNav(){
   const nc=notifCount();$('nt-count').hidden=!nc;$('nt-count').textContent=nc>99?'99+':nc;
   document.body.classList.toggle('team',typeof OWN!=='undefined'&&OWN.on);
   if(cur==='notif')renderNotif();
+  $('hsearch').setAttribute('aria-label',T('gs_t'));
+  document.querySelectorAll('.tab[data-p]').forEach(t=>{const lb=t.querySelector('.full,[data-t]');if(lb)t.title=lb.textContent}); // computers show icons only: the name appears on hover
+  if(WIDE())$('t-menu').setAttribute('aria-selected',!document.body.classList.contains('noside'));
   renderMenu();
 }
 // older names (owner bar «awaiting review ›», tests)
@@ -113,43 +142,52 @@ function menuHTML(r){
     return `<button type="button" class="mi${c.cls?' '+c.cls:''}${c.on?' on':''}" data-na="${r}${ACT[r].push(c.f)-1}"${c.on?' aria-current="page"':''}>${inner}</button>`;
   };
   const tile=(c)=>{
-    const inner=`<span class="di"${c.page?` style="${colorVars(c.page)}"`:''}>${c.ico||ICO.info}</span><span class="tl">${esc(c.label)}</span>`;
+    const inner=`<span class="di"${c.page?` style="${colorVars(c.page)}"`:''}>${c.ico||ICO.info}</span><span class="tl">${esc(c.label)}</span>${c.n?`<span class="tcount">${c.n}</span>`:''}`;
     if(c.href)return `<a class="mtile" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`;
     return `<button type="button" class="mtile" data-na="${r}${ACT[r].push(c.f)-1}">${inner}</button>`;
   };
   const seg=(ico,label,cs)=>`<div class="mi seg"><span class="di">${ico}</span><span class="mt">${esc(label)}</span><div class="segc">${cs.map(x=>chipH(r,x)).join('')}</div></div>`;
   const grp=(title,body,cls='')=>body?`<div class="mg${cls?' '+cls:''}">${title?`<h3>${esc(title)}</h3>`:''}<div class="ml">${body}</div></div>`:'';
+  const acc=(key,ico,title,body)=>body?`<details class="macc" data-acc="${key}"${MOPEN.has(key)?' open':''}><summary class="mi"><span class="di">${ico}</span><span class="mt">${esc(title)}</span>${CHEV}</summary><div class="macb">${body}</div></details>`:'';
+  const pg=id=>visiblePages().find(p=>p.id===id),pgItem=p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),ico:ICO.info,f:()=>openPage(p.id)});
   let h='';
-  // account card (Facebook: your profile at the top); publishing is in the bar at the top of every page
+  if(!page)h+=`<div class="slogo"><span class="mk"><svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg></span><span class="wm">VITA<em>WAW</em></span></div>`;
+  // account card at the top (Facebook: your profile); publishing is in the bar at the top of every page
   h+=own
     ?`<div class="mcard solo"><span class="av">${MI2.shield}</span><div class="mt"><b>${esc(whoLabel())}</b><small>${esc(T('mn_team'))}</small></div></div>`
-    :page?`<div class="mcard"><span class="av">${MI2.user}</span><div class="mt"><b>${esc(T('mr_account'))}</b><small>${esc(T('mn_guest'))}</small></div></div><div class="mcard-a"><div class="filters">${chipH(r,{label:T('o_login'),cls:'pri',f:()=>openOwner()})}${chipH(r,{label:T('mr_join'),f:()=>openOwner({join:''})})}</div></div>`:'';
-  // sections (side menu only: on phones they are in the bottom bar)
-  if(!page)h=`<div class="slogo"><span class="mk"><svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg></span><span class="wm">VITA<em>WAW</em></span></div>`+
-    grp('',[...SECTIONS,...(own?['notif']:[])].map(p=>row({label:T(SECKEY[p]),ico:tabIco(p),page:p,on:cur===p,n:p==='notif'?notifCount():0,f:()=>go(p)})).join(''),'secs')+h;
+    :`<div class="mcard"><span class="av">${MI2.user}</span><div class="mt"><b>${esc(T('mr_account'))}</b><small>${esc(T('mn_guest'))}</small></div></div><div class="mcard-a"><div class="filters">${chipH(r,{label:T('o_login'),cls:'pri',f:()=>openOwner()})}${chipH(r,{label:T('mr_join'),f:()=>openOwner({join:''})})}</div></div>`;
   // one search for everything (calculators, tools, interactions, sources, pages)
   h+=`<button type="button" class="gsbtn" data-na="${r}${ACT[r].push(openSearch)-1}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>${esc(T('gs_ph'))}</span></button>`;
-  const A=own?adminGroups():[];
-  if(A.length)h+=grp(T('nv_admin'),A.map(g=>`<div class="mi grp"><span class="di">${g.ico}</span><span class="mt">${esc(g.label)}</span>${g.n?`<span class="cnt">${g.n}</span>`:''}</div><div class="filters mchips">${g.chips.map(c=>chipH(r,c)).join('')}</div>`).join(''),'admin');
-  // shortcuts: information pages, app, contact
-  const info=[...(page?[{label:T('tab_rm'),ico:tabIco('roadmap'),page:'roadmap',f:()=>go('roadmap')}]:[]),{label:T('lb_t'),ico:ICO.chart,f:()=>openTool('labs')},
-    ...visiblePages().map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>openPage(p.id)}))];
-  const app=[{label:T('mr_share'),ico:MI.share,f:shareApp},{label:T('mr_install'),ico:MI.install,f:installApp}];
-  if(PHONEF())app.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
-  if(EMAILF())app.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
-  if(PHONEF())app.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
-  if(page)h+=`<div class="mg"><h3>${esc(T('mn_short'))}</h3><div class="mtiles">${[...info,...app].map(tile).join('')}</div></div>`;
-  else h+=grp(T('nv_info'),info.map(row).join(''))+grp(T('mr_app'),app.map(row).join(''));
-  h+=grp(T('mr_settings'),
-    seg(MI.lang,T('mr_lang'),[{label:'العربية',pressed:LANG==='ar',f:()=>setLang('ar')},{label:'English',pressed:LANG==='en',f:()=>setLang('en')}])+
+  // «your shortcuts»: round, scrolls sideways, the last 6 used
+  const rec=RECENT.map(recentItem).filter(Boolean).slice(0,6);
+  if(rec.length)h+=`<div class="mg"><h3>${esc(T('mn_recent'))}</h3><div class="mrec">${rec.map(c=>`<button type="button" class="mrc" data-na="${r}${ACT[r].push(c.f)-1}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span>${esc(c.label)}</span></button>`).join('')}</div></div>`;
+  // shortcut tiles: the sections that are not in the bar (phones) or the top bar (computers), lab results, information pages
+  const tiles=[...(page?[{label:T('tab_src'),ico:tabIco('sources'),page:'sources',f:()=>go('sources')}]:[]),{label:T('tab_rm'),ico:tabIco('roadmap'),page:'roadmap',f:()=>go('roadmap')},
+    {label:T('lb_t'),ico:ICO.chart,f:()=>openTool('labs')},...visiblePages().filter(p=>!['faq','privacy','disclaimer'].includes(p.id)).map(pgItem)];
+  h+=`<div class="mg"><h3>${esc(T('mn_short'))}</h3><div class="mtiles">${tiles.map(tile).join('')}</div></div>`;
+  // folding lists, like «Help» and «Settings» on Facebook
+  const help=[pg('faq')&&pgItem(pg('faq')),{label:T('sg_t'),ico:MI.mail,f:()=>{go('roadmap');setTimeout(()=>{const c=document.querySelector('#roadmap .contact');if(c)c.scrollIntoView({block:'start'})},60)}}];
+  if(PHONEF())help.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
+  if(EMAILF())help.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
+  if(PHONEF())help.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
+  const set=seg(MI.lang,T('mr_lang'),[{label:'العربية',pressed:LANG==='ar',f:()=>setLang('ar')},{label:'English',pressed:LANG==='en',f:()=>setLang('en')}])+
     seg(MI.theme,T('mr_theme'),[{label:T('mr_light'),pressed:!isDark(),f:()=>setTheme('light')},{label:T('mr_dark'),pressed:isDark(),f:()=>setTheme('dark')}])+
-    seg(MI.mode,T('mr_mode'),[{label:T('m_pro'),pressed:MODE==='pro',f:()=>setMode('pro')},{label:T('m_pt'),pressed:MODE==='pt',f:()=>setMode('pt')}]));
-  if(own){
-    h+=grp(T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join(''));
-    h+=`<button type="button" class="mout" data-na="${r}${ACT[r].push(logout)-1}">${MI.out}<span>${esc(T('o_logout'))}</span></button>`;
-  }else if(!page)h+=grp(T('mr_account'),row({label:T('o_login'),ico:MI.login,f:()=>openOwner()})+row({label:T('mr_join'),ico:MI.invite,f:()=>openOwner({join:''})}));
+    seg(MI.mode,T('mr_mode'),[{label:T('m_pro'),pressed:MODE==='pro',f:()=>setMode('pro')},{label:T('m_pt'),pressed:MODE==='pt',f:()=>setMode('pt')}])+
+    row({label:T('mr_install'),ico:MI.install,f:installApp})+row({label:T('mr_share'),ico:MI.share,f:shareApp});
+  const A=own?adminGroups():[];
+  h+=`<div class="mg"><div class="ml maccs">`+
+    acc('help',ICO.info,T('ma_help'),help.filter(Boolean).map(row).join(''))+
+    acc('set',MI.theme,T('mr_settings'),set)+
+    acc('priv',MI2.shield,T('ma_priv'),['privacy','disclaimer'].map(pg).filter(Boolean).map(pgItem).map(row).join(''))+
+    (A.length?acc('admin',ICO.site,T('nv_admin'),A.map(g=>`<h4 class="mh4">${esc(g.label)}</h4>`+g.rows.map(row).join('')).join('')):'')+
+    (own?acc('mine',MI.key,T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join('')):'')+
+    `</div></div>`;
+  if(own)h+=`<button type="button" class="mout" data-na="${r}${ACT[r].push(logout)-1}">${MI.out}<span>${esc(T('o_logout'))}</span></button>`;
   return h;
 }
+/* folding lists stay open or closed when the menu is redrawn */
+const MOPEN=new Set();
+document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details.macc'))return;d.open?MOPEN.add(d.dataset.acc):MOPEN.delete(d.dataset.acc)},true);
 function renderMenu(){
   if(!$('side'))return;
   ACT.d=[];const sb=$('side-b'),keep=sb.scrollTop;sb.innerHTML=menuHTML('d');sb.scrollTop=keep;
@@ -206,6 +244,7 @@ function closeSheet(focus=true){
   if(s.onClose)s.onClose();if(focus&&s.last&&s.last.focus)s.last.focus();
 }
 $('sheet-x').addEventListener('click',()=>closeSheet());
+$('hsearch').addEventListener('click',openSearch);
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet()});
 function openToolSheet(sec){const t=TOOLS.find(x=>x[0]===sec)||TOOLS[1];openSheet(T(t[2]),$(t[0]),{key:'tool'})}
 
@@ -222,7 +261,9 @@ function openPage(id){
 function openPagesOrder(){
   if(!CAN('text'))return;
   if(!Array.isArray(CFG.pages))CFG.pages=clone(DEFAULT_CFG.pages);
-  const draw=()=>{$('sheet-b').innerHTML=`<p class="hint">${T('o_drag_p')}</p><div class="olist" id="pg-order">${CFG.pages.map(p=>`<div class="orow${p.hidden?' off':''}" data-sid="${esc(p.id)}">${DRAG(T('o_drag'))}<span>${esc(tx2(p.t))}${p.hidden?` · ${T('pg_hidden')}`:''}</span></div>`).join('')}</div>`;
+  const draw=()=>{if(!SHEET||SHEET.key!=='pgorder')return;ACT.s=[];
+    $('sheet-b').innerHTML=`<p class="hint">${T('o_drag_p')}</p><div class="olist" id="pg-order">${CFG.pages.map(p=>`<div class="orow${p.hidden?' off':''}" data-sid="${esc(p.id)}">${DRAG(T('o_drag'))}<span class="nvn">${esc(tx2(p.t))}${p.hidden?` · ${T('pg_hidden')}`:''}</span><div class="filters">${chipH('s',{label:T('o_edit'),f:()=>{closeSheet(false);editPage(p.id)}})}</div></div>`).join('')}</div>
+      <div class="filters">${chipH('s',{label:T('ad_newpage'),cls:'pri',f:()=>{closeSheet(false);editPage(null)}})}</div>`;
     sortable($('pg-order'),'.orow',ids=>{CFG.pages=ids.map(id=>CFG.pages.find(p=>p.id===id));changed();draw()})};
   openSheet(T('pg_order_t'),'',{key:'pgorder'});draw();
 }

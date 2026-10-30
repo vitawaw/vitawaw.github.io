@@ -9,6 +9,11 @@ const L=(a,e)=>LANG==='ar'?a:e;
 const EDITABLE=['hc_t','hc_l','ht_t','ht_l','ti_t','hi_l','ts_t','hs_l','rm_t','rm_l','sg_t','sg_l','by','priv','w_t'];
 const T=k=>{const o=EDITABLE.includes(k)&&CFG.text&&CFG.text[k];if(o){const v=LANG==='ar'?o.ar:(o.en||'');if(v)return v}const d=I18N[k];return d?d[LANG==='ar'?0:1]:''};
 const I18N={
+gs_short:['بحث','Search'],pg_order_l:['ترتيب الصفحات','Arrange the pages'],pg_order_s:['صفحات المعلومات: الترتيب والتعديل وإضافة صفحة','Info pages: order, edit, add a page'],ad_colors_l:['ألوان الأقسام','Section colors'],
+ad_look:['مظهر الموقع','Site appearance'],ad_contact:['التواصل','Contact'],ad_invite_l:['دعوة صيدلي','Invite a pharmacist'],ad_pub:['النشر','Publishing'],
+mn_recent:['اختصاراتك','Your shortcuts'],ma_help:['المساعدة والتواصل','Help and contact'],ma_priv:['الخصوصية','Privacy'],
+nn_rem:['تذكيرات','Reminders'],nn_last:['آخر نتيجة','last result'],nn_lab:['مرّت 3 أشهر على آخر نتيجة. اسأل طبيبك أو الصيدلي إن كان الوقت مناسباً لإعادة التحليل.','It has been 3 months since the last result. Ask your doctor or pharmacist whether it is time to repeat the test.'],
+nn_nolab:['احفظ نتائج تحاليلك في «سجل تحاليلي» لتصلك هنا تذكيرات بإعادة التحليل.','Save your results in “My lab results” to get reminders here to repeat the test.'],nn_labok:['لا يوجد تحليل يحتاج تذكيراً الآن.','No test needs a reminder right now.'],nn_new:['جديد في VITAWAW','New in VITAWAW'],
 tab_calc:['الحاسبة','Calculator'],tab_tools:['الأدوات','Tools'],tab_int:['التداخلات','Interactions'],tab_src:['المصادر','Sources'],tab_rm:['القادم','Coming next'],sg_t:['اقترح ميزة أو أبلغ عن خطأ','Suggest a feature or report an error'],sg_l:['نقرأ كل رسالة. أخبرنا بما تحتاجه في الحاسبة، أو إذا لاحظت رقماً يحتاج مراجعة.','We read every message. Tell us what you need, or if you notice a number that needs checking.'],
 cpm:['نسخ البريد','Copy email'],cpd:['تم النسخ','Copied'],sendm:['أرسل رسالة','Send an email'],mailh:['إن لم يفتح تطبيق البريد، انسخ العنوان وأرسل منه.','If your mail app does not open, copy the address and write to it.'],
 flag:['هل لاحظت خطأ في هذه النتيجة؟ راسلنا','Spotted an error in this result? Email us'],
@@ -193,7 +198,7 @@ ad_team:['الصيادلة','Pharmacists'],ad_invite:['＋ دعوة صيدلي',
 
 rc_was:['المعتمد حالياً:','Approved now:'],rc_okdel:['تأكيد الحذف','Confirm deletion'],rc_restore:['استرجاع','Restore'],
 rc_restored:['أعيدت النسخة المعتمدة','The approved version is back'],
-ad_site:['التواصل والألوان','Contact and colors'],ad_colors:['ألوان','Colours'],
+ad_site:['التواصل والألوان','Contact and colors'],ad_colors:['الألوان','Colors'],
 pg_new:['صفحة جديدة','New page'],pg_edit:['تعديل الصفحة','Edit page'],pg_t:['العنوان (عربي)','Title (Arabic)'],pg_ten:['العنوان (English)','Title (English)'],
 pg_b:['النص (عربي). اترك سطراً فارغاً بين الفقرات','Text (Arabic). Leave an empty line between paragraphs'],pg_ben:['النص (English)','Text (English)'],
 pg_vis:['الظهور','Visibility'],pg_shown:['ظاهرة للزوار','Shown to visitors'],pg_hiddenv:['مخفية عن الزوار','Hidden from visitors'],pg_hidden:['مخفية','Hidden'],

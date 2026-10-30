@@ -95,6 +95,7 @@ let ML={wt:10,mgkg:3,q:1};
 /* the calculator opens a tool already filled in: PILL (tablets), ML (syrup), UCVSET (units), ULSET (upper limit), SCHSET (daily schedule) */
 let UCVSET=null,ULSET=null,SCHSET=null;
 function openTool(kind){
+  if(typeof rememberRecent==='function')rememberRecent('t:'+kind);
   let sec='tool-d';
   if(kind==='pills'){sec='tool-pill';const k=PILL.k;
     const def={fe:['fsd',200],ca:['cc',1250],mg:['mo',400],zn:['zs',220],fol:['direct',PILL.tab||5]}[k]||['direct',PILL.dose];

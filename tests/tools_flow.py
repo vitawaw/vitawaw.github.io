@@ -120,5 +120,9 @@ with sync_playwright() as p:
     pg.goto('http://app.test/#roadmap'); pg.wait_for_timeout(150)
     check('roadmap: available now', T('rmgrid'), 'متوفر الآن'); pg.locator('#rmgrid [data-rmgo="sch"]').first.click(); pg.wait_for_timeout(150)
     check('try it opens the schedule', pg.evaluate("$('sheet').hidden?'':$('sheet-t').textContent"), 'جدول'); pg.click('#sheet-x')
+    # 1.12.0 notifications for everyone: lab result older than 3 months, new features; opening 🔔 marks them read
+    pg.evaluate("labAdd('b12',300,'2026-01-05')"); pg.goto('http://app.test/#notif'); pg.wait_for_timeout(200)
+    check('visitor notifications: lab reminder', T('notif-p'), 'B12'); check('visitor notifications: new features', T('notif-p'), 'جديد في VITAWAW')
+    check('opening 🔔 marks them read', str(pg.evaluate('notifCount()')), '0')
     print('page errors:', errs)
 sys.exit(1 if fails or errs else 0)
