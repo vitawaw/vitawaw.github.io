@@ -69,9 +69,9 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-30)
-- **1.11.1 in preview**: full wording review (he chose «الصيدلي» everywhere and American English); glossary: المقدار اليومي الموصى به (RDA),
+- **Live: 1.11.1** (he said «جاهز» on 2026-10-30; includes 1.11.0; DB file `20261030140000_versions_and_pages.sql` applied and checked): full wording review (he chose «الصيدلي» everywhere and American English); glossary: المقدار اليومي الموصى به (RDA),
   المدخول الكافي (AI), الحد الأعلى الآمن (UL), جرعة المداومة, طبيب النسائية والتوليد. Keep these terms in new texts.
-- **1.11.0 in preview** (same branch): roadmap status `now` + `go` (GO map in lists.js, owner picks in editFeature); calendar .ics
+- **1.11.0** (live with 1.11.1): roadmap status `now` + `go` (GO map in lists.js, owner picks in editFeature); calendar .ics
   (`icsFile()/icsDownload()/schCalendar()` in tools.js, `r.cal` in calculators); lab history `#tool-labs` (`LABT`, `LABS` in
   localStorage vw-labs, `labChart()`), `r.lab`; doctor report `openReport()/repHTML()` in render.js (+ print CSS, `#rep`);
   one search `openSearch()/gsResults()` in nav.js (button at the top of the menu); share link `shareLink()/loadShared()` in ui.js
@@ -82,7 +82,7 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   Next: menu redesign like Facebook in two steps (1.12.0 menus + 🔔 for everyone + search in the header + tools grid; 1.13.0 placements).
 - 2026-10-30: he approved all waiting items and published (checked: 0 pending; live content 62 sources, 61 interactions, 15 with timing).
   Next: ask what he wants next (validation document reminder is due today ~21:00 UTC; optional local product presets for the syrup tool).
-- **Live: 1.10.0** (he said «جاهز» on 2026-10-30; includes 1.9.0; DB file applied and checked: same DB file `20261030000000_interaction_timing.sql`, which now also adds
+- 1.10.0 (he said «جاهز» on 2026-10-30; includes 1.9.0; DB file applied and checked: same DB file `20261030000000_interaction_timing.sql`, which now also adds
   `at` (reviewed date) to sources and sources 61–62 KDIGO). Sources page `usedIn()` + `ISRC` filter in lists.js; `srcLine()` in render.js
   (copy + patient card); link check: worker `/api/links?ids=` (≤25, only published URLs, cached 1 day) + `linksHTML()/linksCheck()`
   in owner.js (🔔, weekly, kept in localStorage vw-links); one kidney option `#ckd` → `CKD()` in calculators.js (replaced ren/mgren).
