@@ -69,6 +69,15 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-30)
+- **1.12.0** (preview, waiting for «جاهز»): menus step 1 + his request. Main pages are `NAVIDS` in nav.js: calc, interactions, tools,
+  notif, sources, roadmap, sched, labs, ul (sched/labs/ul = own pages `.tpage`, sections tool-sch/tool-labs/tool-ul moved out of tools;
+  `openTool('sch'|'labs'|'ul')` goes to the page). `CFG.nav={order,bar,hide}` (config.js default, owner only, published with settings):
+  `NAV()` normalises it, `renderTabs()` orders the bar (class `offbar` = in ☰ on phones), `navHidden()`; owner manager `openNavManager()`
+  (Menu → Management → «القوائم»: drag, in bar ≤4, hide, `editNavText()` name/title/description = CFG.text keys in EDITABLE, colors).
+  He chose: bar = الحاسبة · التداخلات · الأدوات · 🔔 + ☰; «أدويتي» stays in interactions. 🔔 for everyone: `pubItems()` in owner.js
+  (lab result ≥90 days old, saved schedule `vw-sch`, roadmap «now» items; seen keys in localStorage `vw-seen`), visitor part in `#notif-p`;
+  team badge counts team work only. Header 🔍 `#hsearch` (<1024px). Result buttons: main + «المزيد ⋯» (`details.rmore`).
+  Wide screens keep the side menu (no top icons). Next: step 2 (1.13.0, placements/refinement) — ask him first.
 - **Live: 1.11.1** (he said «جاهز» on 2026-10-30; includes 1.11.0; DB file `20261030140000_versions_and_pages.sql` applied and checked): full wording review (he chose «الصيدلي» everywhere and American English); glossary: المقدار اليومي الموصى به (RDA),
   المدخول الكافي (AI), الحد الأعلى الآمن (UL), جرعة المداومة, طبيب النسائية والتوليد. Keep these terms in new texts.
 - **1.11.0** (live with 1.11.1): roadmap status `now` + `go` (GO map in lists.js, owner picks in editFeature); calendar .ics

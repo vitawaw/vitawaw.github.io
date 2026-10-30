@@ -6,9 +6,18 @@
 let LANG='ar',MODE='pro';
 const L=(a,e)=>LANG==='ar'?a:e;
 /** texts the owner (or a pharmacist with the text permission) can change from the page; no other key can be replaced */
-const EDITABLE=['hc_t','hc_l','ht_t','ht_l','ti_t','hi_l','ts_t','hs_l','rm_t','rm_l','sg_t','sg_l','by','priv','w_t'];
+const EDITABLE=['hc_t','hc_l','ht_t','ht_l','ti_t','hi_l','ts_t','hs_l','rm_t','rm_l','sg_t','sg_l','by','priv','w_t',
+  'tab_calc','tab_int','tab_tools','tab_src','tab_rm','tab_sch','tab_labs','tab_ul','nt_t','hp_sch_t','hp_sch_l','hp_lab_t','hp_lab_l','hp_ul_t','hp_ul_l'];
 const T=k=>{const o=EDITABLE.includes(k)&&CFG.text&&CFG.text[k];if(o){const v=LANG==='ar'?o.ar:(o.en||'');if(v)return v}const d=I18N[k];return d?d[LANG==='ar'?0:1]:''};
 const I18N={
+tab_sch:['جدول المكملات','Supplement schedule'],tab_labs:['سجل تحاليلي','My lab results'],tab_ul:['الحد الأعلى','Upper limit'],
+hp_sch_t:['جدول المكملات اليومي','Daily supplement schedule'],hp_sch_l:['رتّب أوقات المكملات والأدوية خلال اليوم حتى لا يقلّل أحدها امتصاص الآخر.','Arrange supplement and medicine times through the day so that none reduces the absorption of another.'],
+hp_lab_t:['سجل تحاليلي','My lab results'],hp_lab_l:['احفظ نتائج تحاليلك على جهازك وتابع التغيّر بين تحليل وآخر.','Keep your lab results on your device and follow the change from one test to the next.'],
+hp_ul_t:['فحص الحد الأعلى الآمن','Upper limit check'],hp_ul_l:['اجمع ما يأخذه المريض من كل المكملات وتأكد أنه لا يتجاوز الحد الأعلى الآمن (UL) لعمره.','Add up what the patient takes from all supplements and make sure it stays within the safe upper limit (UL) for their age.'],
+nv_pages:['القوائم','Menus'],nv_manage:['ترتيب القوائم وتعديلها','Arrange and edit the menus'],nv_hint:['اسحب ⋮⋮ لتغيير الترتيب. «في الشريط» يعني أنها تظهر في الشريط السفلي على الهاتف والآيباد (حتى 4)، والباقي في ☰ القائمة. على الكمبيوتر تظهر كلها في القائمة الجانبية. احفظ ثم انشر.','Drag ⋮⋮ to change the order. “In the bar” means it shows in the bottom bar on phones and iPads (up to 4); the rest are in ☰ Menu. On computers they all show in the side menu. Save, then publish.'],
+nv_bar:['في الشريط','In the bar'],nv_inbar:['في الشريط السفلي','In the bottom bar'],nv_min:['يجب أن تبقى قائمة واحدة على الأقل في الشريط.','At least one page must stay in the bar.'],nv_max:['الشريط يتسع لأربع قوائم فقط. أخرج واحدة أولاً.','The bar holds only four pages. Remove one first.'],nv_hidbar:['أظهر القائمة أولاً ثم ضعها في الشريط.','Show the page first, then put it in the bar.'],nv_name:['الاسم في القوائم','Name in the menus'],nv_name_en:['الاسم (English)','Name (English)'],
+r_more:['المزيد','More'],nn_rem:['تذكيرات','Reminders'],nn_last:['آخر نتيجة','last result'],nn_lab:['مرّت 3 أشهر على آخر نتيجة. اسأل طبيبك أو الصيدلي إن كان الوقت مناسباً لإعادة التحليل.','It has been 3 months since the last result. Ask your doctor or pharmacist whether it is time to repeat the test.'],
+nn_nolab:['احفظ نتائج تحاليلك في «سجل تحاليلي» لتصلك هنا تذكيرات بإعادة التحليل.','Save your results in “My lab results” to get reminders here to repeat the test.'],nn_labok:['لا يوجد تحليل يحتاج تذكيراً الآن.','No test needs a reminder right now.'],nn_sch:['جدولك اليومي محفوظ','Your daily schedule is saved'],nn_open:['افتح الجدول','Open the schedule'],nn_new:['جديد في VITAWAW','New in VITAWAW'],
 tab_calc:['الحاسبة','Calculator'],tab_tools:['الأدوات','Tools'],tab_int:['التداخلات','Interactions'],tab_src:['المصادر','Sources'],tab_rm:['القادم','Coming next'],sg_t:['اقترح ميزة أو أبلغ عن خطأ','Suggest a feature or report an error'],sg_l:['نقرأ كل رسالة. أخبرنا بما تحتاجه في الحاسبة، أو إذا لاحظت رقماً يحتاج مراجعة.','We read every message. Tell us what you need, or if you notice a number that needs checking.'],
 cpm:['نسخ البريد','Copy email'],cpd:['تم النسخ','Copied'],sendm:['أرسل رسالة','Send an email'],mailh:['إن لم يفتح تطبيق البريد، انسخ العنوان وأرسل منه.','If your mail app does not open, copy the address and write to it.'],
 flag:['هل لاحظت خطأ في هذه النتيجة؟ راسلنا','Spotted an error in this result? Email us'],
@@ -193,7 +202,7 @@ ad_team:['الصيادلة','Pharmacists'],ad_invite:['＋ دعوة صيدلي',
 
 rc_was:['المعتمد حالياً:','Approved now:'],rc_okdel:['تأكيد الحذف','Confirm deletion'],rc_restore:['استرجاع','Restore'],
 rc_restored:['أعيدت النسخة المعتمدة','The approved version is back'],
-ad_site:['التواصل والألوان','Contact and colors'],ad_colors:['ألوان','Colours'],
+ad_site:['التواصل والألوان','Contact and colors'],ad_colors:['الألوان','Colors'],
 pg_new:['صفحة جديدة','New page'],pg_edit:['تعديل الصفحة','Edit page'],pg_t:['العنوان (عربي)','Title (Arabic)'],pg_ten:['العنوان (English)','Title (English)'],
 pg_b:['النص (عربي). اترك سطراً فارغاً بين الفقرات','Text (Arabic). Leave an empty line between paragraphs'],pg_ben:['النص (English)','Text (English)'],
 pg_vis:['الظهور','Visibility'],pg_shown:['ظاهرة للزوار','Shown to visitors'],pg_hiddenv:['مخفية عن الزوار','Hidden from visitors'],pg_hidden:['مخفية','Hidden'],

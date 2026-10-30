@@ -9,6 +9,7 @@
 
 /* ===================== helpers ===================== */
 const ICO={
+  menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h13"/></svg>',
   chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>',
   info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
@@ -43,8 +44,27 @@ document.addEventListener('click',e=>{
 // (account card, shortcuts, settings, log out). Wide screens (≥1024px): the same menu is a fixed side menu.
 const WIDE=()=>matchMedia('(min-width:1024px)').matches;
 function pickNut(k){K=k;try{localStorage.setItem('vw-k',k)}catch(e){}apply();go('calc')}
-const SECTIONS=['calc','tools','interactions','sources','roadmap'];
-const SECKEY={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t'};
+/* ===================== main pages (1.12.0): the owner orders them, picks the four in the bottom bar and hides some =====================
+   CFG.nav = {order, bar, hide}. Calculator and notifications cannot be hidden; the bar keeps at least the calculator. */
+const NAVIDS=['calc','interactions','tools','notif','sources','roadmap','sched','labs','ul'];
+const SECKEY={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t',sched:'tab_sch',labs:'tab_labs',ul:'tab_ul'};
+const HEROKEY={calc:['hc_t','hc_l'],tools:['ht_t','ht_l'],interactions:['ti_t','hi_l'],sources:['ts_t','hs_l'],roadmap:['rm_t','rm_l'],sched:['hp_sch_t','hp_sch_l'],labs:['hp_lab_t','hp_lab_l'],ul:['hp_ul_t','hp_ul_l']};
+function NAV(){
+  const n=CFG.nav||{},ok=x=>NAVIDS.includes(x);
+  const order=[...new Set([...(n.order||[]).filter(ok),...NAVIDS])];
+  const hide=[...new Set((n.hide||[]).filter(x=>ok(x)&&x!=='calc'&&x!=='notif'))];
+  let bar=order.filter(x=>(n.bar||[]).includes(x)&&!hide.includes(x)).slice(0,4);if(!bar.length)bar=['calc'];
+  return {order,bar,hide};
+}
+const navHidden=p=>NAV().hide.includes(p);
+/** pages shown in lists (hidden ones only for the team while editing) */
+const navPages=()=>{const n=NAV();return n.order.filter(p=>!n.hide.includes(p)||SHOWALL())};
+/** bottom bar: the owner's order, only the bar pages on phones (others are in ☰), ☰ always last */
+function renderTabs(){
+  const n=NAV();
+  n.order.forEach((p,i)=>{const t=$('t-'+p);if(!t)return;t.style.order=i;t.classList.toggle('offbar',!n.bar.includes(p));t.hidden=n.hide.includes(p)&&!SHOWALL()});
+  $('t-menu').style.order=99;
+}
 /** management groups for the signed-in team (what appears depends on the account's permissions) */
 function adminGroups(){
   const A=[];
@@ -54,13 +74,16 @@ function adminGroups(){
   if(ISOWNER()&&!OWN.local)A.push({id:'team',label:T('ad_team'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,chips:[
     {label:T('ad_invite'),cls:'add',f:()=>teamInvite()},{label:T('ad_accounts'),f:()=>openTeam()},{label:T('ad_invites'),f:()=>openTeam('inv')}]});
   if(ISOWNER())A.push({id:'site',label:T('ad_site'),ico:ICO.site,chips:[{label:T('o_contact'),f:()=>editContact()},{label:T('br_t'),f:()=>editBrand()},{label:T('rv_t'),f:()=>editReview()},{label:T('vh_t'),f:()=>openVersions()},
-    ...SECTIONS.map(p=>({label:T('ad_colors')+': '+T(SECKEY[p]),f:()=>editColors(p)}))]});
+    ]});
+  if(ISOWNER())A.splice(A.length-1,0,{id:'nav',label:T('nv_pages'),ico:ICO.menu,chips:[{label:T('nv_manage'),cls:'add',f:openNavManager}]});
   return A;
 }
 /** labels and the 🔔 count; redraws the menu page and the side menu */
 function renderNav(){
   if(!$('side'))return;
+  renderTabs();
   document.querySelectorAll('#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
+  $('hsearch').setAttribute('aria-label',T('gs_t'));
   const nc=notifCount();$('nt-count').hidden=!nc;$('nt-count').textContent=nc>99?'99+':nc;
   document.body.classList.toggle('team',typeof OWN!=='undefined'&&OWN.on);
   if(cur==='notif')renderNotif();
@@ -113,7 +136,7 @@ function menuHTML(r){
     return `<button type="button" class="mi${c.cls?' '+c.cls:''}${c.on?' on':''}" data-na="${r}${ACT[r].push(c.f)-1}"${c.on?' aria-current="page"':''}>${inner}</button>`;
   };
   const tile=(c)=>{
-    const inner=`<span class="di"${c.page?` style="${colorVars(c.page)}"`:''}>${c.ico||ICO.info}</span><span class="tl">${esc(c.label)}</span>`;
+    const inner=`<span class="di"${c.page?` style="${colorVars(c.page)}"`:''}>${c.ico||ICO.info}</span><span class="tl">${esc(c.label)}</span>${c.n?`<span class="tcount">${c.n}</span>`:''}`;
     if(c.href)return `<a class="mtile" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`;
     return `<button type="button" class="mtile" data-na="${r}${ACT[r].push(c.f)-1}">${inner}</button>`;
   };
@@ -126,14 +149,15 @@ function menuHTML(r){
     :page?`<div class="mcard"><span class="av">${MI2.user}</span><div class="mt"><b>${esc(T('mr_account'))}</b><small>${esc(T('mn_guest'))}</small></div></div><div class="mcard-a"><div class="filters">${chipH(r,{label:T('o_login'),cls:'pri',f:()=>openOwner()})}${chipH(r,{label:T('mr_join'),f:()=>openOwner({join:''})})}</div></div>`:'';
   // sections (side menu only: on phones they are in the bottom bar)
   if(!page)h=`<div class="slogo"><span class="mk"><svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg></span><span class="wm">VITA<em>WAW</em></span></div>`+
-    grp('',[...SECTIONS,...(own?['notif']:[])].map(p=>row({label:T(SECKEY[p]),ico:tabIco(p),page:p,on:cur===p,n:p==='notif'?notifCount():0,f:()=>go(p)})).join(''),'secs')+h;
+    grp('',navPages().map(p=>row({label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,on:cur===p,n:p==='notif'?notifCount():0,f:()=>go(p)})).join(''),'secs')+h;
   // one search for everything (calculators, tools, interactions, sources, pages)
   h+=`<button type="button" class="gsbtn" data-na="${r}${ACT[r].push(openSearch)-1}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>${esc(T('gs_ph'))}</span></button>`;
   const A=own?adminGroups():[];
   if(A.length)h+=grp(T('nv_admin'),A.map(g=>`<div class="mi grp"><span class="di">${g.ico}</span><span class="mt">${esc(g.label)}</span>${g.n?`<span class="cnt">${g.n}</span>`:''}</div><div class="filters mchips">${g.chips.map(c=>chipH(r,c)).join('')}</div>`).join(''),'admin');
   // shortcuts: information pages, app, contact
-  const info=[...(page?[{label:T('tab_rm'),ico:tabIco('roadmap'),page:'roadmap',f:()=>go('roadmap')}]:[]),{label:T('lb_t'),ico:ICO.chart,f:()=>openTool('labs')},
-    ...visiblePages().map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>openPage(p.id)}))];
+  // Menu page: the main pages that are not in the bottom bar come first (sources, coming next, schedule…), in the owner's order
+  const bar=NAV().bar,secs=page?navPages().filter(p=>!bar.includes(p)).map(p=>({label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,n:p==='notif'?notifCount():0,f:()=>go(p)})):[];
+  const info=[...secs,...visiblePages().map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>openPage(p.id)}))];
   const app=[{label:T('mr_share'),ico:MI.share,f:shareApp},{label:T('mr_install'),ico:MI.install,f:installApp}];
   if(PHONEF())app.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
   if(EMAILF())app.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
@@ -206,8 +230,39 @@ function closeSheet(focus=true){
   if(s.onClose)s.onClose();if(focus&&s.last&&s.last.focus)s.last.focus();
 }
 $('sheet-x').addEventListener('click',()=>closeSheet());
+$('hsearch').addEventListener('click',openSearch);
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet()});
 function openToolSheet(sec){const t=TOOLS.find(x=>x[0]===sec)||TOOLS[1];openSheet(T(t[2]),$(t[0]),{key:'tool'})}
+
+/* ===================== «القوائم»: the owner arranges the main pages =====================
+   drag to order · «in the bar» (up to 4 on phones) · show/hide · name, title and description · colors.
+   Saved in CFG.nav and CFG.text like every other setting (save → publish). */
+function navSave(n){CFG.nav={order:n.order,bar:n.bar,hide:n.hide};changed();drawNavManager()}
+function openNavManager(){if(!ISOWNER())return;openSheet(T('nv_pages'),'',{key:'navmgr'});drawNavManager()}
+function drawNavManager(){
+  if(!SHEET||SHEET.key!=='navmgr')return;
+  const n=NAV(),b=$('sheet-b');ACT.s=[];const S=c=>chipH('s',c);
+  b.innerHTML=`<p class="hint">${T('nv_hint')}</p><div class="olist" id="nv-order">${n.order.map(p=>{const inBar=n.bar.includes(p),hid=n.hide.includes(p),fixed=p==='calc'||p==='notif';
+    return `<div class="orow nvrow${hid?' off':''}" data-sid="${p}">${DRAG(T('o_drag'))}<span class="di" style="${colorVars(p)}">${tabIco(p)}</span><span class="nvn">${esc(T(SECKEY[p]))}${hid?` · ${T('pg_hidden')}`:''}${inBar?`<small>${T('nv_inbar')}</small>`:''}</span>
+      <div class="filters">${S({label:T('nv_bar'),pressed:inBar,f:()=>{
+        if(inBar){if(n.bar.length<2){toast(T('nv_min'));return}n.bar=n.bar.filter(x=>x!==p)}
+        else{if(hid){toast(T('nv_hidbar'));return}if(n.bar.length>=4){toast(T('nv_max'));return}n.bar=[...n.bar,p]}navSave(n)}})}${
+      fixed?'':S({label:T(hid?'o_nshow':'o_nhide'),f:()=>{n.hide=hid?n.hide.filter(x=>x!==p):[...n.hide,p];if(!hid)n.bar=n.bar.filter(x=>x!==p);navSave(n)}})}${
+      S({label:T('o_edit'),f:()=>editNavText(p)})}${p==='notif'?'':S({label:T('ad_colors'),f:async()=>{await editColors(p);drawNavManager()}})}</div></div>`}).join('')}</div>
+    <div class="filters">${S({label:T('o_reset'),f:()=>{CFG.nav=clone(DEFAULT_CFG.nav);changed();drawNavManager()}})}</div>`;
+  sortable($('nv-order'),'.orow',ids=>{n.order=ids;navSave(n)});
+}
+/** a page's name in the menus (and its title and description at the top of the page) */
+async function editNavText(p){
+  const keys=[SECKEY[p],...(HEROKEY[p]||[])],cur=k=>CFG.text[k]||{ar:I18N[k][0],en:I18N[k][1]};
+  const labels=[['nv_name','nv_name_en'],['o_ftitle','o_ftitle_en'],['o_fdesc','o_fdesc_en']];
+  const fields=keys.flatMap((k,i)=>[{label:T(labels[i][0]),value:cur(k).ar,type:i===2?'textarea':'text'},{label:T(labels[i][1]),value:cur(k).en,ltr:1,type:i===2?'textarea':'text'}]);
+  const r=await dialog({title:T(SECKEY[p]),fields,buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  if(r.action==='ok')keys.forEach((k,i)=>{const d=I18N[k],ar=r.values[2*i].trim()||d[0],en=r.values[2*i+1].trim()||d[1];if(ar===d[0]&&en===d[1])delete CFG.text[k];else CFG.text[k]={ar,en}});
+  if(r.action==='reset')keys.forEach(k=>delete CFG.text[k]);
+  if(r.action!=='cancel')changed();
+  if(SHEET&&SHEET.key==='navmgr')drawNavManager();else openNavManager();
+}
 
 /* ===================== information pages ===================== */
 function openPage(id){

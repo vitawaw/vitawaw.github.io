@@ -3,7 +3,7 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.11.1';
+const APP_VERSION='1.12.0';
 /* the medical review stamp is set by the owner (menu → site → «ختم المراجعة الطبية») and published with the settings: CFG.review */
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
@@ -13,7 +13,10 @@ const SB={url:'https://zrlapysswtqrwfsywbvl.supabase.co',key:'eyJhbGciOiJIUzI1Ni
 const DEFAULT_CFG={
   contact:{email:'vitawaw26@gmail.com',phone:''},
   refs:null,inter:null,nut:{hide:[],custom:[]},
-  colors:{calc:['#0B6B6E','#8E1B54'],tools:['#00167a','#075BFF'],interactions:['#7a2e00','#d9731f'],sources:['#0a4a2c','#17915a'],roadmap:['#3a1678','#7c4dff']},
+  colors:{calc:['#0B6B6E','#8E1B54'],tools:['#00167a','#075BFF'],interactions:['#7a2e00','#d9731f'],sources:['#0a4a2c','#17915a'],roadmap:['#3a1678','#7c4dff'],
+    sched:['#0a5c4f','#14a38b'],labs:['#4c1d6e','#9b4dca'],ul:['#7a1f1f','#d24b4b']},
+  /* main pages (1.12.0, owner only): order everywhere, the four in the bottom bar, hidden ones. Notifications and the menu are always there. */
+  nav:{order:['calc','interactions','tools','notif','sources','roadmap','sched','labs','ul'],bar:['calc','interactions','tools','notif'],hide:[]},
   text:{},
   nutOrder:[], /* order of the vitamins (ids); empty = default order. Owner only. */
   brand:{l1:'',l2:'',url:''},
@@ -54,9 +57,9 @@ function clean(v,key){
     return v.replace(/</g,'\u2039').replace(/>/g,'\u203A');
   }
   if(Array.isArray(v)){
-    if(key==='calc'||key==='tools'||key==='interactions'||key==='sources'||key==='roadmap'&&typeof v[0]==='string')
+    if(key==='calc'||key==='tools'||key==='interactions'||key==='sources'||key==='sched'||key==='labs'||key==='ul'||key==='roadmap'&&typeof v[0]==='string')
       return v.map(c=>/^#[0-9a-f]{3,8}$/i.test(c)?c:'#075BFF');
-    return v.map(x=>clean(x,SAFE_ID_KEYS.has(key)||key==='hide'||key==='nutOrder'?'id':undefined));
+    return v.map(x=>clean(x,SAFE_ID_KEYS.has(key)||key==='hide'||key==='nutOrder'||key==='order'||key==='bar'?'id':undefined));
   }
   if(v&&typeof v==='object'){const o={};for(const[k,x]of Object.entries(v))o[k]=clean(x,k);return o}
   return v;
@@ -70,6 +73,7 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   if(Array.isArray(over.pages))out.pages=over.pages;
   if(Array.isArray(over.nutOrder))out.nutOrder=over.nutOrder;
   if(over.review&&over.review.n)out.review={n:{ar:over.review.n.ar||'',en:over.review.n.en||''},date:/^\d{4}-\d{2}-\d{2}$/.test(over.review.date||'')?over.review.date:''};
+  if(over.nav&&typeof over.nav==='object')out.nav={order:Array.isArray(over.nav.order)?over.nav.order:out.nav.order,bar:Array.isArray(over.nav.bar)?over.nav.bar:out.nav.bar,hide:Array.isArray(over.nav.hide)?over.nav.hide:[]};
   if(over.brand)out.brand={l1:over.brand.l1||'',l2:over.brand.l2||'',url:over.brand.url||''};
   if(Array.isArray(over.refs))out.refs=over.refs;
   if(Array.isArray(over.inter))out.inter=over.inter;

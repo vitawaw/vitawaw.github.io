@@ -103,9 +103,10 @@ function openTool(kind){
   if(kind==='ca')sec='tool-ca';
   if(kind==='ml'){sec='tool-ml';$('mlwt').value=ML.wt;$('mlmgkg').value=ML.mgkg;$('mlfreq').value=String(ML.q);mlc()}
   if(kind==='units'){sec='tool-u';if(UCVSET){$('ucv').value=UCVSET[0];$('uval').value=UCVSET[1]}ucv()}
-  if(kind==='ul'){sec='tool-ul';if(ULSET){$('ulage').value=String(ULSET.g);ULSET.v.forEach(([id,v])=>{const e=$('ul-'+id);if(e)e.value=v})}ul()}
-  if(kind==='labs'){sec='tool-labs';labs()}
-  if(kind==='sch'){sec='tool-sch';if(SCHSET)SCHSET.forEach(id=>{const e=$('sc-'+id);if(e)e.checked=true});sch()}
+  // schedule, lab results and upper limit have their own pages (1.12.0)
+  if(kind==='ul'){if(ULSET){$('ulage').value=String(ULSET.g);ULSET.v.forEach(([id,v])=>{const e=$('ul-'+id);if(e)e.value=v})}ul();closeSheet(false);go('ul');return}
+  if(kind==='labs'){labs();closeSheet(false);go('labs');return}
+  if(kind==='sch'){if(SCHSET)SCHSET.forEach(id=>{const e=$('sc-'+id);if(e)e.checked=true});sch();closeSheet(false);go('sched');return}
   openToolSheet(sec);
 }
 /** age in years → the UL age group (1–3, 4–8, 9–13, 14–18, 19–50, 51+) */
@@ -198,8 +199,12 @@ function schRules(){
 }
 const hhmm=(m,W)=>{const t=((W*60+m)%1440+1440)%1440;return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`};
 const CALIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 14v4M10 16h4"/></svg>';
+/* the patient's last schedule is kept on this device (vw-sch: chosen items + wake-up time) */
+let SCHSAVED=null;try{SCHSAVED=JSON.parse(localStorage.getItem('vw-sch')||'null')}catch(e){}
 function schBuild(){
-  const was=Object.fromEntries(SCI.map(x=>[x[0],$('sc-'+x[0])?$('sc-'+x[0]).checked:false]));
+  const first=!$('schk').children.length&&SCHSAVED&&Array.isArray(SCHSAVED.ids);
+  if(first&&$('schw').querySelector(`option[value="${+SCHSAVED.W}"]`))$('schw').value=String(+SCHSAVED.W);
+  const was=Object.fromEntries(SCI.map(x=>[x[0],first?SCHSAVED.ids.includes(x[0]):$('sc-'+x[0])?$('sc-'+x[0]).checked:false]));
   $('schk').innerHTML=SCI.map(x=>`<label class="chk"><input type="checkbox" id="sc-${x[0]}"${was[x[0]]?' checked':''}><span>${esc(L(x[1],x[2]))}</span></label>`).join('');
   sch();
 }
@@ -224,6 +229,7 @@ function schSolve(ids){
 }
 function sch(){
   const W=+$('schw').value,ids=SCI.map(x=>x[0]).filter(id=>$('sc-'+id)&&$('sc-'+id).checked);
+  SCHSAVED=ids.length?{ids,W}:null;try{SCHSAVED?localStorage.setItem('vw-sch',JSON.stringify(SCHSAVED)):localStorage.removeItem('vw-sch')}catch(e){}
   if(!ids.length){$('schout').innerHTML=`<p class="hint">${T('sc_none')}</p>`;return}
   const asg=schSolve(ids);
   if(!asg){$('schout').innerHTML=`<div class="ulsum bad">${T('sc_fail')}</div>`;return}

@@ -3,12 +3,12 @@
    language switch (setLang), event wiring, colors and refreshAll().
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
-const PAGES=['calc','tools','interactions','sources','roadmap','notif','menu'];
+const PAGES=['calc','tools','interactions','sources','roadmap','notif','sched','labs','ul','menu'];
 let cur='calc';
 function show(p){
-  if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='notif'&&!(typeof OWN!=='undefined'&&OWN.on)))p='calc'; // wide screens show the menu at the side; notifications are for the team
+  if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(navHidden(p)&&!SHOWALL()))p='calc'; // wide screens show the menu at the side; a page the owner hid is not shown
   cur=p;
-  PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1});
+  PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
   if(p!=='menu'&&p!=='notif')try{localStorage.setItem('vw-p',p)}catch(e){}
   if(p==='notif'&&typeof renderNotif==='function')renderNotif(true);

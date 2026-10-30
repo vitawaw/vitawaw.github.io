@@ -26,7 +26,7 @@ with sync_playwright() as p:
     v, verr = page(b)
     bb = v.locator('#t-calc').bounding_box()
     check('phone: tab bar at the bottom', bb and bb['y'] > 844 - 90, str(bb))
-    check('phone: 4 sections + ☰ Menu in the bar', v.is_visible('#t-menu') and not v.is_visible('#t-roadmap') and all(v.is_visible('#t-' + x) for x in ['calc', 'tools', 'interactions', 'sources']))
+    check('phone: calculator, interactions, tools, 🔔 + ☰ Menu in the bar', v.is_visible('#t-menu') and not any(v.is_visible('#t-' + x) for x in ['roadmap', 'sources', 'sched', 'labs', 'ul']) and all(v.is_visible('#t-' + x) for x in ['calc', 'tools', 'interactions', 'notif']))
     check('no More panel, no side menu on phones', v.locator('#more, #more-btn').count() == 0 and not v.is_visible('#side'))
     v.click('#t-interactions'); v.wait_for_timeout(200)
     check('tab opens its page', v.evaluate('cur') == 'interactions')
@@ -63,7 +63,7 @@ with sync_playwright() as p:
     v.screenshot(path='tests/shots/menu_en_dark.png', full_page=True)
     v.click('#t-calc'); v.wait_for_timeout(150)
     v.set_viewport_size({'width': 1366, 'height': 900}); v.wait_for_timeout(300)
-    check('wide screen: side menu shown, tab bar hidden', v.is_visible('#side') and not v.is_visible('.tabs') and v.locator('#side-b .secs .mi').count() == 5)
+    check('wide screen: side menu shown, tab bar hidden', v.is_visible('#side') and not v.is_visible('.tabs') and v.locator('#side-b .secs .mi').count() == 9)
     v.locator('#side-b .secs .mi', has_text='Sources').click(); v.wait_for_timeout(200)
     check('side menu sections switch pages', v.evaluate('cur') == 'sources' and v.locator('#side-b .secs .mi.on', has_text='Sources').count() == 1)
     v.evaluate("go('menu')"); v.wait_for_timeout(200)
@@ -101,7 +101,7 @@ with sync_playwright() as p:
     check('show brings it back', o.locator('#ilist .icard.hid').count() == 0)
     o.locator('#ilist .icard').last.locator('[data-act="del"]').click(); o.wait_for_timeout(200); ok(o)
     check('delete (with confirmation) removes the item', o.locator('#ilist .icard').count() == n0 - 1)
-    o.click('#t-sources'); o.wait_for_timeout(200)
+    o.evaluate("go('sources')"); o.wait_for_timeout(200)
     li = o.locator('#reflist li[id^="ref-"]').first
     check('source: edit, hide, delete buttons', all(li.locator(f'[data-act="{a}"]').count() == 1 for a in ['edit', 'hide', 'del']))
     li.locator('[data-act="edit"]').click(); o.wait_for_timeout(200)
@@ -145,7 +145,7 @@ with sync_playwright() as p:
     check('reload shows the other person\'s change', o.evaluate("CFG.inter[0].d.ar") == 'غيّرها صيدلي من جهاز آخر')
     o.click('#o-texts'); o.wait_for_timeout(100)
     # dialogs: the error is shown under the field, in red; delete confirmations are red with clear words
-    o.click('#t-sources'); o.wait_for_timeout(200); o.click('#radd'); o.wait_for_timeout(200); ok(o); o.wait_for_timeout(200)
+    o.evaluate("go('sources')"); o.wait_for_timeout(200); o.click('#radd'); o.wait_for_timeout(200); ok(o); o.wait_for_timeout(200)
     check('empty source -> error under the field (not a toast)', o.is_visible('#dlg') and o.locator('#dlg .row.bad .ferr').count() == 1 and 'الجهة' in o.inner_text('#dlg .row.bad'))
     o.keyboard.press('Escape'); o.wait_for_timeout(150)
     o.locator('#reflist [data-act="del"]').first.click(); o.wait_for_timeout(200)
@@ -340,7 +340,7 @@ with sync_playwright() as p:
         d.screenshot(path=f'tests/shots/{n}_home.png')
         if w < 1024:
             check(f'{n}: tab bar at the bottom', d.locator('#t-calc').bounding_box()['y'] > h - 90)
-            d.click('#t-menu'); d.wait_for_timeout(300); d.screenshot(path=f'tests/shots/{n}_menu.png'); d.click('#t-sources')
+            d.click('#t-menu'); d.wait_for_timeout(300); d.screenshot(path=f'tests/shots/{n}_menu.png'); d.evaluate("go('sources')")
         else:
             check(f'{n}: side menu instead of tab bar', d.is_visible('#side') and not d.is_visible('.tabs'))
             d.locator('#side-b .secs .mi').nth(3).click()
