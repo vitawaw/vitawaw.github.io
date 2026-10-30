@@ -134,5 +134,13 @@ with sync_playwright() as p:
     pg.evaluate("CFG.nav={order:['sources','calc','interactions','tools','notif','roadmap','sched','labs','ul'],bar:['sources','calc','interactions'],hide:['ul']};renderNav()")
     check('owner order: sources first in the bar', str(pg.evaluate("[...document.querySelectorAll('.tabs .tab')].filter(t=>!t.hidden&&!t.classList.contains('offbar')).sort((a,b)=>a.style.order-b.style.order).map(t=>t.dataset.p).join(',')")), 'sources,calc,interactions,menu')
     pg.goto('http://app.test/#ul'); pg.wait_for_timeout(150); check('hidden page opens the calculator', pg.evaluate('cur'), 'calc')
+    # 1.12.0 tools page: tiles in groups, one tool at a time, «‹ Tools» back; patient mode hides the pharmacist tools
+    pg.evaluate("CFG.nav=clone(DEFAULT_CFG.nav);setMode('pro')"); pg.goto('http://app.test/#tools'); pg.wait_for_timeout(200)
+    check('tools page: tiles', str(pg.locator('#tgrid .mtile').count()), '10')
+    pg.click('#tgrid [data-hub="tool-ca"]'); pg.wait_for_timeout(200)
+    check('tile opens one tool', pg.evaluate("location.hash+' '+($('tool-ca').offsetParent!==null)+' '+$('tool-pill').offsetParent"), '#tool-ca true null')
+    pg.click('#tback'); pg.wait_for_timeout(200); check('back to the tiles', pg.evaluate("location.hash+' '+$('tools').classList.contains('tv')"), '#tools false')
+    pg.evaluate("setMode('pt')"); pg.wait_for_timeout(100)
+    check('patient mode: no pharmacist tools', str(pg.locator('#tgrid .mtile').count()), '5'); pg.evaluate("setMode('pro')")
     print('page errors:', errs)
 sys.exit(1 if fails or errs else 0)

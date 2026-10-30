@@ -47,14 +47,14 @@ document.addEventListener('click',e=>{
 const WIDE=()=>matchMedia('(min-width:1024px)').matches;
 function pickNut(k){K=k;try{localStorage.setItem('vw-k',k)}catch(e){}apply();go('calc')}
 /* ===================== main pages (1.12.0): the owner orders them, picks the four in the bottom bar and hides some =====================
-   CFG.nav = {order, bar, hide}. Calculator and notifications cannot be hidden; the bar keeps at least the calculator. */
-const NAVIDS=['calc','interactions','tools','notif','sources','roadmap','sched','labs','ul'];
+   CFG.nav = {order, bar, hide}. The calculator cannot be hidden; the bar keeps at least the calculator. */
+const NAVIDS=['calc','interactions','tools','sources','roadmap','sched','labs','ul']; // 🔔 is fixed at the top (header / side menu), not in this list
 const SECKEY={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t',sched:'tab_sch',labs:'tab_labs',ul:'tab_ul'};
 const HEROKEY={calc:['hc_t','hc_l'],tools:['ht_t','ht_l'],interactions:['ti_t','hi_l'],sources:['ts_t','hs_l'],roadmap:['rm_t','rm_l'],sched:['hp_sch_t','hp_sch_l'],labs:['hp_lab_t','hp_lab_l'],ul:['hp_ul_t','hp_ul_l']};
 function NAV(){
   const n=CFG.nav||{},ok=x=>NAVIDS.includes(x);
   const order=[...new Set([...(n.order||[]).filter(ok),...NAVIDS])];
-  const hide=[...new Set((n.hide||[]).filter(x=>ok(x)&&x!=='calc'&&x!=='notif'))];
+  const hide=[...new Set((n.hide||[]).filter(x=>ok(x)&&x!=='calc'))];
   let bar=order.filter(x=>(n.bar||[]).includes(x)&&!hide.includes(x)).slice(0,4);if(!bar.length)bar=['calc'];
   return {order,bar,hide};
 }
@@ -65,7 +65,7 @@ const navPages=()=>{const n=NAV();return n.order.filter(p=>!n.hide.includes(p)||
 function renderTabs(){
   const n=NAV();
   n.order.forEach((p,i)=>{const t=$('t-'+p);if(!t)return;t.style.order=i;t.classList.toggle('offbar',!n.bar.includes(p));t.hidden=n.hide.includes(p)&&!SHOWALL()});
-  $('t-menu').style.order=99;
+  $('t-menu').style.order=99;$('t-notif').hidden=true;
 }
 /** management for the signed-in team, in groups like the settings (what appears depends on the account's permissions) */
 function adminGroups(){
@@ -86,7 +86,7 @@ function adminGroups(){
 /** labels and the 🔔 count; redraws the menu page and the side menu */
 function renderNav(){
   if(!$('side'))return;
-  renderTabs();
+  renderTabs();renderToolsHub();
   document.querySelectorAll('#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
   $('hsearch').setAttribute('aria-label',T('gs_t'));
   const nc=notifCount();['nt-count','hnt-count'].forEach(id=>{$(id).hidden=!nc;$(id).textContent=nc>99?'99+':nc});
@@ -148,38 +148,74 @@ function menuHTML(r){
   };
   const seg=(ico,label,cs)=>`<div class="mi seg"><span class="di">${ico}</span><span class="mt">${esc(label)}</span><div class="segc">${cs.map(x=>chipH(r,x)).join('')}</div></div>`;
   const grp=(title,body,cls='')=>body?`<div class="mg${cls?' '+cls:''}">${title?`<h3>${esc(title)}</h3>`:''}<div class="ml">${body}</div></div>`:'';
+  const acc=(key,ico,title,body,n)=>body?`<details class="macc" data-acc="${key}"${MOPEN.has(key)?' open':''}><summary class="mi"><span class="di">${ico}</span><span class="mt">${esc(title)}</span>${n?`<span class="cnt">${n}</span>`:''}${CHEV}</summary><div class="macb">${body}</div></details>`:'';
+  const items=(title,list)=>list.length?(page?`<div class="mg"><h3>${esc(title)}</h3><div class="mtiles">${list.map(tile).join('')}</div></div>`:grp(title,list.map(c=>row({...c,on:cur===c.k||(cur==='tools'&&TOOLV===c.k)?true:undefined})).join(''))):'';
+  const n=NAV(),free=k=>!n.bar.includes(k)&&(!n.hide.includes(k)||SHOWALL()),pg=id=>visiblePages().find(p=>p.id===id);
+  const pgItem=p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),ico:ICO.info,f:()=>openPage(p.id)});
   let h='';
+  // wide screens: logo with 🔔, then the bar's sections (on phones they are in the bottom bar)
+  if(!page)h+=`<div class="slogo"><span class="mk"><svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg></span><span class="wm">VITA<em>WAW</em></span>
+    <button type="button" class="hbtn snotif${cur==='notif'?' on':''}" data-na="${r}${ACT[r].push(()=>go('notif'))-1}" aria-label="${esc(T('nt_t'))}">${tabIco('notif')}${notifCount()?`<span class="tcount">${notifCount()>99?'99+':notifCount()}</span>`:''}</button></div>`+
+    grp('',n.bar.map(p=>row({label:T(SECKEY[p]),ico:tabIco(p),page:p,on:cur===p,f:()=>go(p)})).join(''),'secs');
   // account card (Facebook: your profile at the top); publishing is in the bar at the top of every page
   h+=own
     ?`<div class="mcard solo"><span class="av">${MI2.shield}</span><div class="mt"><b>${esc(whoLabel())}</b><small>${esc(T('mn_team'))}</small></div></div>`
     :page?`<div class="mcard"><span class="av">${MI2.user}</span><div class="mt"><b>${esc(T('mr_account'))}</b><small>${esc(T('mn_guest'))}</small></div></div><div class="mcard-a"><div class="filters">${chipH(r,{label:T('o_login'),cls:'pri',f:()=>openOwner()})}${chipH(r,{label:T('mr_join'),f:()=>openOwner({join:''})})}</div></div>`:'';
-  // sections (side menu only: on phones they are in the bottom bar)
-  if(!page)h=`<div class="slogo"><span class="mk"><svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg></span><span class="wm">VITA<em>WAW</em></span></div>`+
-    grp('',navPages().map(p=>row({label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,on:cur===p,n:p==='notif'?notifCount():0,f:()=>go(p)})).join(''),'secs')+h;
   // one search for everything (calculators, tools, interactions, sources, pages)
   h+=`<button type="button" class="gsbtn" data-na="${r}${ACT[r].push(openSearch)-1}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>${esc(T('gs_ph'))}</span></button>`;
-  const A=own?adminGroups():[];
-  A.forEach(g=>{h+=grp(g.label,g.rows.map(row).join(''),'admin')});
-  // shortcuts: information pages, app, contact
-  // Menu page: the main pages that are not in the bottom bar come first (sources, coming next, schedule…), in the owner's order
-  const bar=NAV().bar,secs=page?navPages().filter(p=>!bar.includes(p)).map(p=>({label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,n:p==='notif'?notifCount():0,f:()=>go(p)})):[];
-  const info=[...secs,...visiblePages().map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>openPage(p.id)}))];
-  const app=[{label:T('mr_share'),ico:MI.share,f:shareApp},{label:T('mr_install'),ico:MI.install,f:installApp}];
-  if(PHONEF())app.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
-  if(EMAILF())app.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
-  if(PHONEF())app.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
-  if(page)h+=`<div class="mg"><h3>${esc(T('mn_short'))}</h3><div class="mtiles">${[...info,...app].map(tile).join('')}</div></div>`;
-  else h+=grp(T('nv_info'),info.map(row).join(''))+grp(T('mr_app'),app.map(row).join(''));
-  h+=grp(T('mr_settings'),
-    seg(MI.lang,T('mr_lang'),[{label:'العربية',pressed:LANG==='ar',f:()=>setLang('ar')},{label:'English',pressed:LANG==='en',f:()=>setLang('en')}])+
+  // «your shortcuts»: what this visitor used last (on this device)
+  const rec=RECENT.map(ITEM).filter(Boolean).slice(0,6);
+  if(rec.length)h+=`<div class="mg"><h3>${esc(T('mn_recent'))}</h3><div class="mrec">${rec.map(c=>`<button type="button" class="mrc" data-na="${r}${ACT[r].push(c.f)-1}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span>${esc(c.label)}</span></button>`).join('')}</div></div>`;
+  // groups: other sections · patient follow-up · about VITAWAW
+  h+=items(T('mg_sec'),n.order.filter(k=>free(k)&&!['sched','labs','roadmap','ul'].includes(k)).map(ITEM));
+  h+=items(T('th_pt'),[...['sched','labs'].filter(free),'meds'].map(ITEM));
+  h+=items(T('mg_about'),[...(free('roadmap')?[ITEM('roadmap')]:[]),...visiblePages().filter(p=>!['faq','privacy','disclaimer'].includes(p.id)).map(pgItem)]);
+  // folding lists, like «Help» and «Settings» on Facebook
+  const help=[pg('faq')&&pgItem(pg('faq')),{label:T('sg_t'),ico:MI.mail,f:()=>{go('roadmap');setTimeout(()=>{const c=document.querySelector('#roadmap .contact');if(c)c.scrollIntoView({block:'start'})},60)}}];
+  if(PHONEF())help.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
+  if(EMAILF())help.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
+  if(PHONEF())help.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
+  const set=seg(MI.lang,T('mr_lang'),[{label:'العربية',pressed:LANG==='ar',f:()=>setLang('ar')},{label:'English',pressed:LANG==='en',f:()=>setLang('en')}])+
     seg(MI.theme,T('mr_theme'),[{label:T('mr_light'),pressed:!isDark(),f:()=>setTheme('light')},{label:T('mr_dark'),pressed:isDark(),f:()=>setTheme('dark')}])+
-    seg(MI.mode,T('mr_mode'),[{label:T('m_pro'),pressed:MODE==='pro',f:()=>setMode('pro')},{label:T('m_pt'),pressed:MODE==='pt',f:()=>setMode('pt')}]));
-  if(own){
-    h+=grp(T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join(''));
-    h+=`<button type="button" class="mout" data-na="${r}${ACT[r].push(logout)-1}">${MI.out}<span>${esc(T('o_logout'))}</span></button>`;
-  }else if(!page)h+=grp(T('mr_account'),row({label:T('o_login'),ico:MI.login,f:()=>openOwner()})+row({label:T('mr_join'),ico:MI.invite,f:()=>openOwner({join:''})}));
+    seg(MI.mode,T('mr_mode'),[{label:T('m_pro'),pressed:MODE==='pro',f:()=>setMode('pro')},{label:T('m_pt'),pressed:MODE==='pt',f:()=>setMode('pt')}])+
+    row({label:T('mr_install'),ico:MI.install,f:installApp})+row({label:T('mr_share'),ico:MI.share,f:shareApp});
+  const A=own?adminGroups():[];
+  h+=`<div class="mg"><div class="ml maccs">`+
+    acc('help',ICO.info,T('ma_help'),help.filter(Boolean).map(row).join(''))+
+    acc('set',MI.theme,T('mr_settings'),set)+
+    acc('priv',MI2.shield,T('ma_priv'),['privacy','disclaimer'].map(pg).filter(Boolean).map(pgItem).map(row).join(''))+
+    (A.length?acc('admin',ICO.site,T('nv_admin'),A.map(g=>`<h4 class="mh4">${esc(g.label)}</h4>`+g.rows.map(row).join('')).join('')):'')+
+    (own?acc('mine',MI.key,T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join('')):'')+
+    `</div></div>`;
+  if(own)h+=`<button type="button" class="mout" data-na="${r}${ACT[r].push(logout)-1}">${MI.out}<span>${esc(T('o_logout'))}</span></button>`;
+  else if(!page)h+=grp(T('mr_account'),row({label:T('o_login'),ico:MI.login,f:()=>openOwner()})+row({label:T('mr_join'),ico:MI.invite,f:()=>openOwner({join:''})}));
   return h;
 }
+/* folding lists stay open or closed when the menu is redrawn */
+const MOPEN=new Set();
+document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details.macc'))return;d.open?MOPEN.add(d.dataset.acc):MOPEN.delete(d.dataset.acc)},true);
+/* ===================== one item, wherever it is shown: menu tiles, «your shortcuts», the tools page =====================
+   k = a main page (calc, sched…), a tool on the tools page (tool-pill…) or 'meds' (my medicines, in interactions) */
+const HUBTOOLS=['tool-pill','tool-d','tool-ml','tool-ca','tool-gz','tool-u'];
+const PROONLY=['tool-pill','tool-ca','tool-gz','tool-u','ul']; // pharmacist tools: not shown in patient mode
+function ITEM(k){
+  if(MODE==='pt'&&PROONLY.includes(k))return null;
+  if(HUBTOOLS.includes(k)){const t=TOOLS.find(x=>x[0]===k),ic=$(k)&&$(k).querySelector('.ttl-ic svg');return {k,label:T(t[1]),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openToolView(k)}}
+  if(k==='meds')return {k,label:T('mm_t'),ico:tabIco('interactions'),page:'interactions',f:GO.meds};
+  if(NAVIDS.includes(k)&&(!navHidden(k)||SHOWALL()))return {k,label:T(SECKEY[k]),ico:tabIco(k),page:k,f:()=>go(k)};
+  return null;
+}
+let RECENT=[];try{RECENT=JSON.parse(localStorage.getItem('vw-recent')||'[]').filter(x=>typeof x==='string').slice(0,8)}catch(e){}
+function rememberRecent(k){if(!k||k==='menu'||k==='notif')return;RECENT=[k,...RECENT.filter(x=>x!==k)].slice(0,8);try{localStorage.setItem('vw-recent',JSON.stringify(RECENT))}catch(e){}}
+/* the tools page: tiles in two groups; each tool opens alone (#tool-pill…) with «‹ Tools» to go back */
+function openToolView(id){closeSheet(false);if(location.hash!=='#'+id)location.hash=id;else show('tools',id);window.scrollTo(0,0)}
+function renderToolsHub(){
+  if(!$('tgrid'))return;
+  const G=[['th_pt',['sched','labs','meds']],[MODE==='pt'?'th_dose':'th_pro',['tool-pill','tool-d','tool-ml','tool-ca','tool-gz','tool-u','ul']]];
+  if(MODE!=='pt')G.reverse();
+  $('tgrid').innerHTML=G.map(([t,ks])=>{const it=ks.map(ITEM).filter(Boolean);return it.length?`<h3 class="tgh">${esc(T(t))}</h3><div class="mtiles">${it.map(c=>`<button type="button" class="mtile" data-hub="${c.k}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span class="tl">${esc(c.label)}</span></button>`).join('')}</div>`:''}).join('');
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-hub]');if(!b)return;e.preventDefault();const it=ITEM(b.dataset.hub);if(it)it.f()});
 function renderMenu(){
   if(!$('side'))return;
   ACT.d=[];const sb=$('side-b'),keep=sb.scrollTop;sb.innerHTML=menuHTML('d');sb.scrollTop=keep;
@@ -238,6 +274,7 @@ function closeSheet(focus=true){
 $('sheet-x').addEventListener('click',()=>closeSheet());
 $('hsearch').addEventListener('click',openSearch);
 $('hnotif').addEventListener('click',()=>go('notif'));
+$('tback').addEventListener('click',()=>go('tools'));
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet()});
 function openToolSheet(sec){const t=TOOLS.find(x=>x[0]===sec)||TOOLS[1];openSheet(T(t[2]),$(t[0]),{key:'tool'})}
 
@@ -249,13 +286,13 @@ function openNavManager(){if(!ISOWNER())return;openSheet(T('nv_order'),'',{key:'
 function drawNavManager(){
   if(!SHEET||SHEET.key!=='navmgr')return;
   const n=NAV(),b=$('sheet-b');ACT.s=[];const S=c=>chipH('s',c);
-  b.innerHTML=`<p class="hint">${T('nv_hint')}</p><div class="olist" id="nv-order">${n.order.map(p=>{const inBar=n.bar.includes(p),hid=n.hide.includes(p),fixed=p==='calc'||p==='notif';
+  b.innerHTML=`<p class="hint">${T('nv_hint')}</p><div class="olist" id="nv-order">${n.order.map(p=>{const inBar=n.bar.includes(p),hid=n.hide.includes(p),fixed=p==='calc';
     return `<div class="orow nvrow${hid?' off':''}" data-sid="${p}">${DRAG(T('o_drag'))}<span class="di" style="${colorVars(p)}">${tabIco(p)}</span><span class="nvn">${esc(T(SECKEY[p]))}${hid?` · ${T('pg_hidden')}`:''}${inBar?`<small>${T('nv_inbar')}</small>`:''}</span>
       <div class="filters">${S({label:T('nv_bar'),pressed:inBar,f:()=>{
         if(inBar){if(n.bar.length<2){toast(T('nv_min'));return}n.bar=n.bar.filter(x=>x!==p)}
         else{if(hid){toast(T('nv_hidbar'));return}if(n.bar.length>=4){toast(T('nv_max'));return}n.bar=[...n.bar,p]}navSave(n)}})}${
       fixed?'':S({label:T(hid?'o_nshow':'o_nhide'),f:()=>{n.hide=hid?n.hide.filter(x=>x!==p):[...n.hide,p];if(!hid)n.bar=n.bar.filter(x=>x!==p);navSave(n)}})}${
-      S({label:T('o_edit'),f:()=>editNavText(p)})}${p==='notif'?'':S({label:T('ad_colors'),f:async()=>{await editColors(p);drawNavManager()}})}</div></div>`}).join('')}</div>
+      S({label:T('o_edit'),f:()=>editNavText(p)})}${S({label:T('ad_colors'),f:async()=>{await editColors(p);drawNavManager()}})}</div></div>`}).join('')}</div>
     <div class="filters">${S({label:T('o_reset'),f:()=>{CFG.nav=clone(DEFAULT_CFG.nav);changed();drawNavManager()}})}</div>`;
   sortable($('nv-order'),'.orow',ids=>{n.order=ids;navSave(n)});
 }

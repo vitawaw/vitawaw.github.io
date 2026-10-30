@@ -17,7 +17,7 @@
 <link rel="preload" href="fonts/tajawal-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/tajawal-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.12.0-30f86a08">
+<link rel="stylesheet" href="css/app.css?v=1.12.0-b3de3801">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu">القائمة</h2><div id="side-b"></div></aside>
@@ -31,12 +31,12 @@
     <button class="tab" role="tab" id="t-calc" data-p="calc" aria-controls="calc" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M8.5 6.5h7M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h3.5"/></svg><span class="full" data-t="tab_calc">الحاسبة</span><span class="short" data-t="tab_calc_s">الحاسبة</span></button>
     <button class="tab" role="tab" id="t-interactions" data-p="interactions" aria-controls="interactions" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 4v13M7 17l-3-3M7 17l3-3M17 20V7M17 7l-3 3M17 7l3 3"/></svg><span class="full" data-t="tab_int">التداخلات</span><span class="short" data-t="tab_int_s">التداخلات</span><span class="cnt" id="icount"></span></button>
     <button class="tab" role="tab" id="t-tools" data-p="tools" aria-controls="tools" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3.5 17.3a1.8 1.8 0 0 0 2.6 2.6l5.8-5.8a4 4 0 0 0 5.2-5.4l-2.4 2.4-2.5-.4-.4-2.5z"/></svg><span class="full" data-t="tab_tools">الأدوات</span><span class="short" data-t="tab_tools_s">الأدوات</span></button>
-    <button class="tab tnotif" role="tab" id="t-notif" data-p="notif" aria-controls="notif" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span data-t="nt_t">الإشعارات</span><span class="tcount" id="nt-count" hidden></span></button>
-    <button class="tab offbar" role="tab" id="t-sources" data-p="sources" aria-controls="sources" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg><span class="full" data-t="tab_src">المصادر</span><span class="short" data-t="tab_src_s">المصادر</span><span class="cnt" id="rcount"></span></button>
+    <button class="tab" role="tab" id="t-sources" data-p="sources" aria-controls="sources" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg><span class="full" data-t="tab_src">المصادر</span><span class="short" data-t="tab_src_s">المصادر</span><span class="cnt" id="rcount"></span></button>
     <button class="tab offbar trm" role="tab" id="t-roadmap" data-p="roadmap" aria-controls="roadmap" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg><span class="full" data-t="tab_rm">القادم</span><span class="short" data-t="tab_rm_s">القادم</span><span class="new" id="rmnew" aria-hidden="true"></span></button>
     <button class="tab offbar" role="tab" id="t-sched" data-p="sched" aria-controls="sched" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-t="tab_sch">جدول المكملات</span></button>
     <button class="tab offbar" role="tab" id="t-labs" data-p="labs" aria-controls="labs" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span data-t="tab_labs">سجل تحاليلي</span></button>
     <button class="tab offbar" role="tab" id="t-ul" data-p="ul" aria-controls="ul" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h16M6 16V9M10 16V5M14 16v-6M18 16V7"/></svg><span data-t="tab_ul">الحد الأعلى</span></button>
+    <button class="tab tnotif" hidden role="tab" id="t-notif" data-p="notif" aria-controls="notif" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span data-t="nt_t">الإشعارات</span><span class="tcount" id="nt-count" hidden></span></button>
     <button class="tab tmenu" role="tab" id="t-menu" data-p="menu" aria-controls="menu" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span data-t="nav_menu">القائمة</span></button>
   </nav>
   <div class="obar" id="obar">
@@ -185,6 +185,8 @@
 <!-- ================= TOOLS ================= -->
 <div class="page narrow" id="tools" role="tabpanel" aria-labelledby="t-tools" hidden>
   <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3.5 17.3a1.8 1.8 0 0 0 2.6 2.6l5.8-5.8a4 4 0 0 0 5.2-5.4l-2.4 2.4-2.5-.4-.4-2.5z"/></svg></span><h2 data-t="ht_t">أدوات الحساب</h2></div><p data-t="ht_l">حوّل الجرعة إلى حبات وقطرات، وصحّح الكالسيوم حسب الألبومين، واحسب جرعة الحديد الوريدي.</p></section>
+  <button type="button" class="btn tback" id="tback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg><span data-t="tab_tools">الأدوات</span></button>
+  <div class="tgrid" id="tgrid"></div>
   <section id="tool-pill">
     <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2.5" y="8" width="19" height="8" rx="4" transform="rotate(-35 12 12)"/><path d="M8.6 7.2l6.8 9.6"/></svg></span><span data-t="tt_t">كم حبة يأخذ المريض؟</span></h2>
     <p class="lead" data-t="tt_l">يحوّل الجرعة إلى عدد حبات حسب نوع الحبة المتوفرة. يتعبأ تلقائياً من نتيجة الحديد والكالسيوم والمغنيسيوم وحمض الفوليك.</p>
@@ -377,8 +379,8 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see">عرض النتيجة</span></div>
 
-<script src="js/config.js?v=1.12.0-cd55a61f" defer></script>
-<script src="js/i18n.js?v=1.12.0-187aa7de" defer></script>
+<script src="js/config.js?v=1.12.0-f634b94f" defer></script>
+<script src="js/i18n.js?v=1.12.0-5a795baf" defer></script>
 <script src="js/data.js?v=1.12.0-5672c063" defer></script>
 <script src="js/util.js?v=1.12.0-19fde934" defer></script>
 <script src="js/validation.js?v=1.12.0-0db6be41" defer></script>
@@ -387,10 +389,10 @@
 <script src="js/content.js?v=1.12.0-3ee5aa74" defer></script>
 <script src="js/tools.js?v=1.12.0-21988608" defer></script>
 <script src="js/lists.js?v=1.12.0-e8fa6df1" defer></script>
-<script src="js/ui.js?v=1.12.0-90fb0598" defer></script>
+<script src="js/ui.js?v=1.12.0-1c25dd27" defer></script>
 <script src="js/published.js?v=1.12.0-87f710f2" defer></script>
 <script src="js/owner.js?v=1.12.0-ce6c0968" defer></script>
-<script src="js/nav.js?v=1.12.0-913efbed" defer></script>
+<script src="js/nav.js?v=1.12.0-5bd1b98f" defer></script>
 <script src="js/team.js?v=1.12.0-eb689bb8" defer></script>
 <script src="js/boot.js?v=1.12.0-fa591121" defer></script>
 </body>

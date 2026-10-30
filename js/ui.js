@@ -4,10 +4,12 @@
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
 const PAGES=['calc','tools','interactions','sources','roadmap','notif','sched','labs','ul','menu'];
-let cur='calc';
-function show(p){
+let cur='calc',TOOLV=''; // TOOLV: the tool shown alone on the tools page ('' = the tiles)
+function show(p,tv=''){
   if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(navHidden(p)&&!SHOWALL()))p='calc'; // wide screens show the menu at the side; a page the owner hid is not shown
-  cur=p;
+  cur=p;TOOLV=p==='tools'?tv:'';
+  $('tools').classList.toggle('tv',!!TOOLV);document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));
+  if(typeof rememberRecent==='function')rememberRecent(TOOLV||p);
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
   if(p!=='menu'&&p!=='notif')try{localStorage.setItem('vw-p',p)}catch(e){}
@@ -20,6 +22,7 @@ window.addEventListener('hashchange',()=>{if(routeSpecial())return;show(location
 /* links that open something instead of a tab: #owner (sign in), #join=<email> (invited pharmacist), #info-<page> (info page) */
 function routeSpecial(){
   let h=location.hash.slice(1);try{h=decodeURIComponent(h)}catch(e){}
+  if(/^tool-(pill|d|ml|ca|gz|u)$/.test(h)){show('tools',h);window.scrollTo(0,0);return true} // one tool of the tools page
   if(h==='owner'){openOwner();return true}
   if(h==='join'||h.startsWith('join=')){const [em,k]=h.slice(5).split('&k=');openOwner({join:em||'',key:k||''});return true}
   if(h.startsWith('c=')){history.replaceState(null,'',location.pathname+location.search+'#calc');loadShared(h.slice(2));return true}
@@ -70,7 +73,7 @@ $('rbar').addEventListener('click',toRes);$('rbar').addEventListener('keydown',e
 function setMode(m,save=true){
   MODE=m;document.querySelectorAll('#modeg [data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));
   if(save)try{localStorage.setItem('vw-mode',m)}catch(e){}
-  if(LAST)F[K]();if(typeof renderMenu==='function')renderMenu();
+  if(LAST)F[K]();if(typeof renderNav==='function')renderNav();
 }
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.mode);if(b.closest('#welcome'))closeWelcome()}));
 function closeWelcome(){$('welcome').hidden=true;try{localStorage.setItem('vw-welcome','1')}catch(e){}}

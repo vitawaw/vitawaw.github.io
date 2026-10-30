@@ -15,8 +15,8 @@ const DEFAULT_CFG={
   refs:null,inter:null,nut:{hide:[],custom:[]},
   colors:{calc:['#0B6B6E','#8E1B54'],tools:['#00167a','#075BFF'],interactions:['#7a2e00','#d9731f'],sources:['#0a4a2c','#17915a'],roadmap:['#3a1678','#7c4dff'],
     sched:['#0a5c4f','#14a38b'],labs:['#4c1d6e','#9b4dca'],ul:['#7a1f1f','#d24b4b']},
-  /* main pages (1.12.0, owner only): order everywhere, the four in the bottom bar, hidden ones. Notifications and the menu are always there. */
-  nav:{order:['calc','interactions','tools','notif','sources','roadmap','sched','labs','ul'],bar:['calc','interactions','tools','notif'],hide:[]},
+  /* main pages (1.12.0, owner only): order everywhere, the four in the bottom bar, hidden ones. 🔔 is fixed at the top and ☰ is always last. */
+  nav:{order:['calc','interactions','tools','sources','roadmap','sched','labs','ul'],bar:['calc','interactions','tools','sources'],hide:[]},
   text:{},
   nutOrder:[], /* order of the vitamins (ids); empty = default order. Owner only. */
   brand:{l1:'',l2:'',url:''},
