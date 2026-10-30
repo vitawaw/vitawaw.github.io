@@ -104,6 +104,7 @@ function openTool(kind){
   if(kind==='ml'){sec='tool-ml';$('mlwt').value=ML.wt;$('mlmgkg').value=ML.mgkg;$('mlfreq').value=String(ML.q);mlc()}
   if(kind==='units'){sec='tool-u';if(UCVSET){$('ucv').value=UCVSET[0];$('uval').value=UCVSET[1]}ucv()}
   if(kind==='ul'){sec='tool-ul';if(ULSET){$('ulage').value=String(ULSET.g);ULSET.v.forEach(([id,v])=>{const e=$('ul-'+id);if(e)e.value=v})}ul()}
+  if(kind==='labs'){sec='tool-labs';labs()}
   if(kind==='sch'){sec='tool-sch';if(SCHSET)SCHSET.forEach(id=>{const e=$('sc-'+id);if(e)e.checked=true});sch()}
   openToolSheet(sec);
 }
@@ -196,6 +197,7 @@ function schRules(){
   return out;
 }
 const hhmm=(m,W)=>{const t=((W*60+m)%1440+1440)%1440;return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`};
+const CALIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 14v4M10 16h4"/></svg>';
 function schBuild(){
   const was=Object.fromEntries(SCI.map(x=>[x[0],$('sc-'+x[0])?$('sc-'+x[0]).checked:false]));
   $('schk').innerHTML=SCI.map(x=>`<label class="chk"><input type="checkbox" id="sc-${x[0]}"${was[x[0]]?' checked':''}><span>${esc(L(x[1],x[2]))}</span></label>`).join('');
@@ -229,10 +231,76 @@ function sch(){
   const rows=[...meals.map(([t,n])=>({t,meal:n})),...ids.flatMap(id=>{const x=SCI.find(y=>y[0]===id),t=asg[id];
     return (id==='abx'?[t,t+12*H]:[t]).map(tt=>({t:tt,x}))})].sort((a,b)=>a.t-b.t||(a.meal?-1:1));
   const pairs=schRules().filter(o=>ids.includes(o.x)&&ids.includes(o.y)&&!(o.x==='ca2'||o.y==='ca2'));
-  $('schout').innerHTML=`<ol class="sched">${rows.map(r=>r.meal?`<li class="meal"><time>${hhmm(r.t,W)}</time><span>${esc(r.meal)}</span></li>`:
+  $('schout').innerHTML=`<div class="ract"><button class="btn pri" type="button" id="schcal">${CALIC}${T('cal_add')}</button></div><ol class="sched">${rows.map(r=>r.meal?`<li class="meal"><time>${hhmm(r.t,W)}</time><span>${esc(r.meal)}</span></li>`:
     `<li><time>${hhmm(r.t,W)}</time><div><b>${esc(L(r.x[1],r.x[2]))}</b><small>${esc(L(r.x[4],r.x[5]))}${R(r.x[6])}</small></div></li>`).join('')}</ol>`+
     (pairs.length?`<p class="hint">${T('sc_gaps')}</p><ul class="gaps">${pairs.map(o=>{const n=k=>L(...SCI.find(y=>y[0]===k).slice(1,3)).replace(/ \(.*\)$/,'').replace(/ مرتين يومياً| twice a day/,'');
       const h=v=>v<1?L(`${v*60} دقيقة`,`${v*60} min`):v===1?L('ساعة','1 h'):v===2?L('ساعتين','2 h'):L(`${fmt(v)} ساعات`,`${fmt(v)} h`);
       const t=o.a>=24?L(`${n(o.x)} أولاً، و${n(o.y)} بعده بـ ${h(o.b)} على الأقل`,`${n(o.x)} first, ${n(o.y)} at least ${h(o.b)} later`):o.a===o.b?L(`فاصل ${h(o.b)} على الأقل`,`at least ${h(o.b)} apart`):L(`${n(o.x)} قبله بـ ${h(o.b)} أو بعده بـ ${h(o.a)}`,`${n(o.x)} ${h(o.b)} before or ${h(o.a)} after`);
       return `<li><b>${esc(n(o.x))} ↔ ${esc(n(o.y))}</b> ${esc(t)}${R(o.r)}${o.def?'':` <span class="own">${T('sc_own')}</span>`}</li>`}).join('')}</ul>`:'');
+}
+/* ===================== reminders in the phone's calendar (.ics) =====================
+   Builds a standard calendar file with repeating events and an alarm at the dose time; the phone's calendar app
+   imports it. Nothing is sent anywhere. ev: {title, desc, time:'HH:MM', freq:'DAILY'|'WEEKLY', interval, count} */
+const icsEsc=t=>String(t||'').replace(/\\/g,'\\\\').replace(/;/g,'\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');
+const icsFold=l=>{const out=[];let s=l;while(s.length>70){out.push(s.slice(0,70));s=' '+s.slice(70)}out.push(s);return out.join('\r\n')};
+function icsFile(events){
+  const d=new Date(),day=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  const stamp=d.toISOString().replace(/[-:]/g,'').replace(/\.\d+Z$/,'Z');
+  const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//VITAWAW//Reminders//AR','CALSCALE:GREGORIAN'];
+  events.forEach((e,i)=>{
+    const [h,m]=(e.time||'09:00').split(':').map(Number),rr=['FREQ='+(e.freq||'DAILY'),...(e.interval>1?['INTERVAL='+e.interval]:[]),...(e.count?['COUNT='+e.count]:[])].join(';');
+    lines.push('BEGIN:VEVENT','UID:'+day+'-'+i+'-'+Math.random().toString(36).slice(2)+'@vitawaw','DTSTAMP:'+stamp,
+      `DTSTART:${day}T${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}00`,'DURATION:PT15M','RRULE:'+rr,
+      'SUMMARY:'+icsEsc(e.title),'DESCRIPTION:'+icsEsc((e.desc?e.desc+'\n':'')+T('cal_foot')),
+      'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(e.title),'TRIGGER:PT0M','END:VALARM','END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+  return lines.map(icsFold).join('\r\n')+'\r\n';
+}
+function icsDownload(events,name='vitawaw-reminders'){
+  if(!events.length)return;
+  const url=URL.createObjectURL(new Blob([icsFile(events)],{type:'text/calendar;charset=utf-8'})),a=document.createElement('a');
+  a.href=url;a.download=name+'.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+  if(typeof toast==='function')toast(T('cal_done'));
+}
+/** the daily schedule on screen → one daily event per item (the antibiotic twice) */
+function schCalendar(){
+  const W=+$('schw').value,ids=SCI.map(x=>x[0]).filter(id=>$('sc-'+id)&&$('sc-'+id).checked),asg=ids.length&&schSolve(ids);if(!asg)return;
+  icsDownload(ids.flatMap(id=>{const x=SCI.find(y=>y[0]===id),t=asg[id];
+    return (id==='abx'?[t,t+12*H]:[t]).map(tt=>({title:'VITAWAW · '+L(x[1],x[2]),desc:L(x[4],x[5]),time:hhmm(tt,W),freq:id==='bis'?'WEEKLY':'DAILY'}))}),'vitawaw-schedule');
+}
+/* ===================== my lab results (on this device only) =====================
+   [id, ar, en, unit, reference lines [value, ar, en]] — the lines are the limits the calculators use */
+const LABT=[['d','فيتامين D','Vitamin D','ng/mL',[[20,'نقص','deficient'],[30,'كافٍ','sufficient']]],
+ ['b12','B12','B12','pg/mL',[[180,'نقص','deficient'],[350,'طبيعي','normal']]],
+ ['hb','الهيموغلوبين','Hemoglobin','g/dL',[]],
+ ['fer','Ferritin','Ferritin','ng/mL',[[45,'حد البالغين','adult limit']]],
+ ['mg','المغنيسيوم','Magnesium','mg/dL',[[1.8,'منخفض تحته','low below']]]];
+let LABS=[];try{LABS=JSON.parse(localStorage.getItem('vw-labs')||'[]').filter(x=>x&&LABT.some(t=>t[0]===x.k)&&isFinite(x.v)&&/^\d{4}-\d{2}-\d{2}$/.test(x.d)).slice(-300)}catch(e){}
+const saveLabs=()=>{try{localStorage.setItem('vw-labs',JSON.stringify(LABS))}catch(e){}};
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+function labAdd(k,v,d){if(!LABT.some(t=>t[0]===k)||!(v>0))return false;LABS.push({k,v:Math.round(v*100)/100,d:d||today()});LABS.sort((a,b)=>a.d.localeCompare(b.d));saveLabs();labs();return true}
+function labsBuild(){
+  const v=$('lbk').value||'d';$('lbk').innerHTML=LABT.map(t=>`<option value="${t[0]}">${esc(L(t[1],t[2]))} (${t[3]})</option>`).join('');$('lbk').value=v;
+  if(!$('lbd').value)$('lbd').value=today();labs();
+}
+/** a small line chart: dates on the bottom, values on the side, the reference lines dashed */
+function labChart(t,pts){
+  const W=320,Hh=150,pl=34,pr=10,pt=12,pb=26,vals=pts.map(p=>p.v),refs=t[4].map(r=>r[0]);
+  let lo=Math.min(...vals,...refs),hi=Math.max(...vals,...refs);if(hi===lo){hi+=1;lo=Math.max(0,lo-1)}const pad=(hi-lo)*.12;lo=Math.max(0,lo-pad);hi+=pad;
+  const ts=pts.map(p=>Date.parse(p.d)),t0=Math.min(...ts),t1=Math.max(...ts),X=x=>pts.length<2||t1===t0?(pl+W-pr)/2:pl+(x-t0)/(t1-t0)*(W-pl-pr),Y=v=>pt+(hi-v)/(hi-lo)*(Hh-pt-pb);
+  const ref=t[4].map(([v,a,e])=>`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" class="lbref"/><text x="${W-pr}" y="${Y(v)-3}" text-anchor="end" class="lbrt">${fmt(v)} · ${esc(L(a,e))}</text>`).join('');
+  const line=pts.length>1?`<polyline points="${pts.map(p=>X(Date.parse(p.d))+','+Y(p.v)).join(' ')}" class="lbln"/>`:'';
+  const dots=pts.map(p=>`<circle cx="${X(Date.parse(p.d))}" cy="${Y(p.v)}" r="4" class="lbpt"/><text x="${X(Date.parse(p.d))}" y="${Y(p.v)-8}" text-anchor="middle" class="lbvt">${fmt(p.v)}</text>`).join('');
+  const dl=[pts[0],pts.length>1?pts[pts.length-1]:null].filter(Boolean).map((p,i)=>`<text x="${X(Date.parse(p.d))}" y="${Hh-6}" text-anchor="${pts.length>1?(i?'end':'start'):'middle'}" class="lbdt">${p.d}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${Hh}" class="lbsvg" role="img" aria-label="${esc(L(t[1],t[2]))}" direction="ltr"><line x1="${pl}" x2="${pl}" y1="${pt}" y2="${Hh-pb}" class="lbax"/><line x1="${pl}" x2="${W-pr}" y1="${Hh-pb}" y2="${Hh-pb}" class="lbax"/><text x="${pl-4}" y="${pt+8}" text-anchor="end" class="lbdt">${fmt(Math.round(hi*10)/10)}</text><text x="${pl-4}" y="${Hh-pb}" text-anchor="end" class="lbdt">${fmt(Math.round(lo*10)/10)}</text>${ref}${line}${dots}${dl}</svg>`;
+}
+function labs(){
+  const out=$('lbout');if(!out)return;const t0=LABT.find(t=>t[0]===$('lbk').value);if(t0)$('lbv-l').textContent=T('lb_val')+' ('+t0[3]+')';
+  if(!LABS.length){out.innerHTML=`<p class="hint">${T('lb_none')}</p>`;return}
+  out.innerHTML=LABT.filter(t=>LABS.some(x=>x.k===t[0])).map(t=>{const pts=LABS.filter(x=>x.k===t[0]),last=pts[pts.length-1],prev=pts[pts.length-2];
+    const ch=prev?Math.round((last.v-prev.v)*10)/10:null;
+    return `<div class="lbcard"><div class="lbh"><b>${esc(L(t[1],t[2]))}</b><span dir="ltr">${fmt(last.v)} ${t[3]}${ch!=null?` <small class="${ch>=0?'up':'down'}">${ch>=0?'▲':'▼'} ${fmt(Math.abs(ch))}</small>`:''}</span></div>${labChart(t,pts)}
+      <details><summary>${T('lb_all')} (${pts.length})</summary><ul class="lbl">${pts.map(x=>`<li><bdi>${x.d}</bdi><b dir="ltr">${fmt(x.v)} ${t[3]}</b><button type="button" data-lbdel="${LABS.indexOf(x)}" aria-label="${esc(T('o_del'))}">×</button></li>`).join('')}</ul></details></div>`}).join('')+
+    `<div class="ract"><button class="btn danger" type="button" id="lbclear">${T('lb_clear')}</button></div>`;
 }

@@ -69,6 +69,15 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-30)
+- **1.11.0 in preview** (same branch): roadmap status `now` + `go` (GO map in lists.js, owner picks in editFeature); calendar .ics
+  (`icsFile()/icsDownload()/schCalendar()` in tools.js, `r.cal` in calculators); lab history `#tool-labs` (`LABT`, `LABS` in
+  localStorage vw-labs, `labChart()`), `r.lab`; doctor report `openReport()/repHTML()` in render.js (+ print CSS, `#rep`);
+  one search `openSearch()/gsResults()` in nav.js (button at the top of the menu); share link `shareLink()/loadShared()` in ui.js
+  (`#c=` base64url, `FORMIDS`); previous versions `openVersions()/restoreVersion()` in owner.js + RPC `restore_version` in
+  `20261030140000_versions_and_pages.sql` (also adds pages faq/method and roadmap statuses to the draft; he runs it, then publishes).
+  Speed: `tools/prefill_i18n.py` (run by set_version.py) writes Arabic texts into index.html; `js/pre.js` (not deferred) decides the
+  welcome card/theme/dir before paint. Lighthouse mobile 100/100/96/100 (96 = local /api/content 404 only).
+  Next: menu redesign like Facebook in two steps (1.12.0 menus + 🔔 for everyone + search in the header + tools grid; 1.13.0 placements).
 - 2026-10-30: he approved all waiting items and published (checked: 0 pending; live content 62 sources, 61 interactions, 15 with timing).
   Next: ask what he wants next (validation document reminder is due today ~21:00 UTC; optional local product presets for the syrup tool).
 - **Live: 1.10.0** (he said «جاهز» on 2026-10-30; includes 1.9.0; DB file applied and checked: same DB file `20261030000000_interaction_timing.sql`, which now also adds

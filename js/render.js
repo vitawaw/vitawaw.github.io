@@ -34,6 +34,9 @@ function render(r){
   if(r.tool2==='ganz'&&!pt)acts.push(`<button class="btn" type="button" data-tool="ganz">${T('ganz')}</button>`);
   // more tools, opened already filled in from this result (patient mode keeps the ones a patient can use)
   const tb=k=>`<button class="btn" type="button" data-tool="${k}">${T('tb_'+k)}</button>`;
+  acts.push(`<button class="btn" type="button" data-report="1">${T('rp_btn')}</button>`,`<button class="btn" type="button" data-share="1">${T('sh_btn')}</button>`);
+  if(r.lab&&r.lab.length)acts.push(`<button class="btn" type="button" data-lab="1">${T('lb_save')}</button>`);
+  if(r.cal)acts.push(`<button class="btn" type="button" data-cal="1">${CALIC}${T('cal_add')}</button>`);
   if(r.ml){ML=r.ml;acts.push(tb('ml'))}
   if(r.sch){SCHSET=r.sch;acts.push(tb('sch'))}
   if(r.ca&&!pt)acts.push(tb('ca'));
@@ -75,3 +78,45 @@ function copyRes(){
 }
 function fallback(text,done){const t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy');done()}catch(e){}t.remove()}
 const teen=a=>a>=14&&a<=18;
+
+/* ===================== report for the doctor (print / save as PDF) =====================
+   A plain page with the patient's inputs, the result, the plan, the warnings, the interactions and the full sources.
+   It is shown in a floating window; «اطبع أو احفظ PDF» prints only this page (the phone offers «Save as PDF»). */
+function repInputs(){
+  const out=[];
+  document.querySelectorAll('#calc input, #calc select').forEach(el=>{
+    if(el.id==='nsearch'||!el.offsetParent&&!el.closest('.f,.block,.chk'))return;
+    const box=el.closest('[data-for],[data-not],.f,.block,.chk');if(box&&box.closest('[hidden]'))return;if(el.closest('[hidden]'))return;
+    if(el.type==='checkbox'){if(el.checked){const t=el.closest('.chk');out.push([plain(t.querySelector('span span, span').textContent),'✓'])}return}
+    if(el.tagName==='SELECT'&&(el.id==='dunit'||el.id==='b12u'||el.id==='mgu'))return;
+    const v=el.tagName==='SELECT'?el.options[el.selectedIndex]?.textContent:el.value;if(!v)return;
+    const lab=document.querySelector(`label[for="${el.id}"]`);let name=lab?plain(lab.textContent).replace(/\*/g,'').trim():el.id;
+    const unit=el.parentElement&&el.parentElement.classList.contains('unit')?(el.parentElement.querySelector('select')?el.parentElement.querySelector('select').value.replace('mgdl','mg/dL').replace('nmol','nmol/L').replace('ng','ng/mL').replace('pg','pg/mL').replace('pmol','pmol/L').replace('mmol','mmol/L'):(el.parentElement.querySelector('.u')||{}).textContent||''):'';
+    out.push([name,v+(unit?' '+unit:'')]);
+  });
+  return out;
+}
+function repHTML(){
+  const r=LAST;if(!r)return '';
+  const name=document.querySelector('#picker [aria-pressed="true"] span').textContent,d=new Date().toLocaleDateString(LANG==='ar'?'ar-IQ-u-nu-latn':'en-GB',{year:'numeric',month:'long',day:'numeric'});
+  const ks=IKEYS[K]||[K],inter=(typeof INTER!=='undefined'?INTER:[]).filter(x=>ks.includes(x[0])&&x[7]&&!x[8]);
+  const srcs=(r.srcs||[]).filter(n=>REFS[n]),rv=REV();
+  return `<div class="rp" dir="${LANG==='ar'?'rtl':'ltr'}">
+   <div class="rp-h"><div><b>VITAWAW</b> · ${esc(T('rp_t'))}</div><div>${esc(d)}</div></div>
+   <h1>${esc(name)}</h1>
+   <h2>${esc(T('rp_in'))}</h2><table>${repInputs().map(([k,v])=>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</table>
+   <h2>${esc(T('rp_res'))}</h2><p class="rp-b">${esc(plain(r.badge))}</p><p><b>${esc(plain(r.title))}</b></p>${r.sub?`<p>${esc(plain(r.sub))}</p>`:''}
+   ${(r.notes||[]).filter(n=>n.u).map(n=>`<p class="rp-u">⚠ ${esc(plain(n.t))}</p>`).join('')}
+   ${r.plan&&r.plan.length?`<h2>${esc(T('plan'))}</h2><ol>${r.plan.map(s=>`<li><b>${esc(plain(s.h))}</b>${s.d?' — '+esc(plain(s.d)):''}</li>`).join('')}</ol>`:''}
+   ${r.opts&&r.opts.length?`<h2>${esc(T('rp_opts'))}</h2><ul>${r.opts.map(o=>`<li><b>${esc(plain(o.h))}:</b> ${esc(plain(o.b))}${o.d?' ('+esc(plain(o.d))+')':''}</li>`).join('')}</ul>`:''}
+   ${r.kv&&r.kv.length?`<table>${r.kv.map(x=>`<tr><th>${esc(plain(x[0]))}</th><td>${esc(plain(x[1]))}</td></tr>`).join('')}</table>`:''}
+   ${(r.notes||[]).filter(n=>!n.u).length?`<h2>${esc(T('rp_notes'))}</h2><ul>${r.notes.filter(n=>!n.u).map(n=>`<li>${esc(plain(n.t))}</li>`).join('')}</ul>`:''}
+   ${inter.length?`<h2>${esc(T('ri_t'))}</h2><ul>${inter.map(x=>`<li><b>${esc(L(x[2][0],x[2][1]))}</b> (${esc(T('sev_'+x[6]))}): ${esc(L(x[3][0],x[3][1]))}</li>`).join('')}</ul>`:''}
+   <h2>${esc(T('rp_src'))}</h2><ol class="rp-s">${srcs.map(n=>`<li value="${n}">${esc(REFS[n][0])} — ${esc(REFS[n][1])}${REFS[n][2]?` <span dir="ltr">${esc(REFS[n][2])}</span>`:''}</li>`).join('')}</ol>
+   <p class="rp-f">${rv.name?esc(T('rev'))+' '+rv.name+(rv.date?' · '+esc(rv.date):'')+'<br>':''}${esc(T('disc_all'))}</p></div>`;
+}
+function openReport(){
+  if(!LAST)return;const h=repHTML();$('rep').innerHTML=h;
+  openSheet(T('rp_t'),`<div class="rpwrap">${h}</div><div class="sact filters"><button class="btn pri" type="button" id="rpprint">${esc(T('rp_print'))}</button></div>`,{key:'report'});
+  $('rpprint').addEventListener('click',()=>{document.body.classList.add('printrep');window.print();setTimeout(()=>document.body.classList.remove('printrep'),500)});
+}

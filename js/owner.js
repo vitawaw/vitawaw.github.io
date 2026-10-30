@@ -107,6 +107,24 @@ async function editBrand(){
     b.url=url;CFG.brand=b;changed();toast(T('br_done'));return;
   }
 }
+/** owner: earlier published versions (config_history) with «restore»; the restore itself is checked in the database */
+async function openVersions(){
+  if(!ISOWNER()){toast(T('o_onlyowner'));return}
+  if(OWN.local||!OWN.client){toast(T('vh_local'));return}
+  const {data,error}=await OWN.client.from('config_history').select('id,published_at,note').order('id',{ascending:false}).limit(30);
+  if(error||!data){toast(T('o_neterr'));return}
+  const fmtD=d=>{try{return new Date(d).toLocaleString(LANG==='ar'?'ar-IQ-u-nu-latn':'en-GB',{dateStyle:'medium',timeStyle:'short'})}catch(e){return d}};
+  ACT.v=[];const S=c=>chipH('v',c);
+  openSheet(T('vh_t'),`<p class="hint">${T('vh_i')}</p>`+data.map((v,i)=>`<div class="ncard"><div class="nb"><div class="nh"><b>${i===0?esc(T('vh_now')):'#'+v.id}</b> · <bdi>${esc(fmtD(v.published_at))}</bdi></div>${v.note?`<div class="nw">${esc(clean(v.note))}</div>`:''}
+    ${i===0?'':`<div class="filters">${S({label:T('vh_restore'),f:()=>restoreVersion(v.id,fmtD(v.published_at))})}</div>`}</div></div>`).join(''),{key:'versions'});
+}
+async function restoreVersion(id,when){
+  const q=await dialog({title:T('vh_restore'),info:T('vh_q').replace('{d}',when),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('vh_restore'),action:'ok',pri:1,danger:1}]});
+  if(q.action!=='ok')return;
+  const {error}=await OWN.client.rpc('restore_version',{p_id:id});
+  if(error){toast(T('o_neterr'));return}
+  closeSheet(false);toast(T('vh_done'));loadPublished();
+}
 /** owner: the medical review stamp under every result («تمت المراجعة الطبية بواسطة …» and the date) */
 async function editReview(){
   if(!ISOWNER()){toast(T('o_onlyowner'));return}
@@ -126,15 +144,15 @@ async function editContact(){
     buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
   if(r.action==='ok'){const [e,ph]=r.values.map(x=>x.trim());if(!e&&!ph){toast(T('o_contact_need'));return editContact()}CFG.contact={email:e,phone:ph};changed()}
 }
-const STATUSES=()=>[['dev',T('st_dev')],['plan',T('st_plan')],['idea',T('st_idea')]];
+const STATUSES=()=>[['now',T('st_now')],['dev',T('st_dev')],['plan',T('st_plan')],['idea',T('st_idea')]];
 const ICONS=()=>Object.keys(IC).map(k=>[k,{bell:'🔔',chart:'📈',plus:'➕',pill:'💊',clock:'⏰',share:'📤',cam:'📷',baby:'👶'}[k]+' '+k]);
 async function editFeature(i){
   const isNew=i==null,x=isNew?{st:'plan',ic:'plus',t:{ar:'',en:''},d:{ar:'',en:''}}:CFG.roadmap[i];
   const r=await dialog({title:T(isNew?'o_add':'o_feat'),fields:[{label:T('o_ftitle'),value:x.t.ar},{label:T('o_ftitle_en'),value:x.t.en||'',ltr:1},{label:T('o_fdesc'),type:'textarea',value:x.d.ar},{label:T('o_fdesc_en'),type:'textarea',value:x.d.en||'',ltr:1},
-    {label:T('o_fst'),type:'select',options:STATUSES(),value:x.st},{label:T('o_fic'),type:'select',options:ICONS(),value:x.ic}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    {label:T('o_fst'),type:'select',options:STATUSES(),value:x.st},{label:T('o_fic'),type:'select',options:ICONS(),value:x.ic},{label:T('o_fgo'),type:'select',options:GOLIST(),value:x.go||''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
   if(r.action!=='ok')return;
-  const [t,te,d,de,st,ic]=r.values.map(v=>v.trim());if(!t)return;
-  const item={st,ic,t:{ar:t,en:te},d:{ar:d,en:de},...(x.hidden?{hidden:true}:{})};
+  const [t,te,d,de,st,ic,goTo]=r.values.map(v=>v.trim());if(!t)return;
+  const item={st,ic,t:{ar:t,en:te},d:{ar:d,en:de},...(goTo?{go:goTo}:{}),...(x.hidden?{hidden:true}:{})};
   if(isNew)CFG.roadmap.push(item);else CFG.roadmap[i]=item;changed();
 }
 async function delFeature(i){if(await confirmDel(tx2(CFG.roadmap[i].t))){CFG.roadmap.splice(i,1);changed()}}

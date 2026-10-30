@@ -3,7 +3,7 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.10.0';
+const APP_VERSION='1.11.0';
 /* the medical review stamp is set by the owner (menu → site → «ختم المراجعة الطبية») and published with the settings: CFG.review */
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
@@ -26,13 +26,13 @@ const DEFAULT_CFG={
    {id:'disclaimer',t:{ar:'إخلاء المسؤولية',en:'Disclaimer'},b:{ar:'المعلومات في التطبيق للتثقيف ولمساعدة الصيدلي والطبيب، ولا تغني عن الاستشارة الطبية.\n\nلا تبدأ جرعة علاجية ولا توقفها دون مراجعة الطبيب أو الصيدلي، خاصة للحامل والأطفال ومرضى الكلى.',en:'The information in this app is for education and to support pharmacists and doctors; it does not replace medical advice.\n\nDo not start or stop a treatment dose without a doctor or pharmacist, especially in pregnancy, children and kidney disease.'}}
   ],
   roadmap:[
-   {st:'dev',ic:'bell',t:{ar:'تذكير بمواعيد الجرعات',en:'Dose reminders'},d:{ar:'تنبيه في يوم ووقت الجرعة، خاصة للجرعات الأسبوعية التي يسهل نسيانها.',en:'A reminder on the day and time of each dose, especially weekly doses that are easy to forget.'}},
-   {st:'dev',ic:'clock',t:{ar:'جدول يومي ذكي للمكملات',en:'Smart daily schedule'},d:{ar:'ترتيب أوقات أخذ المكملات معاً بحيث تُحترم فواصل التداخلات تلقائياً.',en:'Arranges the times for all your supplements so interaction gaps are respected automatically.'}},
-   {st:'plan',ic:'chart',t:{ar:'سجل التحاليل ومتابعة التحسن',en:'Lab history and progress'},d:{ar:'احفظ نتائج تحاليلك وشاهد تحسّن المستوى على رسم بياني بين تحليل وآخر.',en:'Save your test results and see your level improve on a chart from one test to the next.'}},
+   {st:'now',go:'sch',ic:'bell',t:{ar:'تذكير بمواعيد الجرعات',en:'Dose reminders'},d:{ar:'من جدول المكملات أو خطة العلاج اضغط «أضف إلى التقويم» فتُضاف مواعيد الجرعات إلى تقويم هاتفك وينبّهك في وقتها.',en:'In the supplement schedule or the treatment plan, tap «Add to calendar» and the doses are added to your phone’s calendar with an alert.'}},
+   {st:'now',go:'sch',ic:'clock',t:{ar:'جدول يومي ذكي للمكملات',en:'Smart daily schedule'},d:{ar:'ترتيب أوقات أخذ المكملات معاً بحيث تُحترم فواصل التداخلات تلقائياً.',en:'Arranges the times for all your supplements so interaction gaps are respected automatically.'}},
+   {st:'now',go:'labs',ic:'chart',t:{ar:'سجل التحاليل ومتابعة التحسن',en:'Lab history and progress'},d:{ar:'احفظ نتائج تحاليلك وشاهد تحسّن المستوى على رسم بياني بين تحليل وآخر.',en:'Save your test results and see your level improve on a chart from one test to the next.'}},
    {st:'dev',ic:'plus',t:{ar:'توسيع المحتوى باستمرار',en:'Content keeps growing'},d:{ar:'نضيف فيتامينات ومعادن وتداخلات دوائية جديدة باستمرار، ويراجع صيدلي كل إضافة قبل نشرها.',en:'We keep adding vitamins, minerals and drug interactions, and a pharmacist reviews every addition before it is published.'}},
-   {st:'plan',ic:'pill',t:{ar:'فحص تداخلات أدويتك',en:'Check your own medicines'},d:{ar:'أدخل أدويتك الحالية فتظهر التداخلات التي تخصك فقط مع المكملات.',en:'Enter the medicines you take and see only the interactions that apply to you.'}},
-   {st:'plan',ic:'share',t:{ar:'تقرير PDF للطبيب',en:'PDF report for your doctor'},d:{ar:'ملف مفصّل بالنتيجة والخطة والمصادر لطباعته أو إرساله للطبيب.',en:'A detailed file with the result, plan and sources to print or send to your doctor.'}},
-   {st:'idea',ic:'baby',t:{ar:'قسم خاص للحمل والأطفال',en:'Pregnancy and children section'},d:{ar:'جرعات مفصّلة حسب أسبوع الحمل وعمر الطفل ووزنه بإشراف مختصين.',en:'Detailed doses by pregnancy week and by child age and weight, reviewed by specialists.'}},
+   {st:'now',go:'meds',ic:'pill',t:{ar:'فحص تداخلات أدويتك',en:'Check your own medicines'},d:{ar:'أدخل أدويتك الحالية فتظهر التداخلات التي تخصك فقط مع المكملات.',en:'Enter the medicines you take and see only the interactions that apply to you.'}},
+   {st:'now',go:'report',ic:'share',t:{ar:'تقرير PDF للطبيب',en:'PDF report for your doctor'},d:{ar:'ملف مفصّل بالنتيجة والخطة والمصادر لطباعته أو إرساله للطبيب.',en:'A detailed file with the result, plan and sources to print or send to your doctor.'}},
+   {st:'now',go:'preg',ic:'baby',t:{ar:'قسم خاص للحمل والأطفال',en:'Pregnancy and children section'},d:{ar:'جرعات مفصّلة حسب أسبوع الحمل وعمر الطفل ووزنه بإشراف مختصين.',en:'Detailed doses by pregnancy week and by child age and weight, reviewed by specialists.'}},
    {st:'idea',ic:'cam',t:{ar:'قراءة العبوة بالكاميرا',en:'Scan the pack with your camera'},d:{ar:'صوّر علبة المكمل فيتعرّف التطبيق على التركيز ويحسب عدد الحبات مباشرة.',en:'Photograph the supplement box and the app reads the strength and counts the tablets for you.'}}
   ]
 };
@@ -43,7 +43,7 @@ const DEFAULT_CFG={
    - links must start with http:// or https:// (blocks javascript: links)
    - ids, status and icon names may only contain letters, numbers, "_" and "-"
    - colours must be hex (#rrggbb), e-mail and phone must look like an e-mail and a phone number */
-const SAFE_ID_KEYS=new Set(['k','id','st','ic','sev','uk','sx']);
+const SAFE_ID_KEYS=new Set(['k','id','st','ic','sev','uk','sx','go']);
 function clean(v,key){
   if(typeof v==='string'){
     if(key==='url')return /^https?:\/\/[^\s"'<>]+$/i.test(v.trim())?v.trim():'';

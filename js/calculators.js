@@ -65,6 +65,11 @@ function fD(){
     notes.push({t:L('حسب NIH يرتبط التسمم عادة بمستويات أعلى من 150 ng/mL (375 nmol/L)، ومع ذلك لا مبرر لاستمرار الجرعات العالية.','Per NIH, toxicity is typically associated with levels above 150 ng/mL (375 nmol/L); even so, continuing high doses is not justified.'),r:[4]});
     if(ng>150)notes.unshift({t:L('المستوى ضمن نطاق التسمم المحتمل: يحتاج تقييماً طبياً عاجلاً للكالسيوم ووظائف الكلى.','This level is in the possible toxicity range: urgent medical assessment of calcium and kidney function is needed.'),r:[4],u:1});
   }
+  // reminder in the phone's calendar for the regimen shown to the patient
+  if(ng<20){const DD=L('فيتامين D','Vitamin D');
+    r.cal=adult&&!risk?(age>=50?{title:DD+' 6,000 IU',freq:'DAILY',count:56}:{title:DD+' 50,000 IU',freq:'WEEKLY',count:8}):adult?{title:DD+' '+L('(الجرعة التي حددها الطبيب)','(the dose your doctor set)'),freq:'DAILY'}:{title:DD+' 2,000 IU',freq:'DAILY',count:42}}
+  else if(ng<30&&rec)r.cal={title:L('فيتامين D','Vitamin D')+' '+fmt(rec)+' IU',freq:'DAILY'};
+  r.lab=[['d',Math.round(ng*10)/10]];
   r.kv=kv;r.notes=notes;if(rec)r.tool='drops';if(rec&&age>=1)r.ul=[['d',rec]];if(ng>100)r.ca=1;render(r);
   if(rec){$('iu').value=rec;conv()}
 }
@@ -106,6 +111,7 @@ function fB12(){
   }else r={badge:sT==='ind'?L('نقص غير مرجّح (Active B12 أعلى من 70 pmol/L)','Deficiency unlikely (active B12 above 70 pmol/L)'):L('ضمن الطبيعي','Normal'),tone:'ok',title:L(`الاحتياج اليومي ${rda} mcg`,`Daily need ${rda} mcg`),sub:L('من الغذاء أو متعدد الفيتامينات','From food or a multivitamin'),refs:sA?[5,8]:[8],pt:L('مستوى B12 طبيعي، ولا تحتاج علاجاً.','Your B12 level is normal; no treatment is needed.')};
   if(st==='ind'&&sA==='ind')notes.push({t:L('حسب NICE: عند Active B12 بين 25 و70 pmol/L مع أعراض، يُفحص MMA وتُفسَّر نتيجته حسب حدود المختبر.','Per NICE: with active B12 of 25–70 pmol/L and symptoms, test MMA and read it against the laboratory limits.'),r:[5]});
   if(sT==='ind'&&sA==null)notes.push({t:L('أدخل نتيجة Active B12 إن توفرت: أقل من 25 pmol/L يؤكد النقص، وأعلى من 70 يجعله غير مرجّح.','Enter an active B12 result if available: below 25 pmol/L confirms deficiency, above 70 makes it unlikely.'),r:[5],i:1});
+  r.lab=pg!=null?[['b12',Math.round(pg)]]:null;
   r.kv=kv;r.notes=notes;render(r);
 }
 
@@ -132,7 +138,8 @@ function fFol(){
       opts:[{h:L('البداية الشائعة','Common starting dose'),b:L('1 ملغ يومياً','1 mg daily'),d:L('الحالات المقاومة قد تحتاج أكثر','Resistant cases may need more'),r:[66]},{h:L('البروتوكول البريطاني','UK regimen'),b:L('5 ملغ يومياً لمدة 4 أشهر','5 mg daily for 4 months'),r:[28]}]};
     notes.push({t:L('استبعد نقص B12 قبل البدء بالجرعات العلاجية.','Exclude B12 deficiency before starting treatment doses.'),r:[28],u:1});
   }
-  if(g==='plan'){r.tool='pills';PILL={k:'fol',dose:0.4,tab:0.4};r.ul=[['fol',400]]}
+  if(g==='plan'){r.tool='pills';PILL={k:'fol',dose:0.4,tab:0.4};r.ul=[['fol',400]];r.cal={title:L('حمض الفوليك 400 mcg','Folic acid 400 mcg'),freq:'DAILY'}}
+  else if(g==='def'&&age>=18)r.cal={title:L('حمض الفوليك','Folic acid'),desc:L('بالجرعة التي حددها الطبيب، لمدة 4 أشهر','At the dose your doctor set, for 4 months'),freq:'DAILY',count:120};
   else if(g==='ntd'||(g==='def'&&age>=18)){r.tool='pills';PILL={k:'fol',dose:5,tab:5}}
   r.kv=kv;r.notes=notes;render(r);
 }
@@ -210,6 +217,8 @@ function fFe(){
   }
   if(CKD())notes.unshift({t:L('في القصور الكلوي المزمن يُعالج فقر الدم بإشراف طبيب الكلى، وقد يُفضَّل الحديد الوريدي، خاصة لمرضى الغسيل.','In chronic kidney disease anemia is managed by the nephrologist; IV iron may be preferred, especially on dialysis.'),r:[62],u:1});
   if(sx==='p')notes.push({t:L('في الحمل الاحتياج 27 ملغ يومياً، ويحدد طبيب النساء جرعة العلاج.','In pregnancy the need is 27 mg daily; the obstetrician sets any treatment dose.'),r:[15]});
+  r.lab=[...(hb!=null?[['hb',hb]]:[]),...(fer!=null?[['fer',fer]]:[])];
+  if(g==='ida'||g==='id')r.cal=age>=18?{title:L('حبة الحديد','Iron tablet')+' '+fmt(dose)+L(' ملغ',' mg'),desc:L('يوماً بعد يوم صباحاً','Every other day, in the morning'),freq:'DAILY',interval:2,count:45}:{title:L('الحديد','Iron')+' '+fmt(dose)+L(' ملغ',' mg'),freq:'DAILY',count:90};
   r.kv=kv;r.notes=notes;r.tool='pills';PILL={k:'fe',dose};r.sch=['fe'];
   if(g==='rda'&&typeof rda==='number'&&age>=1)r.ul=[['fe',rda]];
   if(young&&w)r.ml={wt:w,mgkg:3,q:1};
@@ -237,7 +246,7 @@ function fCa(){
     else{r={badge:L('نقص في المدخول','Intake below need'),tone:'warn',title:L(`مكمل ${fmt(gap)} ملغ كالسيوم عنصري يومياً`,`Supplement ${fmt(gap)} mg elemental calcium daily`),sub:doses>1?L(`مقسّمة على ${doses===2?'جرعتين':doses+' جرعات'}، لا تزيد الجرعة الواحدة على 500 ملغ`,`Split into ${doses} doses, no more than 500 mg each`):L('جرعة واحدة لا تزيد على 500 ملغ','One dose of no more than 500 mg'),refs:[18],
       pt:doses>1?L(`تحتاج ${fmt(gap)} ملغ كالسيوم إضافية يومياً، مقسّمة على ${doses===2?'مرتين':doses+' مرات'} (لا تزيد كل مرة على 500 ملغ).`,`You need ${fmt(gap)} mg more calcium a day, split into ${doses} doses (no more than 500 mg each).`):L(`تحتاج ${fmt(gap)} ملغ كالسيوم إضافية يومياً في جرعة واحدة.`,`You need ${fmt(gap)} mg more calcium a day in one dose.`),
       opts:[{h:'Calcium carbonate',b:L('مع الطعام','With food'),d:L('يحتاج حمض المعدة للامتصاص','Needs stomach acid to be absorbed'),r:[18]},{h:'Calcium citrate',b:L('مع الطعام أو بدونه','With or without food'),d:L('أنسب لمن يتناول أدوية تقلل حمض المعدة','Better for people on acid-reducing medicines'),r:[18]}]};
-      r.tool='pills';PILL={k:'ca',dose:Math.min(500,Math.ceil(gap/doses))};r.sch=doses>1?['ca','ca2']:['ca'];if(age>=1)r.ul=[['ca',diet+gap]];}
+      r.tool='pills';PILL={k:'ca',dose:Math.min(500,Math.ceil(gap/doses))};r.sch=doses>1?['ca','ca2']:['ca'];if(age>=1)r.ul=[['ca',diet+gap]];r.cal={title:L('الكالسيوم','Calcium')+(doses>1?L(` (${doses} مرات مع الوجبات)`,` (${doses} times with meals)`):''),freq:'DAILY'};}
   }
   r.notes=[{t:L('الإجمالي (غذاء + مكمل) يجب ألا يتجاوز الحد الأعلى.','Total intake (food + supplement) should stay under the upper limit.'),r:[18]}];
   if(CKD())r.notes.unshift({t:L('في القصور الكلوي المتقدم يحدد طبيب الكلى الكالسيوم والفوسفات؛ تُتجنّب الجرعات العالية من الكالسيوم لخطر ارتفاعه وترسّبه.','In advanced kidney disease the nephrologist manages calcium and phosphate; high calcium doses are avoided because of hypercalcemia and calcification risk.'),r:[61],u:1});
@@ -276,9 +285,10 @@ function fMg(){
     pt:L('حبوب مغنيسيوم مقسّمة على اليوم مع الطعام حسب ما يحدده الطبيب، ثم تحليل جديد خلال أسبوع تقريباً. قد تسبب إسهالاً خفيفاً.','Magnesium tablets split through the day with meals, as your doctor sets, then a new blood test in about a week. They can cause mild diarrhea.'),
     plan:[{h:L('العلاج: حتى 7 أيام','Treatment: up to 7 days'),d:L('10 – 24 mmol يومياً مقسّمة مع الطعام','10–24 mmol daily, divided, with meals')},{h:L('إعادة التحليل','Retest'),d:L('بعد 7 أيام، ثم بعد 1 – 3 أشهر حسب السبب','After 7 days, then after 1–3 months depending on the cause')},{h:L('بعد التصحيح','After correction'),d:L('الاستمرار يوماً أو يومين بعد عودة المستوى طبيعياً','Continue 1–2 days after the level normalises')}],
     opts:[{h:L('متى يكون العلاج ضرورياً','When treatment is needed'),b:L('عند وجود أعراض أو استمرار انخفاض المستوى','With symptoms, or a persistently low level'),r:[21]},{h:L('الأثر الجانبي الأشيع','Most common side effect'),b:L('الإسهال','Diarrhea'),d:L('ابدأ بجرعة منخفضة وارفعها تدريجياً','Start low and increase gradually'),r:[22]}]};
-  if(r.refs&&r.refs.includes(22)&&!sev&&mgdl>=1.22){r.tool='pills';PILL={k:'mg',dose:243};r.sch=['mg']}
+  if(r.refs&&r.refs.includes(22)&&!sev&&mgdl>=1.22){r.tool='pills';PILL={k:'mg',dose:243};r.sch=['mg'];if(age>=18)r.cal={title:L('المغنيسيوم (مقسّم مع الطعام)','Magnesium (divided, with food)'),freq:'DAILY',count:7}}
   if(r.refs&&r.refs.includes(22)&&!sev&&mgdl>=1.22)notes.push({t:L('الجرعة العلاجية أعلى من الحد الأعلى للمكملات (350 ملغ) لأنها علاج مؤقت بإشراف طبي، وليست مكملاً دائماً.','The treatment dose is above the supplement upper limit (350 mg) because it is short-term treatment under medical supervision, not a long-term supplement.'),r:[20,22]});
   if(ren)notes.push({t:L('في القصور الكلوي يرتفع خطر تراكم المغنيسيوم، فتُراقب المستويات عن قرب وتُخفض الجرعة الوريدية.','Kidney impairment raises the risk of magnesium build-up: monitor closely and reduce IV doses.'),r:[20,22],u:1});
+  r.lab=[['mg',Math.round(mgdl*100)/100]];
   r.kv=kv;r.notes=notes;render(r);
 }
 
@@ -346,6 +356,7 @@ function fInf(){
     sub:pre?L('خديج: الحديد من عمر أسبوعين','Preterm: iron from 2 weeks of age'):feed==='bf'?L('رضاعة طبيعية كاملة','Exclusively breastfed'):feed==='mix'?L('رضاعة مختلطة','Mixed feeding'):L('حليب صناعي','Formula-fed'),refs:[55,14,56],plan,
     pt:L(`قطرات فيتامين D ${DI} وحدة يومياً`+(fe?'، وقطرات حديد يومياً بالجرعة التي يحددها طبيب الأطفال حسب الوزن.':'.'),`Vitamin D drops, ${DI} units a day`+(fe?', and iron drops daily at the dose the pediatrician sets by weight.':'.'))};
   if(fe&&w)r.ml={wt:w,mgkg:pre?2:1,q:1};
+  r.cal={title:L(`قطرات فيتامين D ${DI} IU`,`Vitamin D drops ${DI} IU`)+(fe?L(' + الحديد',' + iron'):''),freq:'DAILY'};
   r.kv=kv;r.notes=notes;r.tool='drops';render(r);$('iu').value=m<12?400:600;conv();
 }
 
@@ -407,6 +418,7 @@ function fPreg(){
       preg?L('يومياً: حمض الفوليك، وحبة حديد، ويود 150 ميكروغرام، حسب ما تحدده طبيبة النساء. افصلي الحديد عن الكالسيوم بساعتين.','Every day: folic acid, an iron tablet and 150 micrograms of iodine, as your obstetrician advises. Take iron and calcium 2 hours apart.'):
       L('ابدئي حمض الفوليك 400 ميكروغرام ويود 150 ميكروغرام يومياً قبل الحمل بشهر على الأقل.','Start folic acid 400 micrograms and iodine 150 micrograms a day at least a month before pregnancy.')};
   if(preg){r.tool='pills';PILL={k:'fe',dose:anem?120:60}}
+  r.cal={title:lac?L('يود 150 mcg','Iodine 150 mcg'):L('مكملات الحمل: حمض الفوليك + الحديد + اليود','Pregnancy supplements: folic acid + iron + iodine'),freq:'DAILY'};
   r.sch=preg||lac?['fe','ca',...(preg&&lowca?['ca2']:[])]:['ca'];
   r.ul=[...(st!=='lac'&&!ntd?[['fol',400]]:[]),['io',150],['d',600]];
   r.kv=kv;r.notes=notes;render(r);

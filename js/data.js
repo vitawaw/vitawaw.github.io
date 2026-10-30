@@ -3,18 +3,12 @@
    and the default interactions (DEF_INTER). The live content comes from Supabase and replaces these.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 const DEF_REFS={
-1:['Medscape','Vitamin D Deficiency and Related Disorders (Tangpricha V, et al.)','https://emedicine.medscape.com/article/128762-overview','مرجع سريري لنقص فيتامين D','Clinical reference on vitamin D deficiency'],
 2:['Endocrine Society, 2011','Holick MF, et al. Evaluation, Treatment, and Prevention of Vitamin D Deficiency. J Clin Endocrinol Metab 2011;96(7):1911–1930','https://doi.org/10.1210/jc.2011-0385','بروتوكولات علاج نقص D حسب العمر وعوامل الخطورة','Treatment regimens by age and risk'],
 3:['Endocrine Society, 2024','Demay MB, et al. Vitamin D for the Prevention of Disease. J Clin Endocrinol Metab 2024;109:1907–1947','https://doi.org/10.1210/clinem/dgae290','الوقاية وعدم الفحص الروتيني للأصحاء','Prevention; no routine testing in healthy people'],
 4:['NIH Office of Dietary Supplements','Vitamin D: Fact Sheet for Health Professionals','https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/','الاحتياج اليومي والحد الأعلى والتداخلات','Daily needs, upper limit, interactions'],
 5:['NICE NG239, 2024','Vitamin B12 Deficiency in Over 16s: Diagnosis and Management','https://www.nice.org.uk/guidance/ng239','حدود تشخيص نقص B12','B12 diagnostic thresholds'],
-6:['Medscape','Pernicious Anemia: Treatment & Management','https://emedicine.medscape.com/article/204930-treatment','نظم الحقن والعلاج الفموي','Injection and oral regimens'],
-7:['Medscape Drugs','Cyanocobalamin (Vitamin B12): Dosing','https://reference.medscape.com/drug/vitamin-b12-nascobal-cyanocobalamin-344418','جرعات Cyanocobalamin','Cyanocobalamin dosing'],
 8:['NIH Office of Dietary Supplements','Vitamin B12: Fact Sheet for Health Professionals','https://ods.od.nih.gov/factsheets/VitaminB12-HealthProfessional/','الاحتياج اليومي والتداخلات','Daily needs, interactions'],
-9:['Medscape Drugs','Folic acid (Folvite): Dosing','https://reference.medscape.com/drug/folvite-folic-acid-344419','جرعات حمض الفوليك','Folic acid dosing'],
-10:['StatPearls (NCBI Bookshelf)','Folic Acid','https://www.ncbi.nlm.nih.gov/books/NBK554487/','جرعات العلاج والوقاية في الحمل','Treatment and pregnancy doses'],
 11:['NIH Office of Dietary Supplements','Folate: Fact Sheet for Health Professionals','https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/','الاحتياج اليومي والحد الأعلى','Daily needs, upper limit'],
-12:['Medscape','Iron Deficiency Anemia: Treatment & Management','https://emedicine.medscape.com/article/202333-treatment','علاج فقر الدم بعوز الحديد','Treating iron-deficiency anemia'],
 13:['Lancet Haematology, 2017','Stoffel NU, et al. Iron absorption from oral iron supplements given on consecutive versus alternate days. Lancet Haematol 2017;4(11):e524–e533','https://doi.org/10.1016/S2352-3026(17)30182-5','جرعة الحديد يوماً بعد يوم','Alternate-day iron dosing'],
 14:['American Academy of Pediatrics, Pediatrics 2026','Prevention, Screening, Diagnosis, and Treatment of Iron Deficiency and Iron Deficiency Anemia in Infants, Children, and Adolescents. AAP clinical report, July 2026','https://doi.org/10.1542/peds.2026-077414','جرعات الحديد للأطفال والمراهقين','Iron doses for children and adolescents'],
 15:['NIH Office of Dietary Supplements','Iron: Fact Sheet for Health Professionals','https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/','الاحتياج اليومي والحد الأعلى ونسب الأملاح','Daily needs, upper limit, salt percentages'],
@@ -53,7 +47,7 @@ const DEF_REFS={
 };
 let REFS=DEF_REFS;
 const DEF_REFGROUP={d:[2,3,4,61],b12:[5,8,29,63,64],fol:[11,28,65,66,67],fe:[13,14,15,16,17,27,51,52,59,62,68],ca:[18,19,27,61],mg:[20,21,22,58],c:[23,24],zn:[25,26],
-  preg:[57,10,11,15,37,4,3,18,44,42,30,51],inf:[55,14,56,4],vac:[53,54,30]};
+  preg:[57,65,67,11,15,37,4,3,18,44,42,30,51],inf:[55,14,56,4],vac:[53,54,30]};
 
 const DEF_INTER=[
 ['fe',['الحديد','Iron'],['Levothyroxine','Levothyroxine'],['افصل بينهما 4 ساعات على الأقل','Separate by at least 4 hours'],[27]],

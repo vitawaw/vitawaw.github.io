@@ -9,6 +9,7 @@
 
 /* ===================== helpers ===================== */
 const ICO={
+  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>',
   info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
   page:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>',
@@ -16,7 +17,7 @@ const ICO={
   site:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5 1-1.5 2-1.5h2a4 4 0 0 0 4-4c0-4.5-4-8-9-8z"/></svg>'
 };
 const CHEV='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
-const TOOLS=[['tool-pill','tl_pill','tt_t'],['tool-d','tl_d','td_t'],['tool-ca','tl_ca','tp_t'],['tool-gz','tl_gz','tg_t'],['tool-ml','tl_ml','ml_t'],['tool-sch','tl_sch','sc_t'],['tool-ul','tl_ul','tl_t'],['tool-u','tl_u','tu_t']];
+const TOOLS=[['tool-pill','tl_pill','tt_t'],['tool-d','tl_d','td_t'],['tool-ca','tl_ca','tp_t'],['tool-gz','tl_gz','tg_t'],['tool-ml','tl_ml','ml_t'],['tool-sch','tl_sch','sc_t'],['tool-labs','tl_labs','lb_t'],['tool-ul','tl_ul','tl_t'],['tool-u','tl_u','tu_t']];
 const tabIco=p=>{const s=$('t-'+p)&&$('t-'+p).querySelector('svg');return s?s.outerHTML:ICO.info};
 /** true when the signed-in account may edit this part: 'nut' | 'inter' | 'refs' | 'text' */
 const CAN=k=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner'||!!(OWN.perms&&OWN.perms[k]));
@@ -52,7 +53,7 @@ function adminGroups(){
     ...(CFG.pages||[]).map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>editPage(p.id)}))]});
   if(ISOWNER()&&!OWN.local)A.push({id:'team',label:T('ad_team'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,chips:[
     {label:T('ad_invite'),cls:'add',f:()=>teamInvite()},{label:T('ad_accounts'),f:()=>openTeam()},{label:T('ad_invites'),f:()=>openTeam('inv')}]});
-  if(ISOWNER())A.push({id:'site',label:T('ad_site'),ico:ICO.site,chips:[{label:T('o_contact'),f:()=>editContact()},{label:T('br_t'),f:()=>editBrand()},{label:T('rv_t'),f:()=>editReview()},
+  if(ISOWNER())A.push({id:'site',label:T('ad_site'),ico:ICO.site,chips:[{label:T('o_contact'),f:()=>editContact()},{label:T('br_t'),f:()=>editBrand()},{label:T('rv_t'),f:()=>editReview()},{label:T('vh_t'),f:()=>openVersions()},
     ...SECTIONS.map(p=>({label:T('ad_colors')+': '+T(SECKEY[p]),f:()=>editColors(p)}))]});
   return A;
 }
@@ -126,10 +127,12 @@ function menuHTML(r){
   // sections (side menu only: on phones they are in the bottom bar)
   if(!page)h=`<div class="slogo"><span class="mk"><svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg></span><span class="wm">VITA<em>WAW</em></span></div>`+
     grp('',[...SECTIONS,...(own?['notif']:[])].map(p=>row({label:T(SECKEY[p]),ico:tabIco(p),page:p,on:cur===p,n:p==='notif'?notifCount():0,f:()=>go(p)})).join(''),'secs')+h;
+  // one search for everything (calculators, tools, interactions, sources, pages)
+  h+=`<button type="button" class="gsbtn" data-na="${r}${ACT[r].push(openSearch)-1}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>${esc(T('gs_ph'))}</span></button>`;
   const A=own?adminGroups():[];
   if(A.length)h+=grp(T('nv_admin'),A.map(g=>`<div class="mi grp"><span class="di">${g.ico}</span><span class="mt">${esc(g.label)}</span>${g.n?`<span class="cnt">${g.n}</span>`:''}</div><div class="filters mchips">${g.chips.map(c=>chipH(r,c)).join('')}</div>`).join(''),'admin');
   // shortcuts: information pages, app, contact
-  const info=[...(page?[{label:T('tab_rm'),ico:tabIco('roadmap'),page:'roadmap',f:()=>go('roadmap')}]:[]),
+  const info=[...(page?[{label:T('tab_rm'),ico:tabIco('roadmap'),page:'roadmap',f:()=>go('roadmap')}]:[]),{label:T('lb_t'),ico:ICO.chart,f:()=>openTool('labs')},
     ...visiblePages().map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>openPage(p.id)}))];
   const app=[{label:T('mr_share'),ico:MI.share,f:shareApp},{label:T('mr_install'),ico:MI.install,f:installApp}];
   if(PHONEF())app.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
@@ -154,6 +157,35 @@ function renderMenu(){
 }
 // switching between phone and wide layouts (rotating a tablet): leave the menu page on wide screens
 matchMedia('(min-width:1024px)').addEventListener('change',()=>{if(WIDE()&&cur==='menu')show('calc');renderNav()});
+
+/* ===================== one search for everything ===================== */
+const TOOLKIND={'tool-pill':'pills','tool-d':'drops','tool-ca':'ca','tool-gz':'ganz','tool-ml':'ml','tool-sch':'sch','tool-labs':'labs','tool-ul':'ul','tool-u':'units'};
+function gsResults(q){
+  const n=normAr(q);if(n.length<2)return '';
+  const terms=iTerms(n),hit=t=>{const h=normAr(t);return terms.some(x=>h.includes(x))};
+  const calc=KEYS.slice(1).filter(k=>hit(kname(k)+' '+(I18N['h_'+k]?I18N['h_'+k].join(' '):''))).slice(0,6);
+  const tools=TOOLS.filter(t=>hit(T(t[1])+' '+T(t[2]))).slice(0,6);
+  const inter=INTER.filter(x=>x[7]&&!x[8]&&hit([x[1][0],x[1][1],x[2][0],x[2][1],x[3][0],x[3][1]].join(' ')));
+  const refs=Object.entries(REFS).filter(([i,x])=>!x[6]&&hit(x[0]+' '+x[1]+' '+x[3]+' '+x[4])).slice(0,6);
+  const pages=visiblePages().filter(p=>hit(tx2(p.t)+' '+tx2(p.b))).slice(0,4);
+  const sec=(t,items)=>items?`<h3 class="gsh">${esc(t)}</h3><div class="gsl">${items}</div>`:'';
+  const it=(attr,label,sub)=>`<button type="button" class="gsi" ${attr}><b>${esc(label)}</b>${sub?`<small>${esc(sub)}</small>`:''}</button>`;
+  const h=sec(T('gs_calc'),calc.map(k=>it(`data-gocalc="${esc(k)}"`,kname(k),I18N['h_'+k]?T('h_'+k):'')).join(''))+
+    sec(T('gs_tools'),tools.map(t=>it(`data-tool="${TOOLKIND[t[0]]}"`,T(t[2]),'')).join(''))+
+    sec(T('tab_int')+(inter.length?` (${inter.length})`:''),inter.slice(0,6).map(x=>it(`data-gsint="${esc(q)}"`,L(x[1][0],x[1][1])+' + '+L(x[2][0],x[2][1]),L(x[3][0],x[3][1]))).join(''))+
+    sec(T('tab_src'),refs.map(([i,x])=>it(`data-ref="${i}"`,i+'. '+x[0],x[1])).join(''))+
+    sec(T('nv_info'),pages.map(p=>it(`data-gspage="${esc(p.id)}"`,tx2(p.t),'')).join(''));
+  return h||`<p class="inone">${T('gs_none')}</p>`;
+}
+function openSearch(){
+  openSheet(T('gs_t'),`<div class="nsearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="gsq" dir="auto" autocomplete="off" placeholder="${esc(T('gs_ph'))}"></div><div id="gsr" aria-live="polite"></div>`,{key:'search'});
+  const q=$('gsq');q.addEventListener('input',()=>{$('gsr').innerHTML=gsResults(q.value)});setTimeout(()=>q.focus(),50);
+  $('gsr').addEventListener('click',e=>{
+    if(e.target.closest('[data-gocalc],[data-tool],[data-ref]'))closeSheet(false); // the global handlers open the item
+    const gi=e.target.closest('[data-gsint]');if(gi){closeSheet(false);IF='all';ISRC=null;$('isearch').value=gi.dataset.gsint;renderInter();go('interactions')}
+    const gp=e.target.closest('[data-gspage]');if(gp){closeSheet(false);openPage(gp.dataset.gspage)}
+  });
+}
 
 /* ===================== floating window (sheet) ===================== */
 let SHEET=null;

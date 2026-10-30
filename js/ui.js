@@ -22,6 +22,7 @@ function routeSpecial(){
   let h=location.hash.slice(1);try{h=decodeURIComponent(h)}catch(e){}
   if(h==='owner'){openOwner();return true}
   if(h==='join'||h.startsWith('join=')){const [em,k]=h.slice(5).split('&k=');openOwner({join:em||'',key:k||''});return true}
+  if(h.startsWith('c=')){history.replaceState(null,'',location.pathname+location.search+'#calc');loadShared(h.slice(2));return true}
   if(h.startsWith('info-')){history.replaceState(null,'',location.pathname+location.search+'#'+cur);openPage(h.slice(5));return true}
   return false;
 }
@@ -42,6 +43,11 @@ document.addEventListener('click',e=>{
   const gi=e.target.closest('[data-goint]');if(gi){e.preventDefault();IF=gi.dataset.goint;renderInter();go('interactions');return}
   const sr=e.target.closest('[data-isrc]');if(sr){e.preventDefault();ISRC=+sr.dataset.isrc;IF='all';renderInter();go('interactions');return}
   if(e.target.closest('[data-clrsrc]')){e.preventDefault();ISRC=null;renderInter();return}
+  if(e.target.closest('[data-share]')){e.preventDefault();shareResult();return}
+  if(e.target.closest('[data-report]')){e.preventDefault();openReport();return}
+  if(e.target.closest('[data-lab]')){e.preventDefault();if(LAST&&LAST.lab){LAST.lab.forEach(([k,v])=>labAdd(k,v));toast(T('lb_saved'))}return}
+  if(e.target.closest('[data-cal]')){e.preventDefault();if(LAST&&LAST.cal)icsDownload([LAST.cal]);return}
+  const rg=e.target.closest('[data-rmgo]');if(rg){e.preventDefault();const f=GO[rg.dataset.rmgo];if(f)f();return}
   const dm=e.target.closest('[data-delmed]');if(dm){e.preventDefault();MEDS.splice(+dm.dataset.delmed,1);saveMeds();renderInter();return}
   const a=e.target.closest('[data-ref]');if(!a)return;e.preventDefault();
   const back=cur;SF='all';renderRefs();go('sources');
@@ -145,7 +151,33 @@ function setLang(l){
   try{localStorage.setItem('vw-lang',l)}catch(e){}
   $('pc-wa').textContent=T('pc_wa');$('pc-copy').textContent=T('pc_cp');$('pc-close').textContent=T('pc_x');themeIcon();
   renderInter();renderRefs();renderRoadmap();renderContact();renderNav();
-  if(typeof OWN!=='undefined'&&OWN.on){decorate();ownerBar()}saltBuild();conv();cca();gz();mlc();schBuild();ulBuild();ucvBuild();F[K]();
+  if(typeof OWN!=='undefined'&&OWN.on){decorate();ownerBar()}saltBuild();conv();cca();gz();mlc();schBuild();labsBuild();ulBuild();ucvBuild();F[K]();
+}
+
+/* ===================== share a result by link =====================
+   The link carries only the values typed in the calculator (in the part after #, which is never sent to any server);
+   nothing is stored. Opening it fills the calculator and shows the same result. */
+const b64u={enc:s=>btoa(String.fromCharCode(...new TextEncoder().encode(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''),
+  dec:s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)))};
+function shareLink(){
+  const f={};
+  FORMIDS.forEach(id=>{const el=$(id);if(!el||el.closest('[hidden]'))return;
+    if(el.type==='checkbox'){if(el.checked)f[id]=1}else if(el.value!=='')f[id]=el.value});
+  return location.origin+location.pathname+'#c='+b64u.enc(JSON.stringify({k:K,f}));
+}
+async function shareResult(){
+  const url=shareLink(),title='VITAWAW · '+document.querySelector('#picker [aria-pressed="true"] span').textContent;
+  try{if(navigator.share){await navigator.share({title,url});return}}catch(e){if(e&&e.name==='AbortError')return}
+  const done=()=>toast(T('sh_copied'));try{await navigator.clipboard.writeText(url);done()}catch(e){fallback(url,done)}
+}
+function loadShared(code){
+  let o=null;try{o=JSON.parse(b64u.dec(code))}catch(e){}
+  if(!o||typeof o!=='object'||!F[o.k]||typeof o.f!=='object'){show('calc');return}
+  K=o.k;FORMIDS.forEach(id=>{const el=$(id);if(!el)return;const v=o.f[id];
+    if(el.type==='checkbox')el.checked=v===1;
+    else if(el.tagName==='SELECT'){if(v!=null&&[...el.options].some(x=>x.value===String(v)))el.value=String(v)}
+    else el.value=v!=null&&isFinite(parseFloat(v))?String(parseFloat(v)):''});
+  syncSex();apply();show('calc');
 }
 
 /* ===================== wiring ===================== */
@@ -162,7 +194,8 @@ $('medform').addEventListener('submit',e=>{e.preventDefault();const s=medSuggest
 $('medin').addEventListener('input',renderSug);
 $('medsug').addEventListener('click',e=>{const b=e.target.closest('[data-addmed]');if(b)addMed(b.dataset.addmed)});
 $('picker').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;K=b.dataset.k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()});
-['age','sex','wt','ht','dlab','dunit','mal','med','ckd','b12v','b12u','b12c','neuro','ab12','folg','feg','hb','fer','infl','cadiet','mgv','mgu','mgsx','czg','smk','mon','feed','pre','vag','tri','ntd','lowca','veg']
+const FORMIDS=['age','sex','wt','ht','dlab','dunit','mal','med','ckd','b12v','b12u','b12c','neuro','ab12','folg','feg','hb','fer','infl','cadiet','mgv','mgu','mgsx','czg','smk','mon','feed','pre','vag','tri','ntd','lowca','veg'];
+FORMIDS
   .forEach(i=>{$(i).addEventListener('input',()=>{if(i==='age')syncSex();F[K]()});$(i).addEventListener('change',()=>{if(i==='age')syncSex();F[K]()})});
 $('wt').addEventListener('input',()=>{const w=nv('wt');if(w){$('gw').value=w;gz()}});
 $('dunit').addEventListener('change',()=>{const v=nv('dlab');if(v!=null)$('dlab').value=$('dunit').value==='nmol'?Math.round(v*2.5):Math.round(v/2.5*10)/10;F[K]()});
@@ -170,7 +203,11 @@ $('mgu').addEventListener('change',()=>{const v=nv('mgv');if(v!=null)$('mgv').va
 $('b12u').addEventListener('change',()=>{const v=nv('b12v');if(v!=null)$('b12v').value=$('b12u').value==='pmol'?Math.round(v*0.738):Math.round(v/0.738);F[K]()});
 ['iu','cc','ampiu'].forEach(i=>{$(i).addEventListener('input',conv);$(i).addEventListener('change',conv)});
 ['mlwt','mlmgkg','mlfreq','mlconc','mlper','mldpm'].forEach(i=>{$(i).addEventListener('input',mlc);$(i).addEventListener('change',mlc)});
-$('schk').addEventListener('change',sch);$('schw').addEventListener('change',sch);
+$('lbform').addEventListener('submit',e=>{e.preventDefault();if(labAdd($('lbk').value,nv('lbv'),$('lbd').value||today())){$('lbv').value='';toast(T('lb_saved'))}else toast(T('lb_bad'))});
+$('lbk').addEventListener('change',labs);
+$('lbout').addEventListener('click',async e=>{const d=e.target.closest('[data-lbdel]');if(d){LABS.splice(+d.dataset.lbdel,1);saveLabs();labs();return}
+  if(e.target.closest('#lbclear')&&confirm(T('lb_clearq'))){LABS=[];saveLabs();labs()}});
+$('schk').addEventListener('change',sch);$('schout').addEventListener('click',e=>{if(e.target.closest('#schcal'))schCalendar()});$('schw').addEventListener('change',sch);
 $('tcau').addEventListener('change',()=>{const v=nv('tca');if(v!=null)$('tca').value=$('tcau').value==='mmol'?Math.round(v/4.008*100)/100:Math.round(v*4.008*10)/10;cca()});
 $('albu').addEventListener('change',()=>{const v=nv('alb');if(v!=null)$('alb').value=$('albu').value==='gl'?Math.round(v*10):Math.round(v)/10;cca()});
 ['salt','tabmg','needmg'].forEach(i=>{$(i).addEventListener('input',pills);$(i).addEventListener('change',pills)});

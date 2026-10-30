@@ -105,11 +105,15 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-copymail]'
 document.addEventListener('click',e=>{const b=e.target.closest('[data-copyphone]');if(!b)return;const P=CFG.contact.phone;
   const done=()=>{b.textContent=T('cpd');setTimeout(()=>b.textContent=T('cpp'),1600)};
   try{navigator.clipboard.writeText(P).then(done).catch(()=>fallback(P,done))}catch(err){fallback(P,done)}});
+/** «جرّبه» on a feature that is available now: where each feature lives */
+const GO={sch:()=>openTool('sch'),meds:()=>{go('interactions');setTimeout(()=>$('medin')&&$('medin').focus(),80)},preg:()=>{K='preg';apply();go('calc')},
+  labs:()=>openTool('labs'),report:()=>go('calc'),search:()=>openSearch(),calc:()=>go('calc'),tools:()=>go('tools')};
+const GOLIST=()=>[['',T('rm_go_none')],['sch',T('tl_sch')],['meds',T('mm_t')],['preg',T('n_preg')],['labs',T('lb_t')],['report',T('rp_t')],['search',T('gs_t')],['calc',T('tab_calc')],['tools',T('tab_tools')]];
 function renderRoadmap(){
   const st=k=>`<span class="st st-${esc(k)}">${esc(T('st_'+k))}</span>`;
-  $('rmlegend').innerHTML=['dev','plan','idea'].map(st).join('');
+  $('rmlegend').innerHTML=['now','dev','plan','idea'].map(st).join('');
   const tx=o=>LANG==='ar'?o.ar:(o.en||o.ar);
-  $('rmgrid').innerHTML=CFG.roadmap.map((x,i)=>x.hidden&&!SHOWALL()?'':`<div class="rm${x.hidden?' hid':''}" data-sid="${i}"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${IC[x.ic]||IC.plus}</svg></div><h3>${esc(tx(x.t))}</h3><p>${esc(tx(x.d))}</p>${st(x.st)}<div class="rmact">${DRAG(T('o_drag'))}${actBtns('m',i,{hidden:!!x.hidden})}</div></div>`).join('')+`<button class="oadd" type="button" id="rmadd"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>${T('o_add')}</button>`;
+  $('rmgrid').innerHTML=CFG.roadmap.map((x,i)=>x.hidden&&!SHOWALL()?'':`<div class="rm${x.hidden?' hid':''}" data-sid="${i}"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${IC[x.ic]||IC.plus}</svg></div><h3>${esc(tx(x.t))}</h3><p>${esc(tx(x.d))}</p>${st(x.st)}${x.st==='now'&&GO[x.go]?`<button class="btn pri rmgo" type="button" data-rmgo="${esc(x.go)}">${T('rm_try')}</button>`:''}<div class="rmact">${DRAG(T('o_drag'))}${actBtns('m',i,{hidden:!!x.hidden})}</div></div>`).join('')+`<button class="oadd" type="button" id="rmadd"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>${T('o_add')}</button>`;
   sortable($('rmgrid'),'.rm',ids=>{if(!ISOWNER())return;CFG.roadmap=ids.map(n=>CFG.roadmap[+n]);changed()});
 }
 /* Source type from the organisation name, used to order the list (strongest first) and label it. */

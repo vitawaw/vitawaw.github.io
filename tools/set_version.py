@@ -16,6 +16,11 @@ if len(sys.argv) != 2 or not re.fullmatch(r"\d+\.\d+\.\d+", sys.argv[1]):
     sys.exit(__doc__)
 v = sys.argv[1]
 
+# the Arabic texts are written into index.html too (first screen drawn complete, nothing moves when the scripts run)
+import importlib.util
+_spec = importlib.util.spec_from_file_location("prefill_i18n", ROOT / "tools/prefill_i18n.py")
+_mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod); _mod.prefill()
+
 cfg = ROOT / "js/config.js"
 cfg.write_text(re.sub(r"const APP_VERSION='[^']*'", f"const APP_VERSION='{v}'", cfg.read_text(encoding="utf-8")), encoding="utf-8")
 
