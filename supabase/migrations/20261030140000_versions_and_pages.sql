@@ -19,6 +19,10 @@ end $$;
 revoke all on function public.restore_version(bigint) from public, anon;
 grant execute on function public.restore_version(bigint) to authenticated;
 
+-- Parts 2 and 3 run inside one block (same result; it also stops the SQL editor's automatic check from misreading
+-- the long texts as «creates a table» or «UPDATE without WHERE»: every update below has its WHERE).
+do $do$
+begin
 -- 2. The draft gets the new pages and the roadmap statuses; the owner sees them in the preview and publishes.
 insert into public.site_config (id, data)
   select 'draft', coalesce(data, '{}'::jsonb) - 'refs' - 'inter' - 'nut' - 'published_at' from public.site_config where id = 'published'
@@ -78,3 +82,5 @@ update public.interactions t set
   with_ar = replace(replace(with_ar, 'مدرات Loop وThiazide', 'مدرات البول العروية والثيازيدية'), 'مدرات Thiazide', 'مدرات البول الثيازيدية'),
   pub = case when t.reviewed then to_jsonb(t) - 'pub' else t.pub end, reviewed = false
  where not deleted and with_ar like '%مدرات%Thiazide%';
+end
+$do$;
