@@ -76,7 +76,7 @@ with sync_playwright() as p:
     login(o)
     o.click('#t-menu'); o.wait_for_timeout(250)
     t = o.inner_text('#menu-b')
-    check('owner Menu: account card + management, no publishing buttons', all(x in t for x in ['الإدارة', 'صفحات المعلومات', 'الصيادلة', 'التواصل والألوان', 'حسابي', 'خروج']) and 'حفظ المسودة' not in t and 'بانتظار المراجعة' not in t, t[:300])
+    check('owner Menu: account card + management, no publishing buttons', all(x in t for x in ['مظهر الموقع', 'ترتيب القوائم', 'ترتيب الصفحات', 'التواصل', 'الصيادلة', 'النشر', 'حسابي', 'خروج']) and 'حفظ المسودة' not in t and 'بانتظار المراجعة' not in t, t[:300])
     check('one publishing bar: preview · save · publish · discard', all(o.is_visible(x) for x in ['#o-preview', '#o-save', '#o-publish', '#o-discard']))
     check('🔔 tab for the team with a count', o.is_visible('#t-notif') and int(o.inner_text('#nt-count')) == o.evaluate('notifList().length') > 0)
     check('no review dot or «awaiting» chip any more', o.locator('#nav-dot, #o-pend').count() == 0)

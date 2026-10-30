@@ -719,3 +719,5 @@ body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{d
 .rmore>summary::-webkit-details-marker{display:none}
 .rmore[open]>summary{background:var(--chip);color:var(--royal)}
 .rmore>.ract{margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:12px}
+.orow .nvn{flex:1;min-width:0}
+.orow>.filters{margin:0}

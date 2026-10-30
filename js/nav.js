@@ -10,6 +10,8 @@
 /* ===================== helpers ===================== */
 const ICO={
   menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h13"/></svg>',
+  image:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>',
+  history:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
   chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>',
   info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
@@ -65,17 +67,20 @@ function renderTabs(){
   n.order.forEach((p,i)=>{const t=$('t-'+p);if(!t)return;t.style.order=i;t.classList.toggle('offbar',!n.bar.includes(p));t.hidden=n.hide.includes(p)&&!SHOWALL()});
   $('t-menu').style.order=99;
 }
-/** management groups for the signed-in team (what appears depends on the account's permissions) */
+/** management for the signed-in team, in groups like the settings (what appears depends on the account's permissions) */
 function adminGroups(){
   const A=[];
   if(!(typeof OWN!=='undefined'&&OWN.on&&!OWN.preview))return A;
-  if(CAN('text'))A.push({id:'pages',label:T('ad_pages'),ico:ICO.page,chips:[{label:T('ad_newpage'),cls:'add',f:()=>editPage(null)},{label:T('pg_order'),f:openPagesOrder},
-    ...(CFG.pages||[]).map(p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),f:()=>editPage(p.id)}))]});
-  if(ISOWNER()&&!OWN.local)A.push({id:'team',label:T('ad_team'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,chips:[
-    {label:T('ad_invite'),cls:'add',f:()=>teamInvite()},{label:T('ad_accounts'),f:()=>openTeam()},{label:T('ad_invites'),f:()=>openTeam('inv')}]});
-  if(ISOWNER())A.push({id:'site',label:T('ad_site'),ico:ICO.site,chips:[{label:T('o_contact'),f:()=>editContact()},{label:T('br_t'),f:()=>editBrand()},{label:T('rv_t'),f:()=>editReview()},{label:T('vh_t'),f:()=>openVersions()},
-    ]});
-  if(ISOWNER())A.splice(A.length-1,0,{id:'nav',label:T('nv_pages'),ico:ICO.menu,chips:[{label:T('nv_manage'),cls:'add',f:openNavManager}]});
+  // site look: menus, info pages, logos, review stamp
+  const look=[];
+  if(ISOWNER())look.push({label:T('nv_order'),sub:T('nv_order_s'),ico:ICO.menu,f:openNavManager});
+  if(CAN('text'))look.push({label:T('pg_order_l'),sub:T('pg_order_s'),ico:ICO.page,n:(CFG.pages||[]).length,f:openPagesOrder});
+  if(ISOWNER())look.push({label:T('br_t'),ico:ICO.image,f:()=>editBrand()},{label:T('rv_t'),ico:ICO.check,f:()=>editReview()});
+  if(look.length)A.push({label:T('ad_look'),rows:look});
+  if(ISOWNER())A.push({label:T('ad_contact'),rows:[{label:T('o_contact'),sub:[CFG.contact.email,CFG.contact.phone].filter(Boolean).join(' · '),ico:MI.mail,f:()=>editContact()}]});
+  if(ISOWNER()&&!OWN.local)A.push({label:T('ad_team'),rows:[{label:T('ad_invite_l'),ico:MI.invite,f:()=>teamInvite()},
+    {label:T('ad_accounts'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,f:()=>openTeam()},{label:T('ad_invites'),ico:MI.mail,f:()=>openTeam('inv')}]});
+  if(ISOWNER())A.push({label:T('ad_pub'),rows:[{label:T('vh_t'),ico:ICO.history,f:()=>openVersions()}]});
   return A;
 }
 /** labels and the 🔔 count; redraws the menu page and the side menu */
@@ -154,7 +159,7 @@ function menuHTML(r){
   // one search for everything (calculators, tools, interactions, sources, pages)
   h+=`<button type="button" class="gsbtn" data-na="${r}${ACT[r].push(openSearch)-1}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>${esc(T('gs_ph'))}</span></button>`;
   const A=own?adminGroups():[];
-  if(A.length)h+=grp(T('nv_admin'),A.map(g=>`<div class="mi grp"><span class="di">${g.ico}</span><span class="mt">${esc(g.label)}</span>${g.n?`<span class="cnt">${g.n}</span>`:''}</div><div class="filters mchips">${g.chips.map(c=>chipH(r,c)).join('')}</div>`).join(''),'admin');
+  A.forEach(g=>{h+=grp(g.label,g.rows.map(row).join(''),'admin')});
   // shortcuts: information pages, app, contact
   // Menu page: the main pages that are not in the bottom bar come first (sources, coming next, schedule…), in the owner's order
   const bar=NAV().bar,secs=page?navPages().filter(p=>!bar.includes(p)).map(p=>({label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,n:p==='notif'?notifCount():0,f:()=>go(p)})):[];
@@ -240,7 +245,7 @@ function openToolSheet(sec){const t=TOOLS.find(x=>x[0]===sec)||TOOLS[1];openShee
    drag to order · «in the bar» (up to 4 on phones) · show/hide · name, title and description · colors.
    Saved in CFG.nav and CFG.text like every other setting (save → publish). */
 function navSave(n){CFG.nav={order:n.order,bar:n.bar,hide:n.hide};changed();drawNavManager()}
-function openNavManager(){if(!ISOWNER())return;openSheet(T('nv_pages'),'',{key:'navmgr'});drawNavManager()}
+function openNavManager(){if(!ISOWNER())return;openSheet(T('nv_order'),'',{key:'navmgr'});drawNavManager()}
 function drawNavManager(){
   if(!SHEET||SHEET.key!=='navmgr')return;
   const n=NAV(),b=$('sheet-b');ACT.s=[];const S=c=>chipH('s',c);
@@ -279,7 +284,9 @@ function openPage(id){
 function openPagesOrder(){
   if(!CAN('text'))return;
   if(!Array.isArray(CFG.pages))CFG.pages=clone(DEFAULT_CFG.pages);
-  const draw=()=>{$('sheet-b').innerHTML=`<p class="hint">${T('o_drag_p')}</p><div class="olist" id="pg-order">${CFG.pages.map(p=>`<div class="orow${p.hidden?' off':''}" data-sid="${esc(p.id)}">${DRAG(T('o_drag'))}<span>${esc(tx2(p.t))}${p.hidden?` · ${T('pg_hidden')}`:''}</span></div>`).join('')}</div>`;
+  const draw=()=>{if(!SHEET||SHEET.key!=='pgorder')return;ACT.s=[];
+    $('sheet-b').innerHTML=`<p class="hint">${T('o_drag_p')}</p><div class="olist" id="pg-order">${CFG.pages.map(p=>`<div class="orow${p.hidden?' off':''}" data-sid="${esc(p.id)}">${DRAG(T('o_drag'))}<span class="nvn">${esc(tx2(p.t))}${p.hidden?` · ${T('pg_hidden')}`:''}</span><div class="filters">${chipH('s',{label:T('o_edit'),f:()=>{closeSheet(false);editPage(p.id)}})}</div></div>`).join('')}</div>
+      <div class="filters">${chipH('s',{label:T('ad_newpage'),cls:'pri',f:()=>{closeSheet(false);editPage(null)}})}</div>`;
     sortable($('pg-order'),'.orow',ids=>{CFG.pages=ids.map(id=>CFG.pages.find(p=>p.id===id));changed();draw()})};
   openSheet(T('pg_order_t'),'',{key:'pgorder'});draw();
 }

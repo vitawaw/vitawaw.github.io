@@ -73,7 +73,7 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   notif, sources, roadmap, sched, labs, ul (sched/labs/ul = own pages `.tpage`, sections tool-sch/tool-labs/tool-ul moved out of tools;
   `openTool('sch'|'labs'|'ul')` goes to the page). `CFG.nav={order,bar,hide}` (config.js default, owner only, published with settings):
   `NAV()` normalises it, `renderTabs()` orders the bar (class `offbar` = in ☰ on phones), `navHidden()`; owner manager `openNavManager()`
-  (Menu → Management → «القوائم»: drag, in bar ≤4, hide, `editNavText()` name/title/description = CFG.text keys in EDITABLE, colors).
+  (Menu → «مظهر الموقع» → «ترتيب القوائم»; adminGroups() now = row groups {label, rows} like the settings card: مظهر الموقع / التواصل / الصيادلة / النشر; `openPagesOrder()` = drag + edit + new page; drag, in bar ≤4, hide, `editNavText()` name/title/description = CFG.text keys in EDITABLE, colors).
   He chose: bar = الحاسبة · التداخلات · الأدوات · 🔔 + ☰; «أدويتي» stays in interactions. 🔔 for everyone: `pubItems()` in owner.js
   (lab result ≥90 days old, saved schedule `vw-sch`, roadmap «now» items; seen keys in localStorage `vw-seen`), visitor part in `#notif-p`;
   team badge counts team work only. Header (<1024px, he asked): 🔍 `#hsearch` right of the name, 🔔 `#hnotif` (+ `#hnt-count`) left of it (mirrored in English). Result buttons: main + «المزيد ⋯» (`details.rmore`).
