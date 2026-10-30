@@ -167,9 +167,10 @@ function menuHTML(r){
   const rec=RECENT.map(ITEM).filter(Boolean).slice(0,6);
   if(rec.length)h+=`<div class="mg"><h3>${esc(T('mn_recent'))}</h3><div class="mrec">${rec.map(c=>`<button type="button" class="mrc" data-na="${r}${ACT[r].push(c.f)-1}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span>${esc(c.label)}</span></button>`).join('')}</div></div>`;
   // groups: other sections · patient follow-up · about VITAWAW
-  h+=items(T('mg_sec'),n.order.filter(k=>free(k)&&!['sched','labs','roadmap','ul'].includes(k)).map(ITEM));
-  h+=items(T('th_pt'),[...['sched','labs'].filter(free),'meds'].map(ITEM));
-  h+=items(T('mg_about'),[...(free('roadmap')?[ITEM('roadmap')]:[]),...visiblePages().filter(p=>!['faq','privacy','disclaimer'].includes(p.id)).map(pgItem)]);
+  h+=items(T('mg_sec'),n.order.filter(k=>free(k)&&!['sched','labs','roadmap','ul'].includes(k)).map(ITEM).filter(Boolean));
+  const tools=[...HUBTOOLS,...(free('ul')?['ul']:[])].map(ITEM).filter(Boolean),pt=[...['sched','labs'].filter(free),'meds'].map(ITEM).filter(Boolean);
+  if(MODE==='pt')h+=items(T('th_pt'),pt)+items(T('th_dose'),tools);else h+=items(T('th_pro'),tools)+items(T('th_pt'),pt);
+  h+=items(T('mg_about'),[...(free('roadmap')&&ITEM('roadmap')?[ITEM('roadmap')]:[]),...visiblePages().filter(p=>!['faq','privacy','disclaimer'].includes(p.id)).map(pgItem)]);
   // folding lists, like «Help» and «Settings» on Facebook
   const help=[pg('faq')&&pgItem(pg('faq')),{label:T('sg_t'),ico:MI.mail,f:()=>{go('roadmap');setTimeout(()=>{const c=document.querySelector('#roadmap .contact');if(c)c.scrollIntoView({block:'start'})},60)}}];
   if(PHONEF())help.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
