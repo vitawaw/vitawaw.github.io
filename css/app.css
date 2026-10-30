@@ -693,9 +693,14 @@ body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{d
 /* 1.12.0: schedule, lab results and upper limit are main pages (the page banner replaces the section title) */
 .tpage section:not(.hero)>h2,.tpage section:not(.hero)>.lead{display:none}
 /* search in the header (phones and tablets; wide screens have it at the top of the side menu) */
-.hsearch{grid-column:3;justify-self:end;width:44px;height:44px;border:0;border-radius:50%;background:var(--hpill);color:var(--hfg);display:grid;place-items:center;cursor:pointer}
-.hsearch svg{width:20px;height:20px}
-.hsearch:hover{color:var(--ink)}
+/* header (phones and tablets): search on the start side of the name (right in Arabic), notifications on the end side */
+.hbtn{position:relative;grid-row:1;width:44px;height:44px;border:0;border-radius:50%;background:var(--hpill);color:var(--hfg);display:grid;place-items:center;cursor:pointer}
+.hbtn svg{width:20px;height:20px}
+.hbtn:hover{color:var(--ink)}
+.hsearch{grid-column:1;justify-self:start}
+.hnotif{grid-column:3;justify-self:end}
+.hnotif.on{background:color-mix(in srgb,var(--royal) 15%,transparent);color:var(--royal)}
+.hnotif .tcount{top:-2px;inset-inline-end:-4px}
 /* notifications for everyone: the team's part, a line, then reminders and what is new */
 .nsep{height:1px;background:var(--line);margin:18px 0 4px}
 .mtile{position:relative}

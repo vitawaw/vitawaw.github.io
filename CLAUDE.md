@@ -76,7 +76,7 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   (Menu → Management → «القوائم»: drag, in bar ≤4, hide, `editNavText()` name/title/description = CFG.text keys in EDITABLE, colors).
   He chose: bar = الحاسبة · التداخلات · الأدوات · 🔔 + ☰; «أدويتي» stays in interactions. 🔔 for everyone: `pubItems()` in owner.js
   (lab result ≥90 days old, saved schedule `vw-sch`, roadmap «now» items; seen keys in localStorage `vw-seen`), visitor part in `#notif-p`;
-  team badge counts team work only. Header 🔍 `#hsearch` (<1024px). Result buttons: main + «المزيد ⋯» (`details.rmore`).
+  team badge counts team work only. Header (<1024px, he asked): 🔍 `#hsearch` right of the name, 🔔 `#hnotif` (+ `#hnt-count`) left of it (mirrored in English). Result buttons: main + «المزيد ⋯» (`details.rmore`).
   Wide screens keep the side menu (no top icons). Next: step 2 (1.13.0, placements/refinement) — ask him first.
 - **Live: 1.11.1** (he said «جاهز» on 2026-10-30; includes 1.11.0; DB file `20261030140000_versions_and_pages.sql` applied and checked): full wording review (he chose «الصيدلي» everywhere and American English); glossary: المقدار اليومي الموصى به (RDA),
   المدخول الكافي (AI), الحد الأعلى الآمن (UL), جرعة المداومة, طبيب النسائية والتوليد. Keep these terms in new texts.

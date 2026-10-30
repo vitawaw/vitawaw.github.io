@@ -84,7 +84,8 @@ function renderNav(){
   renderTabs();
   document.querySelectorAll('#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
   $('hsearch').setAttribute('aria-label',T('gs_t'));
-  const nc=notifCount();$('nt-count').hidden=!nc;$('nt-count').textContent=nc>99?'99+':nc;
+  const nc=notifCount();['nt-count','hnt-count'].forEach(id=>{$(id).hidden=!nc;$(id).textContent=nc>99?'99+':nc});
+  $('hnotif').setAttribute('aria-label',T('nt_t'));$('hnotif').classList.toggle('on',cur==='notif');
   document.body.classList.toggle('team',typeof OWN!=='undefined'&&OWN.on);
   if(cur==='notif')renderNotif();
   renderMenu();
@@ -231,6 +232,7 @@ function closeSheet(focus=true){
 }
 $('sheet-x').addEventListener('click',()=>closeSheet());
 $('hsearch').addEventListener('click',openSearch);
+$('hnotif').addEventListener('click',()=>go('notif'));
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet()});
 function openToolSheet(sec){const t=TOOLS.find(x=>x[0]===sec)||TOOLS[1];openSheet(T(t[2]),$(t[0]),{key:'tool'})}
 
