@@ -107,8 +107,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-copyphone]
   try{navigator.clipboard.writeText(P).then(done).catch(()=>fallback(P,done))}catch(err){fallback(P,done)}});
 /** «جرّبه» on a feature that is available now: where each feature lives */
 const GO={sch:()=>openTool('sch'),meds:()=>{go('interactions');setTimeout(()=>$('medin')&&$('medin').focus(),80)},preg:()=>{K='preg';apply();go('calc')},
-  labs:()=>openTool('labs'),ul:()=>openTool('ul'),report:()=>go('calc'),search:()=>openSearch(),calc:()=>go('calc'),tools:()=>go('tools')};
-const GOLIST=()=>[['',T('rm_go_none')],['sch',T('tl_sch')],['meds',T('mm_t')],['preg',T('n_preg')],['labs',T('lb_t')],['ul',T('tab_ul')],['report',T('rp_t')],['search',T('gs_t')],['calc',T('tab_calc')],['tools',T('tab_tools')]];
+  labs:()=>openTool('labs'),report:()=>go('calc'),search:()=>openSearch(),calc:()=>go('calc'),tools:()=>go('tools')};
+const GOLIST=()=>[['',T('rm_go_none')],['sch',T('tl_sch')],['meds',T('mm_t')],['preg',T('n_preg')],['labs',T('lb_t')],['report',T('rp_t')],['search',T('gs_t')],['calc',T('tab_calc')],['tools',T('tab_tools')]];
 function renderRoadmap(){
   const st=k=>`<span class="st st-${esc(k)}">${esc(T('st_'+k))}</span>`;
   $('rmlegend').innerHTML=['now','dev','plan','idea'].map(st).join('');

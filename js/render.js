@@ -26,25 +26,22 @@ function render(r){
   const urgent=(r.notes||[]).filter(n=>n.u),rest=(r.notes||[]).filter(n=>!n.u);
   const all=r.srcs=[...new Set([...(r.refs||[]),...(r.opts||[]).flatMap(o=>o.r||[]),...(r.notes||[]).flatMap(o=>o.r||[]),...(r.plan||[]).flatMap(o=>o.r||[])])].sort((a,b)=>a-b);
   r.srcNames=[...new Set(all.filter(n=>REFS[n]).map(n=>REFS[n][0]))];
-  // three main buttons (patient card, doctor report, calendar) and the dose tool; the rest under «More ⋯»
-  const acts=[],more=[];
+  const acts=[];
   // patient mode: the tablet counter and the IV-iron (Ganzoni) calculator are pharmacist tools
   if(r.tool==='pills'&&!pt)acts.push(`<button class="btn" type="button" data-tool="pills">${T('pills')}</button>`);
   if(r.tool==='drops')acts.push(`<button class="btn" type="button" data-tool="drops">${T('drops')}</button>`);
   acts.push(`<button class="btn" type="button" data-card><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h6M7 14h10"/></svg>${T('card')}</button>`);
-  acts.push(`<button class="btn" type="button" data-report="1">${T('rp_btn')}</button>`);
-  if(r.cal)acts.push(`<button class="btn" type="button" data-cal="1">${CALIC}${T('cal_add')}</button>`);
+  if(r.tool2==='ganz'&&!pt)acts.push(`<button class="btn" type="button" data-tool="ganz">${T('ganz')}</button>`);
   // more tools, opened already filled in from this result (patient mode keeps the ones a patient can use)
   const tb=k=>`<button class="btn" type="button" data-tool="${k}">${T('tb_'+k)}</button>`;
-  if(r.tool2==='ganz'&&!pt)more.push(`<button class="btn" type="button" data-tool="ganz">${T('ganz')}</button>`);
-  more.push(`<button class="btn" type="button" data-share="1">${T('sh_btn')}</button>`);
-  if(r.lab&&r.lab.length)more.push(`<button class="btn" type="button" data-lab="1">${T('lb_save')}</button>`);
-  if(r.ml){ML=r.ml;more.push(tb('ml'))}
-  if(r.sch){SCHSET=r.sch;more.push(tb('sch'))}
-  if(r.ca&&!pt)more.push(tb('ca'));
-  if(r.units&&!pt){UCVSET=r.units;more.push(tb('units'))}
-  if(r.ul&&!pt){const a=parseFloat($('age').value);ULSET={g:ulGroup(isNaN(a)?30:a),v:r.ul};more.push(tb('ul'))}
-  if(more.length)acts.push(`<details class="rmore"><summary class="btn">${T('r_more')} ⋯</summary><div class="ract">${more.join('')}</div></details>`);
+  acts.push(`<button class="btn" type="button" data-report="1">${T('rp_btn')}</button>`,`<button class="btn" type="button" data-share="1">${T('sh_btn')}</button>`);
+  if(r.lab&&r.lab.length)acts.push(`<button class="btn" type="button" data-lab="1">${T('lb_save')}</button>`);
+  if(r.cal)acts.push(`<button class="btn" type="button" data-cal="1">${CALIC}${T('cal_add')}</button>`);
+  if(r.ml){ML=r.ml;acts.push(tb('ml'))}
+  if(r.sch){SCHSET=r.sch;acts.push(tb('sch'))}
+  if(r.ca&&!pt)acts.push(tb('ca'));
+  if(r.units&&!pt){UCVSET=r.units;acts.push(tb('units'))}
+  if(r.ul&&!pt){const a=parseFloat($('age').value);ULSET={g:ulGroup(isNaN(a)?30:a),v:r.ul};acts.push(tb('ul'))}
   // same result as on screen (e.g. the 'change' event when a field loses focus): keep the buttons, so the tap that caused the blur still lands
   const html=
    `<div class="res-head"><span class="badge t-${r.tone}">${ICON[r.tone]}${r.badge}</span><button class="btn" id="copy" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg><span>${T('copy')}</span></button></div>`+

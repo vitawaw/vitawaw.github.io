@@ -60,7 +60,7 @@ with sync_playwright() as p:
     pg.click('#o-publish');pg.wait_for_timeout(200);ok(pg);pg.wait_for_timeout(500)
     pub=pg.evaluate('window.__PUB');print('PUB1: inter',len(pub['inter']),'custom',len(pub['nut']['custom']),'refs',len(pub['refs']),'has warfarin:',any(x['b']['ar']=='Warfarin' for x in pub['inter']))
     # approve pending (nutrient, interaction, source) then publish
-    pg.click('#hnotif');pg.wait_for_timeout(300);print('NOTIF cards:',pg.locator('#notif-b .ncard').count())
+    pg.click('#t-notif');pg.wait_for_timeout(300);print('NOTIF cards:',pg.locator('#notif-b .ncard').count())
     pg.locator('#notif-b .ntop button').click();pg.wait_for_timeout(200);ok(pg);pg.wait_for_timeout(800)
     print('bar after approvals:',pg.inner_text('#ostate'))
     pg.click('#o-publish');pg.wait_for_timeout(200);ok(pg);pg.wait_for_timeout(500)

@@ -45,9 +45,10 @@ and where the project stands. Details: `README.md` (architecture, file map, test
   each checks the owner role inside.
 
 ## Where things are (no build step; plain scripts loaded in order by `index.html`)
-- Menus (like Facebook; layout of 1.12.0 described under «Where we are»): `js/nav.js`. Phones/tablets (<1024px): tab bar at the
-  bottom (the owner's 4 bar pages + ☰ `#t-menu`), 🔍 and 🔔 in the header; ☰ opens the page `#menu`. Wide screens (≥1024px): the same
-  menu as a fixed side menu `#side` with the bar pages on top; tab bar hidden. Both are drawn by `menuHTML(r)` ('m' page, 'd' side) via `renderMenu()`;
+- Menus (1.6.3, like Facebook — he chose this): `js/nav.js`. Phones/tablets (<1024px): tab bar at the bottom (`nav.tabs`:
+  calc, tools, interactions, sources + ☰ `#t-menu`); ☰ opens the page `#menu` (PAGES includes 'menu'): account card,
+  management, shortcut tiles, settings, log out. Wide screens (≥1024px): the same menu as a fixed side menu `#side`
+  with the five sections on top; tab bar hidden. Both are drawn by `menuHTML(r)` ('m' page, 'd' side) via `renderMenu()`;
   `adminGroups()` = management part. «More» and the ☰ drawer of 1.6.0 no longer exist. `openSheet()` = floating window;
   info pages = `CFG.pages` (defaults in `js/config.js`).
 - Pharmacist accounts: `js/team.js` (owner only) + migration `*_pharmacist_accounts.sql`.
@@ -68,20 +69,11 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-10-30)
-- **1.12.0** (preview, waiting for «جاهز»; he approved the usability proposals «تمام نفذ»). nav.js: main pages `NAVIDS` = calc, interactions,
-  tools, sources, roadmap, sched, labs, ul (🔔 is NOT in it: fixed at the top — header `#hnotif` left of the name in Arabic, `#hsearch`
-  right; wide screens `.snotif` next to the side logo; `#t-notif` stays hidden). `CFG.nav={order,bar,hide}` default bar calc ·
-  interactions · tools · sources. NOTE: he already published his own nav from the preview (bar has labs instead of sources) — the
-  shared DB means production config has it too; old versions ignore it. `NAV()`, `renderTabs()` (class `offbar`), `navHidden()`,
-  owner `openNavManager()` («ترتيب القوائم») + `editNavText()`; `openPagesOrder()` («ترتيب الصفحات»: drag, edit, new page).
-  Tools page = tiles `#tgrid` (`renderToolsHub()`, groups th_pro/th_pt, `PROONLY` hidden in patient mode); one tool alone via hash
-  `#tool-pill` etc. (`routeSpecial` → `show('tools',id)`, `TOOLV`, `#tools.tv`, back `#tback`). `ITEM(k)` = one item for tiles /
-  shortcuts / hub (main page, hub tool or 'meds'). Menu (`menuHTML`, same groups on phone page as tiles and side as rows): account,
-  search, «اختصاراتك» (`RECENT`, localStorage vw-recent, `rememberRecent()` in show), groups الأقسام / متابعة المريض / عن VITAWAW,
-  folding `details.macc` (open state `MOPEN`): help & contact (faq page, suggest, WA, mail, call), settings, privacy (privacy +
-  disclaimer pages), management (`adminGroups()` = {label, rows}: مظهر الموقع / التواصل / الصيادلة / النشر), mine; logout.
-  🔔 for everyone: `pubItems()` in owner.js (lab ≥90 days, saved schedule `vw-sch`, roadmap «now»; seen in vw-seen), visitor part
-  `#notif-p`; team badge = team work only. Result buttons: main + «المزيد ⋯» (`details.rmore`). Next: step 2 only if he asks.
+- **1.12.0 was REJECTED** («ابقى على اخر اصدار تم نشره لم يعجبني هذا»): live stays 1.11.1. The preview branch was set back to 1.11.1
+  by a restore commit; the 1.12.0 work (own pages for schedule/labs/UL, CFG.nav menu manager, 🔔 for everyone + header 🔍/🔔,
+  tools page as tiles, grouped ☰ with folding lists) is in the commits a3b8546…5f75622 if he ever asks for a piece of it.
+  Do not bring it back unless he asks; change the look only in small steps he approves one by one.
+  He had published a `nav` setting into the site config from the 1.12.0 preview; 1.11.1 ignores it (harmless).
 - **Live: 1.11.1** (he said «جاهز» on 2026-10-30; includes 1.11.0; DB file `20261030140000_versions_and_pages.sql` applied and checked): full wording review (he chose «الصيدلي» everywhere and American English); glossary: المقدار اليومي الموصى به (RDA),
   المدخول الكافي (AI), الحد الأعلى الآمن (UL), جرعة المداومة, طبيب النسائية والتوليد. Keep these terms in new texts.
 - **1.11.0** (live with 1.11.1): roadmap status `now` + `go` (GO map in lists.js, owner picks in editFeature); calendar .ics

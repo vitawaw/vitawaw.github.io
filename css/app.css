@@ -459,7 +459,7 @@ button.mi:hover,a.mi:hover{background:var(--soft)}
  .tab[aria-selected="true"] svg{background:color-mix(in srgb,var(--ti,var(--royal)) 15%,transparent)}
  .tab .full{display:inline}.tab .short{display:none}
  .tab>span:not(.new):not(.bdot){overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
- .tab .cnt,.tab.offbar{display:none}
+ .tab .cnt,.tab.trm{display:none}
  .tab .bdot{top:4px;inset-inline-end:calc(50% - 22px);box-shadow:0 0 0 2px var(--card)}
  body{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
  .rbar{bottom:calc(66px + env(safe-area-inset-bottom,0px));padding-bottom:10px}
@@ -523,6 +523,8 @@ button.mi:hover,a.mi:hover{background:var(--soft)}
 .nchip .pend,.nchip .hidb{padding:1px 7px}
 body.cant-nut [data-act][data-kind="n"],body.cant-inter [data-act][data-kind="i"],body.cant-refs [data-act][data-kind="r"],body.not-owner [data-act][data-kind="m"]{display:none!important}
 /* 🔔 notifications (team only): tab with a count, cards with approve / reject / view */
+.tab.tnotif{display:none}
+body.team .tab.tnotif{display:flex}
 .tcount{position:absolute;top:2px;inset-inline-end:calc(50% - 26px);min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--bad);color:#fff;font:800 11px/18px var(--f-body);text-align:center;box-shadow:0 0 0 2px var(--card)}
 @media (min-width:1024px){.tcount{position:static;box-shadow:none}}
 .ntop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:0 0 10px}
@@ -690,66 +692,3 @@ body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{d
 .gsl{display:grid;gap:6px}.gsi{display:grid;gap:2px;text-align:start;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);cursor:pointer;font:600 14px var(--f-body)}
 .gsi small{color:var(--mute);font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 #lbform{grid-template-columns:1fr 1fr}#lbform .f:first-child,#lbform .lbadd{grid-column:1/-1}
-/* 1.12.0: schedule, lab results and upper limit are main pages (the page banner replaces the section title) */
-.tpage section:not(.hero)>h2,.tpage section:not(.hero)>.lead{display:none}
-/* search in the header (phones and tablets; wide screens have it at the top of the side menu) */
-/* header (phones and tablets): search on the start side of the name (right in Arabic), notifications on the end side */
-.hbtn{position:relative;grid-row:1;width:44px;height:44px;border:0;border-radius:50%;background:var(--hpill);color:var(--hfg);display:grid;place-items:center;cursor:pointer}
-.hbtn svg{width:20px;height:20px}
-.hbtn:hover{color:var(--ink)}
-.hsearch{grid-column:1;justify-self:start}
-.hnotif{grid-column:3;justify-self:end}
-.hnotif.on{background:color-mix(in srgb,var(--royal) 15%,transparent);color:var(--royal)}
-.hnotif .tcount{top:-2px;inset-inline-end:-4px}
-/* notifications for everyone: the team's part, a line, then reminders and what is new */
-.nsep{height:1px;background:var(--line);margin:18px 0 4px}
-.mtile{position:relative}
-.mtile .tcount{top:8px;inset-inline-end:8px}
-/* «Menus» manager (owner) */
-.nvrow{flex-wrap:wrap}
-.nvrow .di{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--pc2,var(--royal)) 14%,transparent);color:var(--pc2,var(--royal));flex:none}
-.nvrow .di svg{width:18px;height:18px}
-.nvrow .nvn{flex:1;min-width:120px;display:flex;flex-direction:column}
-.nvrow .nvn small{font:600 12px var(--f-body);color:var(--royal)}
-.nvrow .filters{flex:1 1 100%;margin:0;padding-inline-start:44px}
-/* result: «More ⋯» holds the less used buttons */
-.rmore[open]{flex:1 1 100%}
-.rmore>summary{display:inline-flex}
-.rmore>summary{list-style:none;cursor:pointer}
-.rmore>summary::-webkit-details-marker{display:none}
-.rmore[open]>summary{background:var(--chip);color:var(--royal)}
-.rmore>.ract{margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:12px}
-.orow .nvn{flex:1;min-width:0}
-.orow>.filters{margin:0}
-/* 1.12.0 tools page: tiles in groups; one tool at a time with «‹ Tools» to go back */
-#tools>section[id^="tool-"]:not(.on){display:none}
-#tools.tv>.hero,#tools.tv>.tgrid{display:none}
-.tback{display:none;justify-self:start;gap:6px}
-.tback svg{width:18px;height:18px}
-[dir="ltr"] .tback svg{transform:scaleX(-1)}
-#tools.tv>.tback{display:inline-flex}
-.tgh{margin:6px 4px 8px;font:700 13px var(--f-body);color:var(--mute)}
-.tgrid .mtiles+.tgh{margin-top:16px}
-.tgrid .mtile .di,.mrc .di{background:color-mix(in srgb,var(--pc2,var(--royal)) 14%,transparent);color:var(--pc2,var(--royal))}
-/* menu: «your shortcuts» (round, scrolls sideways) and folding lists */
-.mrec{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
-.mrec::-webkit-scrollbar{display:none}
-.mrc{flex:0 0 78px;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;color:var(--ink);font:700 12px/1.3 var(--f-body);text-align:center;cursor:pointer;padding:4px 2px}
-.mrc .di{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 1px var(--line)}
-.mrc .di svg{width:22px;height:22px}
-.maccs{background:var(--card)}
-.macc{border-bottom:1px solid var(--line)}
-.macc:last-child{border-bottom:0}
-.macc>summary{list-style:none;cursor:pointer;border-bottom:0}
-.macc>summary::-webkit-details-marker{display:none}
-.macc>summary .chev{width:18px;height:18px;margin-inline-start:auto;color:var(--mute);transition:transform .2s}
-.macc[open]>summary .chev{transform:rotate(180deg)}
-.macb{padding:0 8px 8px;background:color-mix(in srgb,var(--bg) 60%,var(--card))}
-.macb .mi{border-radius:10px}
-.mh4{margin:10px 8px 4px;font:700 12px var(--f-body);color:var(--mute)}
-/* side menu: 🔔 next to the logo */
-.slogo .snotif{margin-inline-start:auto;width:40px;height:40px}
-.slogo .snotif svg{width:19px;height:19px}
-.slogo .snotif .tcount{top:-3px;inset-inline-end:-4px;position:absolute}
-.slogo{justify-content:flex-start}
-[dir="rtl"] .slogo .snotif{order:-1;margin-inline-start:0;margin-right:auto}
