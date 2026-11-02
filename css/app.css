@@ -878,3 +878,7 @@ body.ptm #t-sources>svg:not(.ptl),body.ptm #t-sources>span:not(.ptl){display:non
 body.ptm #t-sources>svg.ptl{display:block!important}
 body.ptm #t-sources>span.full.ptl{display:inline!important}
 @media (max-width:420px){body.ptm #t-sources>span.full.ptl{display:none!important}body.ptm #t-sources>span.short.ptl{display:inline!important}}
+
+/* 1.13.0 own pages for «my medicines» and the link check (the same elements as on interactions / sources) */
+#links #reflist{display:none}#links.lkf #reflist{display:block}
+#medsb .mymed{margin-top:0}

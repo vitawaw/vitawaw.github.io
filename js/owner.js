@@ -359,7 +359,7 @@ function renderLinks(){
   if(typeof OWN==='undefined'||!OWN.on||OWN.preview||!CAN('refs')){el.hidden=true;el.innerHTML='';LKF='';return}
   const L2=LINKS,ok=L2?L2.n-L2.broken.length-L2.blocked.length:0;
   const chip=(k,n,cls,label)=>`<button type="button" class="lkc ${cls}" data-lkf="${k}" aria-pressed="${LKF===k}"${n?'':' disabled'}><b>${n}</b> ${esc(label)}</button>`;
-  el.hidden=false;
+  el.hidden=false;if($('links'))$('links').classList.toggle('lkf',!!LKF);
   el.innerHTML=`<div class="lkh"><b>${T('lk_t')}</b><button type="button" class="btn${linksBusy?'':' pri'}" id="lknow"${linksBusy?' disabled':''}>${T(linksBusy?'lk_busy':'lk_now')}</button></div>
     <p class="hint">${L2?T('lk_last').replace('{d}','<bdi>'+esc(L2.at)+'</bdi>').replace('{n}',L2.n):T('lk_never')}</p>`+
     (L2?`<div class="lkcs">${chip('ok',ok,'ok',T('lk_ok'))}${chip('broken',L2.broken.length,'bad',T('lk_bad'))}${chip('blocked',L2.blocked.length,'warn',T('lk_hand'))}</div>`:'')+

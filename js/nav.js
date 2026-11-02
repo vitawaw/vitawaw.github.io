@@ -21,7 +21,7 @@ const ICO={
 };
 const CHEV='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 const TOOLS=[['tool-pill','tl_pill','tt_t'],['tool-d','tl_d','td_t'],['tool-ca','tl_ca','tp_t'],['tool-gz','tl_gz','tg_t'],['tool-ml','tl_ml','ml_t'],['tool-sch','tl_sch','sc_t'],['tool-labs','tl_labs','lb_t'],['tool-ul','tl_ul','tl_t'],['tool-u','tl_u','tu_t']];
-const tabIco=p=>{const s=p==='sources'&&MODE==='pt'&&$('tool-labs')?$('tool-labs').querySelector('.ttl-ic svg'):$('t-'+p)&&$('t-'+p).querySelector('svg');return s?s.outerHTML:ICO.info};
+const tabIco=p=>{const s=p==='sources'&&MODE==='pt'&&$('tool-labs')?$('tool-labs').querySelector('.ttl-ic svg'):(p==='meds'||p==='links')&&$(p)?$(p).querySelector('.hi svg'):$('t-'+p)&&$('t-'+p).querySelector('svg');return s?s.outerHTML:ICO.info};
 /** true when the signed-in account may edit this part: 'nut' | 'inter' | 'refs' | 'text' */
 const CAN=k=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner'||(k!=='text'&&!!(OWN.perms&&OWN.perms[k]))); // texts and pages: owner only
 const ISOWNER=()=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner');
@@ -58,7 +58,7 @@ document.addEventListener('click',e=>{
 const WIDE=()=>matchMedia('(min-width:1024px)').matches;
 const pickNut=k=>openNut(k);
 const SECTIONS=['calc','tools','interactions','sources','roadmap'];
-const SECKEY0={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t'};
+const SECKEY0={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t',meds:'mm_t',links:'lk_t'};
 /* patient mode (1.13.0): the sources section becomes «my lab results» (the labs tool) everywhere */
 const SECKEY=new Proxy(SECKEY0,{get:(o,k)=>k==='sources'&&MODE==='pt'?'tl_labs':o[k]});
 /* ===================== main sections (owner, 1.12.0): order everywhere, the bar (≤4), hidden ones, names, colors =====================
@@ -125,6 +125,7 @@ let RECENT=[];try{RECENT=JSON.parse(localStorage.getItem('vw-recent')||'[]').fil
 function rememberRecent(k){if(k==='p:menu'||k==='p:notif')return;RECENT=[k,...RECENT.filter(x=>x!==k)].slice(0,8);try{localStorage.setItem('vw-recent',JSON.stringify(RECENT))}catch(e){}if(k[0]==='t')renderMenu()}
 function recentItem(k){
   const [t,id]=k.split(':');
+  if(t==='p'&&id==='links'&&!(typeof OWN!=='undefined'&&OWN.on&&CAN('refs')))return null;
   if(t==='p'&&SECKEY[id])return {label:T(SECKEY[id]),ico:tabIco(id),page:id,f:()=>go(id)};
   const tl=TOOLS.find(x=>TOOLKIND[x[0]]===id);
   if(t==='t'&&tl){if((MODE==='pt'&&PROONLY.includes(tl[0]))||toolHidden(tl[0]))return null;const ic=$(tl[0])&&$(tl[0]).querySelector('.ttl-ic svg');return {label:toolName(tl),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openToolPage(tl[0])}}
@@ -261,7 +262,7 @@ function menuHTML(r){
   // shortcut tiles: sources (phones), coming next, «suggest a feature», my lab results, information pages
   const SPECIAL=['faq','howto','privacy','disclaimer','suggest'];
   const tiles=[...navMore().map(p=>({label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,f:()=>go(p)})),
-    ...(pg('suggest')?[{...pgItem(pg('suggest')),ico:MI.mail}]:[]),...(toolHidden('tool-labs')?[]:[{label:T('lb_t'),ico:ICO.chart,page:'tools',f:()=>openToolPage('tool-labs')}]),...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(pgItem)];
+    ...(pg('suggest')?[{...pgItem(pg('suggest')),ico:MI.mail}]:[]),...(toolHidden('tool-labs')?[]:[{label:T('lb_t'),ico:ICO.chart,page:'tools',f:()=>openToolPage('tool-labs')}]),{label:T('mm_t'),ico:tabIco('meds'),page:'interactions',f:()=>go('meds')},...(own&&CAN('refs')&&!OWN.preview?[{label:T('lk_t'),ico:tabIco('links'),page:'sources',f:()=>go('links')}]:[]),...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(pgItem)];
   h+=`<div class="mg"><h3>${esc(T('mn_short'))}</h3><div class="mtiles">${tiles.map(tile).join('')}</div></div>`;
   // three rectangles on one line: contact (WhatsApp · e-mail · call), and at the end the settings
   const r3=(title,list)=>list.length?`<div class="mg"><h3>${esc(title)}</h3><div class="m3">${list.map(c=>{const inner=`<span class="di">${c.ico}</span><b>${esc(c.label)}</b>${c.v?`<small>${esc(c.v)}</small>`:''}`;

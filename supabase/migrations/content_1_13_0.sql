@@ -61,3 +61,33 @@ select v.* from (values
   'مضادات الحموضة التي فيها مغنيسيوم أو ألومنيوم: يؤخذ Biktarvy قبلها بساعتين على الأقل أو بعدها بـ 6 ساعات، مع الطعام أو بدونه','Antacids with magnesium or aluminium: take Biktarvy at least 2 hours before or 6 hours after them, with or without food','moderate','{75}',610,false)
 ) as v(nutrient_id, supp_ar, supp_en, with_ar, with_en, desc_ar, desc_en, severity, source_ids, sort, reviewed)
 where not exists (select 1 from public.interactions i where i.nutrient_id = v.nutrient_id and i.with_en = v.with_en and not i.deleted);
+
+-- 3. One name for each drug group in Arabic (review of 1.13.0). The approved text stays visible until the owner approves the edit in 🔔.
+update public.interactions t set with_ar = 'Orlistat وCholestyramine والكورتيكوستيرويدات', pub = to_jsonb(t) - 'pub', reviewed = false
+ where with_en = 'Orlistat, cholestyramine, glucocorticoids' and with_ar <> 'Orlistat وCholestyramine والكورتيكوستيرويدات' and reviewed and not deleted;
+update public.interactions t set with_ar = replace(with_ar, 'البايفوسفونيت', 'البيسفوسفونات'), pub = to_jsonb(t) - 'pub', reviewed = false
+ where with_ar like '%البايفوسفونيت%' and reviewed and not deleted;
+
+-- 4. «Coming next» after 1.13.0 (owner's request: the page follows the updates). Only the roadmap of the draft changes;
+--    the owner sees it in his draft and it reaches visitors when he publishes.
+do $$
+declare rm jsonb := $rm$[
+ {"t":{"ar":"تذكير بمواعيد الجرعات","en":"Dose reminders"},"d":{"ar":"من جدول المكملات أو خطة العلاج اضغط «أضف إلى التقويم» فتُضاف مواعيد الجرعات إلى تقويم هاتفك وينبّهك في وقتها.","en":"In the supplement schedule or the treatment plan, tap «Add to calendar» and the doses are added to your phone's calendar with an alert."},"go":"sch","ic":"bell","st":"now"},
+ {"t":{"ar":"جدول يومي ذكي للمكملات","en":"Smart daily schedule"},"d":{"ar":"ترتيب أوقات أخذ المكملات وأدويتك معاً بحيث تُحترم فواصل التداخلات تلقائياً.","en":"Arranges the times for your supplements and medicines so interaction gaps are respected automatically."},"go":"sch","ic":"clock","st":"now"},
+ {"t":{"ar":"سجل التحاليل ومتابعة التحسن","en":"Lab history and progress"},"d":{"ar":"احفظ نتائج تحاليلك وشاهد تحسّن المستوى على رسم بياني بين تحليل وآخر.","en":"Save your test results and see your level improve on a chart from one test to the next."},"go":"labs","ic":"chart","st":"now"},
+ {"t":{"ar":"أدويتي","en":"My medicines"},"d":{"ar":"صفحة خاصة تضيف فيها أدويتك الحالية فتظهر التداخلات التي تخصك فقط مع المكملات.","en":"A page of its own where you add the medicines you take and see only the interactions that apply to you."},"go":"meds","ic":"pill","st":"now"},
+ {"t":{"ar":"تقرير PDF للطبيب","en":"PDF report for your doctor"},"d":{"ar":"ملف مفصّل بالنتيجة والخطة والمصادر لطباعته أو إرساله للطبيب.","en":"A detailed file with the result, plan and sources to print or send to your doctor."},"go":"report","ic":"share","st":"now"},
+ {"t":{"ar":"قسم خاص للحمل والأطفال","en":"Pregnancy and children section"},"d":{"ar":"جرعات مفصّلة حسب ثلث الحمل وعمر الطفل ووزنه، يراجعها صيدلي.","en":"Detailed doses by trimester and by child age and weight, reviewed by a pharmacist."},"go":"preg","ic":"baby","st":"now"},
+ {"t":{"ar":"بعد عمليات السمنة","en":"After weight-loss surgery"},"d":{"ar":"المكملات اليومية بعد التكميم وتحويل المسار والربط وتحويل الاثني عشر، حسب نوع العملية (ASMBS).","en":"Daily supplements after sleeve, bypass, band and duodenal switch, by type of surgery (ASMBS)."},"go":"bar","ic":"plus","st":"now"},
+ {"t":{"ar":"نقص فيتامين B1","en":"Vitamin B1 deficiency"},"d":{"ar":"جرعات الثيامين للنقص، وللاعتماد على الكحول، وللوقاية من اعتلال فيرنيكه وعلاجه.","en":"Thiamine doses for deficiency, alcohol dependence, and preventing and treating Wernicke encephalopathy."},"go":"thi","ic":"pill","st":"now"},
+ {"t":{"ar":"توسيع المحتوى باستمرار","en":"Content keeps growing"},"d":{"ar":"نضيف فيتامينات ومعادن وتداخلات دوائية جديدة باستمرار، ويراجع صيدلي كل إضافة قبل نشرها.","en":"We keep adding vitamins, minerals and drug interactions, and a pharmacist reviews every addition before it is published."},"ic":"plus","st":"dev"},
+ {"t":{"ar":"قراءة العبوة بالكاميرا","en":"Scan the pack with your camera"},"d":{"ar":"صوّر علبة المكمل فيتعرّف التطبيق على التركيز ويحسب عدد الحبات مباشرة.","en":"Photograph the supplement box and the app reads the strength and counts the tablets for you."},"ic":"cam","st":"idea"}
+]$rm$::jsonb;
+begin
+  if exists (select 1 from public.site_config where id = 'draft') then
+    update public.site_config set data = jsonb_set(data, '{roadmap}', rm), updated_at = now() where id = 'draft';
+  else
+    insert into public.site_config (id, data, updated_at)
+      select 'draft', coalesce(data, '{}'::jsonb) || jsonb_build_object('roadmap', rm), now() from public.site_config where id = 'published';
+  end if;
+end $$;

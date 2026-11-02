@@ -3,16 +3,18 @@
    language switch (setLang), event wiring, colors and refreshAll().
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
-const PAGES=['calc','tools','interactions','sources','roadmap','notif','team','menu'];
+const PAGES=['calc','tools','interactions','sources','roadmap','notif','team','menu','meds','links'];
 let cur='calc',CALCV=false,TOOLV=''; // CALCV: the chosen vitamin's page (patient data + result) instead of the list of vitamins
 function show(p,view){
   if(p==='notif'){if(typeof openNotif==='function')setTimeout(openNotif,0);p=cur&&cur!=='notif'?cur:'calc'} // 🔔 is a floating window, not a page
   if(p==='sources'&&MODE==='pt'){p='tools';view='tool-labs'} // patient mode: no sources page; that place is «my lab results»
+  if(p==='links'&&!(typeof CAN==='function'&&CAN('refs')))p='calc'; // the link check is for the team
   if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='team'&&!ISOWNER())||(navHidden(p)&&!SHOWALL()))p='calc'; // a section the owner hid is not shown // wide screens show the menu at the side
   cur=p;CALCV=p==='calc'&&view==='v';$('calc').classList.toggle('cv',CALCV);TOOLV=p==='tools'&&/^tool-/.test(view||'')?view:'';$('tools').classList.toggle('tv',!!TOOLV);if(TOOLV)$('tback').querySelector('span').textContent=typeof TOOLFROM!=='undefined'&&TOOLFROM&&TOOLFROM!=='#tools'?L('رجوع','Back'):T('tab_tools');document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));if(CALCV)$('cvname').textContent=kname(K);if(typeof rememberRecent==='function')rememberRecent('p:'+p);
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
   if(MODE==='pt'&&TOOLV==='tool-labs'){$('t-sources').setAttribute('aria-selected',true);$('t-tools').setAttribute('aria-selected',false)}
   if(p==='team'&&typeof openTeamPage==='function')openTeamPage();
+  sharedParts(p);
   if(typeof rememberRecent==='function')rememberRecent(TOOLV?'t:'+TOOLKIND[TOOLV]:'p:'+p);
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
   if(p!=='menu'&&p!=='notif')try{localStorage.setItem('vw-p',p)}catch(e){}
@@ -20,6 +22,15 @@ function show(p,view){
   if(p==='sources'&&typeof linksAuto==='function'&&typeof OWN!=='undefined'&&OWN.on&&CAN('refs'))linksAuto(); // the link check runs by itself once a week
   if(p==='roadmap'){$('rmnew').hidden=true;try{localStorage.setItem('vw-rm','3')}catch(e){}}
   updateBar();if(typeof renderNav==='function')renderNav();
+}
+/** «my medicines» and the link check have their own pages (1.13.0) and still appear where they were:
+   the same elements move to the page that is open, so there is one list and one check */
+function sharedParts(p){
+  const put=(id,box)=>{const el=$(id);if(el&&el.parentNode!==box)box.append(el)},home=id=>{const el=$(id),a=$(id+'-home');if(el&&a&&el.previousElementSibling!==a)a.after(el)};
+  if(p==='meds'){put('mymed',$('medsb'));put('ilist',$('medsb'));if(typeof renderInter==='function')renderInter()}
+  else if(p==='interactions'&&$('mymed').parentNode.id==='medsb'){home('mymed');home('ilist');if(typeof renderInter==='function')renderInter()}
+  if(p==='links'){put('lkbox',$('linksb'));put('reflist',$('linksb'));if(typeof renderRefs==='function')renderRefs();if(typeof linksAuto==='function'&&OWN.on)linksAuto()}
+  else if(p==='sources'&&$('lkbox').parentNode.id==='linksb'){home('lkbox');home('reflist');if(typeof renderRefs==='function')renderRefs()}
 }
 function go(p){if(location.hash!=='#'+p)location.hash=p;else show(p);window.scrollTo(0,0)}
 window.addEventListener('hashchange',()=>{if(routeSpecial())return;show(location.hash.slice(1));window.scrollTo(0,0)});
@@ -236,5 +247,6 @@ $('ght').addEventListener('input',()=>{gtTouched=true;gz()});
 /* ===================== colors ===================== */
 function applyColors(){
   Object.entries(CFG.colors).forEach(([p,c])=>{const el=$(p);if(!el)return;el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1]);const t=$('t-'+p);if(t)t.style.setProperty('--ti',c[1])});
+  [['meds','interactions'],['links','sources']].forEach(([p,q])=>{const c=CFG.colors[q],el=$(p);if(c&&el){el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1])}}); // own pages take the colours of their section
 }
 function refreshAll(){applyColors();setLang(LANG);decorate()}

@@ -66,6 +66,13 @@ with sync_playwright() as p:
     setv('ucv','cul','change'); setv('uval',100); check('serum copper 100 µg/dL', T('uout'), '15.7 µmol/L')
     check('upper limits: copper', pg.evaluate("ULT.map(x=>x[0]).join(',')"), 'copper,manganese,molybdenum,choline,phosphorus')
     check('lab history: active B12 and folate', pg.evaluate("LABT.map(x=>x[0]).join(',')"), 'd,b12,ab12,fol,hb,fer,mg')
+    # 1.13.0 own pages: «my medicines» (same list as on interactions) and the link check (team only)
+    pg.goto('http://app.test/#meds'); pg.wait_for_timeout(200)
+    check('my medicines page: the list moved here', pg.evaluate("$('mymed').closest('.page').id"), 'meds')
+    check('my medicines page: empty until a medicine is added', T('ilist'), 'أضف دواءً')
+    pg.goto('http://app.test/#interactions'); pg.wait_for_timeout(200)
+    check('back on the interactions page', pg.evaluate("$('mymed').closest('.page').id+','+$('ilist').closest('.page').id"), 'interactions,interactions')
+    pg.goto('http://app.test/#links'); pg.wait_for_timeout(200); check('link check: visitors are sent to the calculator', pg.evaluate('cur'), 'calc')
     # calculator -> tools, filled in
     pg.goto('http://app.test/#calc'); pg.wait_for_timeout(300)
     def calc(k, fields, sx='f'):

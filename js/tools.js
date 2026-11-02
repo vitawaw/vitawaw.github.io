@@ -120,7 +120,7 @@ const ULT=[
  ['e','فيتامين E','Vitamin E','mg',[200,300,600,800,1000,1000],31],
  ['c','فيتامين C','Vitamin C','mg',[400,650,1200,1800,2000,2000],23],
  ['b6','فيتامين B6','Vitamin B6','mg',[30,40,60,80,100,100],33],
- ['b3','النياسين (B3)','Niacin (B3)','mg',[10,15,20,30,35,35],35],
+ ['b3','فيتامين B3 (النياسين)','Vitamin B3 (niacin)','mg',[10,15,20,30,35,35],35],
  ['fol','حمض الفوليك','Folic acid','mcg',[300,400,600,800,1000,1000],11],
  ['fe','الحديد','Iron','mg',[40,40,40,45,45,45],15,'لا ينطبق على جرعات العلاج بإشراف طبي','Does not apply to supervised treatment doses'],
  ['zn','الزنك','Zinc','mg',[7,12,23,34,40,40],25],
@@ -131,7 +131,7 @@ const ULT=[
  // 1.13.0 (NIH): useful after weight-loss surgery, where zinc and copper are taken together
  ['copper','النحاس','Copper','mcg',[1000,3000,5000,8000,10000,10000],40,'لا ينطبق تحت الإشراف الطبي','Does not apply under medical supervision'],
  ['manganese','المنغنيز','Manganese','mg',[2,3,6,9,11,11],48],
- ['molybdenum','الموليبدينوم','Molybdenum','mcg',[300,600,1100,1700,2000,2000],49],
+ ['molybdenum','الموليبدنوم','Molybdenum','mcg',[300,600,1100,1700,2000,2000],49],
  ['choline','الكولين','Choline','mg',[1000,1000,2000,3000,3500,3500],44],
  ['phosphorus','الفوسفور','Phosphorus','mg',[3000,3000,4000,4000,4000,4000],50,'من 71 سنة: 3,000 ملغ؛ وفي الحمل 3,500 ملغ','From 71 years: 3,000 mg; in pregnancy 3,500 mg']];
 /** a vitamin the owner hid is gone from the tools too (schedule, upper limit, lab results); hb/ferritin follow iron, the 2nd calcium dose follows calcium */
@@ -293,7 +293,7 @@ function schCalendar(){
 /* ===================== my lab results (on this device only) =====================
    [id, ar, en, unit, reference lines [value, ar, en]] — the lines are the limits the calculators use */
 const LABT=[['d','فيتامين D','Vitamin D','ng/mL',[[20,'نقص','deficient'],[30,'كافٍ','sufficient']]],
- ['b12','B12','B12','pg/mL',[[180,'نقص','deficient'],[350,'طبيعي','normal']]],
+ ['b12','فيتامين B12','Vitamin B12','pg/mL',[[180,'نقص','deficient'],[350,'طبيعي','normal']]],
  ['ab12','Active B12','Active B12','pmol/L',[[25,'نقص','deficient'],[70,'نقص غير مرجّح فوقه','deficiency unlikely above']]], // NICE NG239
  ['fol','الفولات في الدم','Serum folate','ng/mL',[[4,'نقص محتمل تحته','possible deficiency below']]], // WHO 2015: below 4 ng/mL (10 nmol/L)
  ['hb','الهيموغلوبين','Hemoglobin','g/dL',[[12,'فقر دم تحته (المرأة)','anemia below (women)'],[13,'فقر دم تحته (الرجل)','anemia below (men)']]], // WHO 2024, 15 years and older, not pregnant

@@ -17,7 +17,7 @@
 <link rel="preload" href="fonts/tajawal-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/tajawal-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.13.0-5b8c8227">
+<link rel="stylesheet" href="css/app.css?v=1.13.0-3329b329">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu">القائمة</h2><div id="side-b"></div></aside>
@@ -66,7 +66,7 @@
     <h2><span class="n">1</span><span data-t="s1">اختر الفيتامين أو المعدن</span></h2>
     <div class="nsearch" id="nsw" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="nsearch" dir="auto" autocomplete="off" data-ph="ph_ns" placeholder="ابحث: فيتامين، معدن، أو اسم مثل B12"></div>
     <div class="picker" id="picker">
-      <button data-k="d" aria-pressed="true"><span data-t="n_d">فيتامين D3</span><small data-t="h_d">حسب تحليل ⁦25(OH)D⁩</small></button>
+      <button data-k="d" aria-pressed="true"><span data-t="n_d">فيتامين D</span><small data-t="h_d">حسب تحليل ⁦25(OH)D⁩</small></button>
       <button data-k="b12" aria-pressed="false"><span data-t="n_b12">فيتامين B12</span><small data-t="h_b12">حسب مستوى المصل</small></button>
       <button data-k="fol" aria-pressed="false"><span data-t="n_fol">حمض الفوليك</span><small data-t="h_fol">الحمل وفقر الدم</small></button>
       <button data-k="fe" aria-pressed="false"><span data-t="n_fe">الحديد</span><small data-t="h_fe">الفموي والوريدي</small></button>
@@ -78,7 +78,7 @@
       <button data-k="inf" aria-pressed="false"><span data-t="n_inf">الرضيع</span><small data-t="h_inf">فيتامين D وK والحديد حتى سنتين</small></button>
       <button data-k="vac" aria-pressed="false"><span data-t="n_vac">فيتامين A للأطفال</span><small data-t="h_vac">WHO: 6 – 59 شهراً</small></button>
       <button data-k="bar" aria-pressed="false"><span data-t="n_bar">بعد عمليات السمنة</span><small data-t="h_bar">التكميم وتحويل المسار</small></button>
-      <button data-k="thi" aria-pressed="false"><span data-t="n_thi">فيتامين B1 (الثيامين)</span><small data-t="h_thi">النقص والكحول</small></button>
+      <button data-k="thi" aria-pressed="false"><span data-t="n_thi">نقص فيتامين B1 (الثيامين)</span><small data-t="h_thi">النقص والكحول وفيرنيكه</small></button>
     </div>
     <div class="nadm" id="nadm"></div>
    </section>
@@ -319,6 +319,7 @@
   <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 4v13M7 17l-3-3M7 17l3-3M17 20V7M17 7l-3 3M17 7l3 3"/></svg></span><h2 data-t="ti_t">التداخلات وفواصل الأخذ</h2></div><p data-t="hi_l">بعض المكملات تقلل امتصاص أدوية أخرى أو العكس. هنا الفواصل الزمنية الموصى بها بين كل مكمل والأدوية الشائعة.</p></section>
   <section>
     <p class="lead" style="margin-top:0" data-t="ti_l">اختر المكمّل لعرض تداخلاته فقط.</p>
+    <i id="mymed-home" hidden></i>
     <div class="mymed" id="mymed">
       <label class="l" for="medin" data-t="mm_t">أدويتي</label>
       <form class="mmrow" id="medform"><input type="text" id="medin" dir="auto" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="medsug" aria-expanded="false" data-ph="mm_ph" placeholder="اكتب اسم الدواء، مثلاً ليفوثيروكسين"><button class="btn" type="submit" data-t="mm_add">إضافة</button></form>
@@ -328,6 +329,7 @@
     </div>
     <div class="nsearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="isearch" dir="auto" autocomplete="off" data-ph="ph_is" placeholder="ابحث باسم الدواء أو المكمّل" aria-labelledby="t-interactions"></div>
     <div class="filters" id="filters"></div>
+    <i id="ilist-home" hidden></i>
     <div class="ilist" id="ilist" aria-live="polite"></div>
   </section>
 </div>
@@ -337,6 +339,7 @@
   <button class="btn back" id="back" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path id="backarrow" d="M9 6l6 6-6 6"/></svg><span data-t="back">رجوع</span></button>
   <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg></span><h2 data-t="ts_t">المصادر العلمية</h2></div><p data-t="hs_l">كل جرعة في الحاسبة مأخوذة من مصدر طبي موثوق: الإرشادات السريرية (Endocrine Society وNICE وWHO وAAP)، وNIH، ونشرات الأدوية الرسمية، ومراجعات Cochrane.</p></section>
   <section>
+    <i id="lkbox-home" hidden></i>
     <div class="lkbox" id="lkbox" hidden></div>
     <p class="meta" data-t="ts_m">كل رقم أزرق في الحاسبة يشير إلى أحد هذه المصادر، وتحت كل مصدر تاريخ آخر مراجعة له.</p>
     <div class="reviewed" id="rev2" hidden></div>
@@ -344,11 +347,24 @@
     <div class="filters" id="sfilters"></div>
     <p class="meta" data-t="rt_note">مرتبة من الأقوى: الإرشادات السريرية، ثم المراجع الرسمية، ثم نشرات الأدوية، ثم الدراسات، ثم المراجع السريرية.</p>
     <div id="refbulk"></div>
+    <i id="reflist-home" hidden></i>
     <ol class="refs" id="reflist"></ol>
   </section>
 </div>
 
 <!-- ================= ROADMAP ================= -->
+<!-- ================= MY MEDICINES (1.13.0: its own page; the same list as on the interactions page) ================= -->
+<div class="page narrow" id="meds" hidden>
+  <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="7" width="12" height="14" rx="2"/><path d="M7.5 3h9v4h-9zM12 11v6M9 14h6"/></svg></span><h2 data-t="mm_t">أدويتي</h2></div><p data-t="mp_l">أضف الأدوية التي تأخذها فتظهر تحتها التداخلات التي تخصها مع المكملات فقط. هي نفس القائمة في صفحة التداخلات.</p></section>
+  <section id="medsb"></section>
+</div>
+
+<!-- ================= LINK CHECK (1.13.0: its own page for the team; the same box as on the sources page) ================= -->
+<div class="page narrow" id="links" hidden>
+  <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span><h2 data-t="lk_t">روابط المصادر</h2></div><p data-t="lp_l">يفحص روابط المصادر المنشورة. اضغط أي رقم لعرض مصادره، ومنها تعدّل المصدر المعطّل.</p></section>
+  <section id="linksb"></section>
+</div>
+
 <div class="page narrow" id="roadmap" role="tabpanel" aria-labelledby="t-roadmap" hidden>
   <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg></span><h2 data-t="rm_t">VITAWAW يتطوّر باستمرار</h2></div><p data-t="rm_l">نعمل على إضافة ميزات تجعل متابعة علاجك أسهل وأدق. هذه أبرز الأفكار القادمة.</p></section>
   <section>
@@ -390,20 +406,20 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see">عرض النتيجة</span></div>
 
-<script src="js/config.js?v=1.13.0-ed97f5f1" defer></script>
-<script src="js/i18n.js?v=1.13.0-5d8f7264" defer></script>
+<script src="js/config.js?v=1.13.0-cb35a58e" defer></script>
+<script src="js/i18n.js?v=1.13.0-936343ce" defer></script>
 <script src="js/data.js?v=1.13.0-5e682832" defer></script>
 <script src="js/util.js?v=1.13.0-79bc26a7" defer></script>
 <script src="js/validation.js?v=1.13.0-37b8f300" defer></script>
 <script src="js/render.js?v=1.13.0-dec0f6d6" defer></script>
 <script src="js/calculators.js?v=1.13.0-746d4342" defer></script>
 <script src="js/content.js?v=1.13.0-f26d1ff7" defer></script>
-<script src="js/tools.js?v=1.13.0-305d92d8" defer></script>
-<script src="js/lists.js?v=1.13.0-a6819a08" defer></script>
-<script src="js/ui.js?v=1.13.0-03ee8c93" defer></script>
+<script src="js/tools.js?v=1.13.0-648e05fa" defer></script>
+<script src="js/lists.js?v=1.13.0-f92f442b" defer></script>
+<script src="js/ui.js?v=1.13.0-a9aa5a60" defer></script>
 <script src="js/published.js?v=1.13.0-87f710f2" defer></script>
-<script src="js/owner.js?v=1.13.0-057ee443" defer></script>
-<script src="js/nav.js?v=1.13.0-2a0ce700" defer></script>
+<script src="js/owner.js?v=1.13.0-a04cc79a" defer></script>
+<script src="js/nav.js?v=1.13.0-0c465b6d" defer></script>
 <script src="js/team.js?v=1.13.0-ca6436a6" defer></script>
 <script src="js/boot.js?v=1.13.0-fa591121" defer></script>
 </body>
