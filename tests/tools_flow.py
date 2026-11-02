@@ -139,5 +139,11 @@ with sync_playwright() as p:
     pg.click('#tgrid [data-tv="tool-ca"]'); pg.wait_for_timeout(200)
     check('tool opens its page alone', pg.evaluate("location.hash+' '+($('tool-ca').offsetParent!==null)+' '+$('tool-pill').offsetParent"), '#tool-ca true null')
     pg.click('#tback'); pg.wait_for_timeout(200); check('back to the tools', str(pg.is_visible('#tgrid')), 'True')
+    # 1.12.0: patient mode hides the pharmacist tools; the owner's hidden tool and renamed tool; a pharmacist's stamp on an item
+    pg.evaluate("setMode('pt')"); pg.wait_for_timeout(100); check('patient mode: pharmacist tools hidden', str(pg.locator('#tgrid [data-tv]').count()), '4')
+    pg.evaluate("setMode('pro');CFG.tools={order:['tool-ul'],hide:['tool-gz'],names:{'tool-ul':{ar:'فحص الحد',en:'UL'}}};renderNav()"); pg.wait_for_timeout(100)
+    check('owner: order, hide, name of tools', pg.evaluate("[...document.querySelectorAll('#tgrid [data-tv]')].map(b=>b.dataset.tv).join(',')"), 'tool-ul,tool-pill')
+    check('owner: renamed tool', T('tgrid'), 'فحص الحد'); check('owner: hidden tool gone', str(pg.locator('#tgrid [data-tv="tool-gz"]').count()), '0')
+    check('stamp of a pharmacist', pg.evaluate("stampHTML('د. أحمد','2026-11-02')"), 'راجعه: د. أحمد')
     print('page errors:', errs)
 sys.exit(1 if fails or errs else 0)

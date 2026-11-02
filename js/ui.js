@@ -6,7 +6,7 @@
 const PAGES=['calc','tools','interactions','sources','roadmap','notif','team','menu'];
 let cur='calc',CALCV=false,TOOLV=''; // CALCV: the chosen vitamin's page (patient data + result) instead of the list of vitamins
 function show(p,view){
-  if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='team'&&!ISOWNER()))p='calc'; // wide screens show the menu at the side
+  if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='team'&&!ISOWNER())||(navHidden(p)&&!SHOWALL()))p='calc'; // a section the owner hid is not shown // wide screens show the menu at the side
   cur=p;CALCV=p==='calc'&&view==='v';$('calc').classList.toggle('cv',CALCV);TOOLV=p==='tools'&&/^tool-/.test(view||'')?view:'';$('tools').classList.toggle('tv',!!TOOLV);if(TOOLV)$('tback').querySelector('span').textContent=typeof TOOLFROM!=='undefined'&&TOOLFROM&&TOOLFROM!=='#tools'?L('رجوع','Back'):T('tab_tools');document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));if(CALCV)$('cvname').textContent=kname(K);if(typeof rememberRecent==='function')rememberRecent('p:'+p);
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
   if(p==='team'&&typeof openTeamPage==='function')openTeamPage();
@@ -14,6 +14,7 @@ function show(p,view){
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
   if(p!=='menu'&&p!=='notif')try{localStorage.setItem('vw-p',p)}catch(e){}
   if(p==='notif'&&typeof renderNotif==='function')renderNotif(true);
+  if(p==='sources'&&typeof linksAuto==='function'&&typeof OWN!=='undefined'&&OWN.on&&CAN('refs'))linksAuto(); // the link check runs by itself once a week
   if(p==='roadmap'){$('rmnew').hidden=true;try{localStorage.setItem('vw-rm','3')}catch(e){}}
   updateBar();if(typeof renderNav==='function')renderNav();
 }
@@ -23,6 +24,7 @@ window.addEventListener('hashchange',()=>{if(routeSpecial())return;show(location
 function routeSpecial(){
   let h=location.hash.slice(1);try{h=decodeURIComponent(h)}catch(e){}
   if(/^tool-(pill|d|ca|gz|ml|sch|labs|ul|u)$/.test(h)){show('tools',h);window.scrollTo(0,0);return true} // one tool of the tools page
+  if(/(^|&)(type=recovery|error_code=otp_expired)(&|$)/.test(h)){recoverPassword();return true} // the link from the «forgot password» e-mail
   if(h.startsWith('v-')){const k=h.slice(2);if(KEYS.includes(k)&&k!=='all'&&k!==K){K=k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()}show('calc','v');window.scrollTo(0,0);return true} // one vitamin's page
   if(h==='owner'){openOwner();return true}
   if(h==='join'||h.startsWith('join=')){const [em,k]=h.slice(5).split('&k=');openOwner({join:em||'',key:k||''});return true}
@@ -74,7 +76,7 @@ $('rbar').addEventListener('click',toRes);$('rbar').addEventListener('keydown',e
 function setMode(m,save=true){
   MODE=m;document.querySelectorAll('#modeg [data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));
   if(save)try{localStorage.setItem('vw-mode',m)}catch(e){}
-  if(LAST)F[K]();if(typeof renderMenu==='function')renderMenu();
+  if(LAST)F[K]();if(typeof renderNav==='function')renderNav();
 }
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.mode);if(b.closest('#welcome'))closeWelcome()}));
 function closeWelcome(){$('welcome').hidden=true;try{localStorage.setItem('vw-welcome','1')}catch(e){}}

@@ -6,7 +6,7 @@
 const OWN={on:false,local:false,role:null,client:null,base:'',preview:false,perms:{},name:''};
 // texts editable from their own page
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
-function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,nutOrder:CFG.nutOrder,brand:CFG.brand,review:CFG.review,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
+function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,nutOrder:CFG.nutOrder,brand:CFG.brand,review:CFG.review,menus:CFG.menus,tools:CFG.tools,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
 function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent=whoLabel();
@@ -27,7 +27,8 @@ function decorate(){
   document.querySelectorAll('.edp').forEach(b=>b.remove());
   document.querySelectorAll('[data-ed]').forEach(el=>el.removeAttribute('data-ed'));
   if(!OWN.on)return;
-  EDITABLE.forEach(k=>document.querySelectorAll(`[data-t="${k}"]`).forEach(el=>{
+  if(CAN('text'))EDITABLE.forEach(k=>document.querySelectorAll(`[data-t="${k}"]`).forEach(el=>{
+    if(el.closest('.tabs'))return; // section names: Menu → Management → Arrange the menus
     el.setAttribute('data-ed','');
     const b=document.createElement('button');b.type='button';b.className='edp';b.innerHTML=PEN;b.title=T('o_edit');b.dataset.edtext=k;
     el.after(b);
@@ -52,6 +53,7 @@ function dialog({title,fields=[],info='',buttons,err=null}){
       if(f.type==='checks')return `<div class="row"><label class="l" for="${id}">${esc(f.label)}</label><div class="checks" id="${id}">${f.options.map(o=>`<label class="ck"><input type="checkbox" value="${o[0]}"${f.value.includes(o[0])?' checked':''}><span>${esc(o[1])}</span></label>`).join('')}</div></div>`;
       if(f.type==='select')return `<div class="row">${lab}<select id="${id}">${f.options.map(o=>`<option value="${o[0]}"${o[0]===f.value?' selected':''}>${esc(o[1])}</option>`).join('')}</select></div>`;
       if(f.type==='colors')return `<div class="cols"><div class="row"><label class="l" for="${id}a">${esc(f.labels[0])}</label><input type="color" id="${id}a" value="${f.value[0]}"></div><div class="row"><label class="l" for="${id}b">${esc(f.labels[1])}</label><input type="color" id="${id}b" value="${f.value[1]}"></div></div>`;
+      if(f.type==='password')return `<div class="row">${lab}<div class="pw"><input type="password" id="${id}" value="" dir="ltr" autocomplete="${f.ac||'current-password'}"><button type="button" class="btn peye" data-peye="${id}" aria-label="${esc(T('pw_show'))}" title="${esc(T('pw_show'))}">${EYE}</button></div></div>`;
       return `<div class="row">${lab}<input type="${f.type||'text'}" id="${id}" value="${esc(f.value)}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${f.ltr||['tel','email','url'].includes(f.type)?' dir="ltr"':''}></div>`;
     }).join('');
     if(err&&err.i!=null){const f=$('dlgf'+err.i)||$('dlgf'+err.i+'a');const row=f&&f.closest('.row');if(row){row.classList.add('bad');row.insertAdjacentHTML('beforeend',`<p class="ferr" role="alert">${esc(err.msg)}</p>`)}}
@@ -298,8 +300,6 @@ function renderNotif(opening){
       <div class="nl" dir="auto">${esc(n.label)}</div>${n.was&&n.was!==n.label?`<div class="nw">${esc(T('rc_was'))} ${esc(n.was)}</div>`:''}
       <div class="filters">${S({label:T(n.kind==='del'?'rc_okdel':'o_approve'),cls:'pri',f:()=>decide(n,true)})}${S({label:T(n.kind==='del'?'rc_restore':'nt_reject'),f:()=>decide(n,false)})}${n.kind!=='del'?S({label:T('nt_view'),f:()=>viewItem(n)}):''}</div></div></div>`).join('')
       :`<div class="nempty">${nico('approved')}<b>${T('nt_none')}</b></div>`;
-    h+=linksHTML(S);
-    if(opening)linksAuto();
   }else{
     const mine=NOTE.mine,wait=notifList();
     h+=`<h3 class="nsec">${T('nt_mine')}</h3>`+(mine.length?mine.map(n=>`<div class="ncard${n.read?'':' unread'}">${nico(n.kind)}<div class="nb"><div class="nh"><b>${esc(T(n.kind==='approved'?'nt_ok':'nt_no'))}</b> · ${esc(T(NKIND[n.item]||'tab_src'))} · <span class="nby">${esc(fmtDate(n.at))}</span></div><div class="nl">${esc(n.label)}</div></div></div>`).join('')
@@ -320,23 +320,36 @@ function renderNotif(opening){
 let LINKS=null;try{LINKS=JSON.parse(localStorage.getItem('vw-links')||'null')}catch(e){}
 let linksBusy=false;
 async function linksCheck(){
-  if(linksBusy)return;linksBusy=true;renderNotif();
+  if(linksBusy)return;linksBusy=true;renderLinks();
   const ids=((PUBLISHED&&PUBLISHED.refs)||[]).filter(r=>/^https?:\/\//.test(r.url||'')).map(r=>r.id),out=[];
   try{
     for(let i=0;i<ids.length;i+=25){const r=await fetch('/api/links?ids='+ids.slice(i,i+25).join(','),{signal:AbortSignal.timeout(60000)});if(!r.ok)throw new Error(r.status);out.push(...((await r.json()).links||[]))}
     LINKS={at:new Date().toISOString().slice(0,10),broken:out.filter(x=>x.state==='broken').map(x=>x.id),blocked:out.filter(x=>x.state==='blocked').map(x=>x.id),n:out.length};
     try{localStorage.setItem('vw-links',JSON.stringify(LINKS))}catch(e){}
   }catch(e){toast(T('o_neterr'))}
-  linksBusy=false;renderNotif();
+  linksBusy=false;renderRefs();
 }
 function linksAuto(){if(!OWN.local&&(!LINKS||Date.now()-Date.parse(LINKS.at)>7*864e5))linksCheck()}
-function linksHTML(S){
-  const L2=LINKS,row=id=>{const x=REFS[id];return x?`<div class="ncard">${nico('rejected')}<div class="nb"><div class="nl" dir="auto">${id}. ${esc(x[0])} — ${esc(x[1])}</div><div class="filters">${S({label:T('o_edit'),f:()=>editRef(id)})}${/^https?:/.test(x[2])?`<a class="btn" href="${esc(x[2])}" target="_blank" rel="noopener">${esc(T('lk_open'))}</a>`:''}</div></div></div>`:''};
-  return `<h3 class="nsec">${T('lk_t')}</h3><p class="hint">${linksBusy?T('lk_busy'):L2?T('lk_last').replace('{d}','<bdi>'+esc(L2.at)+'</bdi>').replace('{n}',L2.n):T('lk_never')}</p>`+
-    (L2&&L2.broken.length?`<p class="hint"><b>${T('lk_broken')}</b></p>`+L2.broken.map(row).join(''):L2?`<p class="inone">${T('lk_okall')}</p>`:'')+
-    (L2&&L2.blocked.length?`<details class="lkb"><summary>${T('lk_blocked').replace('{n}',L2.blocked.length)}</summary>${L2.blocked.map(id=>REFS[id]?`<div class="nl"><a href="${esc(REFS[id][2])}" target="_blank" rel="noopener">${id}. ${esc(REFS[id][0])}</a></div>`:'').join('')}</details>`:'')+
-    `<div class="filters">${S({label:T('lk_now'),f:linksCheck})}</div>`;
+/** top of the sources page (owner, and pharmacists who edit sources): the link check, like «My medicines» on interactions.
+   The numbers filter the list: tap «not working» to see only those sources. */
+let LKF=''; // '' | 'broken' | 'blocked'
+function renderLinks(){
+  const el=$('lkbox');if(!el)return;
+  if(typeof OWN==='undefined'||!OWN.on||OWN.preview||!CAN('refs')){el.hidden=true;el.innerHTML='';LKF='';return}
+  const L2=LINKS,ok=L2?L2.n-L2.broken.length-L2.blocked.length:0;
+  const chip=(k,n,cls,label)=>`<button type="button" class="lkc ${cls}" data-lkf="${k}" aria-pressed="${LKF===k}"${n?'':' disabled'}><b>${n}</b> ${esc(label)}</button>`;
+  el.hidden=false;
+  el.innerHTML=`<div class="lkh"><b>${T('lk_t')}</b><button type="button" class="btn${linksBusy?'':' pri'}" id="lknow"${linksBusy?' disabled':''}>${T(linksBusy?'lk_busy':'lk_now')}</button></div>
+    <p class="hint">${L2?T('lk_last').replace('{d}','<bdi>'+esc(L2.at)+'</bdi>').replace('{n}',L2.n):T('lk_never')}</p>`+
+    (L2?`<div class="lkcs"><span class="lkc ok"><b>${ok}</b> ${esc(T('lk_ok'))}</span>${chip('broken',L2.broken.length,'bad',T('lk_bad'))}${chip('blocked',L2.blocked.length,'warn',T('lk_hand'))}</div>`:'')+
+    (LKF?`<p class="hint">${T(LKF==='broken'?'lk_broken':'lk_blocked_h')} <button type="button" class="linkbtn" data-lkf="">${T('lk_all')}</button></p>`:'');
 }
+document.addEventListener('click',e=>{
+  if(e.target.closest('#lknow')){linksCheck();return}
+  const b=e.target.closest('[data-lkf]');if(!b)return;LKF=LKF===b.dataset.lkf?'':b.dataset.lkf;renderRefs();
+});
+/** the sources the filter keeps (null = all) */
+const lkShow=()=>LKF&&LINKS?LINKS[LKF]||[]:null;
 /** show the item where it lives */
 function viewItem(n){
   if(n.t==='x'){const tm=OWN.team||{},cur=CFG.text||{},nt=tm.text||{};
@@ -460,6 +473,24 @@ document.addEventListener('click',e=>{
 /* ----- login / session ----- */
 // the library file must match this fingerprint exactly (Subresource Integrity), otherwise the browser refuses to run it
 const SB_LIB={src:'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js',sri:'sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o'};
+/** coming back from the «forgot password» e-mail: choose a new password (it goes straight to Supabase) */
+async function recoverPassword(){
+  try{await loadSupabaseLib()}catch(e){toast(T('o_neterr'));return}
+  OWN.client=OWN.client||window.supabase.createClient(SB.url,SB.key); // reads the one-time link from the address
+  let session=null;for(let i=0;i<20&&!session;i++){session=(await OWN.client.auth.getSession()).data.session;if(!session)await new Promise(r=>setTimeout(r,250))}
+  history.replaceState(null,'',location.pathname+location.search+'#calc');
+  if(!session){await dialog({title:T('pw_forgot'),info:T('pw_expired'),buttons:[{label:T('o_ok'),action:'ok',pri:1}]});return}
+  let err=null;
+  while(true){
+    const r=await dialog({err,title:T('pw_new_t'),fields:[{label:T('o_newpass'),type:'password',ac:'new-password'},{label:T('o_pass2'),type:'password',ac:'new-password'}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    if(r.action!=='ok'){await OWN.client.auth.signOut();return}
+    if(r.values[0].length<8){err={i:0,msg:T('o_short')};continue}
+    if(r.values[0]!==r.values[1]){err={i:1,msg:T('o_mismatch')};continue}
+    const {error}=await OWN.client.auth.updateUser({password:r.values[0]});
+    if(error){err={msg:T(/aal2|AAL2|factor/i.test(error.message||'')?'pw_need2':'o_neterr')};continue}
+    toast(T('o_chdone'));return afterLogin();
+  }
+}
 function loadSupabaseLib(){return new Promise((ok,no)=>{if(window.supabase)return ok();const sc=document.createElement('script');sc.src=SB_LIB.src;sc.integrity=SB_LIB.sri;sc.crossOrigin='anonymous';sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)})}
 /** a signed-in owner or pharmacist stays signed in after refreshing the page (Supabase keeps the session in this browser) */
 async function resumeSession(){
@@ -484,8 +515,13 @@ async function openOwner(opt={}){
   if(opt.join!=null){if(await firstSetup(opt.join,opt.key))return afterLogin();return}
   let err=null,em='';
   while(true){
-    const r=await dialog({err,title:T('o_login'),fields:[{label:T('o_email'),type:'email',value:em},{label:T('o_pass'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_first'),action:'first'},{label:T('o_in'),action:'ok',pri:1}]});
+    const r=await dialog({err,title:T('o_login'),fields:[{label:T('o_email'),type:'email',value:em},{label:T('o_pass'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('pw_forgot'),action:'forgot'},{label:T('o_first'),action:'first'},{label:T('o_in'),action:'ok',pri:1}]});
     if(r.action==='first'){if(await firstSetup(r.values[0],''))return afterLogin();continue}
+    if(r.action==='forgot'){em=r.values[0].trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){err={i:0,msg:T('pw_needmail')};continue}
+      // Supabase sends the e-mail; the link brings the person back here to choose a new password (never seen by the page's owner)
+      const {error}=await OWN.client.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});
+      if(error){err={msg:T('o_neterr')};continue}
+      await dialog({title:T('pw_forgot'),info:T('pw_sent'),buttons:[{label:T('o_ok'),action:'ok',pri:1}]});return}
     if(r.action!=='ok')return;
     em=r.values[0].trim();
     const {error}=await OWN.client.auth.signInWithPassword({email:em,password:r.values[1]});
@@ -527,7 +563,7 @@ async function afterLogin(){
   if(m.role==='owner')teamLoad().then(()=>renderNav());else loadNotes();
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null;OWN.parts=partsOf()}
-const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[],brand:c.brand||DEFAULT_CFG.brand,review:c.review||DEFAULT_CFG.review});
+const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[],brand:c.brand||DEFAULT_CFG.brand,review:c.review||DEFAULT_CFG.review,menus:c.menus||DEFAULT_CFG.menus,tools:c.tools||DEFAULT_CFG.tools});
 /** the page «How to use and FAQ» is split in two: «How to use» (the first part) and «FAQ» (the questions) */
 function splitHowto(){
   const P=CFG.pages;if(!Array.isArray(P)||P.some(p=>p.id==='howto'))return false;
@@ -589,7 +625,7 @@ function pubSummary(){
   const B={refs:(P.refs||[]).map(st),inter:(P.inter||[]).map(x=>{const y={...x};if(!(y.g&&y.g.d))delete y.g;return st(y)}),nut:((P.nut&&P.nut.custom)||[]).map(st)};
   let n=0;for(const k of ['refs','inter','nut']){const a=new Set(A[k]),b=new Set(B[k]);n+=Math.max([...a].filter(x=>!b.has(x)).length,[...b].filter(x=>!a.has(x)).length)}
   if(st(nutHide)!==st((P.nut&&P.nut.hide)||[]))n++;
-  for(const k of ['contact','colors','text','roadmap','pages','nutOrder','brand','review'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
+  for(const k of ['contact','colors','text','roadmap','pages','nutOrder','brand','review','menus','tools'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
   return {n,wait:pendingCount()};
 }
 async function publish(){
@@ -714,3 +750,7 @@ $('o-pvexit').addEventListener('click',()=>setPreview(false));
 $('o-texts').addEventListener('click',()=>{document.body.classList.toggle('textedit');ownerBar()});
 addEventListener('resize',()=>{if(OWN.on)ownerBar()});$('o-preview').addEventListener('click',()=>setPreview(true));$('o-discard').addEventListener('click',discard);
 addEventListener('beforeunload',e=>{if(OWN.on&&dirty()){e.preventDefault();e.returnValue=''}});
+
+// 👁 shows or hides what is typed in a password field
+document.addEventListener('click',e=>{const b=e.target.closest('[data-peye]');if(!b)return;const f=$(b.dataset.peye);if(!f)return;
+  const show=f.type==='password';f.type=show?'text':'password';b.innerHTML=show?EYEOFF:EYE;b.setAttribute('aria-label',T(show?'pw_hide':'pw_show'));b.title=T(show?'pw_hide':'pw_show');f.focus()});

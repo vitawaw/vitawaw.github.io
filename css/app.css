@@ -718,8 +718,8 @@ body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{d
  .tab svg{width:24px;height:24px}
  .tab>span:not(.tcount):not(.new){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
  .tab .new{position:absolute;top:12px;inset-inline-end:28px}
- .tab.trm{display:none}
- .tab.offbar:not(.trm){display:flex}
+ .tab.offbar{display:none}
+ .tab.tnotif{display:flex}
  .tab.tnotif,.tab.tmenu{position:absolute;top:10px;flex:none;width:44px;height:44px;border-radius:50%;background:var(--hpill);box-shadow:none}
  .tab.tmenu{inset-inline-end:16px}
  .tab.tnotif{inset-inline-end:68px}
@@ -826,3 +826,25 @@ html,body{overflow-x:clip}
 /* the menu page never grows wider than the screen (the round shortcuts scroll inside their own row) */
 .page>*,#menu-b,#menu-b>*,.mg,.mrec{min-width:0;max-width:100%}
 #team{--pc:#0a5c4f;--pc2:#14a38b}
+.pw{display:flex;gap:6px;align-items:stretch}
+.pw input{flex:1;min-width:0}
+.peye{flex:none;width:44px;padding:0;display:grid;place-items:center}
+.peye svg{width:18px;height:18px}
+.nvrow{flex-wrap:wrap}
+.nvrow .nvn small{font:600 12px var(--f-body);color:var(--royal);display:block}
+.nvrow .filters{flex:1 1 100%;margin:0}
+.tlhint{grid-column:1/-1;margin:4px 0 0}
+/* sources page: the link check (team) */
+.lkbox{border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 12px;background:var(--bg);display:grid;gap:8px}
+.lkbox .hint{margin:0}
+.lkh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.lkcs{display:flex;gap:8px;flex-wrap:wrap}
+.lkc{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);font:600 13.5px var(--f-body);color:var(--ink);cursor:pointer}
+.lkc b{font-size:15px}
+.lkc.ok b{color:var(--ok)}.lkc.bad b{color:var(--bad)}.lkc.warn b{color:var(--warn)}
+.lkc[aria-pressed="true"]{border-color:var(--royal);background:var(--chip)}
+.lkc:disabled{opacity:.55;cursor:default}
+span.lkc{cursor:default}
+.linkbtn{border:0;background:none;color:var(--royal);font:700 13px var(--f-body);cursor:pointer;text-decoration:underline;padding:0}
+.stamp{display:flex;align-items:center;gap:5px;font:600 12px var(--f-body);color:var(--ok)}
+.stamp svg{width:14px;height:14px;flex:none}

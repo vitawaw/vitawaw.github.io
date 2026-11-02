@@ -11,7 +11,10 @@ const ICON={
 const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>';
 /** the medical review stamp chosen by the owner: «تمت المراجعة الطبية بواسطة الصيدلي سيف الدين · 2026-10-29» */
 const REV=()=>{const v=CFG.review||{},n=v.n?tx2(v.n):'';return {name:n?esc(n):'',date:v.date||''}};
-function reviewHTML(){const v=REV();return v.name?`<div class="reviewed">${CHECK}${T('rev')} ${v.name}${v.date?' · <span dir="ltr">'+v.date+'</span>':''}</div>`:''}
+/** a pharmacist's own stamp on an item he added or edited, once the owner approved it: «Reviewed by: name · date» */
+const stampHTML=(by,at)=>by?`<div class="stamp">${CHECK}${esc(T('st_by'))} ${esc(by)}${at?` · <bdi>${esc(at)}</bdi>`:''}</div>`:'';
+function reviewHTML(){const c=typeof CUST!=='undefined'&&CUST[K];return (c&&c.sb?stampHTML(c.sb,c.sa):'')+reviewHTML0()}
+function reviewHTML0(){const v=REV();return v.name?`<div class="reviewed">${CHECK}${T('rev')} ${v.name}${v.date?' · <span dir="ltr">'+v.date+'</span>':''}</div>`:''}
 /** the interactions of the calculator on screen, read from the interactions page (so an approved edit shows here too) */
 const IKEYS={preg:['fe','ca','fol','iodine','d','omega3','vita'],inf:['fe','d','vitk'],vac:['vita']};
 function interHTML(){

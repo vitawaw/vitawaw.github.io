@@ -5,7 +5,7 @@
    which check the owner role themselves; see supabase/migrations/*_pharmacist_accounts.sql.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 const TEAM={list:null};
-const PERMS=['nut','inter','refs','text'];
+const PERMS=['nut','inter','refs']; // pharmacists edit the scientific content only; page texts and info pages are the owner's (1.12.0, also in the database)
 /** invitation link: email + the secret key from the database (an account can be created only with it) */
 const joinLink=(email,key)=>location.origin+location.pathname+'#join='+encodeURIComponent(email)+(key?'&k='+encodeURIComponent(key):'');
 const fmtDate=d=>d?new Date(d).toLocaleDateString(LANG==='ar'?'ar-IQ-u-nu-latn':'en-GB',{year:'numeric',month:'short',day:'numeric'}):'';

@@ -6,9 +6,19 @@
 let LANG='ar',MODE='pro';
 const L=(a,e)=>LANG==='ar'?a:e;
 /** texts the owner (or a pharmacist with the text permission) can change from the page; no other key can be replaced */
-const EDITABLE=['hc_t','hc_l','ht_t','ht_l','ti_t','hi_l','ts_t','hs_l','rm_t','rm_l','sg_t','sg_l','by','priv','w_t'];
+const EDITABLE=['hc_t','hc_l','ht_t','ht_l','ti_t','hi_l','ts_t','hs_l','rm_t','rm_l','sg_t','sg_l','by','priv','w_t','tab_calc','tab_int','tab_tools','tab_src','tab_rm'];
 const T=k=>{const o=EDITABLE.includes(k)&&CFG.text&&CFG.text[k];if(o){const v=LANG==='ar'?o.ar:(o.en||'');if(v)return v}const d=I18N[k];return d?d[LANG==='ar'?0:1]:''};
 const I18N={
+st_by:['راجعه:','Reviewed by:'],lk_ok:['تعمل','working'],lk_bad:['لا تعمل','not working'],lk_hand:['افتحها بنفسك','check by hand'],lk_blocked_h:['هذه المواقع ترفض الفحص الآلي، افتحها بنفسك للتأكد:','These sites refuse automatic checks; open them yourself to confirm:'],lk_all:['عرض كل المصادر','Show all sources'],
+nv_order:['ترتيب القوائم','Arrange the menus'],nv_order_s:['الترتيب، الشريط السفلي، الأسماء والألوان','Order, bottom bar, names and colors'],
+nv_hint:['اسحب ⋮⋮ لتغيير الترتيب، فيتغير في كل التطبيق. «في الشريط» = يظهر في الشريط السفلي على الهاتف والآيباد وفي الشريط العلوي على الكمبيوتر (حتى 4)، والباقي في القائمة. احفظ ثم انشر.','Drag ⋮⋮ to change the order everywhere in the app. «In the bar» = shown in the bottom bar on phones and iPads and in the top bar on computers (up to 4); the rest are in the menu. Save, then publish.'],
+nv_bar:['في الشريط','In the bar'],nv_inbar:['في الشريط','In the bar'],nv_min:['يجب أن يبقى قسم واحد على الأقل في الشريط.','At least one section must stay in the bar.'],nv_max:['الشريط يتسع لأربعة أقسام فقط. أخرج واحداً أولاً.','The bar holds only four sections. Remove one first.'],
+nv_hidbar:['أظهر القسم أولاً ثم ضعه في الشريط.','Show the section first, then put it in the bar.'],nv_name:['الاسم في القوائم','Name in the menus'],nv_name_en:['الاسم (English)','Name (English)'],
+tl_hint:['اسحب ⋮⋮ لترتيب الأدوات، و✎ لتغيير الاسم، و👁 للإخفاء. احفظ ثم انشر.','Drag ⋮⋮ to order the tools, ✎ to rename, 👁 to hide. Save, then publish.'],
+pw_show:['إظهار كلمة المرور','Show password'],pw_hide:['إخفاء كلمة المرور','Hide password'],pw_forgot:['نسيت كلمة المرور','Forgot password'],
+pw_needmail:['اكتب بريدك الإلكتروني أولاً.','Enter your e-mail first.'],pw_sent:['إن كان هذا البريد مسجلاً فسيصله رابط لاختيار كلمة مرور جديدة. افتح الرابط من نفس الجهاز.','If this e-mail is registered, a link to choose a new password will arrive. Open it on this device.'],
+pw_expired:['انتهت صلاحية الرابط أو استُخدم من قبل. اطلب رابطاً جديداً من «نسيت كلمة المرور».','The link has expired or was already used. Ask for a new one from «Forgot password».'],pw_new_t:['اختر كلمة مرور جديدة','Choose a new password'],
+pw_need2:['حسابك محمي بالتحقق بخطوتين: سجّل الدخول ثم غيّر كلمة المرور من «الحساب والأمان».','Your account uses two-step verification: sign in, then change the password in «Account and security».'],
 ma_contact:['التواصل','Contact'],tm_page_h:['ادعُ صيدلياً بالبريد، فيصله رابط يفتح صفحة إنشاء حسابه بكلمة مرور يختارها بنفسه. بعد قبول الدعوة يظهر في «الحسابات» وتحدد صلاحياته.','Invite a pharmacist by e-mail: they get a link that opens the create-account page, where they choose their own password. Once they accept, they appear under «Accounts» and you set their permissions.'],cb_back:['الفيتامينات','Vitamins'],gs_short:['بحث','Search'],pg_order_l:['ترتيب الصفحات','Arrange the pages'],pg_order_s:['صفحات المعلومات: الترتيب والتعديل وإضافة صفحة','Info pages: order, edit, add a page'],ad_colors_l:['ألوان الأقسام','Section colors'],
 ad_look:['مظهر الموقع','Site appearance'],ad_contact:['التواصل','Contact'],ad_invite_l:['دعوة صيدلي','Invite a pharmacist'],ad_pub:['النشر','Publishing'],
 mn_recent:['اختصاراتك','Your shortcuts'],ma_help:['المساعدة والتواصل','Help and contact'],ma_priv:['الخصوصية','Privacy'],

@@ -14,6 +14,10 @@ const DEFAULT_CFG={
   contact:{email:'vitawaw26@gmail.com',phone:''},
   refs:null,inter:null,nut:{hide:[],custom:[]},
   colors:{calc:['#0B6B6E','#8E1B54'],tools:['#00167a','#075BFF'],interactions:['#7a2e00','#d9731f'],sources:['#0a4a2c','#17915a'],roadmap:['#3a1678','#7c4dff']},
+  /* owner only (1.12.0): main sections — order everywhere, the four in the bottom bar (and the top bar on computers), hidden ones */
+  menus:{order:['calc','interactions','tools','sources','roadmap'],bar:['calc','interactions','tools','sources'],hide:[]},
+  /* owner only (1.12.0): the tools page — order, hidden tools, names {id:{ar,en}} */
+  tools:{order:[],hide:[],names:{}},
   text:{},
   nutOrder:[], /* order of the vitamins (ids); empty = default order. Owner only. */
   brand:{l1:'',l2:'',url:''},
@@ -56,7 +60,7 @@ function clean(v,key){
   if(Array.isArray(v)){
     if(key==='calc'||key==='tools'||key==='interactions'||key==='sources'||key==='roadmap'&&typeof v[0]==='string')
       return v.map(c=>/^#[0-9a-f]{3,8}$/i.test(c)?c:'#075BFF');
-    return v.map(x=>clean(x,SAFE_ID_KEYS.has(key)||key==='hide'||key==='nutOrder'?'id':undefined));
+    return v.map(x=>clean(x,SAFE_ID_KEYS.has(key)||key==='hide'||key==='nutOrder'||key==='order'||key==='bar'?'id':undefined));
   }
   if(v&&typeof v==='object'){const o={};for(const[k,x]of Object.entries(v))o[k]=clean(x,k);return o}
   return v;
@@ -70,6 +74,8 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   if(Array.isArray(over.pages))out.pages=over.pages;
   if(Array.isArray(over.nutOrder))out.nutOrder=over.nutOrder;
   if(over.review&&over.review.n)out.review={n:{ar:over.review.n.ar||'',en:over.review.n.en||''},date:/^\d{4}-\d{2}-\d{2}$/.test(over.review.date||'')?over.review.date:''};
+  if(over.menus&&typeof over.menus==='object')out.menus={order:Array.isArray(over.menus.order)?over.menus.order:out.menus.order,bar:Array.isArray(over.menus.bar)?over.menus.bar:out.menus.bar,hide:Array.isArray(over.menus.hide)?over.menus.hide:[]};
+  if(over.tools&&typeof over.tools==='object')out.tools={order:Array.isArray(over.tools.order)?over.tools.order:[],hide:Array.isArray(over.tools.hide)?over.tools.hide:[],names:over.tools.names&&typeof over.tools.names==='object'?over.tools.names:{}};
   if(over.brand)out.brand={l1:over.brand.l1||'',l2:over.brand.l2||'',url:over.brand.url||''};
   if(Array.isArray(over.refs))out.refs=over.refs;
   if(Array.isArray(over.inter))out.inter=over.inter;

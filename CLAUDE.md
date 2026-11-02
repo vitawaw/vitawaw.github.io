@@ -87,6 +87,16 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   faq page into howto + faq on owner login (he saves + publishes); all tools open as pages (`openTool()` → `openToolPage()`,
   `TOOLFROM`/`toolBack()`); menu bottom: tiles, howto/faq rows, contact `.m3` (3), privacy accordion + install + share, management,
   mine, settings `.m3` (3) last; pharmacists page `#team` (PAGES 'team', owner only, `openTeamPage()`/`renderTeam()` in team.js, ACT.t).
+  Third round (done, he answered: password = كلمة السر, stamp option 1, contact kept for owner but hidden for pharmacists, NO single
+  control-panel page): 👁 on password fields (`data-peye`), «نسيت كلمة المرور» = `resetPasswordForEmail` + `recoverPassword()` on
+  `#…type=recovery` (needs the preview/production URLs in Supabase → Auth → URL configuration); `CFG.menus` {order,bar,hide} (NOT `nav`:
+  the rejected attempt published a `nav` key) with `NAV()`/`renderTabs()`/`openNavManager()`/`editNavText()`, menu tiles = `navMore()`;
+  `CFG.tools` {order,hide,names} via `toolList()`/`toolName()`, owner buttons `data-tled`/`data-tlhide`, `PROONLY` hidden in patient mode;
+  link check box `#lkbox` on sources (`renderLinks()`, filter `LKF`, `linksAuto()` when the team opens sources); stamps `sb`/`sa` →
+  REFS[9..10], INTER[10..11], CUST[k].sb (`stampHTML()` in render.js); pharmacists: PERMS without 'text', `CAN('text')` owner only.
+  DB file `20261102120000_stamps_and_science_only.sql` (author column + content_guard + stamp_name + j_* + publish_site + can_edit,
+  and the fix: content_guard set `sort` on sources, which have no sort column → a pharmacist's edit of a source failed). Tested on the
+  local Postgres; he must run it in the SQL editor.
 - **1.12.0 was REJECTED** («ابقى على اخر اصدار تم نشره لم يعجبني هذا»): live stays 1.11.1. The preview branch was set back to 1.11.1
   by a restore commit; the 1.12.0 work (own pages for schedule/labs/UL, CFG.nav menu manager, 🔔 for everyone + header 🔍/🔔,
   tools page as tiles, grouped ☰ with folding lists) is in the commits a3b8546…5f75622 if he ever asks for a piece of it.

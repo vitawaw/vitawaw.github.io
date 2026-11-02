@@ -11,6 +11,7 @@
 const ICO={
   image:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>',
   history:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
+  menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h13"/></svg>',
   chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>',
   info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
@@ -22,7 +23,7 @@ const CHEV='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentCol
 const TOOLS=[['tool-pill','tl_pill','tt_t'],['tool-d','tl_d','td_t'],['tool-ca','tl_ca','tp_t'],['tool-gz','tl_gz','tg_t'],['tool-ml','tl_ml','ml_t'],['tool-sch','tl_sch','sc_t'],['tool-labs','tl_labs','lb_t'],['tool-ul','tl_ul','tl_t'],['tool-u','tl_u','tu_t']];
 const tabIco=p=>{const s=$('t-'+p)&&$('t-'+p).querySelector('svg');return s?s.outerHTML:ICO.info};
 /** true when the signed-in account may edit this part: 'nut' | 'inter' | 'refs' | 'text' */
-const CAN=k=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner'||!!(OWN.perms&&OWN.perms[k]));
+const CAN=k=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner'||(k!=='text'&&!!(OWN.perms&&OWN.perms[k]))); // texts and pages: owner only
 const ISOWNER=()=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner');
 const colorVars=p=>CFG.colors[p]?`--pc:${CFG.colors[p][0]};--pc2:${CFG.colors[p][1]}`:'';
 const paras=t=>String(t||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('');
@@ -50,23 +51,64 @@ const WIDE=()=>matchMedia('(min-width:1024px)').matches;
 const pickNut=k=>openNut(k);
 const SECTIONS=['calc','tools','interactions','sources','roadmap'];
 const SECKEY={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t'};
+/* ===================== main sections (owner, 1.12.0): order everywhere, the bar (≤4), hidden ones, names, colors =====================
+   CFG.menus = {order, bar, hide}. The calculator cannot be hidden; 🔔 and ☰ are always there. */
+const HEROKEY={calc:['hc_t','hc_l'],tools:['ht_t','ht_l'],interactions:['ti_t','hi_l'],sources:['ts_t','hs_l'],roadmap:['rm_t','rm_l']};
+function NAV(){
+  const n=CFG.menus||{},ok=x=>SECTIONS.includes(x);
+  const order=[...new Set([...(n.order||[]).filter(ok),...SECTIONS])];
+  const hide=[...new Set((n.hide||[]).filter(x=>ok(x)&&x!=='calc'))];
+  let bar=order.filter(x=>(n.bar||[]).includes(x)&&!hide.includes(x)).slice(0,4);if(!bar.length)bar=['calc'];
+  return {order,bar,hide};
+}
+const navHidden=p=>NAV().hide.includes(p);
+/** sections not in the bar, in the owner's order (they are tiles in the menu) */
+const navMore=()=>{const n=NAV();return n.order.filter(p=>!n.bar.includes(p)&&(!n.hide.includes(p)||SHOWALL()))};
+function renderTabs(){
+  const n=NAV();
+  n.order.forEach((p,i)=>{const t=$('t-'+p);if(!t)return;t.style.order=i;t.classList.toggle('offbar',!n.bar.includes(p));t.hidden=n.hide.includes(p)&&!SHOWALL()});
+  $('t-notif').style.order=98;$('t-menu').style.order=99;
+}
+function navSave(n){CFG.menus={order:n.order,bar:n.bar,hide:n.hide};changed();drawNavManager()}
+function openNavManager(){if(!ISOWNER())return;openSheet(T('nv_order'),'',{key:'navmgr'});drawNavManager()}
+function drawNavManager(){
+  if(!SHEET||SHEET.key!=='navmgr')return;
+  const n=NAV();ACT.s=[];const S=c=>chipH('s',c);
+  $('sheet-b').innerHTML=`<p class="hint">${T('nv_hint')}</p><div class="olist" id="nv-order">${n.order.map(p=>{const inBar=n.bar.includes(p),hid=n.hide.includes(p);
+    return `<div class="orow nvrow${hid?' off':''}" data-sid="${p}">${DRAG(T('o_drag'))}<span class="di" style="${colorVars(p)}">${tabIco(p)}</span><span class="nvn">${esc(T(SECKEY[p]))}${hid?` · ${T('pg_hidden')}`:''}${inBar?`<small>${T('nv_inbar')}</small>`:''}</span>
+      <div class="filters">${S({label:T('nv_bar'),pressed:inBar,f:()=>{
+        if(inBar){if(n.bar.length<2){toast(T('nv_min'));return}n.bar=n.bar.filter(x=>x!==p)}
+        else{if(hid){toast(T('nv_hidbar'));return}if(n.bar.length>=4){toast(T('nv_max'));return}n.bar=[...n.bar,p]}navSave(n)}})}${
+      p==='calc'?'':S({label:T(hid?'o_nshow':'o_nhide'),f:()=>{n.hide=hid?n.hide.filter(x=>x!==p):[...n.hide,p];if(!hid)n.bar=n.bar.filter(x=>x!==p);navSave(n)}})}${
+      S({label:T('o_edit'),f:()=>editNavText(p)})}${S({label:T('ad_colors'),f:async()=>{closeSheet(false);await editColors(p);openNavManager()}})}</div></div>`}).join('')}</div>
+    <div class="filters">${S({label:T('o_reset'),f:()=>{CFG.menus=clone(DEFAULT_CFG.menus);changed();drawNavManager()}})}</div>`;
+  sortable($('nv-order'),'.orow',ids=>{n.order=ids;navSave(n)});
+}
+/** a section's name in the menus, and its title and description at the top of its page */
+async function editNavText(p){
+  closeSheet(false);
+  const keys=[SECKEY[p],...(HEROKEY[p]||[])],cur=k=>CFG.text[k]||{ar:I18N[k][0],en:I18N[k][1]};
+  const labels=[['nv_name','nv_name_en'],['o_ftitle','o_ftitle_en'],['o_fdesc','o_fdesc_en']];
+  const fields=keys.flatMap((k,i)=>[{label:T(labels[i][0]),value:cur(k).ar,type:i===2?'textarea':'text'},{label:T(labels[i][1]),value:cur(k).en,ltr:1,type:i===2?'textarea':'text'}]);
+  const r=await dialog({title:T(SECKEY[p]),fields,buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  if(r.action==='ok')keys.forEach((k,i)=>{const d=I18N[k],ar=r.values[2*i].trim()||d[0],en=r.values[2*i+1].trim()||d[1];if(ar===d[0]&&en===d[1])delete CFG.text[k];else CFG.text[k]={ar,en}});
+  if(r.action==='reset')keys.forEach(k=>delete CFG.text[k]);
+  if(r.action!=='cancel')changed();
+  openNavManager();
+}
 /** management for the signed-in team, in small groups of rows (what appears depends on the account's permissions) */
 function adminGroups(){
   const A=[];
   if(!(typeof OWN!=='undefined'&&OWN.on&&!OWN.preview))return A;
   const look=[];
   if(CAN('text'))look.push({label:T('pg_order_l'),sub:T('pg_order_s'),ico:ICO.page,n:(CFG.pages||[]).length,f:openPagesOrder});
-  if(ISOWNER())look.push({label:T('ad_colors_l'),ico:ICO.site,f:openColors},{label:T('br_t'),ico:ICO.image,f:()=>editBrand()});
+  if(ISOWNER())look.unshift({label:T('nv_order'),sub:T('nv_order_s'),ico:ICO.menu,f:openNavManager});
+  if(ISOWNER())look.push({label:T('br_t'),ico:ICO.image,f:()=>editBrand()});
   if(look.length)A.push({id:'look',ico:ICO.site,label:T('ad_look'),rows:look});
   if(ISOWNER())A.push({id:'contact',ico:MI.mail,label:T('ad_contact'),rows:[{label:T('o_contact'),sub:[CFG.contact.email,CFG.contact.phone].filter(Boolean).join(' · '),ico:MI.mail,f:()=>editContact()}]});
   if(ISOWNER())A.push({id:'team',ico:ICO.team,label:T('ad_team'),n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,go:()=>go('team')});
   if(ISOWNER())A.push({id:'pub',ico:ICO.history,label:T('ad_pub'),rows:[{label:T('vh_t'),ico:ICO.history,f:()=>openVersions()}]});
   return A;
-}
-/** banner colours of each section (owner) */
-function openColors(){
-  if(!ISOWNER())return;
-  openSheet(T('ad_colors_l'),`<div class="olist">${SECTIONS.map(p=>`<div class="orow"><span class="di" style="${colorVars(p)}">${tabIco(p)}</span><span class="nvn">${esc(T(SECKEY[p]))}</span><div class="filters">${chipH('s',{label:T('o_edit'),f:async()=>{closeSheet(false);await editColors(p);openColors()}})}</div></div>`).join('')}</div>`,{key:'colors'});
 }
 /* «your shortcuts»: the last pages and tools this visitor opened (this device only) */
 let RECENT=[];try{RECENT=JSON.parse(localStorage.getItem('vw-recent')||'[]').filter(x=>typeof x==='string').slice(0,8)}catch(e){}
@@ -75,17 +117,36 @@ function recentItem(k){
   const [t,id]=k.split(':');
   if(t==='p'&&SECKEY[id])return {label:T(SECKEY[id]),ico:tabIco(id),page:id,f:()=>go(id)};
   const tl=TOOLS.find(x=>TOOLKIND[x[0]]===id);
-  if(t==='t'&&tl){const ic=$(tl[0])&&$(tl[0]).querySelector('.ttl-ic svg');return {label:T(tl[1]),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openToolPage(tl[0])}}
+  if(t==='t'&&tl){if(MODE==='pt'&&PROONLY.includes(tl[0]))return null;const ic=$(tl[0])&&$(tl[0]).querySelector('.ttl-ic svg');return {label:toolName(tl),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openToolPage(tl[0])}}
   return null;
 }
 /** «suggest a feature or report an error»: phone and e-mail in a floating window (the owner can edit them there) */
 function openContact(){openPage('suggest')}
 /* the tools page: rectangles like the vitamins; each opens its own working page (#tool-pill…) with «‹ Tools» */
+const PROONLY=['tool-pill','tool-ca','tool-gz','tool-u','tool-ul']; // pharmacist tools: not shown in patient mode
+/** the tools in the owner's order; hidden ones only for the team while editing; patient mode leaves out the pharmacist tools */
+function toolList(){
+  const c=CFG.tools||{},ids=TOOLS.map(t=>t[0]),order=[...new Set([...(c.order||[]).filter(x=>ids.includes(x)),...ids])],hide=c.hide||[];
+  return order.map(id=>TOOLS.find(t=>t[0]===id)).filter(t=>(!hide.includes(t[0])||SHOWALL())&&!(MODE==='pt'&&PROONLY.includes(t[0])));
+}
+const toolName=t=>{const n=CFG.tools&&CFG.tools.names&&CFG.tools.names[t[0]];return (n&&(LANG==='ar'?n.ar:(n.en||n.ar)))||T(t[1])};
 function renderToolsGrid(){
   if(!$('tgrid'))return;
-  $('tgrid').innerHTML=TOOLS.map(t=>`<button type="button" data-tv="${t[0]}"><span>${esc(T(t[1]))}</span><small>${esc(T(t[2]))}</small></button>`).join('');
+  const own=ISOWNER()&&!OWN.preview,hide=(CFG.tools&&CFG.tools.hide)||[];
+  $('tgrid').innerHTML=toolList().map(t=>{const b=`<button type="button" data-tv="${t[0]}"><span>${esc(toolName(t))}</span><small>${esc(T(t[2]))}</small></button>`,off=hide.includes(t[0]);
+    return own?`<div class="pkw tkw${off?' off':''}" data-sid="${t[0]}">${b}<div class="pka">${DRAG(T('o_drag'))}<button class="btn" type="button" data-tled="${t[0]}" aria-label="${esc(T('o_edit'))}" title="${esc(T('o_edit'))}">${PEN}</button><button class="btn" type="button" data-tlhide="${t[0]}" aria-label="${esc(T(off?'o_nshow':'o_nhide'))}" title="${esc(T(off?'o_nshow':'o_nhide'))}">${off?EYE:EYEOFF}</button></div></div>`:b}).join('')+
+    (own?`<p class="hint tlhint">${T('tl_hint')}</p>`:'');
+  if(own)sortable($('tgrid'),'.tkw',ids=>{if(!ISOWNER())return;CFG.tools={...CFG.tools,order:ids};changed()});
 }
-let TOOLFROM=''; // where a tool was opened from (e.g. a vitamin's result): «‹» goes back there
+document.addEventListener('click',async e=>{
+  const h=e.target.closest('[data-tlhide]'),ed=e.target.closest('[data-tled]');if(!(h||ed)||!ISOWNER())return;e.preventDefault();
+  const c=CFG.tools={order:[],hide:[],names:{},...CFG.tools};
+  if(h){const id=h.dataset.tlhide;c.hide=c.hide.includes(id)?c.hide.filter(x=>x!==id):[...c.hide,id];changed();return}
+  const t=TOOLS.find(x=>x[0]===ed.dataset.tled);if(!t)return;const n=c.names[t[0]]||{ar:I18N[t[1]][0],en:I18N[t[1]][1]};
+  const r=await dialog({title:T('o_edit'),fields:[{label:T('nv_name'),value:n.ar},{label:T('nv_name_en'),value:n.en||'',ltr:1}],buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  if(r.action==='ok'){const ar=r.values[0].trim(),en=r.values[1].trim();c.names={...c.names,[t[0]]:{ar:ar||I18N[t[1]][0],en:en||I18N[t[1]][1]}};changed()}
+  if(r.action==='reset'){const nm={...c.names};delete nm[t[0]];c.names=nm;changed()}
+});
 function openToolPage(id){closeSheet(false);TOOLFROM=cur==='tools'?'':(location.hash||'#'+cur);if(location.hash!=='#'+id)location.hash=id;else show('tools',id);window.scrollTo(0,0)}
 function toolBack(){const h=TOOLFROM;TOOLFROM='';if(h&&h!=='#tools')location.hash=h.slice(1);else go('tools')}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-tv]');if(!b)return;e.preventDefault();openToolPage(b.dataset.tv)});
@@ -99,6 +160,7 @@ try{if(localStorage.getItem('vw-side')==='0')document.body.classList.add('noside
 /** labels and the 🔔 count; redraws the menu page and the side menu */
 function renderNav(){
   if(!$('side'))return;
+  renderTabs();
   document.querySelectorAll('#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
   const nc=notifCount();['nt-count','hnt-count'].forEach(id=>{$(id).hidden=!nc;$(id).textContent=nc>99?'99+':nc});
   $('hnotif').setAttribute('aria-label',T('nt_t'));$('hnotif').classList.toggle('on',cur==='notif');
@@ -179,7 +241,7 @@ function menuHTML(r){
   if(rec.length)h+=`<div class="mg"><h3>${esc(T('mn_recent'))}</h3><div class="mrec">${rec.map(c=>`<button type="button" class="mrc" data-na="${r}${ACT[r].push(c.f)-1}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span>${esc(c.label)}</span></button>`).join('')}</div></div>`;
   // shortcut tiles: sources (phones), coming next, «suggest a feature», my lab results, information pages
   const SPECIAL=['faq','howto','privacy','disclaimer','suggest'];
-  const tiles=[...(page?[{label:T('tab_src'),ico:tabIco('sources'),page:'sources',f:()=>go('sources')}]:[]),{label:T('tab_rm'),ico:tabIco('roadmap'),page:'roadmap',f:()=>go('roadmap')},
+  const tiles=[...navMore().map(p=>({label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,f:()=>go(p)})),
     ...(pg('suggest')?[{...pgItem(pg('suggest')),ico:MI.mail}]:[]),{label:T('lb_t'),ico:ICO.chart,page:'tools',f:()=>openToolPage('tool-labs')},...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(pgItem)];
   h+=`<div class="mg"><h3>${esc(T('mn_short'))}</h3><div class="mtiles">${tiles.map(tile).join('')}</div></div>`;
   // how to use · FAQ (each on its own)
@@ -191,7 +253,7 @@ function menuHTML(r){
   if(PHONEF())con.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
   if(EMAILF())con.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
   if(PHONEF())con.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
-  h+=r3(T('ma_contact'),con);
+  if(!(own&&!ISOWNER()))h+=r3(T('ma_contact'),con); // an invited pharmacist talks to the owner directly, not through the public contact
   // privacy (folding), then install and share right under it
   h+=`<div class="mg"><div class="ml maccs">`+acc('priv',MI2.shield,T('ma_priv'),['privacy','disclaimer'].map(pg).filter(Boolean).map(pgItem).map(row).join(''))+
     row({label:T('mr_install'),ico:MI.install,f:installApp})+row({label:T('mr_share'),ico:MI.share,f:shareApp})+`</div></div>`;
