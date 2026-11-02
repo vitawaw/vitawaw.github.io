@@ -691,7 +691,14 @@ body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{d
 .gsi small{color:var(--mute);font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 #lbform{grid-template-columns:1fr 1fr}#lbform .f:first-child,#lbform .lbadd{grid-column:1/-1}
 /* ===== 1.12.0: one menu everywhere ===== */
-.hsearch{display:none}
+/* phones and tablets: search on the start side of the name (right in Arabic), 🔔 on the end side (left) */
+.hsearch,.hnotif{position:relative;grid-row:1;width:44px;height:44px;border:0;border-radius:50%;background:var(--hpill);color:var(--hfg);display:grid;place-items:center;cursor:pointer;padding:0}
+.hsearch svg,.hnotif svg{width:20px;height:20px}
+.hsearch{grid-column:1;justify-self:start}
+.hsearch span{display:none}
+.hnotif{grid-column:3;justify-self:end}
+.hnotif.on{background:color-mix(in srgb,var(--royal) 15%,transparent);color:var(--royal)}
+.hnotif .tcount{top:-3px;inset-inline-end:-4px}
 /* computers: a bar at the top like Facebook — search on the start side, the four sections in the middle (icons), 🔔 and ☰ on the end side;
    the side menu shows the same menu as the ☰ page on phones (☰ shows or hides it) */
 @media (min-width:1024px){
@@ -699,7 +706,9 @@ body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{d
  .top{background:var(--hdr)}
  .top .brand{display:block;position:absolute;top:0;inset-inline-start:0;padding:10px 16px;max-width:none;margin:0}
  .top .logo{display:none}
- .hsearch{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;border:0;border-radius:99px;background:var(--hpill);color:var(--hfg);font:600 14px var(--f-body);cursor:pointer}
+ .hnotif{display:none}
+ .hsearch span{display:inline}
+ .hsearch{display:inline-flex;align-items:center;gap:8px;width:auto;height:42px;padding:0 16px;border:0;border-radius:99px;background:var(--hpill);color:var(--hfg);font:600 14px var(--f-body);cursor:pointer}
  .hsearch svg{width:18px;height:18px}
  .tabs{display:flex;justify-content:center;align-items:stretch;gap:6px;max-width:none;margin:0;padding:6px 0 0;overflow:visible;min-height:62px}
  .tab,.tab:first-child,.tab:last-child{flex:0 0 96px;max-width:none;height:56px;margin:0;padding:0;border-radius:10px 10px 0 0;background:transparent;color:var(--hfg)}
@@ -748,3 +757,28 @@ body.owner:not(.textedit) .edp[data-edbrand],body.not-owner .edp[data-edbrand]{d
 .orow .di{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--pc2,var(--royal)) 14%,transparent);color:var(--pc2,var(--royal));flex:none}
 .orow .di svg{width:18px;height:18px}
 .side .mtiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+/* calculator: the list of vitamins first; a vitamin opens its page (patient data + result) with «‹ Vitamins» */
+#calc:not(.cv) #s-data,#calc:not(.cv) #resbox,#calc:not(.cv) .cback{display:none}
+#calc.cv #s-pick,#calc.cv>.hero,#calc.cv>#welcome{display:none}
+#calc:not(.cv) .calc{grid-template-columns:1fr}
+.cback{display:flex;align-items:center;gap:12px}
+.cback b{font:800 20px var(--f-display);color:var(--ink)}
+.tback{display:inline-flex;align-items:center;gap:6px}
+.tback svg{width:18px;height:18px}
+[dir="ltr"] .tback svg{transform:scaleX(-1)}
+/* owner: buttons on each vitamin */
+.pkw{display:flex;flex-direction:column;gap:4px;border:1px dashed color-mix(in srgb,var(--royal) 45%,var(--line));border-radius:14px;padding:4px;background:var(--card)}
+.pkw>button[data-k]{flex:1}
+.pkw.off>button[data-k]{opacity:.55}
+.pka{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.pka .btn{min-height:34px;padding:4px 8px}
+.pka .btn .lbl{display:none}
+.pka .btn svg{width:16px;height:16px}
+.pka .drag{margin-inline-end:auto}
+.nadm{border:0;padding:0;margin:12px 0 0;display:none;gap:8px}
+/* tools page: rectangles first; one tool at a time */
+#tools>section[id^="tool-"]:not(.on){display:none}
+#tools.tv>.hero,#tools.tv>.tgsec{display:none}
+#tools:not(.tv)>.tvback{display:none}
+#sheet-b .contact{border:0;box-shadow:none;padding:0;background:none}
+#sheet-b .contact>h2{display:none}

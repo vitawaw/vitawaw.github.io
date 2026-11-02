@@ -37,8 +37,9 @@ function buildData(){
   INTER=il.map((x,i)=>[x.k,[x.a.ar,x.a.en||x.a.ar],[x.b.ar,x.b.en||x.b.ar],[x.d.ar,x.d.en||x.d.ar],x.r||[],i,x.sev||'moderate',x.rv!==false,!!x.hidden,x.g&&x.g.d?x.g:null]).filter(x=>KEYS.includes(x[0])&&(all||(x[7]&&!x[8])));
   REFGROUP={};
   KEYS.slice(1).forEach(k=>{const g=new Set(DEF_REFGROUP[k]||(CUST[k]?CUST[k].r||[]:[]));INTER.filter(x=>x[0]===k).forEach(x=>x[4].forEach(n=>g.add(n)));REFGROUP[k]=[...g].filter(n=>REFS[n])});
-  // picker
-  document.querySelectorAll('#picker button[data-k]').forEach(b=>{if(BUILTIN.includes(b.dataset.k))b.hidden=hide.includes(b.dataset.k);else b.remove()});
+  // picker (the owner's buttons around each vitamin are taken off first and put back by renderNutAdmin)
+  $('picker').querySelectorAll('.pkw').forEach(w=>{const b=w.querySelector('button[data-k]');if(b)w.before(b);w.remove()});
+  document.querySelectorAll('#picker button[data-k]').forEach(b=>{if(BUILTIN.includes(b.dataset.k)){b.hidden=hide.includes(b.dataset.k)&&!all;b.classList.toggle('off',hide.includes(b.dataset.k))}else b.remove()});
   VC.forEach(c=>{const b=document.createElement('button');b.dataset.k=c.id;b.className='cnut';b.innerHTML=`<span>${esc(tx2(c.n))}</span><small>${esc(tx2(c.h))}</small>${c.rv===false?`<em class="pend">${T('o_pending')}</em>`:''}${c.hidden?`<em class="hidb">${T('o_hiddenb')}</em>`:''}`;$('picker').appendChild(b);F[c.id]=()=>fCustom(c.id);EX[c.id]={age:30,sex:'f'}});
   Object.keys(F).forEach(k=>{if(!BUILTIN.includes(k)&&!CUST[k])delete F[k]});
   KEYS.slice(1).forEach(k=>{const b=$('picker').querySelector(`button[data-k="${k}"]`);if(b)$('picker').appendChild(b)}); // picker in the same order
@@ -49,18 +50,18 @@ function buildData(){
   renderNutAdmin();
 }
 function filterNuts(){const q=normAr($('nsearch')&&$('nsearch').value);document.querySelectorAll('#picker button[data-k]').forEach(b=>b.classList.toggle('nf',!!q&&!normAr(b.textContent).includes(q)))}
+/** owner: each vitamin carries its own buttons (drag ⋮⋮ to reorder · edit · hide/show · delete); «add» is under the list */
 function renderNutAdmin(){
-  const el=$('nadm');if(!el)return;
-  if(typeof OWN==='undefined'||!OWN.on){el.innerHTML='';return}
-  const hide=NHIDE();
-  const cust=Object.fromEntries(NCUST().map(c=>[c.id,c]));
-  el.innerHTML=`<p class="nadm-h">${T('o_nman')}</p><p class="hint">${T('o_drag_i')}</p><div class="nadm-l" id="nadm-l">`+
-    ordered([...BUILTIN,...NCUST().map(c=>c.id)]).map(k=>{const c=cust[k];
-      return c?`<span class="nchip cust${c.rv===false?' pending':''}${c.hidden?' off':''}" data-sid="${esc(k)}">${DRAG(T('o_drag'))}${esc(tx2(c.n))}${actBtns('n',c.id,{rv:c.rv!==false,hidden:!!c.hidden})}</span>`
-        :`<span class="nchip${hide.includes(k)?' off':''}" data-sid="${k}">${DRAG(T('o_drag'))}${esc(T('n_'+k))}<button type="button" data-nhide="${k}">${T(hide.includes(k)?'o_nshow':'o_nhide')}</button></span>`}).join('')+
-    `</div>${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<button class="btn pri" type="button" id="nadd">${T('o_nadd')}</button><p class="hint">${T('o_nhint')}</p>`;
-  // owner: drag the ⋮⋮ handle to change the vitamins' order (saved with the page settings, then published)
-  sortable($('nadm-l'),'.nchip',ids=>{if(!ISOWNER())return;CFG.nutOrder=ids;changed()});
+  const el=$('nadm'),pk=$('picker');if(!el)return;
+  if(typeof OWN==='undefined'||!OWN.on||OWN.preview){el.innerHTML='';return}
+  const hide=NHIDE(),cust=Object.fromEntries(NCUST().map(c=>[c.id,c]));
+  pk.querySelectorAll('button[data-k]').forEach(b=>{const k=b.dataset.k,c=cust[k],off=c?!!c.hidden:hide.includes(k);
+    const w=document.createElement('div');w.className='pkw'+(off?' off':'');w.dataset.sid=k;b.before(w);w.appendChild(b);
+    w.insertAdjacentHTML('beforeend',`<div class="pka">${DRAG(T('o_drag'))}${c?actBtns('n',c.id,{rv:c.rv!==false,hidden:!!c.hidden}):
+      `<button class="btn" type="button" data-nhide="${k}" aria-label="${esc(T(off?'o_nshow':'o_nhide'))}" title="${esc(T(off?'o_nshow':'o_nhide'))}">${off?EYE:EYEOFF}<span class="lbl">${esc(T(off?'o_nshow':'o_nhide'))}</span></button>`}</div>`)});
+  el.innerHTML=`${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<button class="btn pri" type="button" id="nadd">${T('o_nadd')}</button><p class="hint">${T('o_drag_i')} ${T('o_nhint')}</p>`;
+  // drag the ⋮⋮ handle to change the vitamins' order (saved with the page settings, then published)
+  sortable(pk,'.pkw',ids=>{if(!ISOWNER())return;CFG.nutOrder=ids;changed()});
 }
 /* custom nutrient calculator: dose table by age and sex */
 const SEXES=()=>[['all',T('o_sx_all')],['m',T('sx_m')],['f',T('sx_f')],['p',T('sx_p')],['l',T('sx_l')]];

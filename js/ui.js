@@ -4,11 +4,12 @@
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
 const PAGES=['calc','tools','interactions','sources','roadmap','notif','menu'];
-let cur='calc';
-function show(p){
+let cur='calc',CALCV=false,TOOLV=''; // CALCV: the chosen vitamin's page (patient data + result) instead of the list of vitamins
+function show(p,view){
   if(!PAGES.includes(p)||(p==='menu'&&WIDE()))p='calc'; // wide screens show the menu at the side
-  cur=p;if(typeof rememberRecent==='function')rememberRecent('p:'+p);
+  cur=p;CALCV=p==='calc'&&view==='v';$('calc').classList.toggle('cv',CALCV);TOOLV=p==='tools'&&/^tool-/.test(view||'')?view:'';$('tools').classList.toggle('tv',!!TOOLV);document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));if(CALCV)$('cvname').textContent=kname(K);if(typeof rememberRecent==='function')rememberRecent('p:'+p);
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1});
+  if(typeof rememberRecent==='function')rememberRecent(TOOLV?'t:'+TOOLKIND[TOOLV]:'p:'+p);
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
   if(p!=='menu'&&p!=='notif')try{localStorage.setItem('vw-p',p)}catch(e){}
   if(p==='notif'&&typeof renderNotif==='function')renderNotif(true);
@@ -20,6 +21,8 @@ window.addEventListener('hashchange',()=>{if(routeSpecial())return;show(location
 /* links that open something instead of a tab: #owner (sign in), #join=<email> (invited pharmacist), #info-<page> (info page) */
 function routeSpecial(){
   let h=location.hash.slice(1);try{h=decodeURIComponent(h)}catch(e){}
+  if(/^tool-(pill|d|ca|gz|ml|sch|labs|ul|u)$/.test(h)){show('tools',h);window.scrollTo(0,0);return true} // one tool of the tools page
+  if(h.startsWith('v-')){const k=h.slice(2);if(KEYS.includes(k)&&k!=='all'&&k!==K){K=k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()}show('calc','v');window.scrollTo(0,0);return true} // one vitamin's page
   if(h==='owner'){openOwner();return true}
   if(h==='join'||h.startsWith('join=')){const [em,k]=h.slice(5).split('&k=');openOwner({join:em||'',key:k||''});return true}
   if(h.startsWith('c=')){history.replaceState(null,'',location.pathname+location.search+'#calc');loadShared(h.slice(2));return true}
@@ -38,7 +41,7 @@ document.addEventListener('click',e=>{
   const ex=e.target.closest('[data-ex]');if(ex){e.preventDefault();fillExample();return}
   const tl=e.target.closest('[data-tool]');if(tl){e.preventDefault();openTool(tl.dataset.tool);return}
   // interactions ↔ calculator ↔ daily schedule
-  const gc=e.target.closest('[data-gocalc]');if(gc){e.preventDefault();K=gc.dataset.gocalc;try{localStorage.setItem('vw-k',K)}catch(e){}apply();go('calc');return}
+  const gc=e.target.closest('[data-gocalc]');if(gc){e.preventDefault();openNut(gc.dataset.gocalc);return}
   const gs=e.target.closest('[data-gosch]');if(gs){e.preventDefault();SCI.forEach(x=>{const c=$('sc-'+x[0]);if(c)c.checked=false});SCHSET=gs.dataset.gosch.split(',');openTool('sch');return}
   const gi=e.target.closest('[data-goint]');if(gi){e.preventDefault();IF=gi.dataset.goint;renderInter();go('interactions');return}
   const sr=e.target.closest('[data-isrc]');if(sr){e.preventDefault();ISRC=+sr.dataset.isrc;IF='all';renderInter();go('interactions');return}
@@ -61,7 +64,7 @@ $('sfilters').addEventListener('click',e=>{const b=e.target.closest('[data-sf]')
 /* mobile result bar */
 let resVisible=false;
 if('IntersectionObserver' in window){new IntersectionObserver(es=>{resVisible=es[0].isIntersecting;updateBar()},{threshold:.15}).observe($('resbox'))}
-function updateBar(){const s=cur==='calc'&&!resVisible&&innerWidth<900&&!!LAST;$('rbar').hidden=!s;document.body.classList.toggle('has-bar',s)}
+function updateBar(){const s=cur==='calc'&&CALCV&&!resVisible&&innerWidth<900&&!!LAST;$('rbar').hidden=!s;document.body.classList.toggle('has-bar',s)}
 window.addEventListener('resize',updateBar);
 const toRes=()=>{const y=$('resbox').getBoundingClientRect().top+scrollY-110;window.scrollTo({top:y,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})};
 $('rbar').addEventListener('click',toRes);$('rbar').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toRes()}});
@@ -177,7 +180,7 @@ function loadShared(code){
     if(el.type==='checkbox')el.checked=v===1;
     else if(el.tagName==='SELECT'){if(v!=null&&[...el.options].some(x=>x.value===String(v)))el.value=String(v)}
     else el.value=v!=null&&isFinite(parseFloat(v))?String(parseFloat(v)):''});
-  syncSex();apply();show('calc');
+  syncSex();apply();show('calc','v');
 }
 
 /* ===================== wiring ===================== */
@@ -193,7 +196,11 @@ $('isearch').addEventListener('input',renderInter);
 $('medform').addEventListener('submit',e=>{e.preventDefault();const s=medSuggest($('medin').value);if(s.length)addMed(s[0].en);else renderSug()});
 $('medin').addEventListener('input',renderSug);
 $('medsug').addEventListener('click',e=>{const b=e.target.closest('[data-addmed]');if(b)addMed(b.dataset.addmed)});
-$('picker').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;K=b.dataset.k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()});
+/** open a vitamin: its page with the patient data and the result (‹ back to the list) */
+function openNut(k){K=k;try{localStorage.setItem('vw-k',K)}catch(e){}apply();if(location.hash!=='#v-'+k)location.hash='v-'+k;else show('calc','v');window.scrollTo(0,0)}
+$('picker').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;openNut(b.dataset.k)});
+$('cbackb').addEventListener('click',()=>go('calc'));
+$('tback').addEventListener('click',()=>go('tools'));
 const FORMIDS=['age','sex','wt','ht','dlab','dunit','mal','med','ckd','b12v','b12u','b12c','neuro','ab12','folg','feg','hb','fer','infl','cadiet','mgv','mgu','mgsx','czg','smk','mon','feed','pre','vag','tri','ntd','lowca','veg'];
 FORMIDS
   .forEach(i=>{$(i).addEventListener('input',()=>{if(i==='age')syncSex();F[K]()});$(i).addEventListener('change',()=>{if(i==='age')syncSex();F[K]()})});

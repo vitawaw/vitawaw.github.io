@@ -44,7 +44,7 @@ document.addEventListener('click',e=>{
 // Phones and tablets: the tab bar at the bottom holds the four sections and ☰ «Menu», which opens a full page
 // (account card, shortcuts, settings, log out). Wide screens (≥1024px): the same menu is a fixed side menu.
 const WIDE=()=>matchMedia('(min-width:1024px)').matches;
-function pickNut(k){K=k;try{localStorage.setItem('vw-k',k)}catch(e){}apply();go('calc')}
+const pickNut=k=>openNut(k);
 const SECTIONS=['calc','tools','interactions','sources','roadmap'];
 const SECKEY={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t'};
 /** management for the signed-in team, in small groups of rows (what appears depends on the account's permissions) */
@@ -53,12 +53,13 @@ function adminGroups(){
   if(!(typeof OWN!=='undefined'&&OWN.on&&!OWN.preview))return A;
   const look=[];
   if(CAN('text'))look.push({label:T('pg_order_l'),sub:T('pg_order_s'),ico:ICO.page,n:(CFG.pages||[]).length,f:openPagesOrder});
-  if(ISOWNER())look.push({label:T('ad_colors_l'),ico:ICO.site,f:openColors},{label:T('br_t'),ico:ICO.image,f:()=>editBrand()},{label:T('rv_t'),ico:ICO.check,f:()=>editReview()});
-  if(look.length)A.push({label:T('ad_look'),rows:look});
-  if(ISOWNER())A.push({label:T('ad_contact'),rows:[{label:T('o_contact'),sub:[CFG.contact.email,CFG.contact.phone].filter(Boolean).join(' · '),ico:MI.mail,f:()=>editContact()}]});
-  if(ISOWNER()&&!OWN.local)A.push({label:T('ad_team'),rows:[{label:T('ad_invite_l'),ico:MI.invite,f:()=>teamInvite()},
-    {label:T('ad_accounts'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,f:()=>openTeam()},{label:T('ad_invites'),ico:MI.mail,f:()=>openTeam('inv')}]});
-  if(ISOWNER())A.push({label:T('ad_pub'),rows:[{label:T('vh_t'),ico:ICO.history,f:()=>openVersions()}]});
+  if(ISOWNER())look.push({label:T('ad_colors_l'),ico:ICO.site,f:openColors},{label:T('br_t'),ico:ICO.image,f:()=>editBrand()});
+  if(look.length)A.push({id:'look',ico:ICO.site,label:T('ad_look'),rows:look});
+  if(ISOWNER())A.push({id:'contact',ico:MI.mail,label:T('ad_contact'),rows:[{label:T('o_contact'),sub:[CFG.contact.email,CFG.contact.phone].filter(Boolean).join(' · '),ico:MI.mail,f:()=>editContact()}]});
+  if(ISOWNER())A.push({id:'team',ico:ICO.team,label:T('ad_team'),rows:[...(OWN.local?[]:[{label:T('ad_invite_l'),ico:MI.invite,f:()=>teamInvite()},
+    {label:T('ad_accounts'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,f:()=>openTeam()},{label:T('ad_invites'),ico:MI.mail,f:()=>openTeam('inv')}]),
+    {label:T('rv_t'),ico:ICO.check,f:()=>editReview()}]});
+  if(ISOWNER())A.push({id:'pub',ico:ICO.history,label:T('ad_pub'),rows:[{label:T('vh_t'),ico:ICO.history,f:()=>openVersions()}]});
   return A;
 }
 /** banner colours of each section (owner) */
@@ -73,9 +74,22 @@ function recentItem(k){
   const [t,id]=k.split(':');
   if(t==='p'&&SECKEY[id])return {label:T(SECKEY[id]),ico:tabIco(id),page:id,f:()=>go(id)};
   const tl=TOOLS.find(x=>TOOLKIND[x[0]]===id);
-  if(t==='t'&&tl){const ic=$(tl[0])&&$(tl[0]).querySelector('.ttl-ic svg');return {label:T(tl[1]),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openTool(id)}}
+  if(t==='t'&&tl){const ic=$(tl[0])&&$(tl[0]).querySelector('.ttl-ic svg');return {label:T(tl[1]),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openToolPage(tl[0])}}
   return null;
 }
+/** «suggest a feature or report an error»: phone and e-mail in a floating window (the owner can edit them there) */
+function openContact(){
+  const c=document.querySelector('#roadmap .contact');if(!c)return;
+  openSheet(T('sg_t'),c,{key:'contact'});
+  if(ISOWNER()&&!OWN.preview)$('sheet-b').insertAdjacentHTML('beforeend',`<div class="sact filters">${chipH('s',{label:T('o_edit'),f:async()=>{closeSheet(false);await editContact();openContact()}})}</div>`);
+}
+/* the tools page: rectangles like the vitamins; each opens its own working page (#tool-pill…) with «‹ Tools» */
+function renderToolsGrid(){
+  if(!$('tgrid'))return;
+  $('tgrid').innerHTML=TOOLS.map(t=>`<button type="button" data-tv="${t[0]}"><span>${esc(T(t[1]))}</span><small>${esc(T(t[2]))}</small></button>`).join('');
+}
+function openToolPage(id){closeSheet(false);if(location.hash!=='#'+id)location.hash=id;else show('tools',id);window.scrollTo(0,0)}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-tv]');if(!b)return;e.preventDefault();openToolPage(b.dataset.tv)});
 /* computers: ☰ shows or hides the side menu (remembered on this device) */
 function toggleSide(on){
   on=on==null?document.body.classList.contains('noside'):on;
@@ -87,9 +101,11 @@ try{if(localStorage.getItem('vw-side')==='0')document.body.classList.add('noside
 function renderNav(){
   if(!$('side'))return;
   document.querySelectorAll('#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
-  const nc=notifCount();$('nt-count').hidden=!nc;$('nt-count').textContent=nc>99?'99+':nc;
+  const nc=notifCount();['nt-count','hnt-count'].forEach(id=>{$(id).hidden=!nc;$(id).textContent=nc>99?'99+':nc});
+  $('hnotif').setAttribute('aria-label',T('nt_t'));$('hnotif').classList.toggle('on',cur==='notif');
   document.body.classList.toggle('team',typeof OWN!=='undefined'&&OWN.on);
   if(cur==='notif')renderNotif();
+  renderToolsGrid();if(CALCV)$('cvname').textContent=kname(K);
   $('hsearch').setAttribute('aria-label',T('gs_t'));
   document.querySelectorAll('.tab[data-p]').forEach(t=>{const lb=t.querySelector('.full,[data-t]');if(lb)t.title=lb.textContent}); // computers show icons only: the name appears on hover
   if(WIDE())$('t-menu').setAttribute('aria-selected',!document.body.classList.contains('noside'));
@@ -148,7 +164,7 @@ function menuHTML(r){
   };
   const seg=(ico,label,cs)=>`<div class="mi seg"><span class="di">${ico}</span><span class="mt">${esc(label)}</span><div class="segc">${cs.map(x=>chipH(r,x)).join('')}</div></div>`;
   const grp=(title,body,cls='')=>body?`<div class="mg${cls?' '+cls:''}">${title?`<h3>${esc(title)}</h3>`:''}<div class="ml">${body}</div></div>`:'';
-  const acc=(key,ico,title,body)=>body?`<details class="macc" data-acc="${key}"${MOPEN.has(key)?' open':''}><summary class="mi"><span class="di">${ico}</span><span class="mt">${esc(title)}</span>${CHEV}</summary><div class="macb">${body}</div></details>`:'';
+  const acc=(key,ico,title,body)=>body?`<details class="macc" name="macc-${r}" data-acc="${key}"${MOPEN===key?' open':''}><summary class="mi"><span class="di">${ico}</span><span class="mt">${esc(title)}</span>${CHEV}</summary><div class="macb">${body}</div></details>`:'';
   const pg=id=>visiblePages().find(p=>p.id===id),pgItem=p=>({label:tx2(p.t)+(p.hidden?' · '+T('pg_hidden'):''),ico:ICO.info,f:()=>openPage(p.id)});
   let h='';
   if(!page)h+=`<div class="slogo"><span class="mk"><svg viewBox="4 10 56 52" aria-hidden="true">${MARKSVG}</svg></span><span class="wm">VITA<em>WAW</em></span></div>`;
@@ -156,8 +172,7 @@ function menuHTML(r){
   h+=own
     ?`<div class="mcard solo"><span class="av">${MI2.shield}</span><div class="mt"><b>${esc(whoLabel())}</b><small>${esc(T('mn_team'))}</small></div></div>`
     :`<div class="mcard"><span class="av">${MI2.user}</span><div class="mt"><b>${esc(T('mr_account'))}</b><small>${esc(T('mn_guest'))}</small></div></div><div class="mcard-a"><div class="filters">${chipH(r,{label:T('o_login'),cls:'pri',f:()=>openOwner()})}${chipH(r,{label:T('mr_join'),f:()=>openOwner({join:''})})}</div></div>`;
-  // one search for everything (calculators, tools, interactions, sources, pages)
-  h+=`<button type="button" class="gsbtn" data-na="${r}${ACT[r].push(openSearch)-1}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>${esc(T('gs_ph'))}</span></button>`;
+  // search is fixed at the top of every page (opposite 🔔), not repeated here
   // «your shortcuts»: round, scrolls sideways, the last 6 used
   const rec=RECENT.map(recentItem).filter(Boolean).slice(0,6);
   if(rec.length)h+=`<div class="mg"><h3>${esc(T('mn_recent'))}</h3><div class="mrec">${rec.map(c=>`<button type="button" class="mrc" data-na="${r}${ACT[r].push(c.f)-1}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span>${esc(c.label)}</span></button>`).join('')}</div></div>`;
@@ -166,7 +181,7 @@ function menuHTML(r){
     {label:T('lb_t'),ico:ICO.chart,f:()=>openTool('labs')},...visiblePages().filter(p=>!['faq','privacy','disclaimer'].includes(p.id)).map(pgItem)];
   h+=`<div class="mg"><h3>${esc(T('mn_short'))}</h3><div class="mtiles">${tiles.map(tile).join('')}</div></div>`;
   // folding lists, like «Help» and «Settings» on Facebook
-  const help=[pg('faq')&&pgItem(pg('faq')),{label:T('sg_t'),ico:MI.mail,f:()=>{go('roadmap');setTimeout(()=>{const c=document.querySelector('#roadmap .contact');if(c)c.scrollIntoView({block:'start'})},60)}}];
+  const help=[pg('faq')&&pgItem(pg('faq')),{label:T('sg_t'),ico:MI.mail,f:openContact}];
   if(PHONEF())help.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
   if(EMAILF())help.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
   if(PHONEF())help.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
@@ -179,15 +194,17 @@ function menuHTML(r){
     acc('help',ICO.info,T('ma_help'),help.filter(Boolean).map(row).join(''))+
     acc('set',MI.theme,T('mr_settings'),set)+
     acc('priv',MI2.shield,T('ma_priv'),['privacy','disclaimer'].map(pg).filter(Boolean).map(pgItem).map(row).join(''))+
-    (A.length?acc('admin',ICO.site,T('nv_admin'),A.map(g=>`<h4 class="mh4">${esc(g.label)}</h4>`+g.rows.map(row).join('')).join('')):'')+
+    A.map(g=>acc('ad-'+g.id,g.ico,g.label,g.rows.map(row).join(''))).join('')+
     (own?acc('mine',MI.key,T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join('')):'')+
     `</div></div>`;
   if(own)h+=`<button type="button" class="mout" data-na="${r}${ACT[r].push(logout)-1}">${MI.out}<span>${esc(T('o_logout'))}</span></button>`;
   return h;
 }
 /* folding lists stay open or closed when the menu is redrawn */
-const MOPEN=new Set();
-document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details.macc'))return;d.open?MOPEN.add(d.dataset.acc):MOPEN.delete(d.dataset.acc)},true);
+/* one folding list open at a time: opening one closes the one that was open (its items show under it) */
+let MOPEN='';
+document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details.macc'))return;
+  if(d.open){MOPEN=d.dataset.acc;d.parentNode.querySelectorAll('details.macc[open]').forEach(x=>{if(x!==d)x.open=false})}else if(MOPEN===d.dataset.acc&&!d.parentNode.querySelector('details.macc[open]'))MOPEN=''},true);
 function renderMenu(){
   if(!$('side'))return;
   ACT.d=[];const sb=$('side-b'),keep=sb.scrollTop;sb.innerHTML=menuHTML('d');sb.scrollTop=keep;
@@ -245,6 +262,7 @@ function closeSheet(focus=true){
 }
 $('sheet-x').addEventListener('click',()=>closeSheet());
 $('hsearch').addEventListener('click',openSearch);
+$('hnotif').addEventListener('click',()=>go('notif'));
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet()});
 function openToolSheet(sec){const t=TOOLS.find(x=>x[0]===sec)||TOOLS[1];openSheet(T(t[2]),$(t[0]),{key:'tool'})}
 

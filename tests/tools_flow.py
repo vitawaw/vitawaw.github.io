@@ -41,6 +41,7 @@ with sync_playwright() as p:
     setv('mlwt',10); setv('mlmgkg',3); setv('mlconc',25); setv('mlper',1); check('syrup mL', T('mlvol'), '1.2 مل')
     setv('mldpm',20); check('drops', T('mlvol'), '24 قطرة'); setv('mldpm','')
     # schedule: levothyroxine + iron + calcium + antibiotic keep their gaps
+    pg.goto('http://app.test/#tool-sch'); pg.wait_for_timeout(200)  # each tool has its own page since 1.12.0
     for id in ['levo','fe','ca','abx']: pg.check('#sc-'+id)
     pg.dispatch_event('#schk','change'); pg.wait_for_timeout(100)
     out = T('schout'); check('schedule solved', out, 'Levothyroxine')
@@ -52,7 +53,7 @@ with sync_playwright() as p:
     # calculator -> tools, filled in
     pg.goto('http://app.test/#calc'); pg.wait_for_timeout(300)
     def calc(k, fields, sx='f'):
-        pg.click('#clear'); pg.click(f'#picker [data-k="{k}"]')
+        pg.evaluate("go('calc')"); pg.wait_for_timeout(60); pg.click(f'#picker [data-k="{k}"]'); pg.wait_for_timeout(80); pg.click('#clear')  # the vitamin opens its own page
         for f, v in fields.items():
             if f in ('feg','folg','czg','tri','feed','vag'): pg.select_option('#'+f, v); pg.dispatch_event('#'+f,'change')
             else: pg.fill('#'+f, str(v)); pg.dispatch_event('#'+f,'input')
@@ -124,5 +125,16 @@ with sync_playwright() as p:
     pg.evaluate("labAdd('b12',300,'2026-01-05')"); pg.goto('http://app.test/#notif'); pg.wait_for_timeout(200)
     check('visitor notifications: lab reminder', T('notif-p'), 'B12'); check('visitor notifications: new features', T('notif-p'), 'جديد في VITAWAW')
     check('opening 🔔 marks them read', str(pg.evaluate('notifCount()')), '0')
+    # 1.12.0 second pages: a vitamin opens patient data + result; tools are rectangles and each opens its own page
+    pg.goto('http://app.test/#calc'); pg.wait_for_timeout(200)
+    check('calculator: list of vitamins only', str(pg.is_visible('#s-data') or pg.is_visible('#resbox')), 'False')
+    pg.click('#picker [data-k="b12"]'); pg.wait_for_timeout(200)
+    check('vitamin opens its page', pg.evaluate("location.hash+' '+($('s-data').offsetParent!==null)"), '#v-b12 true')
+    pg.click('#cbackb'); pg.wait_for_timeout(200); check('back to the vitamins', str(pg.is_visible('#picker')), 'True')
+    pg.goto('http://app.test/#tools'); pg.wait_for_timeout(200)
+    check('tools page: rectangles', str(pg.locator('#tgrid [data-tv]').count()), '9')
+    pg.click('#tgrid [data-tv="tool-ca"]'); pg.wait_for_timeout(200)
+    check('tool opens its page alone', pg.evaluate("location.hash+' '+($('tool-ca').offsetParent!==null)+' '+$('tool-pill').offsetParent"), '#tool-ca true null')
+    pg.click('#tback'); pg.wait_for_timeout(200); check('back to the tools', str(pg.is_visible('#tgrid')), 'True')
     print('page errors:', errs)
 sys.exit(1 if fails or errs else 0)

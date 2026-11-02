@@ -76,6 +76,11 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   and in `#side`: account card, search, «اختصاراتك» (`RECENT` vw-recent via `rememberRecent()` in show()/openTool), shortcut tiles,
   folding `details.macc` (`MOPEN`): help, settings, privacy, management (`adminGroups()` rows: مظهر الموقع/التواصل/الصيادلة/النشر,
   `openColors()`, `openPagesOrder()` drag+edit+new), mine; logout. 🔔 for everyone: `pubItems()` in owner.js, visitor part `#notif-p`.
+  His notes after the first look (done): header `#hsearch` (start) + `#hnotif` (end) on phones/iPad, bar calc · interactions · tools ·
+  sources (+☰), `#t-notif` only on computers; calc = vitamin list, a vitamin opens `#v-<k>` (`openNut()`, `CALCV`, `#calc.cv`, back
+  `#cbackb`); owner buttons sit on each vitamin (`.pkw` wrapper + `.pka`, `renderNutAdmin()`; `#nadm` = add/bulk only); tools page =
+  `#tgrid` rectangles, a tool opens `#tool-x` (`TOOLV`, `#tools.tv`, `#tback`); «اقترح ميزة» = `openContact()` sheet; management =
+  separate accordions (look / contact / team incl. review stamp / pub), one open at a time (`MOPEN` string, `name="macc-r"`).
 - **1.12.0 was REJECTED** («ابقى على اخر اصدار تم نشره لم يعجبني هذا»): live stays 1.11.1. The preview branch was set back to 1.11.1
   by a restore commit; the 1.12.0 work (own pages for schedule/labs/UL, CFG.nav menu manager, 🔔 for everyone + header 🔍/🔔,
   tools page as tiles, grouped ☰ with folding lists) is in the commits a3b8546…5f75622 if he ever asks for a piece of it.
