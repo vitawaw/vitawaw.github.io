@@ -97,6 +97,9 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   DB file `20261102120000_stamps_and_science_only.sql` (author column + content_guard + stamp_name + j_* + publish_site + can_edit,
   and the fix: content_guard set `sort` on sources, which have no sort column → a pharmacist's edit of a source failed). Tested on the
   local Postgres; he must run it in the SQL editor.
+  Preview gotcha (2026-11-02): a successful Workers Build did not update the preview alias (it kept serving the previous commit's
+  files). Check what the preview really serves with `curl -s <preview>/ | grep -o 'nav.js?v=[^"]*'` against index.html before
+  telling him a change is live; a new push re-triggers the build.
 - **1.12.0 was REJECTED** («ابقى على اخر اصدار تم نشره لم يعجبني هذا»): live stays 1.11.1. The preview branch was set back to 1.11.1
   by a restore commit; the 1.12.0 work (own pages for schedule/labs/UL, CFG.nav menu manager, 🔔 for everyone + header 🔍/🔔,
   tools page as tiles, grouped ☰ with folding lists) is in the commits a3b8546…5f75622 if he ever asks for a piece of it.
