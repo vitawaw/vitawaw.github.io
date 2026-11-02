@@ -3,12 +3,13 @@
    language switch (setLang), event wiring, colors and refreshAll().
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
-const PAGES=['calc','tools','interactions','sources','roadmap','notif','menu'];
+const PAGES=['calc','tools','interactions','sources','roadmap','notif','team','menu'];
 let cur='calc',CALCV=false,TOOLV=''; // CALCV: the chosen vitamin's page (patient data + result) instead of the list of vitamins
 function show(p,view){
-  if(!PAGES.includes(p)||(p==='menu'&&WIDE()))p='calc'; // wide screens show the menu at the side
-  cur=p;CALCV=p==='calc'&&view==='v';$('calc').classList.toggle('cv',CALCV);TOOLV=p==='tools'&&/^tool-/.test(view||'')?view:'';$('tools').classList.toggle('tv',!!TOOLV);document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));if(CALCV)$('cvname').textContent=kname(K);if(typeof rememberRecent==='function')rememberRecent('p:'+p);
-  PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1});
+  if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='team'&&!ISOWNER()))p='calc'; // wide screens show the menu at the side
+  cur=p;CALCV=p==='calc'&&view==='v';$('calc').classList.toggle('cv',CALCV);TOOLV=p==='tools'&&/^tool-/.test(view||'')?view:'';$('tools').classList.toggle('tv',!!TOOLV);if(TOOLV)$('tback').querySelector('span').textContent=typeof TOOLFROM!=='undefined'&&TOOLFROM&&TOOLFROM!=='#tools'?L('رجوع','Back'):T('tab_tools');document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));if(CALCV)$('cvname').textContent=kname(K);if(typeof rememberRecent==='function')rememberRecent('p:'+p);
+  PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
+  if(p==='team'&&typeof openTeamPage==='function')openTeamPage();
   if(typeof rememberRecent==='function')rememberRecent(TOOLV?'t:'+TOOLKIND[TOOLV]:'p:'+p);
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
   if(p!=='menu'&&p!=='notif')try{localStorage.setItem('vw-p',p)}catch(e){}
@@ -200,7 +201,7 @@ $('medsug').addEventListener('click',e=>{const b=e.target.closest('[data-addmed]
 function openNut(k){K=k;try{localStorage.setItem('vw-k',K)}catch(e){}apply();if(location.hash!=='#v-'+k)location.hash='v-'+k;else show('calc','v');window.scrollTo(0,0)}
 $('picker').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;openNut(b.dataset.k)});
 $('cbackb').addEventListener('click',()=>go('calc'));
-$('tback').addEventListener('click',()=>go('tools'));
+$('tback').addEventListener('click',()=>toolBack());
 const FORMIDS=['age','sex','wt','ht','dlab','dunit','mal','med','ckd','b12v','b12u','b12c','neuro','ab12','folg','feg','hb','fer','infl','cadiet','mgv','mgu','mgsx','czg','smk','mon','feed','pre','vag','tri','ntd','lowca','veg'];
 FORMIDS
   .forEach(i=>{$(i).addEventListener('input',()=>{if(i==='age')syncSex();F[K]()});$(i).addEventListener('change',()=>{if(i==='age')syncSex();F[K]()})});

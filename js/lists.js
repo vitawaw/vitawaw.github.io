@@ -15,7 +15,7 @@ function renderInter(){
   const iq=iTerms(normAr($('isearch')&&$('isearch').value)),mine=MEDS.length?medMatch:null,im=x=>{if(ISRC&&!x[4].includes(ISRC))return false;if(!ISRC&&!(IF==='all'||x[0]===IF))return false;if(mine&&!mine(x))return false;if(!iq.length)return true;const h=normAr([x[1][0],x[1][1],x[2][0],x[2][1],x[3][0],x[3][1]].join(' '));return iq.some(q=>h.includes(q))};
   renderMeds();
   const ish=INTER.filter(im);
-  $('ilist').innerHTML=(ish.length?'':`<p class="inone">${T('i_none')}</p>`)+bulkBar('i',ish.filter(x=>!x[7]).length)+ish.sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]).map(x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}${x[8]?' hid':''}" data-sid="${x[5]}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div>${icActs(x)}${actBar('i',x[5],{rv:x[7],hidden:x[8],drag:true})}</div>`).join('')+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
+  $('ilist').innerHTML=(ish.length?'':`<p class="inone">${T('i_none')}</p>`)+bulkBar('i',ish.filter(x=>!x[7]).length)+'<div class="cgrid">'+ish.sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]).map(x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}${x[8]?' hid':''}" data-sid="${x[5]}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div>${icActs(x)}${actBar('i',x[5],{rv:x[7],hidden:x[8],drag:true})}</div>`).join('')+'</div>'+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
   $('icount').textContent=INTER.length;
   // owner: drag ⋮⋮ to change the order of interactions (dangerous ones always stay first: the order counts inside each severity)
   sortable($('ilist'),'.icard',ids=>{if(!ISOWNER()||!Array.isArray(CFG.inter))return;
@@ -109,13 +109,16 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-copyphone]
 const GO={sch:()=>openTool('sch'),meds:()=>{go('interactions');setTimeout(()=>$('medin')&&$('medin').focus(),80)},preg:()=>openNut('preg'),
   labs:()=>openTool('labs'),report:()=>go('calc'),search:()=>openSearch(),calc:()=>go('calc'),tools:()=>go('tools')};
 const GOLIST=()=>[['',T('rm_go_none')],['sch',T('tl_sch')],['meds',T('mm_t')],['preg',T('n_preg')],['labs',T('lb_t')],['report',T('rp_t')],['search',T('gs_t')],['calc',T('tab_calc')],['tools',T('tab_tools')]];
+let RMF='all'; // roadmap filter: all | now | dev | plan | idea
 function renderRoadmap(){
   const st=k=>`<span class="st st-${esc(k)}">${esc(T('st_'+k))}</span>`;
-  $('rmlegend').innerHTML=['now','dev','plan','idea'].map(st).join('');
+  $('rmlegend').innerHTML=['all','now','dev','plan','idea'].map(k=>`<button type="button" data-rmf="${k}" aria-pressed="${k===RMF}">${esc(T(k==='all'?'all':'st_'+k))}</button>`).join('');
   const tx=o=>LANG==='ar'?o.ar:(o.en||o.ar);
-  $('rmgrid').innerHTML=CFG.roadmap.map((x,i)=>x.hidden&&!SHOWALL()?'':`<div class="rm${x.hidden?' hid':''}" data-sid="${i}"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${IC[x.ic]||IC.plus}</svg></div><h3>${esc(tx(x.t))}</h3><p>${esc(tx(x.d))}</p>${st(x.st)}${x.st==='now'&&GO[x.go]?`<button class="btn pri rmgo" type="button" data-rmgo="${esc(x.go)}">${T('rm_try')}</button>`:''}<div class="rmact">${DRAG(T('o_drag'))}${actBtns('m',i,{hidden:!!x.hidden})}</div></div>`).join('')+`<button class="oadd" type="button" id="rmadd"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>${T('o_add')}</button>`;
-  sortable($('rmgrid'),'.rm',ids=>{if(!ISOWNER())return;CFG.roadmap=ids.map(n=>CFG.roadmap[+n]);changed()});
+  $('rmgrid').innerHTML=CFG.roadmap.map((x,i)=>(x.hidden&&!SHOWALL())||(RMF!=='all'&&x.st!==RMF)?'':`<div class="rm${x.hidden?' hid':''}" data-sid="${i}"><div class="rmh"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${IC[x.ic]||IC.plus}</svg></div><h3>${esc(tx(x.t))}</h3></div><p>${esc(tx(x.d))}</p><div class="rmf">${st(x.st)}${x.st==='now'&&GO[x.go]?`<button class="btn pri rmgo" type="button" data-rmgo="${esc(x.go)}">${T('rm_try')}</button>`:''}</div><div class="rmact">${DRAG(T('o_drag'))}${actBtns('m',i,{hidden:!!x.hidden})}</div></div>`).join('');
+  $('rmaddw').innerHTML=`<button class="oadd" type="button" id="rmadd"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>${T('o_add')}</button>`;
+  sortable($('rmgrid'),'.rm',ids=>{if(!ISOWNER())return;const keep=CFG.roadmap.filter((_,n)=>!ids.includes(String(n)));CFG.roadmap=[...ids.map(n=>CFG.roadmap[+n]),...keep];changed()});
 }
+document.addEventListener('click',e=>{const b=e.target.closest('[data-rmf]');if(!b)return;RMF=b.dataset.rmf;renderRoadmap()});
 /* Source type from the organisation name, used to order the list (strongest first) and label it. */
 const REFTYPES=[[/Society|NICE|Academy of Pediatrics|WHO|World Health/i,'g'],[/NIH|National Institutes|BNF|National Formulary|Specialist Pharmacy/i,'o'],
   [/SmPC|label|Medsafe|data sheet|Food and Drug|FDA/i,'d'],[/Cochrane|Lancet|BMJ|Journal|J Clin/i,'s'],[/Medscape|StatPearls|MSD|Manual/i,'c']];
@@ -134,8 +137,19 @@ function renderRefs(){
   $('sfilters').innerHTML=KEYS.map(k=>`<button data-sf="${esc(k)}" aria-pressed="${k===SF}">${esc(kname(k))}</button>`).join('');
   if(!KEYS.includes(SF))SF='all';
   const show=SF==='all'?null:REFGROUP[SF];
-  $('reflist').innerHTML=(SHOWALL()?`<li class="oaddli">${bulkBar('r',(CFG.refs||[]).filter(x=>x.rv===false).length)}</li>`:'')+Object.entries(REFS).sort((a,b)=>RTORD[rtOf(a[1])]-RTORD[rtOf(b[1])]||a[0]-b[0]).filter(([n])=>!show||show.includes(+n)).map(([n,x])=>
+  $('refbulk').innerHTML=SHOWALL()?bulkBar('r',(CFG.refs||[]).filter(x=>x.rv===false).length):'';
+  $('reflist').innerHTML=Object.entries(REFS).sort((a,b)=>RTORD[rtOf(a[1])]-RTORD[rtOf(b[1])]||a[0]-b[0]).filter(([n])=>!show||show.includes(+n)).map(([n,x])=>
     `<li id="ref-${n}"${x[6]?' class="hid"':''}><span class="num">${n}</span><div><div class="org"><span class="rtype rt-${rtOf(x)}">${T('rt_'+rtOf(x))}</span>${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl" dir="auto">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div>${usedIn(+n,x)}${actBar('r',n,{rv:x[5]!==false,hidden:x[6]})}</div></li>`).join('')+`<li class="oaddli"><button class="oadd" type="button" id="radd">${PLUS}${T('o_radd')}</button></li>`;
   $('rcount').textContent=Object.keys(REFS).length;
   $('rev2').hidden=!REV().name;if(REV().name)$('rev2').innerHTML=reviewHTML().replace(/^<div class="reviewed">|<\/div>$/g,'');
 }
+
+/* tap a card (interaction, source, coming next): the whole card in a floating window */
+document.addEventListener('click',e=>{
+  if(e.target.closest('button,a,input,select,label,summary,.drag'))return;
+  const c=e.target.closest('#ilist .icard,#reflist>li,#rmgrid .rm');if(!c||c.closest('#sheet'))return;
+  const t=c.matches('.icard')?c.querySelector('.who').textContent:c.matches('.rm')?c.querySelector('h3').textContent:(c.querySelector('.org')||c).textContent;
+  openSheet(t.trim(),`<div class="cardfull ${c.className}">${c.innerHTML}</div>`,{key:'card'});
+});
+// a button or link inside an opened card does its job and the window closes (e.g. «used in» → the calculator)
+document.addEventListener('click',e=>{if(e.target.closest('#sheet-b .cardfull')&&e.target.closest('button,a'))setTimeout(()=>{if(SHEET&&SHEET.key==='card')closeSheet(false)},0)});

@@ -107,7 +107,7 @@ function openTool(kind){
   if(kind==='ul'){sec='tool-ul';if(ULSET){$('ulage').value=String(ULSET.g);ULSET.v.forEach(([id,v])=>{const e=$('ul-'+id);if(e)e.value=v})}ul()}
   if(kind==='labs'){sec='tool-labs';labs()}
   if(kind==='sch'){sec='tool-sch';if(SCHSET)SCHSET.forEach(id=>{const e=$('sc-'+id);if(e)e.checked=true});sch()}
-  openToolSheet(sec);
+  openToolPage(sec); // a full page (‹ back returns to where it was opened, e.g. the result)
 }
 /** age in years → the UL age group (1–3, 4–8, 9–13, 14–18, 19–50, 51+) */
 const ulGroup=a=>a<=3?0:a<=8?1:a<=13?2:a<=18?3:a<=50?4:5;

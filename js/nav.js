@@ -26,10 +26,13 @@ const CAN=k=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner'||!
 const ISOWNER=()=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner');
 const colorVars=p=>CFG.colors[p]?`--pc:${CFG.colors[p][0]};--pc2:${CFG.colors[p][1]}`:'';
 const paras=t=>String(t||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('');
-const visiblePages=(all=SHOWALL())=>(CFG.pages||[]).filter(p=>all||!p.hidden);
+/** «suggest a feature or report an error» is a page like the others (editable); until the owner edits it, it uses the default texts */
+const SUGGEST=()=>{const t=k=>(CFG.text&&CFG.text[k])||{ar:I18N[k][0],en:I18N[k][1]};return {id:'suggest',t:t('sg_t'),b:t('sg_l'),hidden:false}};
+const allPages=()=>{const P=CFG.pages||[];return P.some(p=>p.id==='suggest')?P:[...P,SUGGEST()]};
+const visiblePages=(all=SHOWALL())=>allPages().filter(p=>all||!p.hidden);
 
 /* Every menu button stores its action here; data-na="d3" = side menu action 3, "m" = Menu page, "s" = floating window, "n" = notifications. */
-const ACT={d:[],m:[],s:[],n:[]};
+const ACT={d:[],m:[],s:[],n:[],t:[]};
 function chipH(r,c){
   if(c.href)return `<a class="chip${c.cls?' '+c.cls:''}" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${esc(c.label)}</a>`;
   const i=ACT[r].push(c.f)-1;
@@ -56,9 +59,7 @@ function adminGroups(){
   if(ISOWNER())look.push({label:T('ad_colors_l'),ico:ICO.site,f:openColors},{label:T('br_t'),ico:ICO.image,f:()=>editBrand()});
   if(look.length)A.push({id:'look',ico:ICO.site,label:T('ad_look'),rows:look});
   if(ISOWNER())A.push({id:'contact',ico:MI.mail,label:T('ad_contact'),rows:[{label:T('o_contact'),sub:[CFG.contact.email,CFG.contact.phone].filter(Boolean).join(' · '),ico:MI.mail,f:()=>editContact()}]});
-  if(ISOWNER())A.push({id:'team',ico:ICO.team,label:T('ad_team'),rows:[...(OWN.local?[]:[{label:T('ad_invite_l'),ico:MI.invite,f:()=>teamInvite()},
-    {label:T('ad_accounts'),ico:ICO.team,n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,f:()=>openTeam()},{label:T('ad_invites'),ico:MI.mail,f:()=>openTeam('inv')}]),
-    {label:T('rv_t'),ico:ICO.check,f:()=>editReview()}]});
+  if(ISOWNER())A.push({id:'team',ico:ICO.team,label:T('ad_team'),n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,go:()=>go('team')});
   if(ISOWNER())A.push({id:'pub',ico:ICO.history,label:T('ad_pub'),rows:[{label:T('vh_t'),ico:ICO.history,f:()=>openVersions()}]});
   return A;
 }
@@ -78,17 +79,15 @@ function recentItem(k){
   return null;
 }
 /** «suggest a feature or report an error»: phone and e-mail in a floating window (the owner can edit them there) */
-function openContact(){
-  const c=document.querySelector('#roadmap .contact');if(!c)return;
-  openSheet(T('sg_t'),c,{key:'contact'});
-  if(ISOWNER()&&!OWN.preview)$('sheet-b').insertAdjacentHTML('beforeend',`<div class="sact filters">${chipH('s',{label:T('o_edit'),f:async()=>{closeSheet(false);await editContact();openContact()}})}</div>`);
-}
+function openContact(){openPage('suggest')}
 /* the tools page: rectangles like the vitamins; each opens its own working page (#tool-pill…) with «‹ Tools» */
 function renderToolsGrid(){
   if(!$('tgrid'))return;
   $('tgrid').innerHTML=TOOLS.map(t=>`<button type="button" data-tv="${t[0]}"><span>${esc(T(t[1]))}</span><small>${esc(T(t[2]))}</small></button>`).join('');
 }
-function openToolPage(id){closeSheet(false);if(location.hash!=='#'+id)location.hash=id;else show('tools',id);window.scrollTo(0,0)}
+let TOOLFROM=''; // where a tool was opened from (e.g. a vitamin's result): «‹» goes back there
+function openToolPage(id){closeSheet(false);TOOLFROM=cur==='tools'?'':(location.hash||'#'+cur);if(location.hash!=='#'+id)location.hash=id;else show('tools',id);window.scrollTo(0,0)}
+function toolBack(){const h=TOOLFROM;TOOLFROM='';if(h&&h!=='#tools')location.hash=h.slice(1);else go('tools')}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-tv]');if(!b)return;e.preventDefault();openToolPage(b.dataset.tv)});
 /* computers: ☰ shows or hides the side menu (remembered on this device) */
 function toggleSide(on){
@@ -146,6 +145,8 @@ const MI={
 };
 const MI2={
   user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+  q:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg>',
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M8 7h8M8 11h6"/></svg>',
   shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/></svg>'
 };
 const CHEVS='<svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
@@ -176,27 +177,32 @@ function menuHTML(r){
   // «your shortcuts»: round, scrolls sideways, the last 6 used
   const rec=RECENT.map(recentItem).filter(Boolean).slice(0,6);
   if(rec.length)h+=`<div class="mg"><h3>${esc(T('mn_recent'))}</h3><div class="mrec">${rec.map(c=>`<button type="button" class="mrc" data-na="${r}${ACT[r].push(c.f)-1}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span>${esc(c.label)}</span></button>`).join('')}</div></div>`;
-  // shortcut tiles: the sections that are not in the bar (phones) or the top bar (computers), lab results, information pages
+  // shortcut tiles: sources (phones), coming next, «suggest a feature», my lab results, information pages
+  const SPECIAL=['faq','howto','privacy','disclaimer','suggest'];
   const tiles=[...(page?[{label:T('tab_src'),ico:tabIco('sources'),page:'sources',f:()=>go('sources')}]:[]),{label:T('tab_rm'),ico:tabIco('roadmap'),page:'roadmap',f:()=>go('roadmap')},
-    {label:T('lb_t'),ico:ICO.chart,f:()=>openTool('labs')},...visiblePages().filter(p=>!['faq','privacy','disclaimer'].includes(p.id)).map(pgItem)];
+    ...(pg('suggest')?[{...pgItem(pg('suggest')),ico:MI.mail}]:[]),{label:T('lb_t'),ico:ICO.chart,page:'tools',f:()=>openToolPage('tool-labs')},...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(pgItem)];
   h+=`<div class="mg"><h3>${esc(T('mn_short'))}</h3><div class="mtiles">${tiles.map(tile).join('')}</div></div>`;
-  // folding lists, like «Help» and «Settings» on Facebook
-  const help=[pg('faq')&&pgItem(pg('faq')),{label:T('sg_t'),ico:MI.mail,f:openContact}];
-  if(PHONEF())help.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
-  if(EMAILF())help.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
-  if(PHONEF())help.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
-  const set=seg(MI.lang,T('mr_lang'),[{label:'العربية',pressed:LANG==='ar',f:()=>setLang('ar')},{label:'English',pressed:LANG==='en',f:()=>setLang('en')}])+
-    seg(MI.theme,T('mr_theme'),[{label:T('mr_light'),pressed:!isDark(),f:()=>setTheme('light')},{label:T('mr_dark'),pressed:isDark(),f:()=>setTheme('dark')}])+
-    seg(MI.mode,T('mr_mode'),[{label:T('m_pro'),pressed:MODE==='pro',f:()=>setMode('pro')},{label:T('m_pt'),pressed:MODE==='pt',f:()=>setMode('pt')}])+
-    row({label:T('mr_install'),ico:MI.install,f:installApp})+row({label:T('mr_share'),ico:MI.share,f:shareApp});
+  // how to use · FAQ (each on its own)
+  h+=grp('',['howto','faq'].map(pg).filter(Boolean).map(p=>row({...pgItem(p),ico:p.id==='faq'?MI2.q:MI2.book})).join(''));
+  // three rectangles on one line: contact (WhatsApp · e-mail · call), and at the end the settings
+  const r3=(title,list)=>list.length?`<div class="mg"><h3>${esc(title)}</h3><div class="m3">${list.map(c=>{const inner=`<span class="di">${c.ico}</span><b>${esc(c.label)}</b>${c.v?`<small>${esc(c.v)}</small>`:''}`;
+    return c.href?`<a class="m3b" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`:`<button type="button" class="m3b" data-na="${r}${ACT[r].push(c.f)-1}">${inner}</button>`}).join('')}</div></div>`:'';
+  const con=[];
+  if(PHONEF())con.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
+  if(EMAILF())con.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
+  if(PHONEF())con.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
+  h+=r3(T('ma_contact'),con);
+  // privacy (folding), then install and share right under it
+  h+=`<div class="mg"><div class="ml maccs">`+acc('priv',MI2.shield,T('ma_priv'),['privacy','disclaimer'].map(pg).filter(Boolean).map(pgItem).map(row).join(''))+
+    row({label:T('mr_install'),ico:MI.install,f:installApp})+row({label:T('mr_share'),ico:MI.share,f:shareApp})+`</div></div>`;
+  // the team: management sections, pharmacists (own page), my account
   const A=own?adminGroups():[];
-  h+=`<div class="mg"><div class="ml maccs">`+
-    acc('help',ICO.info,T('ma_help'),help.filter(Boolean).map(row).join(''))+
-    acc('set',MI.theme,T('mr_settings'),set)+
-    acc('priv',MI2.shield,T('ma_priv'),['privacy','disclaimer'].map(pg).filter(Boolean).map(pgItem).map(row).join(''))+
-    A.map(g=>acc('ad-'+g.id,g.ico,g.label,g.rows.map(row).join(''))).join('')+
-    (own?acc('mine',MI.key,T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join('')):'')+
-    `</div></div>`;
+  if(A.length)h+=`<div class="mg"><h3>${esc(T('nv_admin'))}</h3><div class="ml maccs">`+
+    A.map(g=>g.go?row({label:g.label,ico:g.ico,n:g.n,f:g.go}):acc('ad-'+g.id,g.ico,g.label,g.rows.map(row).join(''))).join('')+`</div></div>`;
+  if(own)h+=`<div class="mg"><div class="ml maccs">`+acc('mine',MI.key,T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join(''))+`</div></div>`;
+  h+=r3(T('mr_settings'),[{label:T('mr_lang'),v:LANG==='ar'?'العربية':'English',ico:MI.lang,f:()=>setLang(LANG==='ar'?'en':'ar')},
+    {label:T('mr_theme'),v:T(isDark()?'mr_dark':'mr_light'),ico:MI.theme,f:()=>setTheme(isDark()?'light':'dark')},
+    {label:T('mr_mode'),v:T(MODE==='pro'?'m_pro':'m_pt'),ico:MI.mode,f:()=>setMode(MODE==='pro'?'pt':'pro')}]);
   if(own)h+=`<button type="button" class="mout" data-na="${r}${ACT[r].push(logout)-1}">${MI.out}<span>${esc(T('o_logout'))}</span></button>`;
   return h;
 }
@@ -268,17 +274,23 @@ function openToolSheet(sec){const t=TOOLS.find(x=>x[0]===sec)||TOOLS[1];openShee
 
 /* ===================== information pages ===================== */
 function openPage(id){
-  const p=(CFG.pages||[]).find(x=>x.id===id);if(!p||(p.hidden&&!SHOWALL()))return;
+  const p=allPages().find(x=>x.id===id);if(!p||(p.hidden&&!SHOWALL()))return;
   openSheet(tx2(p.t),`<div class="prose">${paras(tx2(p.b))}</div>`,{key:'page'});
+  if(id==='suggest'){ // e-mail and phone with their buttons (the owner edits them here too)
+    const c=document.querySelector('#roadmap .contact').cloneNode(true);c.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));c.querySelectorAll('h2,.lead').forEach(x=>x.remove());
+    $('sheet-b').appendChild(c);
+    if(ISOWNER()&&!OWN.preview)$('sheet-b').insertAdjacentHTML('beforeend',`<div class="sact filters">${chipH('s',{label:T('o_contact'),f:async()=>{closeSheet(false);await editContact();openPage('suggest')}})}</div>`);
+  }
   // the same buttons as every other item: edit, hide/show, delete
   if(CAN('text')&&!OWN.preview)$('sheet-b').insertAdjacentHTML('beforeend',`<div class="sact filters">${chipH('s',{label:T('o_edit'),f:()=>{closeSheet(false);editPage(id)}})}${
     chipH('s',{label:T(p.hidden?'o_nshow':'o_nhide'),f:()=>{p.hidden=!p.hidden;changed();openPage(id)}})}${
-    chipH('s',{label:T('o_del'),cls:'danger',f:async()=>{if(await confirmDel(tx2(p.t))){CFG.pages=CFG.pages.filter(x=>x.id!==id);closeSheet(false);changed()}}})}</div>`);
+    id==='suggest'?'':chipH('s',{label:T('o_del'),cls:'danger',f:async()=>{if(await confirmDel(tx2(p.t))){CFG.pages=CFG.pages.filter(x=>x.id!==id);closeSheet(false);changed()}}})}</div>`);
 }
 /** drag the ⋮⋮ handle to change the order of the information pages (menu, footer links) */
 function openPagesOrder(){
   if(!CAN('text'))return;
   if(!Array.isArray(CFG.pages))CFG.pages=clone(DEFAULT_CFG.pages);
+  if(!CFG.pages.some(p=>p.id==='suggest'))CFG.pages.push(SUGGEST());
   const draw=()=>{if(!SHEET||SHEET.key!=='pgorder')return;ACT.s=[];
     $('sheet-b').innerHTML=`<p class="hint">${T('o_drag_p')}</p><div class="olist" id="pg-order">${CFG.pages.map(p=>`<div class="orow${p.hidden?' off':''}" data-sid="${esc(p.id)}">${DRAG(T('o_drag'))}<span class="nvn">${esc(tx2(p.t))}${p.hidden?` · ${T('pg_hidden')}`:''}</span><div class="filters">${chipH('s',{label:T('o_edit'),f:()=>{closeSheet(false);editPage(p.id)}})}</div></div>`).join('')}</div>
       <div class="filters">${chipH('s',{label:T('ad_newpage'),cls:'pri',f:()=>{closeSheet(false);editPage(null)}})}</div>`;
@@ -288,6 +300,7 @@ function openPagesOrder(){
 async function editPage(id){
   if(!CAN('text')){toast(T('tm_noperm'));return}
   if(!Array.isArray(CFG.pages))CFG.pages=clone(DEFAULT_CFG.pages);
+  if(id==='suggest'&&!CFG.pages.some(p=>p.id==='suggest'))CFG.pages.push(SUGGEST());
   const isNew=id==null,o=isNew?{t:{ar:'',en:''},b:{ar:'',en:''},hidden:false}:CFG.pages.find(x=>x.id===id);if(!o)return;
   let v=[o.t.ar,o.t.en||'',o.b.ar,o.b.en||'',o.hidden?'h':'s'],err=null;
   while(true){

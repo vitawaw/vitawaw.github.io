@@ -81,6 +81,12 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   `#cbackb`); owner buttons sit on each vitamin (`.pkw` wrapper + `.pka`, `renderNutAdmin()`; `#nadm` = add/bulk only); tools page =
   `#tgrid` rectangles, a tool opens `#tool-x` (`TOOLV`, `#tools.tv`, `#tback`); «اقترح ميزة» = `openContact()` sheet; management =
   separate accordions (look / contact / team incl. review stamp / pub), one open at a time (`MOPEN` string, `name="macc-r"`).
+  Second round of his notes (done): equal cards `.cgrid` (interactions), `ol.refs`, `.rm-grid` (1/2/3 columns, `grid-auto-rows:1fr`,
+  clamped text, tap → whole card in a sheet `.cardfull`); roadmap filter `RMF` (`data-rmf`); page 'suggest' = built-in info page
+  (`SUGGEST()`/`allPages()` in nav.js, contact block cloned into it, `#roadmap .contact` hidden); `splitHowto()` in owner.js splits the
+  faq page into howto + faq on owner login (he saves + publishes); all tools open as pages (`openTool()` → `openToolPage()`,
+  `TOOLFROM`/`toolBack()`); menu bottom: tiles, howto/faq rows, contact `.m3` (3), privacy accordion + install + share, management,
+  mine, settings `.m3` (3) last; pharmacists page `#team` (PAGES 'team', owner only, `openTeamPage()`/`renderTeam()` in team.js, ACT.t).
 - **1.12.0 was REJECTED** («ابقى على اخر اصدار تم نشره لم يعجبني هذا»): live stays 1.11.1. The preview branch was set back to 1.11.1
   by a restore commit; the 1.12.0 work (own pages for schedule/labs/UL, CFG.nav menu manager, 🔔 for everyone + header 🔍/🔔,
   tools page as tiles, grouped ☰ with folding lists) is in the commits a3b8546…5f75622 if he ever asks for a piece of it.

@@ -30,7 +30,7 @@ async function teamInvite(prefill){
     const perms=Object.fromEntries(PERMS.map((k,i)=>[k,v[2].includes(i)]));
     const {error}=await OWN.client.rpc('team_invite',{p_email:v[1],p_name:v[0].replace(/[<>]/g,''),p_perms:perms});
     if(error){err=/member|email/.test(error.message)?{i:1,msg:T(/member/.test(error.message)?'tm_err_member':'tm_err_email')}:{msg:T('o_neterr')};continue}
-    await teamLoad();renderNav();if(SHEET&&SHEET.key==='team')renderTeam();
+    await teamLoad();renderNav();if(cur==='team')renderTeam();
     const inv=((TEAM.list&&TEAM.list.invites)||[]).find(i=>i.email===v[1]);
     return sendInvite(v[1],v[0],inv&&inv.key);
   }
@@ -47,15 +47,19 @@ async function sendInvite(email,name,key){
     return;
   }
 }
-async function openTeam(part){
-  if(!ISOWNER()||OWN.local)return;
-  openSheet(T('tm_t'),'<p class="hint">…</p>',{key:'team'});
-  await teamLoad();if(!SHEET||SHEET.key!=='team')return;
-  renderTeam();if(part==='inv'){const el=$('tm-inv');if(el)el.scrollIntoView({block:'start'})}
+/** the pharmacists' page (owner): accounts, invitations, the medical review stamp */
+function openTeam(part){go('team');if(part==='inv')setTimeout(()=>{const el=$('tm-inv');if(el)el.scrollIntoView({block:'start'})},300)}
+async function openTeamPage(){
+  if(!ISOWNER())return;
+  if(OWN.local||!OWN.client){TEAM.list=null;renderTeam();return}
+  if(!TEAM.list)$('team-b').innerHTML='<p class="hint">…</p>';
+  await teamLoad();if(cur==='team')renderTeam();
 }
 function renderTeam(){
-  const d=TEAM.list;if(!d||!SHEET||SHEET.key!=='team')return;
-  ACT.s=[];const S=(c)=>chipH('s',c);
+  if(cur!=='team')return;
+  ACT.t=[];const S=(c)=>chipH('t',c);
+  const stamp=`<h4 class="tms">${T('rv_t')}</h4><div class="filters">${S({label:T('o_edit'),f:()=>editReview()})}</div>`;
+  const d=TEAM.list;if(!d){$('team-b').innerHTML=`<p class="hint">${T('o_local')}</p>`+stamp;return}
   const eds=d.members.filter(m=>m.role==='editor');
   const card=m=>{
     const on=m.status==='active',p=m.perms||{};
@@ -69,10 +73,10 @@ function renderTeam(){
   const inv=i=>`<div class="tmc"><div class="tmh"><b>${esc(i.name||i.email)}</b><span class="st st-plan">${T('tm_invited')} ${esc(fmtDate(i.at))}</span></div>
       <div class="tmm" dir="ltr">${esc(i.email)}</div><div class="tmm">${PERMS.filter(k=>i.perms&&i.perms[k]).map(k=>esc(T('p_'+k))).join(' · ')||'—'}</div>
       <div class="filters tma">${S({label:T('tm_resend'),cls:'pri',f:()=>sendInvite(i.email,i.name,i.key)})}${S({label:T('tm_cancel'),cls:'danger',f:()=>teamRevoke(i)})}</div></div>`;
-  $('sheet-b').innerHTML=`<div class="filters">${S({label:T('ad_invite'),cls:'pri',f:()=>teamInvite()})}</div>
+  $('team-b').innerHTML=`<div class="filters">${S({label:T('ad_invite'),cls:'pri',f:()=>teamInvite()})}</div>
     <p class="hint">${T('tm_never')}</p>
     <h4 class="tms">${T('ad_accounts')} <span class="cnt">${eds.length}</span></h4>${eds.length?eds.map(card).join(''):`<p class="inone">${T('tm_none')}</p>`}
-    <h4 class="tms" id="tm-inv">${T('ad_invites')} <span class="cnt">${d.invites.length}</span></h4>${d.invites.length?d.invites.map(inv).join(''):`<p class="inone">${T('tm_noinv')}</p>`}`;
+    <h4 class="tms" id="tm-inv">${T('ad_invites')} <span class="cnt">${d.invites.length}</span></h4>${d.invites.length?d.invites.map(inv).join(''):`<p class="inone">${T('tm_noinv')}</p>`}`+stamp;
 }
 async function teamSet(m,{perms=null,status=null}){
   const {error}=await OWN.client.rpc('team_update',{p_user:m.id,p_perms:perms,p_status:status});

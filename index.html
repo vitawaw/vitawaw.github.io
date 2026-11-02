@@ -17,7 +17,7 @@
 <link rel="preload" href="fonts/tajawal-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/tajawal-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.12.0-4c98a9d1">
+<link rel="stylesheet" href="css/app.css?v=1.12.0-f50e2f30">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu">القائمة</h2><div id="side-b"></div></aside>
@@ -325,6 +325,7 @@
     <div class="reviewed" id="rev2" hidden></div>
     <div class="filters" id="sfilters"></div>
     <p class="meta" data-t="rt_note">مرتبة من الأقوى: الإرشادات السريرية، ثم المراجع الرسمية، ثم نشرات الأدوية، ثم الدراسات، ثم المراجع السريرية.</p>
+    <div id="refbulk"></div>
     <ol class="refs" id="reflist"></ol>
   </section>
 </div>
@@ -334,8 +335,9 @@
   <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg></span><h2 data-t="rm_t">VITAWAW يتطوّر باستمرار</h2></div><p data-t="rm_l">نعمل على إضافة ميزات تجعل متابعة علاجك أسهل وأدق. هذه أبرز الأفكار القادمة.</p></section>
   <section>
     <h2 data-t="rm_next">ما القادم</h2>
-    <div class="legend" id="rmlegend"></div>
+    <div class="filters rmfilters" id="rmlegend"></div>
     <div class="rm-grid" id="rmgrid"></div>
+    <div id="rmaddw"></div>
   </section>
   <section class="contact">
     <h2 data-t="sg_t">اقترح ميزة أو أبلغ عن خطأ</h2>
@@ -348,6 +350,12 @@
 
 <!-- ================= NOTIFICATIONS (team only) ================= -->
 <div class="page narrow" id="notif" role="tabpanel" aria-labelledby="t-notif" hidden><h2 class="mtitle" data-t="nt_t">الإشعارات</h2><div id="notif-b"></div><div id="notif-p"></div></div>
+
+<!-- ================= PHARMACISTS (owner only): accounts, invitations, review stamp ================= -->
+<div class="page narrow" id="team" role="tabpanel" hidden>
+  <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.6 3.5 2.8 3.5 6"/></svg></span><h2 data-t="ad_team">الصيادلة</h2></div><p data-t="tm_page_h">ادعُ صيدلياً بالبريد، فيصله رابط يفتح صفحة إنشاء حسابه بكلمة مرور يختارها بنفسه. بعد قبول الدعوة يظهر في «الحسابات» وتحدد صلاحياته.</p></section>
+  <section id="team-b"></section>
+</div>
 
 <!-- ================= MENU (phones and tablets; on wide screens the side menu shows the same) ================= -->
 <div class="page narrow" id="menu" role="tabpanel" aria-labelledby="t-menu" hidden><h2 class="mtitle" data-t="nav_menu">القائمة</h2><div id="menu-b"></div></div>
@@ -365,20 +373,20 @@
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see">عرض النتيجة</span></div>
 
 <script src="js/config.js?v=1.12.0-83230c77" defer></script>
-<script src="js/i18n.js?v=1.12.0-503326db" defer></script>
+<script src="js/i18n.js?v=1.12.0-5f545dc7" defer></script>
 <script src="js/data.js?v=1.12.0-5672c063" defer></script>
 <script src="js/util.js?v=1.12.0-19fde934" defer></script>
 <script src="js/validation.js?v=1.12.0-0db6be41" defer></script>
 <script src="js/render.js?v=1.12.0-b6302095" defer></script>
 <script src="js/calculators.js?v=1.12.0-ed27f643" defer></script>
 <script src="js/content.js?v=1.12.0-0080a50b" defer></script>
-<script src="js/tools.js?v=1.12.0-9da0a10d" defer></script>
-<script src="js/lists.js?v=1.12.0-75276b92" defer></script>
-<script src="js/ui.js?v=1.12.0-6804221a" defer></script>
+<script src="js/tools.js?v=1.12.0-0884a85c" defer></script>
+<script src="js/lists.js?v=1.12.0-3de7e37d" defer></script>
+<script src="js/ui.js?v=1.12.0-00107239" defer></script>
 <script src="js/published.js?v=1.12.0-87f710f2" defer></script>
-<script src="js/owner.js?v=1.12.0-f9cabce0" defer></script>
-<script src="js/nav.js?v=1.12.0-7c84712c" defer></script>
-<script src="js/team.js?v=1.12.0-eb689bb8" defer></script>
+<script src="js/owner.js?v=1.12.0-d21f414f" defer></script>
+<script src="js/nav.js?v=1.12.0-4f5e4c39" defer></script>
+<script src="js/team.js?v=1.12.0-03879b6e" defer></script>
 <script src="js/boot.js?v=1.12.0-fa591121" defer></script>
 </body>
 </html>
