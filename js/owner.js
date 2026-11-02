@@ -324,7 +324,7 @@ async function linksCheck(){
   const ids=((PUBLISHED&&PUBLISHED.refs)||[]).filter(r=>/^https?:\/\//.test(r.url||'')).map(r=>r.id),out=[];
   try{
     for(let i=0;i<ids.length;i+=25){const r=await fetch('/api/links?ids='+ids.slice(i,i+25).join(','),{signal:AbortSignal.timeout(60000)});if(!r.ok)throw new Error(r.status);out.push(...((await r.json()).links||[]))}
-    LINKS={at:new Date().toISOString().slice(0,10),broken:out.filter(x=>x.state==='broken').map(x=>x.id),blocked:out.filter(x=>x.state==='blocked').map(x=>x.id),n:out.length};
+    LINKS={at:new Date().toISOString().slice(0,10),ok:out.filter(x=>x.state==='ok').map(x=>x.id),broken:out.filter(x=>x.state==='broken').map(x=>x.id),blocked:out.filter(x=>x.state==='blocked').map(x=>x.id),n:out.length};
     try{localStorage.setItem('vw-links',JSON.stringify(LINKS))}catch(e){}
   }catch(e){toast(T('o_neterr'))}
   linksBusy=false;renderRefs();
@@ -341,15 +341,18 @@ function renderLinks(){
   el.hidden=false;
   el.innerHTML=`<div class="lkh"><b>${T('lk_t')}</b><button type="button" class="btn${linksBusy?'':' pri'}" id="lknow"${linksBusy?' disabled':''}>${T(linksBusy?'lk_busy':'lk_now')}</button></div>
     <p class="hint">${L2?T('lk_last').replace('{d}','<bdi>'+esc(L2.at)+'</bdi>').replace('{n}',L2.n):T('lk_never')}</p>`+
-    (L2?`<div class="lkcs"><span class="lkc ok"><b>${ok}</b> ${esc(T('lk_ok'))}</span>${chip('broken',L2.broken.length,'bad',T('lk_bad'))}${chip('blocked',L2.blocked.length,'warn',T('lk_hand'))}</div>`:'')+
-    (LKF?`<p class="hint">${T(LKF==='broken'?'lk_broken':'lk_blocked_h')} <button type="button" class="linkbtn" data-lkf="">${T('lk_all')}</button></p>`:'');
+    (L2?`<div class="lkcs">${chip('ok',ok,'ok',T('lk_ok'))}${chip('broken',L2.broken.length,'bad',T('lk_bad'))}${chip('blocked',L2.blocked.length,'warn',T('lk_hand'))}</div>`:'')+
+    (LKF?`<p class="hint">${T(LKF==='ok'?'lk_ok_h':LKF==='broken'?'lk_broken_h':'lk_blocked_h')} <button type="button" class="linkbtn" data-lkf="">${T('lk_all')}</button></p>`:'');
 }
 document.addEventListener('click',e=>{
   if(e.target.closest('#lknow')){linksCheck();return}
   const b=e.target.closest('[data-lkf]');if(!b)return;LKF=LKF===b.dataset.lkf?'':b.dataset.lkf;renderRefs();
+  if(LKF)setTimeout(()=>{const l=$('reflist');if(l)l.scrollIntoView({block:'start',behavior:'smooth'})},50); // straight to the sources it lists
 });
 /** the sources the filter keeps (null = all) */
-const lkShow=()=>LKF&&LINKS?LINKS[LKF]||[]:null;
+const lkShow=()=>{if(!LKF||!LINKS)return null;if(LKF!=='ok')return LINKS[LKF]||[];
+  // working links: those the check reached (older checks kept no list: every checked source that is not broken or blocked)
+  return LINKS.ok||((PUBLISHED&&PUBLISHED.refs)||[]).filter(r=>/^https?:\/\//.test(r.url||'')).map(r=>r.id).filter(id=>!LINKS.broken.includes(id)&&!LINKS.blocked.includes(id))};
 /** show the item where it lives */
 function viewItem(n){
   if(n.t==='x'){const tm=OWN.team||{},cur=CFG.text||{},nt=tm.text||{};

@@ -69,6 +69,7 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-11-02)
+- **1.12.1** (preview, waiting for «جاهز»): link check — all three counts clickable (`LKF` ok/broken/blocked, `LINKS.ok` saved by new checks), scroll to the list; vitamin chips `#filters`/`#sfilters` as an equal grid 3/5/7. Custom domain: he postponed it (he will tell which domain/registrar; it is set in Cloudflare → Workers → Domains, not in the owner page).
 - **Live: 1.12.0** (he approved publishing on 2026-11-02: «نعم موافق اعطني الروابط لانشرة»; main fast-forwarded from this branch).
   DB file `20261102120000_stamps_and_science_only.sql` APPLIED by him and checked (3 author columns, private.stamp_name, can_edit text owner-only). Redirect URLs added by him.
   He also has to add the production + preview URLs in Supabase → Auth → URL configuration for «forgot password», and log in → save → publish
