@@ -104,7 +104,7 @@ function renderNav(){
   $('hnotif').setAttribute('aria-label',T('nt_t'));$('hnotif').classList.toggle('on',cur==='notif');
   document.body.classList.toggle('team',typeof OWN!=='undefined'&&OWN.on);
   if(cur==='notif')renderNotif();
-  renderToolsGrid();if(CALCV)$('cvname').textContent=kname(K);
+  renderToolsGrid();$('cvname').textContent=kname(K);
   $('hsearch').setAttribute('aria-label',T('gs_t'));
   document.querySelectorAll('.tab[data-p]').forEach(t=>{const lb=t.querySelector('.full,[data-t]');if(lb)t.title=lb.textContent}); // computers show icons only: the name appears on hover
   if(WIDE())$('t-menu').setAttribute('aria-selected',!document.body.classList.contains('noside'));
