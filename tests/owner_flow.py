@@ -63,6 +63,7 @@ with sync_playwright() as p:
     pg.click('#hnotif');pg.wait_for_timeout(300);print('NOTIF cards:',pg.locator('#notif-b .ncard').count())
     pg.locator('#notif-b .ntop button').click();pg.wait_for_timeout(200);ok(pg);pg.wait_for_timeout(800)
     print('bar after approvals:',pg.inner_text('#ostate'))
+    pg.evaluate("closeSheet()");pg.wait_for_timeout(100)  # 🔔 is a floating window
     pg.click('#o-publish');pg.wait_for_timeout(200);ok(pg);pg.wait_for_timeout(500)
     pub=pg.evaluate('window.__PUB');print('PUB2: inter',len(pub['inter']),'custom',len(pub['nut']['custom']),'refs',len(pub['refs']),'warfarin sev:',[x['sev'] for x in pub['inter'] if x['b']['ar']=='Warfarin'])
     print('owner errors',errs)

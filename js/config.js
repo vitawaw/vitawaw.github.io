@@ -21,7 +21,7 @@ const DEFAULT_CFG={
   text:{},
   nutOrder:[], /* order of the vitamins (ids); empty = default order. Owner only. */
   brand:{l1:'',l2:'',url:''},
-  review:{n:{ar:'الصيدلي سيف الدين',en:'Pharmacist Saifaldeen'},date:'2026-10-29'}, /* medical review stamp under each result; empty name = hidden. Owner only. */ /* footer logos: l1 = app logo (empty = built-in), l2 = parent company logo, url = company site */
+  review:{n:{ar:'د. سيف الدين',en:'Dr. Saifaldeen'},date:'2026-10-29'}, /* medical review stamp under each result; empty name = hidden. Owner only. */ /* footer logos: l1 = app logo (empty = built-in), l2 = parent company logo, url = company site */
   /* info pages in the side menu (☰ → معلومات). The owner can edit, hide, add and delete them. Plain text: an empty line starts a new paragraph. */
   pages:[
    {id:'about',t:{ar:'حول التطبيق',en:'About the app'},b:{ar:'VITAWAW حاسبة لجرعات الفيتامينات والمعادن مبنية على مصادر طبية موثوقة، مع التداخلات الدوائية وأدوات صيدلانية مساعدة.\n\nكل رقم في النتيجة مرتبط بمصدره، ويمكنك فتح المصدر بالضغط على رقمه.\n\nيراجع صيدلي كل إضافة جديدة قبل أن تظهر للزوار.',en:'VITAWAW is a vitamin and mineral dose calculator based on trusted medical sources, with drug interactions and pharmacy tools.\n\nEvery number in a result is linked to its source; tap the number to open it.\n\nA pharmacist reviews every new addition before visitors can see it.'}},

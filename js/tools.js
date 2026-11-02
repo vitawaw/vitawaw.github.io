@@ -3,7 +3,7 @@
    daily supplement schedule, upper-limit check, unit converter. The calculator opens them already filled in (openTool).
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== tools ===================== */
-const nv=id=>{const v=parseFloat($(id).value);return isNaN(v)?null:v};
+const nv=id=>{const e=$(id);const v=e?parseFloat(e.value):NaN;return isNaN(v)?null:v};
 /* tablet counter: [id, element, ar, en, elemental fraction] — NIH ODS percentages; magnesium and zinc salts by formula weight */
 const SALTS=[['direct','',  'أعرف الكمية العنصرية من العبوة','I know the elemental amount from the pack',1],
  ['fs','fe','Ferrous sulfate (حديد 20%)','Ferrous sulfate (20% iron)',0.20],
@@ -127,9 +127,11 @@ const ULT=[
  ['mg','المغنيسيوم (مكمل)','Magnesium (supplements)','mg',[65,110,350,350,350,350],20,'من المكملات والأدوية فقط، وليس من الطعام','From supplements and medicines only, not food'],
  ['se','السيلينيوم','Selenium','mcg',[90,150,280,400,400,400],39],
  ['io','اليود','Iodine','mcg',[200,300,600,900,1100,1100],37]];
+/** a vitamin the owner hid is gone from the tools too (schedule, upper limit, lab results); hb/ferritin follow iron, the 2nd calcium dose follows calcium */
+const nutOff=k=>{k={ca2:'ca',hb:'fe',fer:'fe'}[k]||k;return typeof SHOWALL==='function'&&!SHOWALL()&&(NHIDE().includes(k)||!!(typeof CUST!=='undefined'&&CUST[k]&&CUST[k].hidden))};
 function ulBuild(){
   const old=Object.fromEntries(ULT.map(x=>[x[0],$('ul-'+x[0])?$('ul-'+x[0]).value:'']));
-  $('ulin').innerHTML=ULT.map(x=>`<div class="f"><label class="l" for="ul-${x[0]}">${L(x[1],x[2])} <small dir="ltr">${x[3]}</small></label><input type="number" id="ul-${x[0]}" min="0" step="any" inputmode="decimal" placeholder="—" value="${esc(old[x[0]]||'')}"></div>`).join('');
+  $('ulin').innerHTML=ULT.filter(x=>!nutOff(x[0])).map(x=>`<div class="f"><label class="l" for="ul-${x[0]}">${L(x[1],x[2])} <small dir="ltr">${x[3]}</small></label><input type="number" id="ul-${x[0]}" min="0" step="any" inputmode="decimal" placeholder="—" value="${esc(old[x[0]]||'')}"></div>`).join('');
   ul();
 }
 function ul(){
@@ -201,7 +203,7 @@ const hhmm=(m,W)=>{const t=((W*60+m)%1440+1440)%1440;return `${Math.floor(t/60)}
 const CALIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 14v4M10 16h4"/></svg>';
 function schBuild(){
   const was=Object.fromEntries(SCI.map(x=>[x[0],$('sc-'+x[0])?$('sc-'+x[0]).checked:false]));
-  $('schk').innerHTML=SCI.map(x=>`<label class="chk"><input type="checkbox" id="sc-${x[0]}"${was[x[0]]?' checked':''}><span>${esc(L(x[1],x[2]))}</span></label>`).join('');
+  $('schk').innerHTML=SCI.filter(x=>!nutOff(x[0])).map(x=>`<label class="chk"><input type="checkbox" id="sc-${x[0]}"${was[x[0]]?' checked':''}><span>${esc(L(x[1],x[2]))}</span></label>`).join('');
   sch();
 }
 function schSolve(ids){
@@ -282,7 +284,7 @@ const saveLabs=()=>{try{localStorage.setItem('vw-labs',JSON.stringify(LABS))}cat
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 function labAdd(k,v,d){if(!LABT.some(t=>t[0]===k)||!(v>0))return false;LABS.push({k,v:Math.round(v*100)/100,d:d||today()});LABS.sort((a,b)=>a.d.localeCompare(b.d));saveLabs();labs();return true}
 function labsBuild(){
-  const v=$('lbk').value||'d';$('lbk').innerHTML=LABT.map(t=>`<option value="${t[0]}">${esc(L(t[1],t[2]))} (${t[3]})</option>`).join('');$('lbk').value=v;
+  const v=$('lbk').value||'d';$('lbk').innerHTML=LABT.filter(t=>!nutOff(t[0])).map(t=>`<option value="${t[0]}">${esc(L(t[1],t[2]))} (${t[3]})</option>`).join('');$('lbk').value=v;
   if(!$('lbd').value)$('lbd').value=today();labs();
 }
 /** a small line chart: dates on the bottom, values on the side, the reference lines dashed */

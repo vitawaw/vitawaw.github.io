@@ -6,3 +6,12 @@ try{
   const th=localStorage.getItem('vw-theme');if(th)document.documentElement.dataset.theme=th;
   if(localStorage.getItem('vw-lang')==='en'){document.documentElement.lang='en';document.documentElement.dir='ltr'}
 }catch(e){}
+/* preview links (Cloudflare previews of a branch) use the SAME database as the live site: a red bar says so */
+try{
+  const h=location.hostname;
+  if(/\.workers\.dev$/.test(h)&&h!=='billowing-glade-6627.vitawaw26.workers.dev'){
+    const b=document.createElement('div');b.className='pvbar';b.setAttribute('role','note');
+    b.textContent=localStorage.getItem('vw-lang')==='en'?'Test version — publishing here changes the live site':'نسخة تجريبية — النشر هنا يغيّر الموقع الرسمي';
+    document.body.prepend(b);
+  }
+}catch(e){}

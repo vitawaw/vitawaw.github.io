@@ -22,6 +22,7 @@ with sync_playwright() as p:
     b = p.chromium.launch()
     # ---------- visitor ----------
     def mi(pg, label):  # the folding list (help, settings, management…) that holds the item is opened first
+        if pg.is_visible('#sheet-x'): pg.click('#sheet-x'); pg.wait_for_timeout(100)  # 🔔 and other windows float over the page
         c = menu(pg); pg.evaluate("([c,l])=>{for(const d of document.querySelectorAll(c+' details.macc'))if(d.textContent.includes(l)&&!d.open){d.open=true}}", [c, label]); pg.wait_for_timeout(80)
         more(pg, label)
     def menutext(pg, sel='#menu-b'):  # the menu's text with every folding list opened one after the other
@@ -310,7 +311,7 @@ with sync_playwright() as p:
         if w < 1024: c.click('#hnotif')
         else: c.click('#t-notif')
         c.wait_for_timeout(300)
-        check(f'{n}: notifications page lists {nn} cards', c.evaluate('cur') == 'notif' and c.locator('#notif-b .ncard').count() == nn)
+        check(f'{n}: notifications page lists {nn} cards', c.evaluate("!!(SHEET&&SHEET.key==='notif')") and c.locator('#notif-b .ncard').count() == nn)
         check(f'{n}: card shows who made the change', 'بواسطة د. أحمد' in c.inner_text('#notif-b'))
         check(f'{n}: no horizontal scroll in notifications', c.evaluate('document.documentElement.scrollWidth<=innerWidth'))
         c.screenshot(path=f'tests/shots/{n}_notif.png')
@@ -329,7 +330,7 @@ with sync_playwright() as p:
             else: c.locator('#notif-b .ncard button', has_text='اعتماد').first.click()
             c.wait_for_timeout(600)
             check('approve all empties notifications', c.evaluate('notifList().length') == 0 and c.locator('#notif-b .nempty').count() == 1 and c.is_hidden('#hnt-count'))
-            c.click('#t-interactions'); c.wait_for_timeout(200)
+            c.click('#sheet-x'); c.wait_for_timeout(100); c.click('#t-interactions'); c.wait_for_timeout(200)
             check('items keep no approve button (decisions live in 🔔)', c.locator('[data-act="ok"]').count() == 0)
         check(f'{n}: no page errors (notifications)', not cerr, str(cerr))
 

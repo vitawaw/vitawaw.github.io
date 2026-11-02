@@ -128,6 +128,7 @@ with sync_playwright() as p:
     pg.evaluate("labAdd('b12',300,'2026-01-05')"); pg.goto('http://app.test/#notif'); pg.wait_for_timeout(200)
     check('visitor notifications: lab reminder', T('notif-p'), 'B12'); check('visitor notifications: new features', T('notif-p'), 'جديد في VITAWAW')
     check('opening 🔔 marks them read', str(pg.evaluate('notifCount()')), '0')
+    pg.evaluate("closeSheet()"); pg.wait_for_timeout(100)  # 🔔 is a floating window
     # 1.12.0 second pages: a vitamin opens patient data + result; tools are rectangles and each opens its own page
     pg.goto('http://app.test/#calc'); pg.wait_for_timeout(200)
     check('calculator: list of vitamins only', str(pg.is_visible('#s-data') or pg.is_visible('#resbox')), 'False')

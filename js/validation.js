@@ -28,6 +28,8 @@ function req(list,opt=[]){
 const FIELDNAME={age:'age',wt:'wt',ht:'ht',dlab:'dlab',b12v:'b12v',mgv:'mgv',cadiet:'cadiet',ab12:'ab12',hb:'hb',fer:'fer',mon:'mon'};
 function emptyState(missing,bad){
   LAST=null;
+  // nothing typed yet: no result box at all (it appears as soon as the visitor enters data or asks for an example)
+  $('calc').classList.toggle('nores',![...document.querySelectorAll('#s-data input[type="number"]')].some(i=>i.value.trim()));
   const items=[...missing.map(id=>`<li>${T(FIELDNAME[id])}</li>`),...bad.map(id=>`<li style="color:var(--bad)">${T(FIELDNAME[id])}: ${T('e_range').split(':')[0]}</li>`)].join('');
   $('res').dataset.h='';$('res').innerHTML=`<div class="empty"><b>${T('e_empty_t')}</b>${items?`<div>${T('e_need')}<ul>${items}</ul></div>`:''}<button class="btn pri" type="button" data-ex>${T('ex')}</button></div>`;
   $('rtx').textContent=T('e_empty_t');$('rdot').style.background='var(--mute)';

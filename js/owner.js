@@ -42,7 +42,7 @@ function decorate(){
 
 /* ----- generic dialog ----- */
 /** err: {i: field index, msg} shows the problem under that field (or {msg} for the whole form) */
-function dialog({title,fields=[],info='',buttons,err=null}){
+function dialog({title,fields=[],info='',buttons,err=null,two=false}){
   return new Promise(res=>{
     $('dlg-t').textContent=title;$('dlg-m').hidden=!(err&&err.i==null);$('dlg-m').textContent=err&&err.i==null?err.msg:'';
     $('dlg-b').innerHTML=(info?`<p class="info">${esc(info)}</p>`:'')+fields.map((f,i)=>{
@@ -53,10 +53,11 @@ function dialog({title,fields=[],info='',buttons,err=null}){
       if(f.type==='checks')return `<div class="row"><label class="l" for="${id}">${esc(f.label)}</label><div class="checks" id="${id}">${f.options.map(o=>`<label class="ck"><input type="checkbox" value="${o[0]}"${f.value.includes(o[0])?' checked':''}><span>${esc(o[1])}</span></label>`).join('')}</div></div>`;
       if(f.type==='select')return `<div class="row">${lab}<select id="${id}">${f.options.map(o=>`<option value="${o[0]}"${o[0]===f.value?' selected':''}>${esc(o[1])}</option>`).join('')}</select></div>`;
       if(f.type==='colors')return `<div class="cols"><div class="row"><label class="l" for="${id}a">${esc(f.labels[0])}</label><input type="color" id="${id}a" value="${f.value[0]}"></div><div class="row"><label class="l" for="${id}b">${esc(f.labels[1])}</label><input type="color" id="${id}b" value="${f.value[1]}"></div></div>`;
-      if(f.type==='password')return `<div class="row">${lab}<div class="pw"><input type="password" id="${id}" value="" dir="ltr" autocomplete="${f.ac||'current-password'}"><button type="button" class="btn peye" data-peye="${id}" aria-label="${esc(T('pw_show'))}" title="${esc(T('pw_show'))}">${EYE}</button></div></div>`;
+      if(f.type==='password')return `<div class="row">${lab}<div class="pw"><input type="password" id="${id}" value="" dir="ltr" autocomplete="${f.rules?'new-password':f.ac||'current-password'}"${f.rules?' data-pwr="1"':''}><button type="button" class="btn peye" data-peye="${id}" aria-label="${esc(T('pw_show'))}" title="${esc(T('pw_show'))}">${EYE}</button></div>${f.rules?`<ul class="pwr" id="${id}r">${PWRULES.map(([k])=>`<li data-r="${k}">${esc(T('pwr_'+k))}</li>`).join('')}</ul>`:''}</div>`;
       return `<div class="row">${lab}<input type="${f.type||'text'}" id="${id}" value="${esc(f.value)}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${f.ltr||['tel','email','url'].includes(f.type)?' dir="ltr"':''}></div>`;
     }).join('');
     if(err&&err.i!=null){const f=$('dlgf'+err.i)||$('dlgf'+err.i+'a');const row=f&&f.closest('.row');if(row){row.classList.add('bad');row.insertAdjacentHTML('beforeend',`<p class="ferr" role="alert">${esc(err.msg)}</p>`)}}
+    $('dlg-a').classList.toggle('two',!!two);
     $('dlg-a').innerHTML=buttons.map((b,i)=>`<button class="btn${b.pri?' pri':''}${b.danger?' danger':''}" type="${b.pri?'submit':'button'}" data-bi="${i}">${esc(b.label)}</button>`).join('');
     const read=()=>fields.map((f,i)=>f.type==='qr'?null:f.type==='image'?{file:$('dlgf'+i).files[0]||null,remove:!!($('dlgf'+i+'x')&&$('dlgf'+i+'x').checked)}:f.type==='colors'?[$('dlgf'+i+'a').value,$('dlgf'+i+'b').value]:f.type==='checks'?[...$('dlgf'+i).querySelectorAll('input:checked')].map(x=>+x.value):$('dlgf'+i).value);
     const finish=v=>{$('dlg').hidden=true;$('dlgf').onsubmit=null;$('dlg-a').onclick=null;res(v)};
@@ -128,16 +129,36 @@ async function restoreVersion(id,when){
   closeSheet(false);toast(T('vh_done'));loadPublished();
 }
 /** owner: the medical review stamp under every result («تمت المراجعة الطبية بواسطة …» and the date) */
+/** owner: everything in one file kept on his device — the published site, the draft settings and all content (pending and hidden too).
+   The file says what it is: backup name, file name, program name and version. */
+function downloadBackup(){
+  if(!ISOWNER())return;
+  const now=new Date(),day=now.toISOString().slice(0,10),hm=now.toISOString().slice(11,16).replace(':','');
+  const fileName=`VITAWAW-v${APP_VERSION}-backup-${day}-${hm}.json`;
+  const data={program:'VITAWAW',programVersion:APP_VERSION,backupName:`VITAWAW backup ${day} ${now.toISOString().slice(11,16)} UTC`,fileName,
+    createdAt:now.toISOString(),site:location.origin,createdBy:OWN.name||whoLabel(),
+    published:PUBLISHED||null,draft:JSON.parse(cfgJSON()),content:{refs:CFG.refs||[],inter:CFG.inter||[],nut:CFG.nut||{}}};
+  const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:'application/json'})),a=document.createElement('a');
+  a.href=url;a.download=fileName;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+  toast(T('bk_done'));
+}
+/** the medical review stamp: Dr. Saifaldeen or one of the invited pharmacists (or another name typed by the owner) */
 async function editReview(){
   if(!ISOWNER()){toast(T('o_onlyowner'));return}
-  const v=CFG.review||DEFAULT_CFG.review;let err=null,vals=[v.n.ar,v.n.en||'',v.date||''];
+  if(!OWN.local&&OWN.client&&!TEAM.list)try{await teamLoad()}catch(e){}
+  const v=CFG.review||DEFAULT_CFG.review,cur=REV0(v);
+  const who=[[ 'owner',T('rv_owner') ],...((TEAM.list&&TEAM.list.members)||[]).filter(m=>m.role==='editor'&&m.status==='active'&&m.name).map(m=>['m:'+m.name,m.name]),['other',T('rv_other')],['none',T('rv_none')]];
+  const pick=!cur.ar?'none':cur.ar===I18N.rv_owner[0]?'owner':who.some(o=>o[0]==='m:'+cur.ar)?'m:'+cur.ar:'other';
+  let err=null,vals=[pick,pick==='other'?cur.ar:'',pick==='other'?cur.en||'':'',v.date||''];
   while(true){
-    const r=await dialog({err,title:T('rv_t'),info:T('rv_i'),fields:[{label:T('rv_n'),value:vals[0],ph:T('rv_ph')},{label:T('rv_ne'),value:vals[1],ltr:1},{label:T('rv_d'),type:'date',value:vals[2],ltr:1}],
+    const r=await dialog({err,title:T('rv_t'),info:T('rv_i'),fields:[{label:T('rv_who'),type:'select',options:who,value:vals[0]},{label:T('rv_n'),value:vals[1],ph:T('rv_ph')},{label:T('rv_ne'),value:vals[2],ltr:1},{label:T('rv_d'),type:'date',value:vals[3],ltr:1}],
       buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return;
     vals=r.values.map(x=>x.trim());
-    if(vals[2]&&!/^\d{4}-\d{2}-\d{2}$/.test(vals[2])){err={i:2,msg:T('rv_bad')};continue}
-    CFG.review={n:{ar:vals[0],en:vals[1]},date:vals[2]};changed();refreshAll();toast(T('br_done'));return;
+    if(vals[3]&&!/^\d{4}-\d{2}-\d{2}$/.test(vals[3])){err={i:3,msg:T('rv_bad')};continue}
+    if(vals[0]==='other'&&!vals[1]){err={i:1,msg:T('rv_needname')};continue}
+    const n=vals[0]==='owner'?{ar:I18N.rv_owner[0],en:I18N.rv_owner[1]}:vals[0]==='none'?{ar:'',en:''}:vals[0]==='other'?{ar:vals[1],en:vals[2]}:{ar:vals[0].slice(2),en:vals[0].slice(2)};
+    CFG.review={n,date:vals[3]};changed();refreshAll();toast(T('br_done'));return;
   }
 }
 async function editContact(){
@@ -270,7 +291,7 @@ function pubNotifHTML(){
   const it=pubItems(),isNew=n=>!SEEN.includes(n.key),labs=it.filter(n=>n.kind==='lab'),feats=it.filter(n=>n.kind==='feat');
   let h=`<h3 class="nsec">${T('nn_rem')}</h3>`;
   h+=labs.length?labs.map(n=>`<div class="ncard${isNew(n)?' unread':''}">${nico('edit')}<div class="nb"><div class="nh"><b>${esc(L(n.t[1],n.t[2]))}</b> · <span class="nby">${esc(T('nn_last'))} <bdi>${esc(n.last.d)}</bdi></span></div>
-    <div class="nl">${esc(T('nn_lab'))}</div><div class="filters"><button type="button" class="btn" data-tool="labs">${esc(T('lb_t'))}</button></div></div></div>`).join('')
+    <div class="nl">${esc(T('nn_lab'))}</div>${toolHidden('labs')?'':`<div class="filters"><button type="button" class="btn" data-tool="labs">${esc(T('lb_t'))}</button></div>`}</div></div>`).join('')
     :`<p class="inone">${T(LABS.length?'nn_labok':'nn_nolab')}</p>`;
   if(feats.length)h+=`<h3 class="nsec">${T('nn_new')}</h3>`+feats.map(n=>`<div class="ncard${isNew(n)?' unread':''}">${nico('new')}<div class="nb"><div class="nh"><b>${esc(tx2(n.x.t))}</b></div><div class="nl">${esc(tx2(n.x.d))}</div>
     ${GO[n.x.go]?`<div class="filters"><button type="button" class="btn pri" data-rmgo="${esc(n.x.go)}">${T('rm_try')}</button></div>`:''}</div></div>`).join('');
@@ -355,6 +376,7 @@ const lkShow=()=>{if(!LKF||!LINKS)return null;if(LKF!=='ok')return LINKS[LKF]||[
   return LINKS.ok||((PUBLISHED&&PUBLISHED.refs)||[]).filter(r=>/^https?:\/\//.test(r.url||'')).map(r=>r.id).filter(id=>!LINKS.broken.includes(id)&&!LINKS.blocked.includes(id))};
 /** show the item where it lives */
 function viewItem(n){
+  if(SHEET&&SHEET.key==='notif')closeSheet(false); // leave the 🔔 window to show the item
   if(n.t==='x'){const tm=OWN.team||{},cur=CFG.text||{},nt=tm.text||{};
     const rows=Object.keys({...cur,...nt}).filter(k=>JSON.stringify(cur[k]||null)!==JSON.stringify(nt[k]||null)).map(k=>`<div class="ncard"><div class="nb"><div class="nh">${esc(T('nt_was'))} ${esc((cur[k]&&cur[k].ar)||(I18N[k]||[''])[0])}</div><div class="nl">${esc((nt[k]&&nt[k].ar)||(I18N[k]||[''])[0])}</div></div></div>`);
     const pg=(tm.pages||[]).filter(p=>JSON.stringify((CFG.pages||[]).find(x=>x.id===p.id)||null)!==JSON.stringify(p)).map(p=>`<div class="ncard"><div class="nb"><div class="nh">${esc(T('ad_pages'))}</div><div class="nl">${esc(tx2(p.t))}</div><div class="nw">${esc(tx2(p.b)).slice(0,300)}</div></div></div>`);
@@ -454,7 +476,7 @@ async function delNut(id){
 }
 const hideNut=id=>toggleHidden(NCUST().find(c=>c.id===id));
 /* the same buttons on every item (actBtns in content.js): approve, edit, hide/show, delete */
-document.addEventListener('click',e=>{if(OWN.on&&e.target.closest('[data-gonotif]')){e.preventDefault();e.stopPropagation();go('notif')}},true);
+document.addEventListener('click',e=>{if(OWN.on&&e.target.closest('[data-gonotif]')){e.preventDefault();e.stopPropagation();openNotif()}},true);
 document.addEventListener('click',e=>{
   if(!OWN.on)return;const t=e.target.closest('[data-act]');if(!t)return;
   e.preventDefault();e.stopPropagation();
@@ -476,6 +498,11 @@ document.addEventListener('click',e=>{
 /* ----- login / session ----- */
 // the library file must match this fingerprint exactly (Subresource Integrity), otherwise the browser refuses to run it
 const SB_LIB={src:'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js',sri:'sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o'};
+/** a new password: at least 8 characters, a capital letter, a small letter, a number and a symbol (shown under the field, green when met) */
+const PWRULES=[['len',p=>p.length>=8],['up',p=>/[A-Z]/.test(p)],['low',p=>/[a-z]/.test(p)],['num',p=>/[0-9]/.test(p)],['sym',p=>/[^A-Za-z0-9]/.test(p)]];
+const pwOK=p=>PWRULES.every(([,f])=>f(p));
+document.addEventListener('input',e=>{const f=e.target.closest&&e.target.closest('[data-pwr]');if(!f)return;const l=$(f.id+'r');if(!l)return;
+  PWRULES.forEach(([k,ok])=>{const li=l.querySelector(`[data-r="${k}"]`);if(li)li.classList.toggle('ok',ok(f.value))})});
 /** coming back from the «forgot password» e-mail: choose a new password (it goes straight to Supabase) */
 async function recoverPassword(){
   try{await loadSupabaseLib()}catch(e){toast(T('o_neterr'));return}
@@ -485,9 +512,9 @@ async function recoverPassword(){
   if(!session){await dialog({title:T('pw_forgot'),info:T('pw_expired'),buttons:[{label:T('o_ok'),action:'ok',pri:1}]});return}
   let err=null;
   while(true){
-    const r=await dialog({err,title:T('pw_new_t'),fields:[{label:T('o_newpass'),type:'password',ac:'new-password'},{label:T('o_pass2'),type:'password',ac:'new-password'}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    const r=await dialog({err,title:T('pw_new_t'),fields:[{label:T('o_newpass'),type:'password',rules:1},{label:T('o_pass2'),type:'password',ac:'new-password'}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok'){await OWN.client.auth.signOut();return}
-    if(r.values[0].length<8){err={i:0,msg:T('o_short')};continue}
+    if(!pwOK(r.values[0])){err={i:0,msg:T('pw_weak')};continue}
     if(r.values[0]!==r.values[1]){err={i:1,msg:T('o_mismatch')};continue}
     const {error}=await OWN.client.auth.updateUser({password:r.values[0]});
     if(error){err={msg:T(/aal2|AAL2|factor/i.test(error.message||'')?'pw_need2':'o_neterr')};continue}
@@ -518,7 +545,7 @@ async function openOwner(opt={}){
   if(opt.join!=null){if(await firstSetup(opt.join,opt.key))return afterLogin();return}
   let err=null,em='';
   while(true){
-    const r=await dialog({err,title:T('o_login'),fields:[{label:T('o_email'),type:'email',value:em},{label:T('o_pass'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('pw_forgot'),action:'forgot'},{label:T('o_first'),action:'first'},{label:T('o_in'),action:'ok',pri:1}]});
+    const r=await dialog({err,title:T('o_login'),fields:[{label:T('o_email'),type:'email',value:em},{label:T('o_pass'),type:'password',value:''}],two:true,buttons:[{label:T('o_in'),action:'ok',pri:1},{label:T('o_first'),action:'first'},{label:T('pw_forgot'),action:'forgot'},{label:T('o_cancel'),action:'cancel'}]});
     if(r.action==='first'){if(await firstSetup(r.values[0],''))return afterLogin();continue}
     if(r.action==='forgot'){em=r.values[0].trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){err={i:0,msg:T('pw_needmail')};continue}
       // Supabase sends the e-mail; the link brings the person back here to choose a new password (never seen by the page's owner)
@@ -535,10 +562,10 @@ async function openOwner(opt={}){
 async function firstSetup(email0,key){
   let err=null;
   while(true){
-    const r=await dialog({err,title:T('o_firstt'),info:T('o_firsti'),fields:[{label:T('o_email'),type:'email',value:email0||''},{label:T('o_pass'),type:'password',value:''},{label:T('o_pass2'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    const r=await dialog({err,title:T('o_firstt'),info:T('o_firsti'),fields:[{label:T('o_email'),type:'email',value:email0||''},{label:T('o_pass'),type:'password',value:'',rules:1},{label:T('o_pass2'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return false;
     const email=r.values[0].trim(),p1=r.values[1],p2=r.values[2];email0=email;
-    if(p1.length<8){err={i:1,msg:T('o_short')};continue}
+    if(!pwOK(p1)){err={i:1,msg:T('pw_weak')};continue}
     if(p1!==p2){err={i:2,msg:T('o_mismatch')};continue}
     let up;try{up=await OWN.client.auth.signUp({email,password:p1,options:{data:{invite:key||''}}})}catch(e){up={error:e}}
     const {error}=await OWN.client.auth.signInWithPassword({email,password:p1});
@@ -628,7 +655,7 @@ async function publish(){
   if(OWN.busy)return;
   const sm=pubSummary(),info=(sm.n?T('o_pub_will').replace('{n}',sm.n):T('o_pub_none'))+(sm.wait?'\n'+T('o_pub_wait').replace('{n}',sm.wait):'');
   const r=await dialog({title:T('o_pubq'),info,fields:[{label:T('o_note'),value:''}],buttons:[...(sm.wait?[{label:T('nt_open'),action:'notif'}]:[]),{label:T('o_cancel'),action:'cancel'},{label:T('o_publish'),action:'ok',pri:1}]});
-  if(r.action==='notif'){go('notif');return}
+  if(r.action==='notif'){openNotif();return}
   if(r.action!=='ok')return;
   return locked(async()=>{
   if(!(await _saveDraft()))return;
@@ -660,10 +687,10 @@ async function discard(){
 async function changePass(){
   let err=null;
   while(true){
-    const r=await dialog({err,title:T('o_chpt'),fields:[{label:T('ac_curpass'),type:'password',value:''},{label:T('o_newpass'),type:'password',value:''},{label:T('o_pass2'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    const r=await dialog({err,title:T('o_chpt'),fields:[{label:T('ac_curpass'),type:'password',value:''},{label:T('o_newpass'),type:'password',value:'',rules:1},{label:T('o_pass2'),type:'password',value:''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
     if(r.action!=='ok')return;
     const [p0,p1,p2]=r.values;
-    if(p1.length<8){err={i:1,msg:T('o_short')};continue}
+    if(!pwOK(p1)){err={i:1,msg:T('pw_weak')};continue}
     if(p1!==p2){err={i:2,msg:T('o_mismatch')};continue}
     const {data:{user}}=await OWN.client.auth.getUser();
     const chk=await OWN.client.auth.signInWithPassword({email:user.email,password:p0});

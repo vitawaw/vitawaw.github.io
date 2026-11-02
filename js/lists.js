@@ -138,7 +138,8 @@ function renderRefs(){
   if(!KEYS.includes(SF))SF='all';
   const lk=typeof lkShow==='function'?lkShow():null,show=lk||(SF==='all'?null:REFGROUP[SF]);
   $('refbulk').innerHTML=SHOWALL()?bulkBar('r',(CFG.refs||[]).filter(x=>x.rv===false).length):'';
-  $('reflist').innerHTML=Object.entries(REFS).sort((a,b)=>RTORD[rtOf(a[1])]-RTORD[rtOf(b[1])]||a[0]-b[0]).filter(([n])=>!show||show.includes(+n)).map(([n,x])=>
+  const sq=iTerms(normAr($('ssearch')&&$('ssearch').value)),sm=([n,x])=>!sq.length||sq.some(q=>normAr([n,x[0],x[1],x[3],x[4]].join(' ')).includes(q));
+  $('reflist').innerHTML=Object.entries(REFS).filter(sm).sort((a,b)=>RTORD[rtOf(a[1])]-RTORD[rtOf(b[1])]||a[0]-b[0]).filter(([n])=>!show||show.includes(+n)).map(([n,x])=>
     `<li id="ref-${n}"${x[6]?' class="hid"':''}><span class="num">${n}</span><div><div class="org"><span class="rtype rt-${rtOf(x)}">${T('rt_'+rtOf(x))}</span>${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl" dir="auto">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div>${stampHTML(x[9],x[10])}${usedIn(+n,x)}${actBar('r',n,{rv:x[5]!==false,hidden:x[6]})}</div></li>`).join('')+`<li class="oaddli"><button class="oadd" type="button" id="radd">${PLUS}${T('o_radd')}</button></li>`;
   $('rcount').textContent=Object.keys(REFS).length;
   if(typeof renderLinks==='function')renderLinks();

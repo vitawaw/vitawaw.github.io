@@ -6,6 +6,7 @@
 const PAGES=['calc','tools','interactions','sources','roadmap','notif','team','menu'];
 let cur='calc',CALCV=false,TOOLV=''; // CALCV: the chosen vitamin's page (patient data + result) instead of the list of vitamins
 function show(p,view){
+  if(p==='notif'){if(typeof openNotif==='function')setTimeout(openNotif,0);p=cur&&cur!=='notif'?cur:'calc'} // 🔔 is a floating window, not a page
   if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='team'&&!ISOWNER())||(navHidden(p)&&!SHOWALL()))p='calc'; // a section the owner hid is not shown // wide screens show the menu at the side
   cur=p;CALCV=p==='calc'&&view==='v';$('calc').classList.toggle('cv',CALCV);TOOLV=p==='tools'&&/^tool-/.test(view||'')?view:'';$('tools').classList.toggle('tv',!!TOOLV);if(TOOLV)$('tback').querySelector('span').textContent=typeof TOOLFROM!=='undefined'&&TOOLFROM&&TOOLFROM!=='#tools'?L('رجوع','Back'):T('tab_tools');document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));if(CALCV)$('cvname').textContent=kname(K);if(typeof rememberRecent==='function')rememberRecent('p:'+p);
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
@@ -33,7 +34,7 @@ function routeSpecial(){
   return false;
 }
 document.querySelectorAll('.tab[data-p]').forEach(t=>{
-  t.addEventListener('click',()=>{if(t.dataset.p==='menu'&&WIDE()){toggleSide();return}go(t.dataset.p)}); // computers: ☰ shows or hides the side menu
+  t.addEventListener('click',()=>{if(t.dataset.p==='menu'&&WIDE()){toggleSide();return}if(t.dataset.p==='notif'){openNotif();return}go(t.dataset.p)}); // computers: ☰ shows or hides the side menu
   t.addEventListener('keydown',e=>{
     const vis=[...document.querySelectorAll('.tab[data-p]')].filter(x=>x.offsetParent!==null),i=vis.indexOf(t),rtl=document.documentElement.dir==='rtl';
     let j=null;if(e.key==='ArrowRight')j=rtl?i-1:i+1;if(e.key==='ArrowLeft')j=rtl?i+1:i-1;
@@ -195,6 +196,8 @@ function apply(){
 }
 $('nsearch').addEventListener('input',filterNuts);
 $('isearch').addEventListener('input',renderInter);
+$('ssearch').addEventListener('input',renderRefs);
+$('tsearch').addEventListener('input',()=>toolSearch()); // toolSearch lives in nav.js, loaded after this file
 // «أدويتي»: only medicines the site knows can be added (picked from the suggestions; Enter takes the first one)
 $('medform').addEventListener('submit',e=>{e.preventDefault();const s=medSuggest($('medin').value);if(s.length)addMed(s[0].en);else renderSug()});
 $('medin').addEventListener('input',renderSug);

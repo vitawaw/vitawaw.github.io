@@ -854,3 +854,20 @@ span.lkc{cursor:default}
 @media (min-width:1024px){#filters,#sfilters{grid-template-columns:repeat(7,minmax(0,1fr))}}
 #filters>button,#sfilters>button{width:100%;min-width:0;min-height:44px;margin:0;padding:6px 8px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.25;border-radius:12px}
 #filters>.srcf{grid-column:1/-1}
+/* 1.12.1: no empty result box until the visitor enters data or asks for an example */
+#calc.nores #resbox,#calc.nores .rbar{display:none}
+#calc.nores .calc{grid-template-columns:minmax(0,1fr)}
+/* result buttons: one size, like the vitamin buttons (3 a row; 4 on a tablet's full-width result) */
+#res .ract{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+@media (min-width:600px) and (max-width:899px){#res .ract{grid-template-columns:repeat(4,minmax(0,1fr))}}
+#res .ract>.btn{width:100%;min-width:0;min-height:44px;margin:0;padding:6px 8px;display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;white-space:normal;line-height:1.25}
+.tgsec .nsearch{margin-bottom:12px}
+/* sign in: buttons in the middle, two on each line */
+#dlg-a.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;justify-content:center}
+#dlg-a.two>.btn{width:100%;margin:0;justify-content:center;text-align:center}
+/* password rules under a new password: grey until met, then green */
+.pwr{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 12px;font:600 11.5px var(--f-body);color:var(--mute)}
+.pwr li::before{content:"○ "}
+.pwr li.ok{color:var(--ok)}
+.pwr li.ok::before{content:"✓ "}
+.pvbar{background:var(--bad);color:#fff;font:700 13px var(--f-body);text-align:center;padding:6px 12px;position:relative;z-index:40}

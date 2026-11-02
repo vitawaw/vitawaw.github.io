@@ -115,7 +115,7 @@ function adminGroups(){
   if(look.length)A.push({id:'look',ico:ICO.site,label:T('ad_look'),rows:look});
   if(ISOWNER())A.push({id:'contact',ico:MI.mail,label:T('ad_contact'),rows:[{label:T('o_contact'),sub:[CFG.contact.email,CFG.contact.phone].filter(Boolean).join(' · '),ico:MI.mail,f:()=>editContact()}]});
   if(ISOWNER())A.push({id:'team',ico:ICO.team,label:T('ad_team'),n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,go:()=>go('team')});
-  if(ISOWNER())A.push({id:'pub',ico:ICO.history,label:T('ad_pub'),rows:[{label:T('vh_t'),ico:ICO.history,f:()=>openVersions()}]});
+  if(ISOWNER())A.push({id:'pub',ico:ICO.history,label:T('ad_pub'),rows:[{label:T('vh_t'),ico:ICO.history,f:()=>openVersions()},{label:T('bk_t'),sub:T('bk_s'),ico:MI.install,f:downloadBackup}]});
   return A;
 }
 /* «your shortcuts»: the last pages and tools this visitor opened (this device only) */
@@ -125,13 +125,15 @@ function recentItem(k){
   const [t,id]=k.split(':');
   if(t==='p'&&SECKEY[id])return {label:T(SECKEY[id]),ico:tabIco(id),page:id,f:()=>go(id)};
   const tl=TOOLS.find(x=>TOOLKIND[x[0]]===id);
-  if(t==='t'&&tl){if(MODE==='pt'&&PROONLY.includes(tl[0]))return null;const ic=$(tl[0])&&$(tl[0]).querySelector('.ttl-ic svg');return {label:toolName(tl),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openToolPage(tl[0])}}
+  if(t==='t'&&tl){if((MODE==='pt'&&PROONLY.includes(tl[0]))||toolHidden(tl[0]))return null;const ic=$(tl[0])&&$(tl[0]).querySelector('.ttl-ic svg');return {label:toolName(tl),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openToolPage(tl[0])}}
   return null;
 }
 /** «suggest a feature or report an error»: phone and e-mail in a floating window (the owner can edit them there) */
 function openContact(){openPage('suggest')}
 /* the tools page: rectangles like the vitamins; each opens its own working page (#tool-pill…) with «‹ Tools» */
 const PROONLY=['tool-pill','tool-ca','tool-gz','tool-u','tool-ul']; // pharmacist tools: not shown in patient mode
+/** a tool the owner hid is gone everywhere: tools page, search, result buttons, menu, reminders (id = 'tool-labs', or its kind 'labs') */
+const toolHidden=k=>{const id=k.startsWith('tool-')?k:(TOOLS.find(t=>TOOLKIND[t[0]]===k)||[''])[0];return !SHOWALL()&&((CFG.tools&&CFG.tools.hide)||[]).includes(id)};
 /** the tools in the owner's order; hidden ones only for the team while editing; patient mode leaves out the pharmacist tools */
 function toolList(){
   const c=CFG.tools||{},ids=TOOLS.map(t=>t[0]),order=[...new Set([...(c.order||[]).filter(x=>ids.includes(x)),...ids])],hide=c.hide||[];
@@ -145,7 +147,10 @@ function renderToolsGrid(){
     return own?`<div class="pkw tkw${off?' off':''}" data-sid="${t[0]}">${b}<div class="pka">${DRAG(T('o_drag'))}<button class="btn" type="button" data-tled="${t[0]}" aria-label="${esc(T('o_edit'))}" title="${esc(T('o_edit'))}">${PEN}</button><button class="btn" type="button" data-tlhide="${t[0]}" aria-label="${esc(T(off?'o_nshow':'o_nhide'))}" title="${esc(T(off?'o_nshow':'o_nhide'))}">${off?EYE:EYEOFF}</button></div></div>`:b}).join('')+
     (own?`<p class="hint tlhint">${T('tl_hint')}</p>`:'');
   if(own)sortable($('tgrid'),'.tkw',ids=>{if(!ISOWNER())return;CFG.tools={...CFG.tools,order:ids};changed()});
+  toolSearch();
 }
+/** the search box above the tools keeps only the tools whose name matches */
+function toolSearch(){const q=normAr($('tsearch')&&$('tsearch').value).trim();document.querySelectorAll('#tgrid [data-tv]').forEach(b=>{(b.closest('.tkw')||b).hidden=!!q&&!normAr(b.textContent).includes(q)})}
 document.addEventListener('click',async e=>{
   const h=e.target.closest('[data-tlhide]'),ed=e.target.closest('[data-tled]');if(!(h||ed)||!ISOWNER())return;e.preventDefault();
   const c=CFG.tools={order:[],hide:[],names:{},...CFG.tools};
@@ -171,9 +176,9 @@ function renderNav(){
   renderTabs();
   document.querySelectorAll('#sheet-x').forEach(x=>x.setAttribute('aria-label',L('إغلاق','Close')));
   const nc=notifCount();['nt-count','hnt-count'].forEach(id=>{$(id).hidden=!nc;$(id).textContent=nc>99?'99+':nc});
-  $('hnotif').setAttribute('aria-label',T('nt_t'));$('hnotif').classList.toggle('on',cur==='notif');
+  $('hnotif').setAttribute('aria-label',T('nt_t'));$('hnotif').classList.toggle('on',!!(SHEET&&SHEET.key==='notif'));
   document.body.classList.toggle('team',typeof OWN!=='undefined'&&OWN.on);
-  if(cur==='notif')renderNotif();
+  if(SHEET&&SHEET.key==='notif')renderNotif();
   renderToolsGrid();$('cvname').textContent=kname(K);
   $('hsearch').setAttribute('aria-label',T('gs_t'));
   document.querySelectorAll('.tab[data-p]').forEach(t=>{const lb=t.querySelector('.full,[data-t]');if(lb)t.title=lb.textContent}); // computers show icons only: the name appears on hover
@@ -181,7 +186,9 @@ function renderNav(){
   renderMenu();
 }
 // older names (owner bar «awaiting review ›», tests)
-const openNav=()=>go('notif');
+/** 🔔 opens in a floating window over the page you are on */
+function openNotif(){if(SHEET&&SHEET.key==='notif')return;openSheet(T('nt_t'),$('notifbox'),{key:'notif',onClose:()=>renderNav()});renderNotif(true);renderNav()}
+const openNav=openNotif;
 const openMore=openNav,closeNav=()=>{},closeMore=()=>{};
 
 let INSTALL=null;
@@ -210,6 +217,7 @@ const MI={
   login:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M4 12h11M11 8l4 4-4 4"/></svg>',
   invite:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 9v6M9 12h6"/></svg>',
   key:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2M14 9l2 2"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',
   out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M20 12H9M16 8l4 4-4 4"/></svg>',
   pub:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>'
 };
@@ -250,7 +258,7 @@ function menuHTML(r){
   // shortcut tiles: sources (phones), coming next, «suggest a feature», my lab results, information pages
   const SPECIAL=['faq','howto','privacy','disclaimer','suggest'];
   const tiles=[...navMore().map(p=>({label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,f:()=>go(p)})),
-    ...(pg('suggest')?[{...pgItem(pg('suggest')),ico:MI.mail}]:[]),{label:T('lb_t'),ico:ICO.chart,page:'tools',f:()=>openToolPage('tool-labs')},...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(pgItem)];
+    ...(pg('suggest')?[{...pgItem(pg('suggest')),ico:MI.mail}]:[]),...(toolHidden('tool-labs')?[]:[{label:T('lb_t'),ico:ICO.chart,page:'tools',f:()=>openToolPage('tool-labs')}]),...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(pgItem)];
   h+=`<div class="mg"><h3>${esc(T('mn_short'))}</h3><div class="mtiles">${tiles.map(tile).join('')}</div></div>`;
   // three rectangles on one line: contact (WhatsApp · e-mail · call), and at the end the settings
   const r3=(title,list)=>list.length?`<div class="mg"><h3>${esc(title)}</h3><div class="m3">${list.map(c=>{const inner=`<span class="di">${c.ico}</span><b>${esc(c.label)}</b>${c.v?`<small>${esc(c.v)}</small>`:''}`;
@@ -259,16 +267,16 @@ function menuHTML(r){
   if(PHONEF())con.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
   if(EMAILF())con.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
   if(PHONEF())con.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
-  if(!(own&&!ISOWNER()))h+=r3(T('ma_contact'),con); // an invited pharmacist talks to the owner directly, not through the public contact
-  // under contact, each on its own: how to use · FAQ · privacy policy · disclaimer; then install and share
+  // «help and information», each on its own: how to use · FAQ · privacy policy · disclaimer; then install, share, clear my data
   const PICO={howto:MI2.book,faq:MI2.q,privacy:MI2.shield,disclaimer:ICO.info};
-  h+=['howto','faq','privacy','disclaimer'].map(pg).filter(Boolean).map(p=>grp('',row({...pgItem(p),ico:PICO[p.id]}),'one')).join('');
-  h+=grp('',row({label:T('mr_install'),ico:MI.install,f:installApp})+row({label:T('mr_share'),ico:MI.share,f:shareApp}));
+  h+=['howto','faq','privacy','disclaimer'].map(pg).filter(Boolean).map((p,i)=>grp(i?'':T('mg_help'),row({...pgItem(p),ico:PICO[p.id]}),'one')).join('');
+  h+=grp('',row({label:T('mr_install'),ico:MI.install,f:installApp})+row({label:T('mr_share'),ico:MI.share,f:shareApp})+row({label:T('cd_t'),ico:MI.trash,f:clearMyData}));
   // the team: management sections, pharmacists (own page), my account
   const A=own?adminGroups():[];
   if(A.length)h+=`<div class="mg"><h3>${esc(T('nv_admin'))}</h3><div class="ml maccs">`+
     A.map(g=>g.go?row({label:g.label,ico:g.ico,n:g.n,f:g.go}):acc('ad-'+g.id,g.ico,g.label,g.rows.map(row).join(''))).join('')+`</div></div>`;
   if(own)h+=`<div class="mg"><div class="ml maccs">`+acc('mine',MI.key,T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join(''))+`</div></div>`;
+  if(!(own&&!ISOWNER()))h+=r3(T('ma_contact'),con); // contact, right above the settings (an invited pharmacist talks to the owner directly)
   h+=r3(T('mr_settings'),[{label:T('mr_lang'),v:LANG==='ar'?'العربية':'English',ico:MI.lang,f:()=>setLang(LANG==='ar'?'en':'ar')},
     {label:T('mr_theme'),v:T(isDark()?'mr_dark':'mr_light'),ico:MI.theme,f:()=>setTheme(isDark()?'light':'dark')},
     {label:T('mr_mode'),v:T(MODE==='pro'?'m_pro':'m_pt'),ico:MI.mode,f:()=>setMode(MODE==='pro'?'pt':'pro')}]);
@@ -294,7 +302,7 @@ function gsResults(q){
   const n=normAr(q);if(n.length<2)return '';
   const terms=iTerms(n),hit=t=>{const h=normAr(t);return terms.some(x=>h.includes(x))};
   const calc=KEYS.slice(1).filter(k=>hit(kname(k)+' '+(I18N['h_'+k]?I18N['h_'+k].join(' '):''))).slice(0,6);
-  const tools=TOOLS.filter(t=>hit(T(t[1])+' '+T(t[2]))).slice(0,6);
+  const tools=TOOLS.filter(t=>!toolHidden(t[0])&&hit(T(t[1])+' '+T(t[2]))).slice(0,6);
   const inter=INTER.filter(x=>x[7]&&!x[8]&&hit([x[1][0],x[1][1],x[2][0],x[2][1],x[3][0],x[3][1]].join(' ')));
   const refs=Object.entries(REFS).filter(([i,x])=>!x[6]&&hit(x[0]+' '+x[1]+' '+x[3]+' '+x[4])).slice(0,6);
   const pages=visiblePages().filter(p=>hit(tx2(p.t)+' '+tx2(p.b))).slice(0,4);
@@ -337,7 +345,7 @@ function closeSheet(focus=true){
 }
 $('sheet-x').addEventListener('click',()=>closeSheet());
 $('hsearch').addEventListener('click',openSearch);
-$('hnotif').addEventListener('click',()=>go('notif'));
+$('hnotif').addEventListener('click',openNotif);
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeSheet()});
 function openToolSheet(sec){const t=TOOLS.find(x=>x[0]===sec)||TOOLS[1];openSheet(T(t[2]),$(t[0]),{key:'tool'})}
 
@@ -390,3 +398,13 @@ document.addEventListener('keydown',e=>{
   if(e.key!=='Escape'||!$('dlg').hidden||!$('ov').hidden)return;
   if(!$('sheet').hidden){closeSheet();return}
 });
+
+/** «clear my data from this device»: lab results, my medicines, the schedule, shortcuts and reminders (the language and look stay) */
+async function clearMyData(){
+  const q=await dialog({title:T('cd_t'),info:T('cd_i'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('cd_go'),action:'ok',pri:1,danger:1}]});
+  if(q.action!=='ok')return;
+  ['vw-labs','vw-meds','vw-sch','vw-recent','vw-seen','vw-k','vw-p'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
+  LABS.length=0;MEDS.length=0;RECENT.length=0;SEEN.length=0;
+  document.querySelectorAll('#s-data input[type="number"]').forEach(i=>{i.value=''});
+  if(typeof labs==='function')labs();if(typeof renderInter==='function')renderInter();F[K]();renderNav();toast(T('cd_done'));
+}

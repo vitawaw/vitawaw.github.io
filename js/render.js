@@ -10,7 +10,9 @@ const ICON={
  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5h.01"/></svg>'};
 const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>';
 /** the medical review stamp chosen by the owner: «تمت المراجعة الطبية بواسطة الصيدلي سيف الدين · 2026-10-29» */
-const REV=()=>{const v=CFG.review||{},n=v.n?tx2(v.n):'';return {name:n?esc(n):'',date:v.date||''}};
+/** the review stamp's name; the old wording «الصيدلي سيف الدين» now reads «د. سيف الدين» */
+const REV0=v=>{const n=(v&&v.n)||{ar:'',en:''};return n.ar==='الصيدلي سيف الدين'||n.ar==='الصيدلاني سيف الدين'?{ar:I18N.rv_owner[0],en:I18N.rv_owner[1]}:n};
+const REV=()=>{const v=CFG.review||{},n=tx2(REV0(v));return {name:n?esc(n):'',date:v.date||''}};
 /** a pharmacist's own stamp on an item he added or edited, once the owner approved it: «Reviewed by: name · date» */
 const stampHTML=(by,at)=>by?`<div class="stamp">${CHECK}${esc(T('st_by'))} ${esc(by)}${at?` · <bdi>${esc(at)}</bdi>`:''}</div>`:'';
 function reviewHTML(){const c=typeof CUST!=='undefined'&&CUST[K];return (c&&c.sb?stampHTML(c.sb,c.sa):'')+reviewHTML0()}
@@ -24,7 +26,7 @@ function interHTML(){
     <button class="btn" type="button" data-goint="${esc(ks.length>1?'all':K)}">${T('ri_all')}</button></div>`;
 }
 function render(r){
-  LAST=r;
+  LAST=r;$('calc').classList.remove('nores');
   const pt=MODE==='pt';
   const urgent=(r.notes||[]).filter(n=>n.u),rest=(r.notes||[]).filter(n=>!n.u);
   const all=r.srcs=[...new Set([...(r.refs||[]),...(r.opts||[]).flatMap(o=>o.r||[]),...(r.notes||[]).flatMap(o=>o.r||[]),...(r.plan||[]).flatMap(o=>o.r||[])])].sort((a,b)=>a-b);
@@ -51,7 +53,7 @@ function render(r){
    (pt&&r.pt?`<p class="ptxt">${r.pt}</p>`:`<h3>${r.title}${R(r.refs||[])}</h3><p class="sub">${r.sub||''}</p>`)+
    (urgent.length?`<div class="alerts">${urgent.map(n=>`<div class="alert">${ICON.bad}<div>${n.t}${pt?'':R(n.r||[])}</div></div>`).join('')}</div>`:'')+
    (r.plan&&r.plan.length?`<p class="plan-h">${T('plan')}</p><ol class="plan">${r.plan.map(s=>`<li><b>${s.h}</b><span>${s.d||''}</span></li>`).join('')}</ol>`:'')+
-   (acts.length?`<div class="ract">${acts.join('')}</div>`:'')+
+   (acts.length?`<div class="ract">${acts.filter(a=>{const m=a.match(/data-tool="(\w+)"/);return !m||typeof toolHidden!=='function'||!toolHidden(m[1])}).join('')}</div>`:'')+
    `<details class="more"${pt?'':' open'}><summary>${T(pt?'more_pt':'more_pro')}</summary>`+
      (pt&&r.pt?`<h3 style="font-size:17px">${r.title}${R(r.refs||[])}</h3><p class="sub">${r.sub||''}</p>`:'')+
      (r.kv&&r.kv.length?`<div class="kv">${r.kv.map(x=>`<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div>`:'')+
