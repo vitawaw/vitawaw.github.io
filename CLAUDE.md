@@ -70,7 +70,7 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
 
 ## Where we are (2026-11-02)
 - **Live: 1.12.0** (he approved publishing on 2026-11-02: «نعم موافق اعطني الروابط لانشرة»; main fast-forwarded from this branch).
-  DB file `20261102120000_stamps_and_science_only.sql` given to him to run (check afterwards: column `author`, function `private.stamp_name`).
+  DB file `20261102120000_stamps_and_science_only.sql` APPLIED by him and checked (3 author columns, private.stamp_name, can_edit text owner-only). Redirect URLs added by him.
   He also has to add the production + preview URLs in Supabase → Auth → URL configuration for «forgot password», and log in → save → publish
   (how-to/FAQ split, menus/tools settings).
 - **1.12.0 (second try)**: built on 1.11.1 with only the items he picked from the proposals (he pasted them).
