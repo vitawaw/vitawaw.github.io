@@ -57,9 +57,9 @@ def walk(pg,lang,tag):
     pg.click('#t-calc');pg.wait_for_timeout(150)
     scan(pg,tag+' calc-empty',lang)
     for mode in ['pro','patient']:
-        pg.click(f'#modeg [data-mode="{mode}"]') if pg.is_visible(f'#modeg [data-mode="{mode}"]') else None
+        pg.evaluate(f"setMode('{'pro' if mode=='pro' else 'pt'}')")
         for k in nutrients(pg):
-            pg.click(f'#picker [data-k="{k}"]');pg.wait_for_timeout(60)
+            pg.evaluate(f"openNut('{k}')");pg.wait_for_timeout(60)  # each vitamin has its own page (1.12.0)
             fill_all(pg)
             for sx in (['m','f','p','l'] if mode=='pro' else ['f']):
                 try: pg.select_option('#sex',sx)
@@ -80,6 +80,7 @@ def walk(pg,lang,tag):
                 txt=pg.evaluate('typeof cardText==="function"?cardText():""')
                 if lang=='en' and re.search('[؀-ۿ]',txt): found[(lang,'cardText '+k,txt[:140])]=tag
                 pg.keyboard.press('Escape');pg.wait_for_timeout(50)
+    pg.evaluate("go('calc')");pg.wait_for_timeout(80)
     pg.fill('#nsearch','zzzz') if pg.is_visible('#nsearch') else None
     pg.wait_for_timeout(50);scan(pg,tag+' search-empty',lang)
     if pg.is_visible('#nsearch'): pg.fill('#nsearch','');pg.dispatch_event('#nsearch','input')
@@ -87,6 +88,8 @@ def walk(pg,lang,tag):
     pg.evaluate('''()=>{document.querySelectorAll('#tools input').forEach((e,i)=>{if(e.type==='number'||e.type==='text'||!e.type){e.value=String([60,1.5,2,1000,4,3.5,9,70,9,15,500][i%11]);e.dispatchEvent(new Event('input',{bubbles:true}))}});
       document.querySelectorAll('#tools select').forEach(s=>{s.selectedIndex=s.options.length-1;s.dispatchEvent(new Event('change',{bubbles:true}))})}''')
     pg.wait_for_timeout(100);scan(pg,tag+' tools-filled',lang)
+    for tid in pg.evaluate("TOOLS.map(t=>t[0])"):  # each tool on its own page
+        pg.evaluate(f"openToolPage('{tid}')");pg.wait_for_timeout(60);scan(pg,f'{tag} {tid}',lang)
     for t in ['interactions','sources','roadmap']:
         pg.evaluate(f"go('{t}')");pg.wait_for_timeout(100);scan(pg,tag+' '+t,lang)
         for f in pg.locator(f'#{t} [data-f], #filters button, #sfilters button').all()[:20]:
@@ -124,7 +127,7 @@ with sync_playwright() as p:
         pg.evaluate('l=>setLang(l)',start);pg.wait_for_timeout(150);scan(pg,'visitor home',start)
         walk(pg,start,'visitor');menus(pg,start,'visitor')
         # render in this lang, then switch and scan stale content
-        pg.click('#t-calc');pg.click('#picker [data-k="d"]');fill_all(pg);pg.wait_for_timeout(100)
+        pg.evaluate("openNut('d')");pg.wait_for_timeout(100);fill_all(pg);pg.wait_for_timeout(100)
         pg.evaluate('l=>setLang(l)',other);pg.wait_for_timeout(200);scan(pg,'after-switch calc',other)
         for t in ['tools','interactions','sources','roadmap']:
             pg.evaluate(f"go('{t}')");pg.wait_for_timeout(60);scan(pg,'after-switch '+t,other)
