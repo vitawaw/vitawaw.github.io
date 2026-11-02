@@ -50,6 +50,22 @@ with sync_playwright() as p:
     fails += not ok; print(('ok   ' if ok else 'FAIL ')+f'schedule gaps {asg}')
     asg = pg.evaluate("schSolve(['bis','levo','ca','mg'])"); ok = asg['levo']>=asg['bis']+30 and asg['ca']>=asg['bis']+120 and abs(asg['levo']-asg['mg'])>=240
     fails += not ok; print(('ok   ' if ok else 'FAIL ')+f'schedule alendronate {asg}')
+    # 1.13.0: eltrombopag 2 h before or 4 h after minerals; gabapentin (3 doses) at least 2 h after magnesium; Biktarvy and magnesium 2 h / 6 h
+    asg = pg.evaluate("schSolve(['elt','fe','ca','mg','zn'])"); ok = bool(asg) and all(asg['elt']<=asg[m]-120 or asg['elt']>=asg[m]+240 for m in ('fe','ca','mg','zn'))
+    fails += not ok; print(('ok   ' if ok else 'FAIL ')+f'schedule eltrombopag {asg}')
+    asg = pg.evaluate("schSolve(['gaba','mg'])"); ok = bool(asg) and all(t<=asg['mg'] or t>=asg['mg']+120 for t in (asg['gaba'],asg['gaba']+360,asg['gaba']+720))
+    fails += not ok; print(('ok   ' if ok else 'FAIL ')+f'schedule gabapentin {asg}')
+    asg = pg.evaluate("schSolve(['bik','mg'])"); ok = bool(asg) and (asg['bik']<=asg['mg']-120 or asg['bik']>=asg['mg']+360)
+    fails += not ok; print(('ok   ' if ok else 'FAIL ')+f'schedule Biktarvy {asg}')
+    check('my medicines -> schedule (gabapentin)', str(pg.evaluate("medSch('نيورونتين')")), 'gaba')
+    # 1.13.0 tools: zinc acetate, serum zinc/copper units, more upper limits, lab history lines
+    pg.goto('http://app.test/#tool-pill'); pg.wait_for_timeout(150)
+    setv('salt','za','change'); setv('tabmg',50); setv('needmg',15); check('zinc acetate 30%', T('elper'), '15 ملغ')
+    pg.goto('http://app.test/#tool-u'); pg.wait_for_timeout(150)
+    setv('ucv','znl','change'); setv('uval',100); check('serum zinc 100 µg/dL', T('uout'), '15.3 µmol/L')
+    setv('ucv','cul','change'); setv('uval',100); check('serum copper 100 µg/dL', T('uout'), '15.7 µmol/L')
+    check('upper limits: copper', pg.evaluate("ULT.map(x=>x[0]).join(',')"), 'copper,manganese,molybdenum,choline,phosphorus')
+    check('lab history: active B12 and folate', pg.evaluate("LABT.map(x=>x[0]).join(',')"), 'd,b12,ab12,fol,hb,fer,mg')
     # calculator -> tools, filled in
     pg.goto('http://app.test/#calc'); pg.wait_for_timeout(300)
     def calc(k, fields, sx='f'):

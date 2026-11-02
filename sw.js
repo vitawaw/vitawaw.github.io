@@ -1,6 +1,6 @@
 // VITAWAW service worker: lets the installed app open offline.
 // VERSION and FILES are updated by tools/set_version.py; do not edit them by hand.
-const VERSION='vitawaw-1.13.0-3344d05a';
+const VERSION='vitawaw-1.13.0-44e7a9c7';
 const FILES=[
   './',
   './index.html',
@@ -10,15 +10,15 @@ const FILES=[
   './css/app.css?v=1.13.0-5b8c8227',
   './js/pre.js?v=1.13.0-ade4e9d5',
   './js/config.js?v=1.13.0-ed97f5f1',
-  './js/i18n.js?v=1.13.0-1f4295fd',
-  './js/data.js?v=1.13.0-554d09d3',
+  './js/i18n.js?v=1.13.0-5d8f7264',
+  './js/data.js?v=1.13.0-5e682832',
   './js/util.js?v=1.13.0-79bc26a7',
   './js/validation.js?v=1.13.0-37b8f300',
   './js/render.js?v=1.13.0-dec0f6d6',
-  './js/calculators.js?v=1.13.0-732c30fd',
+  './js/calculators.js?v=1.13.0-746d4342',
   './js/content.js?v=1.13.0-f26d1ff7',
-  './js/tools.js?v=1.13.0-a746f079',
-  './js/lists.js?v=1.13.0-63623292',
+  './js/tools.js?v=1.13.0-305d92d8',
+  './js/lists.js?v=1.13.0-a6819a08',
   './js/ui.js?v=1.13.0-03ee8c93',
   './js/published.js?v=1.13.0-87f710f2',
   './js/owner.js?v=1.13.0-057ee443',

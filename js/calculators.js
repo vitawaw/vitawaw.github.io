@@ -113,7 +113,7 @@ function fB12(){
   }else r={badge:sT==='ind'?L('نقص غير مرجّح (Active B12 أعلى من 70 pmol/L)','Deficiency unlikely (active B12 above 70 pmol/L)'):L('ضمن الطبيعي','Normal'),tone:'ok',title:L(`الاحتياج اليومي ${rda} mcg`,`Daily need ${rda} mcg`),sub:L('من الغذاء أو متعدد الفيتامينات','From food or a multivitamin'),refs:sA?[5,8]:[8],pt:L('مستوى B12 طبيعي، ولا تحتاج علاجاً.','Your B12 level is normal; no treatment is needed.')};
   if(st==='ind'&&sA==='ind')notes.push({t:L('حسب NICE: عند Active B12 بين 25 و70 pmol/L مع أعراض، يُفحص MMA وتُفسَّر نتيجته حسب حدود المختبر.','Per NICE: with active B12 of 25–70 pmol/L and symptoms, test MMA and read it against the laboratory limits.'),r:[5]});
   if(sT==='ind'&&sA==null)notes.push({t:L('أدخل نتيجة Active B12 إن توفرت: أقل من 25 pmol/L يؤكد النقص، وأعلى من 70 يجعله غير مرجّح.','Enter an active B12 result if available: below 25 pmol/L confirms deficiency, above 70 makes it unlikely.'),r:[5],i:1});
-  r.lab=pg!=null?[['b12',Math.round(pg)]]:null;
+  r.lab=[...(pg!=null?[['b12',Math.round(pg)]]:[]),...(ab!=null?[['ab12',ab]]:[])];if(!r.lab.length)r.lab=null;
   r.kv=kv;r.notes=notes;render(r);
 }
 

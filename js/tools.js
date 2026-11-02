@@ -19,7 +19,8 @@ const SALTS=[['direct','',  'أعرف الكمية العنصرية من الع�
  ['mgl','mg','Magnesium glycinate (مغنيسيوم 14%)','Magnesium glycinate (14% magnesium)',0.14],
  ['mcl','mg','Magnesium chloride (مغنيسيوم 12%)','Magnesium chloride (12% magnesium)',0.12],
  ['zs','zn','Zinc sulfate (زنك 23%)','Zinc sulfate (23% zinc)',0.23],
- ['zg','zn','Zinc gluconate (زنك 14%)','Zinc gluconate (14% zinc)',0.14]];
+ ['zg','zn','Zinc gluconate (زنك 14%)','Zinc gluconate (14% zinc)',0.14],
+ ['za','zn','Zinc acetate (زنك 30%)','Zinc acetate (30% zinc)',0.30]]; // Saper & Rash, Am Fam Physician 2009 (source 77)
 const SALTGRP={fe:['الحديد','Iron'],ca:['الكالسيوم','Calcium'],mg:['المغنيسيوم','Magnesium'],zn:['الزنك','Zinc']};
 function saltBuild(){
   const v=$('salt').value||'direct';
@@ -126,9 +127,15 @@ const ULT=[
  ['ca','الكالسيوم (غذاء + مكمل)','Calcium (food + supplements)','mg',[2500,2500,3000,3000,2500,2000],18,'يُحسب الغذاء والمكمل معاً','Food and supplements together'],
  ['mg','المغنيسيوم (مكمل)','Magnesium (supplements)','mg',[65,110,350,350,350,350],20,'من المكملات والأدوية فقط، وليس من الطعام','From supplements and medicines only, not food'],
  ['se','السيلينيوم','Selenium','mcg',[90,150,280,400,400,400],39],
- ['io','اليود','Iodine','mcg',[200,300,600,900,1100,1100],37]];
+ ['io','اليود','Iodine','mcg',[200,300,600,900,1100,1100],37],
+ // 1.13.0 (NIH): useful after weight-loss surgery, where zinc and copper are taken together
+ ['copper','النحاس','Copper','mcg',[1000,3000,5000,8000,10000,10000],40,'لا ينطبق تحت الإشراف الطبي','Does not apply under medical supervision'],
+ ['manganese','المنغنيز','Manganese','mg',[2,3,6,9,11,11],48],
+ ['molybdenum','الموليبدينوم','Molybdenum','mcg',[300,600,1100,1700,2000,2000],49],
+ ['choline','الكولين','Choline','mg',[1000,1000,2000,3000,3500,3500],44],
+ ['phosphorus','الفوسفور','Phosphorus','mg',[3000,3000,4000,4000,4000,4000],50,'من 71 سنة: 3,000 ملغ؛ وفي الحمل 3,500 ملغ','From 71 years: 3,000 mg; in pregnancy 3,500 mg']];
 /** a vitamin the owner hid is gone from the tools too (schedule, upper limit, lab results); hb/ferritin follow iron, the 2nd calcium dose follows calcium */
-const nutOff=k=>{k={ca2:'ca',hb:'fe',fer:'fe'}[k]||k;return typeof SHOWALL==='function'&&!SHOWALL()&&(NHIDE().includes(k)||!!(typeof CUST!=='undefined'&&CUST[k]&&CUST[k].hidden))};
+const nutOff=k=>{k={ab12:'b12',ca2:'ca',hb:'fe',fer:'fe'}[k]||k;return typeof SHOWALL==='function'&&!SHOWALL()&&(NHIDE().includes(k)||!!(typeof CUST!=='undefined'&&CUST[k]&&CUST[k].hidden))};
 function ulBuild(){
   const old=Object.fromEntries(ULT.map(x=>[x[0],$('ul-'+x[0])?$('ul-'+x[0]).value:'']));
   $('ulin').innerHTML=ULT.filter(x=>!nutOff(x[0])).map(x=>`<div class="f"><label class="l" for="ul-${x[0]}">${L(x[1],x[2])} <small dir="ltr">${x[3]}</small></label><input type="number" id="ul-${x[0]}" min="0" step="any" inputmode="decimal" placeholder="—" value="${esc(old[x[0]]||'')}"></div>`).join('');
@@ -155,7 +162,9 @@ const UCV=[
  ['mg','المغنيسيوم: من mg/dL إلى mmol/L','Magnesium: mg/dL → mmol/L',0.4114,'mg/dL','mmol/L',20],
  ['ca','الكالسيوم: من mg/dL إلى mmol/L','Calcium: mg/dL → mmol/L',0.2495,'mg/dL','mmol/L',18],
  ['hb','الهيموغلوبين: من g/dL إلى g/L','Hemoglobin: g/dL → g/L',10,'g/dL','g/L',51],
- ['fer','Ferritin: من ng/mL إلى µg/L','Ferritin: ng/mL → µg/L',1,'ng/mL','µg/L',52]];
+ ['fer','Ferritin: من ng/mL إلى µg/L','Ferritin: ng/mL → µg/L',1,'ng/mL','µg/L',52],
+ ['znl','الزنك في الدم: من µg/dL إلى µmol/L','Serum zinc: µg/dL → µmol/L',0.153,'µg/dL','µmol/L',78],
+ ['cul','النحاس في الدم: من µg/dL إلى µmol/L','Serum copper: µg/dL → µmol/L',0.157,'µg/dL','µmol/L',78]];
 function ucvBuild(){const v=$('ucv').value||'d';$('ucv').innerHTML=UCV.map(x=>`<option value="${x[0]}">${L(x[1],x[2])}</option>`).join('');$('ucv').value=v;ucv()}
 function ucv(){
   const c=UCV.find(x=>x[0]===$('ucv').value)||UCV[0],v=nv('uval');
@@ -179,13 +188,22 @@ const SCI=[
  ['zn','الزنك','Zinc',[6*H,12*H,1*H],'مع الوجبة إن سبّب غثياناً','With a meal if it causes nausea',[25]],
  ['d','فيتامين D','Vitamin D',[6*H,12*H,1*H],'مع أكبر وجبة فيها دهون','With the largest meal containing fat',[4]],
  ['abx','مضاد حيوي (Ciprofloxacin أو Doxycycline) مرتين يومياً','Antibiotic (ciprofloxacin or doxycycline) twice a day',[1*H,2*H,3*H,0],'كل 12 ساعة؛ إذا وُصف 3 مرات يومياً فاسأل الصيدلي','Every 12 hours; if prescribed three times a day, ask the pharmacist',[45]],
- ['dtg','Dolutegravir','Dolutegravir',[0,1*H,2*H,15*H],'مرة يومياً في وقت ثابت؛ ويمكن أخذه مع الحديد أو الكالسيوم إذا كان مع وجبة','Once a day at a fixed time; it can be taken with iron or calcium if taken with a meal',[60]]];
+ ['dtg','Dolutegravir','Dolutegravir',[0,1*H,2*H,15*H],'مرة يومياً في وقت ثابت؛ ويمكن أخذه مع الحديد أو الكالسيوم إذا كان مع وجبة','Once a day at a fixed time; it can be taken with iron or calcium if taken with a meal',[60]],
+ // 1.13.0: the drugs of the new label-based interactions
+ ['bik','Bictegravir (Biktarvy)','Bictegravir (Biktarvy)',[1*H,0,6*H,12*H],'مرة يومياً في وقت ثابت؛ ويمكن أخذه مع الحديد أو الكالسيوم إذا أُخذا معاً مع وجبة','Once a day at a fixed time; it can be taken with iron or calcium if both are taken together with a meal',[75]],
+ ['elt','Eltrombopag (Promacta)','Eltrombopag (Promacta)',[0,15*H,3*H,9*H],'مرة يومياً على معدة فارغة أو مع وجبة قليلة الكالسيوم، بعيداً عن الحليب ومشتقاته','Once a day on an empty stomach or with a low-calcium meal, away from dairy',[72]],
+ ['gaba','Gabapentin (3 مرات يومياً)','Gabapentin (three times a day)',[0,1*H,2*H],'3 مرات يومياً بفاصل متقارب، وبعد مضادات الحموضة التي فيها مغنيسيوم بساعتين على الأقل','Three times a day, evenly spaced, and at least 2 hours after antacids with magnesium',[74]]];
+/** medicines taken more than once a day: offsets of each dose from the first one */
+const SCDOSES={abx:[0,12*H],gaba:[0,6*H,12*H]};
+const doseTimes=(id,t)=>(SCDOSES[id]||[0]).map(o=>t+o);
 /* built-in gaps, used when no interaction in the content sets one: [x, y, b, a, sources] = x at least b hours before y or a hours after it
    (b = a for a simple gap; a = 24 means x must come first). The owner sets the same thing on an interaction («التوقيت في الجدول»):
    its "g" {d: x, b, a} with the interaction's supplement as y — that one replaces the built-in rule for the pair. */
 const SCDEF=[['levo','fe',4,4,[27]],['levo','ca',4,4,[27]],['levo','mg',4,4,[27]],['fe','ca',2,2,[18,15]],['zn','fe',2,2,[25]],
  ...['levo','fe','zn','d','abx','dtg'].map(m=>['bis',m,0.5,24,[20]]),['bis','ca',2,24,[20]],['bis','mg',2,24,[20]],
- ...['fe','ca','mg','zn'].map(m=>['abx',m,2,6,[45]]),...['fe','ca','mg'].map(m=>['dtg',m,2,6,[60]])];
+ ...['fe','ca','mg','zn'].map(m=>['abx',m,2,6,[45]]),...['fe','ca','mg'].map(m=>['dtg',m,2,6,[60]]),
+ ...['fe','ca','mg','zn'].map(m=>['elt',m,2,4,[72]]),['bik','mg',2,6,[75]],['gaba','mg',0,2,[74]],
+ ...['levo','fe','zn','d','abx','dtg','bik','elt','gaba'].filter(m=>!['levo','fe','zn','d','abx','dtg'].includes(m)).map(m=>['bis',m,0.5,24,[20]])];
 const SCIDS=()=>SCI.map(x=>x[0]);
 /** the rules in force: interactions with timing (INTER[i][9]) win over the built-in ones; the second calcium dose follows calcium */
 function schRules(){
@@ -208,7 +226,7 @@ function schBuild(){
 }
 function schSolve(ids){
   const items=ids.map(id=>SCI.find(x=>x[0]===id)),rules=schRules();let best=null;
-  const doses=(id,t)=>id==='abx'?[t,t+12*H]:[t];       // the antibiotic is taken twice, 12 hours apart
+  const doses=doseTimes;       // the antibiotic twice (12 h apart), gabapentin three times
   const fits=(asg,id,t)=>rules.every(({x,y,b,a})=>{
     const other=id===x?y:id===y?x:null;if(other==null||asg[other]==null)return true;
     const tx=id===x?t:asg[x],ty=id===y?t:asg[y];
@@ -232,7 +250,7 @@ function sch(){
   if(!asg){$('schout').innerHTML=`<div class="ulsum bad">${T('sc_fail')}</div>`;return}
   const meals=[[0,L('الاستيقاظ','Wake up')],[H,L('الفطور','Breakfast')],[6*H,L('الغداء','Lunch')],[12*H,L('العشاء','Dinner')],[15*H,L('النوم','Bed')]];
   const rows=[...meals.map(([t,n])=>({t,meal:n})),...ids.flatMap(id=>{const x=SCI.find(y=>y[0]===id),t=asg[id];
-    return (id==='abx'?[t,t+12*H]:[t]).map(tt=>({t:tt,x}))})].sort((a,b)=>a.t-b.t||(a.meal?-1:1));
+    return doseTimes(id,t).map(tt=>({t:tt,x}))})].sort((a,b)=>a.t-b.t||(a.meal?-1:1));
   const pairs=schRules().filter(o=>ids.includes(o.x)&&ids.includes(o.y)&&!(o.x==='ca2'||o.y==='ca2'));
   $('schout').innerHTML=`<div class="ract"><button class="btn pri" type="button" id="schcal">${CALIC}${T('cal_add')}</button></div><ol class="sched">${rows.map(r=>r.meal?`<li class="meal"><time>${hhmm(r.t,W)}</time><span>${esc(r.meal)}</span></li>`:
     `<li><time>${hhmm(r.t,W)}</time><div><b>${esc(L(r.x[1],r.x[2]))}</b><small>${esc(L(r.x[4],r.x[5]))}${R(r.x[6])}</small></div></li>`).join('')}</ol>`+
@@ -270,13 +288,15 @@ function icsDownload(events,name='vitawaw-reminders'){
 function schCalendar(){
   const W=+$('schw').value,ids=SCI.map(x=>x[0]).filter(id=>$('sc-'+id)&&$('sc-'+id).checked),asg=ids.length&&schSolve(ids);if(!asg)return;
   icsDownload(ids.flatMap(id=>{const x=SCI.find(y=>y[0]===id),t=asg[id];
-    return (id==='abx'?[t,t+12*H]:[t]).map(tt=>({title:'VITAWAW · '+L(x[1],x[2]),desc:L(x[4],x[5]),time:hhmm(tt,W),freq:id==='bis'?'WEEKLY':'DAILY'}))}),'vitawaw-schedule');
+    return doseTimes(id,t).map(tt=>({title:'VITAWAW · '+L(x[1],x[2]),desc:L(x[4],x[5]),time:hhmm(tt,W),freq:id==='bis'?'WEEKLY':'DAILY'}))}),'vitawaw-schedule');
 }
 /* ===================== my lab results (on this device only) =====================
    [id, ar, en, unit, reference lines [value, ar, en]] — the lines are the limits the calculators use */
 const LABT=[['d','فيتامين D','Vitamin D','ng/mL',[[20,'نقص','deficient'],[30,'كافٍ','sufficient']]],
  ['b12','B12','B12','pg/mL',[[180,'نقص','deficient'],[350,'طبيعي','normal']]],
- ['hb','الهيموغلوبين','Hemoglobin','g/dL',[]],
+ ['ab12','Active B12','Active B12','pmol/L',[[25,'نقص','deficient'],[70,'نقص غير مرجّح فوقه','deficiency unlikely above']]], // NICE NG239
+ ['fol','الفولات في الدم','Serum folate','ng/mL',[[4,'نقص محتمل تحته','possible deficiency below']]], // WHO 2015: below 4 ng/mL (10 nmol/L)
+ ['hb','الهيموغلوبين','Hemoglobin','g/dL',[[12,'فقر دم تحته (المرأة)','anemia below (women)'],[13,'فقر دم تحته (الرجل)','anemia below (men)']]], // WHO 2024, 15 years and older, not pregnant
  ['fer','Ferritin','Ferritin','ng/mL',[[45,'حد البالغين','adult limit']]],
  ['mg','المغنيسيوم','Magnesium','mg/dL',[[1.8,'منخفض تحته','low below']]]];
 let LABS=[];try{LABS=JSON.parse(localStorage.getItem('vw-labs')||'[]').filter(x=>x&&LABT.some(t=>t[0]===x.k)&&isFinite(x.v)&&/^\d{4}-\d{2}-\d{2}$/.test(x.d)).slice(-300)}catch(e){}

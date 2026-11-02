@@ -78,6 +78,12 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   `thi` (fThi, NHS SPS 2024 = 70, NHS Highland/BNF = 71). Sources 69–75 are in DEF_REFS and fall back from code until published
   (content.js, ids ≥69 only). DB content `supabase/migrations/content_1_13_0.sql` (sources 69–75 + 12 interactions, reviewed=false,
   safe to run twice). 62 medical cases.
+  Tools round (same version): SCI items `bik`/`elt`/`gaba` + SCDEF rules (labels 75/72/74), `SCDOSES`/`doseTimes()` for multi-dose
+  items (abx ×2, gaba ×3); MEDSCH + DRUG_AR names; `DRUG_CLASS` (levofloxacin → quinolone…) in iTerms; LABT `ab12` (NICE) and `fol`
+  (WHO 2015, source 76) + Hb lines 12/13; ULT copper/manganese/molybdenum/choline/phosphorus; UCV `znl`/`cul` (source 78); SALTS `za`
+  (source 77). Sources 76–78 also in content_1_13_0.sql. tools_flow 84 checks. Review: all DOIs valid (NIH/BNF/publishers answer 403 to
+  scripts — not broken), i18n 758 pairs checked (h_inf, o_nrows_ph fixed), content ar/en numbers match. Roadmap item «قسم خاص للحمل
+  والأطفال» over-claims (by pregnancy week, specialists): proposed new wording to him (content he edits).
 - **1.12.2 (preview)**: preview links use a separate free Supabase project **vitawaw-test** (`qzxdvdesscsyqbaqyuqb`, same org): `SB_LIVE`/`SB_TEST`/`IS_PREVIEW`
   in config.js (*.workers.dev ≠ production → test), `_headers` connect-src has both, `wrangler.jsonc` previews vars → test, production cron
   also wakes the test project (`TEST_SUPABASE_*` vars). Built by `supabase/test_project_setup.sql` (all migrations except the 3 content-only

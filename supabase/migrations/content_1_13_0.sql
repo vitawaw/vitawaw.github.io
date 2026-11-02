@@ -3,7 +3,7 @@
 -- Every new item is added with reviewed = false: it waits in 🔔 for the owner's approval and reaches visitors only after he publishes.
 -- Safe to run twice: sources use their fixed ids, interactions are skipped when the same pair already exists.
 
--- 1. New sources: the two new calculators (69–71) and the drug labels of the new interactions (72–75) ----------------------------
+-- 1. New sources: the two new calculators (69–71), the drug labels of the new interactions (72–75) and the improved tools (76–78) ----------------------------
 insert into public.sources (id, org, title, url, use_ar, use_en, kind, reviewed) values
  (69, 'ASMBS, 2016', 'Parrott J, et al. American Society for Metabolic and Bariatric Surgery Integrated Health Nutritional Guidelines for the Surgical Weight Loss Patient 2016 Update: Micronutrients. Surg Obes Relat Dis 2017;13(5):727–741',
       'https://doi.org/10.1016/j.soard.2016.12.018', 'المكملات الوقائية بعد عمليات السمنة حسب نوع العملية', 'Preventive supplements after weight-loss surgery by procedure', 'g', false),
@@ -18,7 +18,14 @@ insert into public.sources (id, org, title, url, use_ar, use_en, kind, reviewed)
  (74, 'UK package leaflet (emc)', 'Neurontin (gabapentin): Package leaflet, information for the user',
       'https://www.medicines.org.uk/emc/files/pil.3196.pdf', 'Gabapentin بعد مضادات الحموضة بساعتين', 'Gabapentin 2 hours after antacids', 'd', false),
  (75, 'Gilead, U.S. prescribing information', 'BIKTARVY (bictegravir, emtricitabine, tenofovir alafenamide): Prescribing information',
-      'https://www.gilead.com/-/media/files/pdfs/medicines/hiv/biktarvy/biktarvy_pi.pdf', 'Bictegravir مع الكالسيوم والحديد والمغنيسيوم', 'Bictegravir with calcium, iron and magnesium', 'd', false)
+      'https://www.gilead.com/-/media/files/pdfs/medicines/hiv/biktarvy/biktarvy_pi.pdf', 'Bictegravir مع الكالسيوم والحديد والمغنيسيوم', 'Bictegravir with calcium, iron and magnesium', 'd', false),
+ -- the improved tools: lab history (serum folate), tablet counter (zinc acetate), unit converter (serum zinc and copper)
+ (76, 'World Health Organization, 2015', 'Serum and red blood cell folate concentrations for assessing folate status in populations (WHO/NMH/NHD/EPG/15.01)',
+      'https://www.who.int/publications/i/item/WHO-NMH-NHD-EPG-15.01', 'حد نقص الفولات في الدم: أقل من 4 ng/mL (10 nmol/L)', 'Serum folate deficiency: below 4 ng/mL (10 nmol/L)', 'g', false),
+ (77, 'American Family Physician, 2009', 'Saper RB, Rash R. Zinc: An Essential Micronutrient. Am Fam Physician 2009;79(9):768–772',
+      'https://pmc.ncbi.nlm.nih.gov/articles/PMC2820120/', 'نسبة الزنك العنصري في أملاحه', 'Elemental zinc in zinc salts', 'o', false),
+ (78, 'Nutrients, 2021', 'Zhang H, et al. Study on Reference Range of Zinc, Copper and Copper/Zinc Ratio in Childbearing Women of China. Nutrients 2021;13(3):946',
+      'https://doi.org/10.3390/nu13030946', 'تحويل وحدات الزنك والنحاس في الدم', 'Converting serum zinc and copper units', 'o', false)
 on conflict (id) do nothing;
 
 -- 2. New interactions -------------------------------------------------------------------------------------------------------
