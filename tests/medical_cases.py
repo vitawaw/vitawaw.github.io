@@ -66,7 +66,7 @@ with sync_playwright() as p:
     pg.route('https://**', lambda r: r.fulfill(status=200, body='[]', content_type='application/json'))
     pg.goto('http://app.test/'); pg.wait_for_timeout(500)
     for k, fields, sx, want in CASES:
-        pg.click('#clear'); pg.click(f'#picker [data-k="{k}"]')
+        pg.evaluate("go('calc')"); pg.wait_for_timeout(50); pg.click(f'#picker [data-k="{k}"]'); pg.wait_for_timeout(60); pg.click('#clear')  # a vitamin opens its own page (1.12.0)
         for f, v in fields.items():
             if f in ('feg','folg','czg','tri','feed','vag'): pg.select_option('#'+f, v)
             elif f in ('infl','pre','ntd','lowca','veg'): pg.check('#'+f)

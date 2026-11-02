@@ -104,6 +104,8 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   Preview gotcha (2026-11-02): a successful Workers Build did not update the preview alias (it kept serving the previous commit's
   files). Check what the preview really serves with `curl -s <preview>/ | grep -o 'nav.js?v=[^"]*'` against index.html before
   telling him a change is live; a new push re-triggers the build.
+  Test gotcha: `python3 tests/medical_cases.py | grep -ci fail` prints 0 even when the script CRASHES (Traceback, no «FAIL»).
+  Always check the exit code / count the «ok» lines (44). It crashed from the vitamin-page change until 2026-11-02 (fixed; 44/44 pass).
 - **1.12.0 was REJECTED** («ابقى على اخر اصدار تم نشره لم يعجبني هذا»): live stays 1.11.1. The preview branch was set back to 1.11.1
   by a restore commit; the 1.12.0 work (own pages for schedule/labs/UL, CFG.nav menu manager, 🔔 for everyone + header 🔍/🔔,
   tools page as tiles, grouped ☰ with folding lists) is in the commits a3b8546…5f75622 if he ever asks for a piece of it.
