@@ -5,6 +5,8 @@
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /** «قصور كلوي متقدم» — one option for every calculator (each adds its own caution) */
 const CKD=()=>!!($('ckd')&&$('ckd').checked);
+/** under 1 year the reference value is an Adequate Intake (AI), not an RDA (NIH / Food and Nutrition Board) */
+const RDAL=age=>age<1?L('المدخول الكافي (AI)','Adequate Intake (AI)'):L('المقدار اليومي الموصى به (RDA)','Recommended Dietary Allowance (RDA)');
 /* ===================== Vitamin D ===================== */
 function fD(){
   const x=req(['age','dlab'],['wt','ht']);
@@ -18,7 +20,7 @@ function fD(){
   const rda=age<1?'400 IU':age<=70?'600 IU':'800 IU';
   const ul=age<1?'1,000 – 1,500 IU':age<=3?'2,500 IU':age<=8?'3,000 IU':'4,000 IU';
   const day=L(' / يوم',' / day');
-  const kv=[[L('المقدار اليومي الموصى به (RDA)','Recommended Dietary Allowance (RDA)'),rda+day],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),ul+day]];
+  const kv=[[RDAL(age),rda+day],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),ul+day]];
   if(bmi)kv.push([L('مؤشر كتلة الجسم','BMI'),fmt(bmi)+(obese?L(' (سمنة)',' (obesity)'):'')]);
   const notes=[];let r,rec=null;
   if(CKD())notes.push({t:L('في القصور الكلوي المتقدم يحدد طبيب الكلى العلاج، وقد يلزم الشكل النشط من فيتامين D مع مراقبة الكالسيوم والفوسفور.','In advanced kidney disease the nephrologist decides treatment; an active form of vitamin D may be needed, with calcium and phosphate monitoring.'),r:[61],u:1});
@@ -83,7 +85,7 @@ function fB12(){
   // active B12 is also the second test after an indeterminate total B12, so it decides unless total B12 is already low
   const sT=pg==null?null:pg<180?'conf':pg<=350?'ind':'norm',sA=ab==null?null:ab<25?'conf':ab<=70?'ind':'norm',st=sT==='conf'?'conf':sA||sT;
   const rda=sx==='p'?2.6:sx==='l'?2.8:age<1?'0.4 – 0.5':age<=3?0.9:age<=8?1.2:age<=13?1.8:2.4;
-  const kv=[[L('المقدار اليومي الموصى به (RDA)','Recommended Dietary Allowance (RDA)'),rda+L(' mcg / يوم',' mcg / day')],[L('الحد الأعلى','Upper limit'),L('غير محدد','Not established')],...(pg!=null?[[L('القيمة بوحدة pg/mL','Value in pg/mL'),fmt(pg)]]:[]),...(ab!=null?[['Active B12',fmt(ab)+' pmol/L']]:[])];
+  const kv=[[RDAL(age),rda+L(' mcg / يوم',' mcg / day')],[L('الحد الأعلى','Upper limit'),L('غير محدد','Not established')],...(pg!=null?[[L('القيمة بوحدة pg/mL','Value in pg/mL'),fmt(pg)]]:[]),...(ab!=null?[['Active B12',fmt(ab)+' pmol/L']]:[])];
   const notes=[{t:L('لا يُعطى حمض الفوليك وحده بجرعات علاجية قبل استبعاد نقص B12، لأنه قد يخفي فقر الدم بينما يتفاقم الضرر العصبي.','Do not give treatment-dose folic acid alone before excluding B12 deficiency: it can mask anemia while nerve damage progresses.'),r:[28]}];
   if(age<16)notes.unshift({t:L('حدود NICE المستخدمة هنا لمن عمرهم 16 سنة فأكثر. علاج الأطفال يحدده طبيب الأطفال.','The NICE thresholds used here apply from age 16. A pediatrician decides treatment for children.'),r:[5],u:1});
   const CONF=sT==='conf'?L('نقص مؤكد (أقل من 180 ng/L)','Confirmed deficiency (below 180 ng/L)'):L('نقص مؤكد (Active B12 أقل من 25 pmol/L)','Confirmed deficiency (active B12 below 25 pmol/L)');let r;
@@ -121,7 +123,7 @@ function fFol(){
   const age=x.age,sx=$('sex').value,g=$('folg').value;
   const rda=sx==='p'?600:sx==='l'?500:age<1?'65 – 80':age<=3?150:age<=8?200:age<=13?300:400;
   const ul=age<1?null:age<=3?300:age<=8?400:age<=13?600:age<=18?800:1000;
-  const kv=[[L('المقدار اليومي الموصى به (RDA)','Recommended Dietary Allowance (RDA)'),rda+' mcg DFE'],[L('الحد الأعلى لحمض الفوليك المصنّع','Upper limit for synthetic folic acid'),ul?fmt(ul)+L(' mcg / يوم',' mcg / day'):L('غير محدد','Not established')]];
+  const kv=[[RDAL(age),rda+' mcg DFE'],[L('الحد الأعلى لحمض الفوليك المصنّع','Upper limit for synthetic folic acid'),ul?fmt(ul)+L(' mcg / يوم',' mcg / day'):L('غير محدد','Not established')]];
   const notes=[];let r;
   if(g==='rda')r={badge:L('الاحتياج اليومي','Daily requirement'),tone:'info',title:L(`${rda} mcg DFE يومياً`,`${rda} mcg DFE daily`),sub:L('من الغذاء والأغذية المدعّمة','From food and fortified foods'),refs:[11],pt:L(`تحتاج ${rda} ميكروغرام يومياً، ويكفي غالباً الطعام المتوازن.`,`You need ${rda} micrograms a day, which a balanced diet usually provides.`)};
   else if(g==='plan')r={badge:L('التخطيط للحمل','Planning pregnancy'),tone:'info',title:L('400 mcg حمض فوليك يومياً','400 mcg folic acid daily'),sub:L('قبل الحمل وحتى نهاية الأسبوع 12 للوقاية من عيوب الأنبوب العصبي','From before conception to the end of week 12, to prevent neural tube defects'),refs:[65,11],
@@ -167,13 +169,15 @@ function fFe(){
   const x0=req(['age'],['wt','hb','fer']);if(!x0)return;
   const age=x0.age,sx=$('sex').value,hb=x0.hb,fer=x0.fer,infl=$('infl').checked;
   // with a ferritin result the state comes from the labs (WHO 2024 Hb cut-offs + ferritin), otherwise from the list
-  const hc=hbCut(age,sx),fc=ferCut(age,infl),anem=hb!=null&&hc!=null&&hb<hc,lowF=fer!=null&&ferLow(fer,age,infl),below=infl||age>=18;
+  const preg=sx==='p'&&age>=10,tri=preg?(+$('fetri').value||null):null;
+  const hc=hbCut(age,sx,tri),fc=ferCut(age,infl),anem=hb!=null&&hc!=null&&hb<hc,lowF=fer!=null&&ferLow(fer,age,infl),below=infl||age>=18;
   const g=hasFer?(lowF?(anem?'ida':'id'):(anem?'other':'ok')):$('feg').value;
-  $('fegw').hidden=hasFer;
+  $('fegw').hidden=hasFer;$('fetriw').hidden=!preg;
+  // pregnancy (1.13.0): the WHO antenatal regimen, the same as the pregnancy calculator
   const young=age<12&&(g==='ida'||g==='id');
   const x=young?req(['age','wt'],['hb','fer']):x0;if(!x)return;
   const w=x0.wt,rda=ironRDA(age,sx),ul=age<14?40:45,EL=L(' ملغ حديد عنصري',' mg elemental iron');
-  const kv=[[L('المقدار اليومي الموصى به (RDA)','Recommended Dietary Allowance (RDA)'),rda+EL],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),ul+L(' ملغ / يوم',' mg / day')]];
+  const kv=[[RDAL(age),rda+EL],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),ul+L(' ملغ / يوم',' mg / day')]];
   if(hb!=null){kv.push([L('الهيموغلوبين','Hemoglobin'),fmt(hb)+' g/dL']);if(hc!=null)kv.push([L('فقر الدم تحت (WHO)','Anemia below (WHO)'),fmt(hc)+' g/dL'])}
   if(fer!=null)kv.push(['Ferritin',fmt(fer)+' ng/mL'],[L('نقص الحديد عند','Iron deficiency at'),below?L(`أقل من ${fmt(fc)} ng/mL`,`below ${fmt(fc)} ng/mL`):L(`${fmt(fc)} ng/mL أو أقل`,`${fmt(fc)} ng/mL or less`)]);
   const notes=[{t:L('الجرعات كلها بالحديد العنصري، وليس بوزن الملح المكتوب على العبوة.','All doses are elemental iron, not the salt weight on the pack.'),r:[15],i:1}];let r,dose=null;
@@ -197,6 +201,15 @@ function fFe(){
       plan:[{h:L('العلاج: 3 أشهر على الأقل','Treatment: at least 3 months'),d:L(`${fmt(dose)} ملغ مرة يومياً`,`${fmt(dose)} mg once daily`)},{h:L('المتابعة','Follow-up'),d:L('مراجعة بعد شهر وبعد 3 أشهر','Visits at 1 month and at 3 months')},{h:L('بعد 3 أشهر','At 3 months'),d:L('إذا بقي Ferritin أقل من 20 ng/mL يستمر العلاج 3 أشهر إضافية','If ferritin is still below 20 ng/mL, continue 3 more months')}]};
     if(g==='id')notes.push({t:L('حسب AAP يتوافق Ferritin بقيمة 20 ng/mL أو أقل مع نقص الحديد لدى الأطفال.','Per AAP, ferritin of 20 ng/mL or less is consistent with iron deficiency in children.'),r:[14]});
     if(dose>65)notes.unshift({t:L(`الجرعة المحسوبة (${fmt(dose)} ملغ) أعلى من جرعة المراهقين في الإرشاد نفسه (65 ملغ). راجع طبيب الأطفال قبل تجاوزها.`,`The calculated dose (${fmt(dose)} mg) is higher than the adolescent dose in the same guideline (65 mg). Check with the pediatrician before exceeding it.`),r:[14],u:1});
+  }else if(preg&&(g==='ida'||g==='id')){
+    const an=g==='ida';dose=an?120:60;
+    r={badge:an?L('فقر دم بعوز الحديد في الحمل','Iron-deficiency anemia in pregnancy'):L('نقص مخزون الحديد في الحمل','Low iron stores in pregnancy'),tone:an?'bad':'warn',
+      title:an?L('120 ملغ حديد عنصري يومياً','120 mg elemental iron daily'):L('30 – 60 ملغ حديد عنصري يومياً','30–60 mg elemental iron daily'),
+      sub:an?L('حتى يعود الهيموغلوبين طبيعياً، ثم الجرعة الوقائية 30 – 60 ملغ يومياً حتى نهاية الحمل (WHO)','Until hemoglobin is normal, then the preventive 30–60 mg daily for the rest of pregnancy (WHO)'):L('الجرعة اليومية للحامل حسب WHO، مع متابعة الهيموغلوبين','The WHO daily dose in pregnancy, with hemoglobin follow-up'),refs:[57],tool2:an?'ganz':undefined,
+      pt:an?L('حبة حديد يومياً فيها 120 ملغ حديد حتى يتحسن الهيموغلوبين، ثم جرعة أقل حتى نهاية الحمل، حسب طبيبة النسائية والتوليد.','An iron tablet with 120 mg of iron every day until your hemoglobin improves, then a lower dose to the end of pregnancy, as your obstetrician advises.'):L('حبة حديد يومياً فيها 30 إلى 60 ملغ حديد، حسب طبيبة النسائية والتوليد.','An iron tablet with 30–60 mg of iron every day, as your obstetrician advises.'),
+      plan:an?[{h:L('العلاج','Treatment'),d:L('120 ملغ يومياً حتى يعود الهيموغلوبين طبيعياً','120 mg daily until hemoglobin is normal')},{h:L('بعدها حتى نهاية الحمل','Then to the end of pregnancy'),d:L('30 – 60 ملغ يومياً','30–60 mg daily')}]:[{h:L('حتى نهاية الحمل','To the end of pregnancy'),d:L('30 – 60 ملغ يومياً','30–60 mg daily')}],
+      opts:[{h:L('الحديد الوريدي','IV iron'),b:L('عند عدم التحمل أو عدم الاستجابة أو قرب الولادة، بقرار الطبيب','For intolerance, no response or late pregnancy, as the doctor decides'),r:[68,16]}]};
+    if(!tri&&hb!=null)notes.push({t:L('اختاري ثلث الحمل: حد فقر الدم في الثلث الثاني 10.5 g/dL، وفي الأول والثالث 11 g/dL (WHO 2024).','Choose the trimester: the anemia cut-off is 10.5 g/dL in the second trimester and 11 g/dL in the first and third (WHO 2024).'),r:[51],i:1});
   }else if(age<18){
     dose=65;
     r={badge:g==='ida'?L('فقر دم بعوز الحديد (مراهق)','Iron-deficiency anemia (adolescent)'):L('نقص الحديد (مراهق)','Iron deficiency (adolescent)'),tone:g==='ida'?'bad':'warn',title:L('65 ملغ حديد عنصري مرة يومياً','65 mg elemental iron once daily'),sub:L('لمدة 3 أشهر على الأقل','For at least 3 months')+(g==='id'?L('، عند Ferritin بقيمة 30 ng/mL أو أقل','; when ferritin is 30 ng/mL or less'):''),refs:[14],
@@ -218,8 +231,9 @@ function fFe(){
   if(CKD())notes.unshift({t:L('في القصور الكلوي المزمن يُعالج فقر الدم بإشراف طبيب الكلى، وقد يُفضَّل الحديد الوريدي، خاصة لمرضى الغسيل.','In chronic kidney disease anemia is managed by the nephrologist; IV iron may be preferred, especially on dialysis.'),r:[62],u:1});
   if(sx==='p')notes.push({t:L('في الحمل الاحتياج 27 ملغ يومياً، ويحدد طبيب النسائية والتوليد جرعة العلاج.','In pregnancy the need is 27 mg daily; the obstetrician sets any treatment dose.'),r:[15]});
   r.lab=[...(hb!=null?[['hb',hb]]:[]),...(fer!=null?[['fer',fer]]:[])];
-  if(g==='ida'||g==='id')r.cal=age>=18?{title:L('حبة الحديد','Iron tablet')+' '+fmt(dose)+L(' ملغ',' mg'),desc:L('يوماً بعد يوم صباحاً','Every other day, in the morning'),freq:'DAILY',interval:2,count:45}:{title:L('الحديد','Iron')+' '+fmt(dose)+L(' ملغ',' mg'),freq:'DAILY',count:90};
-  r.kv=kv;r.notes=notes;r.tool='pills';PILL={k:'fe',dose};r.sch=['fe'];
+  if(preg&&(g==='ida'||g==='id'))r.cal={title:L('حبة الحديد','Iron tablet')+' '+fmt(dose)+L(' ملغ',' mg'),freq:'DAILY'};
+  else if(g==='ida'||g==='id')r.cal=age>=18?{title:L('حبة الحديد','Iron tablet')+' '+fmt(dose)+L(' ملغ',' mg'),desc:L('يوماً بعد يوم صباحاً','Every other day, in the morning'),freq:'DAILY',interval:2,count:45}:{title:L('الحديد','Iron')+' '+fmt(dose)+L(' ملغ',' mg'),freq:'DAILY',count:90};
+  r.kv=kv;r.notes=notes;if(age>=1){r.tool='pills';PILL={k:'fe',dose}}r.sch=['fe']; // no tablet counter for infants (1.13.0)
   if(g==='rda'&&typeof rda==='number'&&age>=1)r.ul=[['fe',rda]];
   if(young&&w)r.ml={wt:w,mgkg:3,q:1};
   render(r);
@@ -236,8 +250,11 @@ function fCa(){
   else rda=age<1?'200 – 260':age<=3?700:age<=8?1000:age<=18?1300:age<=50?1000:age<=70?(sx==='m'?1000:1200):1200;
   const rdaT=typeof rda==='number'?fmt(rda):rda;
   const ul=age<1?'1,000 – 1,500':age<=8?'2,500':age<=18?'3,000':age<=50?'2,500':'2,000';
-  const kv=[[L('المقدار اليومي الموصى به (RDA)','Recommended Dietary Allowance (RDA)'),rdaT+MG],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),ul+L(' ملغ / يوم',' mg / day')]];
+  const kv=[[RDAL(age),rdaT+MG],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),ul+L(' ملغ / يوم',' mg / day')]];
   let r;
+  if(age<1){r={badge:L('الرضيع','Infant'),tone:'info',title:L(`${rdaT} ملغ يومياً من الحليب والغذاء`,`${rdaT} mg daily from milk and food`),sub:L('لا يحتاج الرضيع مكمل كالسيوم؛ حليب الأم أو الحليب الصناعي يكفيه، ثم الأطعمة المكمّلة بعد 6 أشهر. أي مكمل بقرار طبيب الأطفال فقط','Infants do not need a calcium supplement: breast milk or formula is enough, then complementary foods from 6 months. Any supplement only as the pediatrician decides'),refs:[18],
+    pt:L('الرضيع لا يحتاج حبوب أو شراب كالسيوم؛ الحليب يكفيه.','Your baby does not need calcium tablets or syrup; milk is enough.')};
+    r.notes=[{t:L('القيم للرضّع مدخول كافٍ (AI): 200 ملغ حتى 6 أشهر و260 ملغ من 7 إلى 12 شهراً.','Infant values are adequate intakes (AI): 200 mg to 6 months and 260 mg from 7 to 12 months.'),r:[18],i:1}];r.kv=kv;render(r);return}
   if(!known){r={badge:L('الاحتياج اليومي','Daily requirement'),tone:'info',title:L(`${rdaT} ملغ كالسيوم يومياً من الغذاء والمكملات معاً`,`${rdaT} mg calcium daily from food and supplements combined`),sub:L('أدخل الكالسيوم من الطعام لحساب كمية المكمل اللازمة بالضبط','Enter dietary calcium to calculate the exact supplement needed'),refs:[18],
     pt:L(`تحتاج ${rdaT} ملغ كالسيوم يومياً من الطعام والمكملات معاً.`,`You need ${rdaT} mg of calcium a day from food and supplements together.`)}}
   else{
@@ -264,7 +281,7 @@ function fMg(){
   else if(sx==='l')rda=teen(age)?360:age<=30?310:320;
   else rda=age<1?'30 – 75':age<=3?80:age<=8?130:age<=13?240:age<=18?(sx==='m'?410:360):age<=30?(sx==='m'?400:310):(sx==='m'?420:320);
   const ul=age<1?L('غير محدد','Not established'):(age<=3?'65':age<=8?'110':'350')+MG;
-  const kv=[[L('المقدار اليومي الموصى به (RDA)','Recommended Dietary Allowance (RDA)'),rda+L(' ملغ (غذاء ومكملات)',' mg (food + supplements)')],[L('الحد الأعلى من المكملات','Upper limit from supplements'),ul],[L('القيمة','Value'),fmt(mgdl)+' mg/dL = '+fmt(mgdl/2.43)+' mmol/L']];
+  const kv=[[RDAL(age),rda+L(' ملغ (غذاء ومكملات)',' mg (food + supplements)')],[L('الحد الأعلى من المكملات','Upper limit from supplements'),ul],[L('القيمة','Value'),fmt(mgdl)+' mg/dL = '+fmt(mgdl/2.43)+' mmol/L']];
   const notes=[];let r;
   if(sev){r={badge:L('أعراض شديدة','Severe symptoms'),tone:'bad',title:L('تحويل فوري للمستشفى','Refer to hospital now'),sub:L('المغنيسيوم الوريدي للأعراض الشديدة مثل التشنجات واضطراب النظم','IV magnesium for severe symptoms such as seizures or arrhythmia'),refs:[21,22],pt:L('اذهب إلى الطوارئ الآن. هذه الأعراض تحتاج علاجاً وريدياً في المستشفى.','Go to the emergency department now. These symptoms need IV treatment in hospital.')};
     notes.push({t:L('حالة طارئة: لا يُعتمد على العلاج الفموي.','Emergency: oral treatment is not enough.'),r:[21],u:1})}
@@ -299,7 +316,7 @@ function fC(){
   let rda=sx==='p'?(teen(age)?80:85):sx==='l'?(teen(age)?115:120):age<1?'40 – 50':age<=3?15:age<=8?25:age<=13?45:age<=18?(sx==='m'?75:65):(sx==='m'?90:75);
   if(smk&&age>=14&&typeof rda==='number')rda+=35;
   const ul=age<1?L('غير محدد','Not established'):(age<=3?'400':age<=8?'650':age<=13?'1,200':age<=18?'1,800':'2,000')+MG+L(' / يوم',' / day');
-  const kv=[[L('المقدار اليومي الموصى به (RDA)','Recommended Dietary Allowance (RDA)'),rda+MG+(smk?L(' (شامل إضافة المدخن)',' (includes smoker addition)'):'')],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),ul]];
+  const kv=[[RDAL(age),rda+MG+(smk?L(' (شامل إضافة المدخن)',' (includes smoker addition)'):'')],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),ul]];
   let r;
   if(g==='rda')r={badge:L('الاحتياج اليومي','Daily requirement'),tone:'info',title:L(`${rda} ملغ فيتامين C يومياً`,`${rda} mg vitamin C daily`),sub:L('من الفواكه والخضار أو المكملات','From fruit and vegetables or supplements'),refs:[23],pt:L(`تحتاج ${rda} ملغ فيتامين C يومياً، ويوفرها غالباً تناول الفواكه والخضار.`,`You need ${rda} mg of vitamin C a day, which fruit and vegetables usually provide.`)};
   else r={badge:L('نزلات البرد','Common cold'),tone:'info',title:L('لا توجد جرعة علاجية مثبتة بعد بدء البرد','No proven treatment dose once a cold starts'),sub:L('تجارب أخذ فيتامين C بعد ظهور الأعراض لم تُظهر أثراً ثابتاً','Trials of vitamin C started after symptoms showed no consistent effect'),refs:[24],
@@ -316,7 +333,7 @@ function fZn(){
   const age=x.age,sx=$('sex').value,g=$('czg').value,MG=L(' ملغ',' mg');
   const rda=sx==='p'?(teen(age)?12:11):sx==='l'?(teen(age)?13:12):age<1?'2 – 3':age<=3?3:age<=8?5:age<=13?8:age<=18?(sx==='m'?11:9):(sx==='m'?11:8);
   const ul=(age<1?'4 – 5':age<=3?'7':age<=8?'12':age<=13?'23':age<=18?'34':'40')+MG+L(' / يوم',' / day');
-  const kv=[[L('المقدار اليومي الموصى به (RDA)','Recommended Dietary Allowance (RDA)'),rda+L(' ملغ زنك عنصري',' mg elemental zinc')],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),ul]];
+  const kv=[[RDAL(age),rda+L(' ملغ زنك عنصري',' mg elemental zinc')],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),ul]];
   let r;
   if(g==='rda')r={badge:L('الاحتياج اليومي','Daily requirement'),tone:'info',title:L(`${rda} ملغ زنك يومياً`,`${rda} mg zinc daily`),sub:L('من الغذاء أو المكملات','From food or supplements'),refs:[25],pt:L(`تحتاج ${rda} ملغ زنك يومياً من الطعام أو المكملات.`,`You need ${rda} mg of zinc a day from food or supplements.`)};
   else r={badge:L('نزلات البرد','Common cold'),tone:'warn',title:L('فائدة محتملة لكنها غير مؤكدة','Possible benefit, not proven'),sub:L('مراجعة Cochrane 2024: قد يقصّر الزنك مدة البرد بنحو يومين، والثقة في الأدلة منخفضة، ولم يثبت أنه يمنع الإصابة','Cochrane 2024: zinc may shorten colds by about 2 days, with low-certainty evidence; it has not been shown to prevent colds'),refs:[26],
@@ -423,4 +440,64 @@ function fPreg(){
   r.sch=preg||lac?['fe','ca',...(preg&&lowca?['ca2']:[])]:['ca'];
   r.ul=[...(st!=='lac'&&!ntd?[['fol',400]]:[]),['io',150],['d',600]];
   r.kv=kv;r.notes=notes;render(r);
+}
+
+/* ===================== After weight-loss (bariatric) surgery: daily preventive supplements (ASMBS 2016, Table 3) ===================== */
+function fBar(){
+  const x=req(['age']);if(!x)return;
+  const age=x.age,sx=$('sex').value,sp=$('bsp').value,anh=$('banem').checked,day=L(' / يوم',' / day');
+  const ds=sp==='bpd',band=sp==='lagb',fem=sx!=='m',men=fem&&age>=12&&age<=50,childb=fem&&age>=14&&age<=50;
+  const lowFe=!men&&!anh&&band; // ASMBS: low risk = males / no anemia history; RYGB, SG and BPD/DS always take 45–60 mg
+  const SPN={sg:L('تكميم المعدة (SG)','Sleeve gastrectomy (SG)'),rygb:L('تحويل المسار (RYGB)','Roux-en-Y gastric bypass (RYGB)'),lagb:L('ربط المعدة (LAGB)','Adjustable gastric band (LAGB)'),bpd:L('تحويل الاثني عشر (BPD/DS)','Duodenal switch (BPD/DS)')}[sp];
+  const plan=[
+    {h:L('متعدد الفيتامينات والمعادن','Multivitamin with minerals'),d:L('يومياً، ومنه الزنك والنحاس','Daily; it also provides zinc and copper')},
+    {h:L('الثيامين (B1)','Thiamine (B1)'),d:L('12 ملغ يومياً على الأقل، والأفضل 50 ملغ مرة أو مرتين يومياً','At least 12 mg daily, preferably 50 mg once or twice daily')},
+    {h:'B12',d:L('350 – 500 mcg يومياً بالفم أو تحت اللسان، أو 1,000 mcg عضلياً كل شهر','350–500 mcg daily by mouth or under the tongue, or 1,000 mcg IM monthly')},
+    {h:L('حمض الفوليك','Folic acid'),d:childb?L('800 – 1,000 mcg يومياً (امرأة في سن الإنجاب)','800–1,000 mcg daily (woman of childbearing age)'):'400 – 800 mcg'+day},
+    {h:L('الحديد','Iron'),d:lowFe?L('18 ملغ يومياً على الأقل من متعدد الفيتامينات','At least 18 mg daily from the multivitamin'):L('45 – 60 ملغ حديد عنصري يومياً (مجموع كل المكملات)، مقسّمة','45–60 mg elemental iron daily (total from all supplements), divided')},
+    {h:L('الكالسيوم','Calcium'),d:(ds?'1,800 – 2,400':'1,200 – 1,500')+L(' ملغ يومياً من كل المصادر، مقسّمة على جرعات',' mg daily from all sources, in divided doses')},
+    {h:L('فيتامين D3','Vitamin D3'),d:L('3,000 IU يومياً حتى يتجاوز 25(OH)D مستوى 30 ng/mL','3,000 IU daily until 25(OH)D is above 30 ng/mL')},
+    {h:L('فيتامين A','Vitamin A'),d:(band?'5,000':ds?'10,000':'5,000 – 10,000')+' IU'+day},
+    {h:L('فيتامين K','Vitamin K'),d:(ds?'300':'90 – 120')+' mcg'+day},
+    {h:L('فيتامين E','Vitamin E'),d:'15 '+L('ملغ','mg')+day},
+    {h:L('الزنك','Zinc'),d:(ds?'16 – 22':sp==='rygb'?'8 – 22':'8 – 11')+L(' ملغ',' mg')+day},
+    {h:L('النحاس','Copper'),d:(ds||sp==='rygb'?'2':'1')+L(' ملغ',' mg')+day+L('؛ 1 ملغ لكل 8 – 15 ملغ زنك','; 1 mg for every 8–15 mg of zinc')}];
+  const notes=[
+    {t:L('خذ الحديد في جرعات منفصلة عن الكالسيوم وأدوية الحموضة والشاي والقهوة والأطعمة الغنية بالفايتات.','Take iron separately from calcium, acid-reducing medicines, tea, coffee and phytate-rich foods.'),r:[69]},
+    {t:L('Calcium citrate مع الطعام أو بدونه، وCalcium carbonate مع الطعام فقط؛ في جرعات مقسّمة.','Calcium citrate with or without food; calcium carbonate with food only; in divided doses.'),r:[69]},
+    {t:L('التحاليل: كل 3 – 6 أشهر في السنة الأولى، ثم سنوياً.','Blood tests: every 3–6 months in the first year, then yearly.'),r:[69],i:1}];
+  if(sx==='p')notes.unshift({t:L('في الحمل بعد عمليات السمنة يحتاج فيتامين A وK متابعة خاصة؛ لا تتجاوزي جرعة فيتامين A دون طبيب.','In pregnancy after weight-loss surgery vitamins A and K need special care; do not exceed the vitamin A dose without a doctor.'),r:[69],u:1});
+  if(age<18)notes.unshift({t:L('هذه توصيات البالغين. للمراهقين يحدد فريق جراحة السمنة الجرعات.','These are adult recommendations. For adolescents the bariatric team sets the doses.'),r:[69],u:1});
+  if(CKD())notes.unshift({t:L('مع القصور الكلوي المتقدم يحدد طبيب الكلى الكالسيوم وفيتامين D والمعادن.','With advanced kidney disease the nephrologist sets calcium, vitamin D and minerals.'),r:[61],u:1});
+  const r={badge:SPN,tone:'info',title:L('المكملات اليومية الوقائية بعد عملية السمنة','Daily preventive supplements after weight-loss surgery'),sub:L('حسب نوع العملية، مدى الحياة غالباً','By type of surgery, usually lifelong'),refs:[69],plan,
+    pt:L('بعد عملية السمنة تحتاج يومياً: حبة متعدد فيتامينات، وB12، وكالسيوم مقسّماً على اليوم، وفيتامين D، وحديد في وقت منفصل عن الكالسيوم. الجرعات في الخطة أدناه، ويتابعها طبيبك بالتحاليل.','After weight-loss surgery you need every day: a multivitamin, B12, calcium split through the day, vitamin D, and iron at a different time from calcium. The doses are in the plan below; your doctor follows them with blood tests.')};
+  r.kv=[[L('العملية','Surgery'),SPN],[L('الكالسيوم من كل المصادر','Calcium from all sources'),(ds?'1,800 – 2,400':'1,200 – 1,500')+L(' ملغ / يوم',' mg / day')]];
+  r.notes=notes;r.sch=['fe','ca','ca2'];r.cal={title:L('مكملات ما بعد عملية السمنة','Supplements after weight-loss surgery'),freq:'DAILY'};
+  render(r);
+}
+
+/* ===================== Thiamine (B1): deficiency and alcohol (NHS SPS 2024; BNF doses via NHS Highland formulary) ===================== */
+function fThi(){
+  const x=req(['age']);if(!x)return;
+  const age=x.age,g=$('thg').value,MG=L(' ملغ',' mg');
+  const notes=[];let r;
+  if(g==='mild')r={badge:L('نقص خفيف','Mild deficiency'),tone:'info',title:L('25 ملغ ثيامين فموياً يومياً','Thiamine 25 mg by mouth daily'),sub:L('مع علاج السبب وتحسين الغذاء','With treatment of the cause and a better diet'),refs:[71],
+    pt:L('حبة ثيامين (فيتامين B1) 25 ملغ يومياً.','One thiamine (vitamin B1) 25 mg tablet a day.')};
+  else if(g==='sev')r={badge:L('نقص شديد','Severe deficiency'),tone:'warn',title:L('200 – 300 ملغ فموياً يومياً، مقسّمة','200–300 mg by mouth daily, divided'),sub:L('بإشراف الطبيب','Under medical supervision'),refs:[71],
+    pt:L('ثيامين 200 إلى 300 ملغ يومياً مقسّمة على جرعات، حسب الطبيب.','Thiamine 200–300 mg a day in divided doses, as your doctor advises.')};
+  else if(g==='alc'){r={badge:L('الاعتماد على الكحول','Alcohol dependence'),tone:'warn',title:L('200 – 300 ملغ ثيامين فموياً يومياً، مقسّمة','Thiamine 200–300 mg by mouth daily, divided'),sub:L('قبل الانسحاب المخطط وأثناء الانسحاب الحاد، وحتى 12 شهراً بعده','Before planned withdrawal, during acute withdrawal, and up to 12 months after'),refs:[71,70],
+    pt:L('ثيامين (فيتامين B1) 200 إلى 300 ملغ يومياً مقسّمة على جرعات، للمدة التي يحددها الطبيب.','Thiamine (vitamin B1) 200–300 mg a day in divided doses, for as long as your doctor says.'),
+    plan:[{h:L('قبل الانسحاب وأثناءه','Before and during withdrawal'),d:L('200 – 300 ملغ يومياً مقسّمة','200–300 mg daily, divided')},{h:L('بعده','Afterwards'),d:L('حتى 12 شهراً، وأحياناً لمدة أطول','Up to 12 months, sometimes longer')}]};
+    notes.push({t:L('امتصاص الثيامين الفموي ضعيف مع الكحول، لذلك تُقسّم الجرعة على اليوم. إذا وُجدت علامات خطورة عالية فالحقن أولاً.','Oral thiamine is poorly absorbed with alcohol, so the dose is divided through the day. With high-risk signs, injections come first.'),r:[70,71],i:1})}
+  else if(g==='risk'){r={badge:L('خطورة عالية لاعتلال فيرنيكه','High risk of Wernicke encephalopathy'),tone:'bad',title:L('ثيامين 200 – 300 ملغ بالحقن مرة يومياً','Thiamine 200–300 mg by injection once daily'),sub:L('في المجتمع: عضلياً لمدة 3 أيام على الأقل. في المستشفى: عضلياً أو وريدياً لمدة 3 – 5 أيام مع مراجعة يومية. ثم الفموي','Community: IM for at least 3 days. Hospital: IM or IV for 3–5 days with daily review. Then oral'),refs:[70],
+    pt:L('تحتاج حقن فيتامين B1 (ثيامين) لعدة أيام لحماية الدماغ، ثم حبوب. راجع الطبيب اليوم.','You need vitamin B1 (thiamine) injections for a few days to protect the brain, then tablets. See a doctor today.'),
+    plan:[{h:L('الحقن: 3 – 5 أيام','Injections: 3–5 days'),d:L('200 – 300 ملغ مرة يومياً','200–300 mg once daily')},{h:L('بعدها','Then'),d:L('200 – 300 ملغ فموياً يومياً مقسّمة','200–300 mg by mouth daily, divided')}]};
+    notes.push({t:L('علامات الخطورة العالية: نقص وزن كبير، غذاء سيئ، نحافة شديدة أو سوء تغذية، ضعف الذاكرة، اعتلال الأعصاب الطرفية، إصابة سابقة باعتلال فيرنيكه.','High-risk signs: marked weight loss, poor diet, very low BMI or other malnutrition, memory problems, peripheral neuropathy, previous Wernicke encephalopathy.'),r:[70]})}
+  else{r={badge:L('اشتباه اعتلال فيرنيكه','Suspected Wernicke encephalopathy'),tone:'bad',title:L('طوارئ: ثيامين وريدي 300 – 500 ملغ 3 مرات يومياً','Emergency: IV thiamine 300–500 mg three times daily'),sub:L('لمدة 3 – 5 أيام مع مراجعة يومية؛ إن استمرت الأعراض: 300 – 500 ملغ مرة يومياً 3 – 5 أيام أخرى ما دام التحسن مستمراً','For 3–5 days with daily review; if symptoms persist: 300–500 mg once daily for a further 3–5 days while improvement continues'),refs:[70],
+    pt:L('اذهب إلى الطوارئ الآن. هذه الأعراض قد تكون نقصاً شديداً في فيتامين B1 يحتاج حقناً وريدية فورية.','Go to the emergency department now. These symptoms may be severe vitamin B1 deficiency that needs IV treatment straight away.'),
+    plan:[{h:L('أول 3 – 5 أيام','First 3–5 days'),d:L('300 – 500 ملغ وريدياً 3 مرات يومياً','300–500 mg IV three times daily')},{h:L('إن استمرت الأعراض','If symptoms persist'),d:L('300 – 500 ملغ وريدياً مرة يومياً 3 – 5 أيام','300–500 mg IV once daily for 3–5 days')}]};
+    notes.unshift({t:L('أي من: اضطراب حركة العين، عدم ثبات المشي، التشوش الذهني، يكفي للبدء بالعلاج فوراً؛ مع البحث عن أسباب أخرى للتشوش.','Any of impaired eye movements, unsteady walking or confusion is enough to start treatment straight away; also look for other causes of confusion.'),r:[70],u:1})}
+  if(age<18)notes.unshift({t:L('هذه جرعات البالغين. للأطفال يحدد الطبيب الجرعة.','These are adult doses. A doctor sets the dose for children.'),r:[71],u:1});
+  r.kv=[[RDAL(age),age<1?L('0.2 – 0.3 ملغ','0.2–0.3 mg'):age<=3?'0.5'+MG:age<=8?'0.6'+MG:age<=13?'0.9'+MG:$('sex').value==='p'||$('sex').value==='l'?'1.4'+MG:$('sex').value==='m'?'1.2'+MG:age<=18?'1.0'+MG:'1.1'+MG],[L('الحد الأعلى','Upper limit'),L('غير محدد','Not established')]];
+  r.notes=notes;render(r);
 }

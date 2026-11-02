@@ -43,11 +43,18 @@ const DEF_REFS={
 65:['CDC (U.S. Centers for Disease Control and Prevention)','Folic Acid: Facts for Clinicians','https://www.cdc.gov/folic-acid/hcp/clinical-overview/index.html','400 mcg حمض فوليك قبل الحمل','400 mcg folic acid before pregnancy'],
 66:['U.S. FDA labeling (DailyMed)','Folic acid tablets 1 mg: Prescribing information (dosage and administration)','https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=FOLIC+ACID+1+MG+TABLET','جرعة حمض الفوليك العلاجية حتى 1 ملغ','Therapeutic folic acid dose up to 1 mg'],
 67:['ACOG Practice Bulletin No. 187, 2017','Neural Tube Defects. Obstet Gynecol 2017;130(6):e279–e290','https://doi.org/10.1097/AOG.0000000000002412','4 ملغ حمض فوليك بعد حمل سابق بعيب في الأنبوب العصبي','4 mg folic acid after a previous NTD pregnancy'],
+69:['ASMBS, 2016','Parrott J, et al. American Society for Metabolic and Bariatric Surgery Integrated Health Nutritional Guidelines for the Surgical Weight Loss Patient 2016 Update: Micronutrients. Surg Obes Relat Dis 2017;13(5):727–741','https://doi.org/10.1016/j.soard.2016.12.018','المكملات الوقائية بعد عمليات السمنة حسب نوع العملية','Preventive supplements after weight-loss surgery by procedure'],
+70:['NHS Specialist Pharmacy Service, 2024','Using and prescribing thiamine in alcohol dependence','https://www.sps.nhs.uk/articles/using-and-prescribing-thiamine-in-alcohol-dependence/','الثيامين بالحقن للوقاية من اعتلال فيرنيكه وعلاجه','Parenteral thiamine to prevent and treat Wernicke encephalopathy'],
+71:['NHS Highland Formulary (BNF doses), 2026','Vitamin B group formulary: thiamine','https://rightdecisions.scot.nhs.uk/tam-treatments-and-medicines-nhs-highland/formularies/highland-formulary/nutrition-and-blood/vitamins/vitamin-b-group-formulary','جرعات الثيامين الفموية','Oral thiamine doses'],
+72:['Novartis, U.S. prescribing information','PROMACTA (eltrombopag) tablets: Prescribing information','https://www.novartis.com/us-en/sites/novartis_us/files/promacta.pdf','الفصل بين Eltrombopag والمعادن','Separating eltrombopag from minerals'],
+73:['U.S. FDA labeling, 2018','XOFLUZA (baloxavir marboxil) tablets: Prescribing information','https://www.accessdata.fda.gov/drugsatfda_docs/nda/2018/210854Orig1s000lbl.pdf','تجنّب Baloxavir مع مكملات المعادن','Avoid baloxavir with mineral supplements'],
+74:['UK package leaflet (emc)','Neurontin (gabapentin): Package leaflet, information for the user','https://www.medicines.org.uk/emc/files/pil.3196.pdf','Gabapentin بعد مضادات الحموضة بساعتين','Gabapentin 2 hours after antacids'],
+75:['Gilead, U.S. prescribing information','BIKTARVY (bictegravir, emtricitabine, tenofovir alafenamide): Prescribing information','https://www.gilead.com/-/media/files/pdfs/medicines/hiv/biktarvy/biktarvy_pi.pdf','Bictegravir مع الكالسيوم والحديد والمغنيسيوم','Bictegravir with calcium, iron and magnesium'],
 68:['British Society of Gastroenterology, 2021','Snook J, et al. British Society of Gastroenterology guidelines for the management of iron deficiency anaemia in adults. Gut 2021;70:2030–2051','https://doi.org/10.1136/gutjnl-2021-325210','علاج فقر الدم بعوز الحديد للبالغين وحد Ferritin','Adult iron-deficiency anaemia treatment and ferritin cut-off']
 };
 let REFS=DEF_REFS;
 const DEF_REFGROUP={d:[2,3,4,61],b12:[5,8,29,63,64],fol:[11,28,65,66,67],fe:[13,14,15,16,17,27,51,52,59,62,68],ca:[18,19,27,61],mg:[20,21,22,58],c:[23,24],zn:[25,26],
-  preg:[57,65,67,11,15,37,4,3,18,44,42,30,51],inf:[55,14,56,4],vac:[53,54,30]};
+  preg:[57,65,67,11,15,37,4,3,18,44,42,30,51],inf:[55,14,56,4],vac:[53,54,30],bar:[69],thi:[70,71]};
 
 const DEF_INTER=[
 ['fe',['الحديد','Iron'],['Levothyroxine','Levothyroxine'],['افصل بينهما 4 ساعات على الأقل','Separate by at least 4 hours'],[27]],

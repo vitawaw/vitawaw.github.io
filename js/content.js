@@ -28,6 +28,8 @@ function buildData(){
   // preview / visitors: an item a pharmacist changed shows its approved version, and a proposed deletion is still shown
   const ver=x=>!all&&x.rv===false&&x.pv?x.pv:x,DL=k=>all?[]:DELS()[k]||[];
   REFS=Array.isArray(CFG.refs)?Object.fromEntries([...CFG.refs.map(ver),...DL('refs')].filter(o=>all||(o.rv!==false&&!o.hidden)).map(o=>[o.id,[o.org||'',o.title||'',o.url||'',o.ar||'',o.en||o.ar||'',o.rv!==false,!!o.hidden,o.kind||'',o.at||'',o.sb||'',o.sa||'']])):DEF_REFS;
+  // sources of the built-in calculators added in 1.13.0 (ids 69+) come with the code until the owner publishes them from the database
+  if(Array.isArray(CFG.refs))Object.keys(DEF_REFS).filter(n=>+n>=69&&!CFG.refs.some(o=>o.id==n)).forEach(n=>{REFS[n]=DEF_REFS[n]});
   const NC=[...NCUST().map(ver),...DL('nut')];
   CUST={};NC.forEach(c=>{CUST[c.id]=c});
   const VC=NC.filter(c=>all||(!c.hidden&&c.rv!==false));
@@ -77,7 +79,7 @@ function fCustom(id){
   const age=x.age,sx=$('sex').value,u=' '+tx2(c.u||UNITTXT[c.uk]),nm=tx2(c.n),row=pickRow(c.rows||[],age,sx);
   const refs=(c.r||[]).filter(n=>REFS[n]);
   if(!row){render({badge:L('لا توجد قيمة','No value'),tone:'warn',title:esc(L(`لا توجد جرعة مسجّلة لهذا العمر في ${nm}`,`No dose recorded for this age in ${nm}`)),sub:esc(L('راجع الطبيب أو الصيدلي','Ask a doctor or pharmacist')),refs});return}
-  const kv=[[L('المقدار اليومي الموصى به (RDA)','Recommended Dietary Allowance (RDA)'),esc(row.rda+u)],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),row.ul?esc(row.ul+u+L(' / يوم',' / day')):L('غير محدد','Not established')]];
+  const kv=[[RDAL(age),esc(row.rda+u)],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),row.ul?esc(row.ul+u+L(' / يوم',' / day')):L('غير محدد','Not established')]];
   const r={badge:L('الاحتياج اليومي','Daily requirement'),tone:'info',title:esc(L(`${row.rda}${u} ${nm} يومياً`,`${row.rda}${u} ${nm} daily`)),sub:esc(tx2(c.h)),refs,kv,
     pt:esc(L(`تحتاج ${row.rda}${u} من ${nm} يومياً.`,`You need ${row.rda}${u} of ${nm} a day.`))};
   if(tx2(c.plan))r.opts=[{h:L('التوجيه العلاجي','Treatment guidance'),b:esc(tx2(c.plan)),r:refs}];

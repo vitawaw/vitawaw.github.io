@@ -3,7 +3,7 @@
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== interactions & sources ===================== */
 let IF='all',SF='all',ISRC=null; // ISRC: show only the interactions that cite this source (from the sources page)
-const BUILTIN=['d','b12','fol','fe','ca','mg','c','zn','preg','inf','vac'];
+const BUILTIN=['d','b12','fol','fe','ca','mg','c','zn','preg','inf','vac','bar','thi'];
 let KEYS=['all',...BUILTIN],INTER=[],REFGROUP={},CUST={};
 const tx2=o=>o?(LANG==='ar'?o.ar:(o.en||o.ar)):'';
 const kname=k=>k==='all'?T('all'):CUST[k]?tx2(CUST[k].n):T('n_'+k);

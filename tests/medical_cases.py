@@ -56,6 +56,25 @@ CASES = [  # nutrient, fields, sex, expected text somewhere in the result (Arabi
  ('preg',{'age':28,'tri':'t2','hb':10.2}, 'f', '120 ملغ'),                     # anemic (<10.5 in 2nd trimester)
  ('preg',{'age':28,'tri':'t1','ntd':1}, 'f', '4 – 5 ملغ'),
  ('preg',{'age':28,'tri':'lac'}, 'f', '150 mcg'),                              # ATA iodine
+ # 1.13.0
+ ('fe', {'age':28,'feg':'ida'}, 'p', '120 ملغ حديد عنصري يومياً'),            # WHO ANC 2016: anemia in pregnancy
+ ('fe', {'age':28,'feg':'id'}, 'p', '30 – 60 ملغ حديد عنصري يومياً'),
+ ('fe', {'age':28,'hb':10.8,'fer':20,'fetri':'2'}, 'p', '30 – 60 ملغ'),       # WHO 2024: 2nd trimester cut-off 10.5 -> not anemic
+ ('fe', {'age':28,'hb':10.8,'fer':20,'fetri':'3'}, 'p', '120 ملغ'),           # 3rd trimester cut-off 11 -> anemic
+ ('ca', {'age':0}, 'f', 'لا يحتاج الرضيع مكمل كالسيوم'),                     # NIH: infants AI from milk
+ ('b12',{'age':0,'b12v':400}, 'm', 'المدخول الكافي (AI)'),                    # AI label under 1 year
+ ('bar',{'age':35,'bsp':'sg'}, 'f', '1,200 – 1,500'),                         # ASMBS 2016 calcium
+ ('bar',{'age':35,'bsp':'bpd'}, 'm', '1,800 – 2,400'),
+ ('bar',{'age':40,'bsp':'lagb'}, 'm', '18 ملغ يومياً على الأقل'),              # low-risk iron
+ ('bar',{'age':35,'bsp':'rygb'}, 'm', '45 – 60 ملغ'),
+ ('bar',{'age':35,'bsp':'sg'}, 'f', '800 – 1,000 mcg'),                       # folate, childbearing age
+ ('bar',{'age':35,'bsp':'sg'}, 'm', '350 – 500 mcg'),                         # B12
+ ('bar',{'age':35,'bsp':'sg'}, 'm', '3,000 IU'),                              # vitamin D3
+ ('bar',{'age':35,'bsp':'bpd'}, 'm', '300 mcg'),                              # vitamin K DS
+ ('thi',{'age':45,'thg':'alc'}, 'm', '200 – 300 ملغ ثيامين فموياً'),           # BNF via NHS Highland
+ ('thi',{'age':45,'thg':'we'}, 'm', '300 – 500 ملغ'),                         # SPS 2024
+ ('thi',{'age':45,'thg':'risk'}, 'm', '3 أيام على الأقل'),
+ ('thi',{'age':45,'thg':'mild'}, 'm', '25 ملغ'),
 ]
 fails = 0
 with sync_playwright() as p:
@@ -68,11 +87,11 @@ with sync_playwright() as p:
     for k, fields, sx, want in CASES:
         pg.evaluate("go('calc')"); pg.wait_for_timeout(50); pg.click(f'#picker [data-k="{k}"]'); pg.wait_for_timeout(60); pg.click('#clear')  # a vitamin opens its own page (1.12.0)
         for f, v in fields.items():
-            if f in ('feg','folg','czg','tri','feed','vag'): pg.select_option('#'+f, v)
-            elif f in ('infl','pre','ntd','lowca','veg'): pg.check('#'+f)
+            if f in ('feg','folg','czg','tri','feed','vag','fetri','bsp','thg'): pg.select_option('#'+f, v)
+            elif f in ('infl','pre','ntd','lowca','veg','banem'): pg.check('#'+f)
             else: pg.fill('#'+f, str(v))
         if pg.is_visible('#sex'): pg.select_option('#sex', sx)
-        for f in fields: pg.dispatch_event('#'+f, 'change' if f in ('feg','folg','czg','tri','feed','vag','infl','pre','ntd','lowca','veg') else 'input')
+        for f in fields: pg.dispatch_event('#'+f, 'change' if f in ('feg','folg','czg','tri','feed','vag','infl','pre','ntd','lowca','veg','fetri','bsp','thg','banem') else 'input')
         pg.wait_for_timeout(80)
         txt = pg.inner_text('#res')
         ok = want in txt; fails += not ok

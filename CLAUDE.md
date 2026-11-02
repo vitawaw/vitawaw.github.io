@@ -69,6 +69,15 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-11-02)
+- **1.13.0 (preview)**: his «طبقها كلها مع الملاحضات» after the scientific review (every item checked against its source; 2 proposals
+  dropped for lack of an official source: vegan B12 dose in pregnancy, vitamin D + digoxin). Patient mode: `R()` (util.js) and `srcLine()`
+  return nothing, search has no sources, `SECKEY` is a Proxy (sources → 'tl_labs'), show('sources') → tools/tool-labs, `body.ptm`
+  swaps the #t-sources tab to «تحاليلي» (`.ptl` spans/svg); doctor report (openReport) still lists sources (it is for the doctor).
+  Iron: pregnant branch in fFe (WHO ANC: 30–60 / 120 mg daily, source 57) + `#fetri` trimester → hbCut. `RDAL(age)` = AI label under 1 year
+  (also custom vitamins). Calcium under 1 → no supplement. New built-in calculators `bar` (fBar, ASMBS 2016 Table 3 = source 69) and
+  `thi` (fThi, NHS SPS 2024 = 70, NHS Highland/BNF = 71). Sources 69–75 are in DEF_REFS and fall back from code until published
+  (content.js, ids ≥69 only). DB content `supabase/migrations/content_1_13_0.sql` (sources 69–75 + 12 interactions, reviewed=false,
+  safe to run twice). 62 medical cases.
 - **1.12.2 (preview)**: preview links use a separate free Supabase project **vitawaw-test** (`qzxdvdesscsyqbaqyuqb`, same org): `SB_LIVE`/`SB_TEST`/`IS_PREVIEW`
   in config.js (*.workers.dev ≠ production → test), `_headers` connect-src has both, `wrangler.jsonc` previews vars → test, production cron
   also wakes the test project (`TEST_SUPABASE_*` vars). Built by `supabase/test_project_setup.sql` (all migrations except the 3 content-only

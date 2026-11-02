@@ -7,9 +7,11 @@ const PAGES=['calc','tools','interactions','sources','roadmap','notif','team','m
 let cur='calc',CALCV=false,TOOLV=''; // CALCV: the chosen vitamin's page (patient data + result) instead of the list of vitamins
 function show(p,view){
   if(p==='notif'){if(typeof openNotif==='function')setTimeout(openNotif,0);p=cur&&cur!=='notif'?cur:'calc'} // 🔔 is a floating window, not a page
+  if(p==='sources'&&MODE==='pt'){p='tools';view='tool-labs'} // patient mode: no sources page; that place is «my lab results»
   if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='team'&&!ISOWNER())||(navHidden(p)&&!SHOWALL()))p='calc'; // a section the owner hid is not shown // wide screens show the menu at the side
   cur=p;CALCV=p==='calc'&&view==='v';$('calc').classList.toggle('cv',CALCV);TOOLV=p==='tools'&&/^tool-/.test(view||'')?view:'';$('tools').classList.toggle('tv',!!TOOLV);if(TOOLV)$('tback').querySelector('span').textContent=typeof TOOLFROM!=='undefined'&&TOOLFROM&&TOOLFROM!=='#tools'?L('رجوع','Back'):T('tab_tools');document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));if(CALCV)$('cvname').textContent=kname(K);if(typeof rememberRecent==='function')rememberRecent('p:'+p);
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
+  if(MODE==='pt'&&TOOLV==='tool-labs'){$('t-sources').setAttribute('aria-selected',true);$('t-tools').setAttribute('aria-selected',false)}
   if(p==='team'&&typeof openTeamPage==='function')openTeamPage();
   if(typeof rememberRecent==='function')rememberRecent(TOOLV?'t:'+TOOLKIND[TOOLV]:'p:'+p);
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
@@ -78,6 +80,8 @@ function setMode(m,save=true){
   MODE=m;document.querySelectorAll('#modeg [data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));
   if(save)try{localStorage.setItem('vw-mode',m)}catch(e){}
   if(LAST)F[K]();if(typeof renderNav==='function')renderNav();
+  if(typeof renderInter==='function')renderInter();
+  if(m==='pt'&&cur==='sources')show('sources');
 }
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.mode);if(b.closest('#welcome'))closeWelcome()}));
 function closeWelcome(){$('welcome').hidden=true;try{localStorage.setItem('vw-welcome','1')}catch(e){}}
@@ -126,7 +130,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',themeIcon
 
 /* ===================== examples / clear ===================== */
 const NUMS=['age','wt','ht','dlab','b12v','ab12','hb','fer','cadiet','mgv','mon'];
-const EX={d:{age:45,sex:'f',wt:68,ht:162,dlab:14},b12:{age:55,sex:'f',b12v:160},fol:{age:28,sex:'f',folg:'plan'},fe:{age:30,sex:'f',wt:60,feg:'ida'},ca:{age:60,sex:'f',cadiet:400},mg:{age:50,sex:'m',mgv:1.4},c:{age:30,sex:'m',czg:'rda'},zn:{age:30,sex:'m',czg:'rda'},preg:{age:28,tri:'t2',hb:10.2},inf:{mon:5,wt:7,feed:'bf'},vac:{mon:18,vag:'prev'}};
+const EX={d:{age:45,sex:'f',wt:68,ht:162,dlab:14},b12:{age:55,sex:'f',b12v:160},fol:{age:28,sex:'f',folg:'plan'},fe:{age:30,sex:'f',wt:60,feg:'ida'},ca:{age:60,sex:'f',cadiet:400},mg:{age:50,sex:'m',mgv:1.4},c:{age:30,sex:'m',czg:'rda'},zn:{age:30,sex:'m',czg:'rda'},preg:{age:28,tri:'t2',hb:10.2},inf:{mon:5,wt:7,feed:'bf'},vac:{mon:18,vag:'prev'},bar:{age:35,sex:'f',bsp:'sg'},thi:{age:45,sex:'m',thg:'alc'}};
 function fillExample(){
   const e=EX[K];
   if($('dunit').value!=='ng')$('dunit').value='ng';if($('b12u').value!=='pg')$('b12u').value='pg';if($('mgu').value!=='mgdl')$('mgu').value='mgdl';
@@ -188,7 +192,7 @@ function loadShared(code){
 }
 
 /* ===================== wiring ===================== */
-const F={d:fD,b12:fB12,fol:fFol,fe:fFe,ca:fCa,mg:fMg,c:fC,zn:fZn,preg:fPreg,inf:fInf,vac:fVA};
+const F={d:fD,b12:fB12,fol:fFol,fe:fFe,ca:fCa,mg:fMg,c:fC,zn:fZn,preg:fPreg,inf:fInf,vac:fVA,bar:fBar,thi:fThi};
 function apply(){
   showFor();
   document.querySelectorAll('#picker button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===K));
@@ -207,7 +211,7 @@ function openNut(k){K=k;try{localStorage.setItem('vw-k',K)}catch(e){}apply();if(
 $('picker').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;openNut(b.dataset.k)});
 $('cbackb').addEventListener('click',()=>go('calc'));
 $('tback').addEventListener('click',()=>toolBack());
-const FORMIDS=['age','sex','wt','ht','dlab','dunit','mal','med','ckd','b12v','b12u','b12c','neuro','ab12','folg','feg','hb','fer','infl','cadiet','mgv','mgu','mgsx','czg','smk','mon','feed','pre','vag','tri','ntd','lowca','veg'];
+const FORMIDS=['age','sex','wt','ht','dlab','dunit','mal','med','ckd','b12v','b12u','b12c','neuro','ab12','folg','feg','hb','fer','infl','cadiet','mgv','mgu','mgsx','czg','smk','mon','feed','pre','vag','tri','ntd','lowca','veg','fetri','bsp','banem','thg'];
 FORMIDS
   .forEach(i=>{$(i).addEventListener('input',()=>{if(i==='age')syncSex();F[K]()});$(i).addEventListener('change',()=>{if(i==='age')syncSex();F[K]()})});
 $('wt').addEventListener('input',()=>{const w=nv('wt');if(w){$('gw').value=w;gz()}});

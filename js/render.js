@@ -18,7 +18,7 @@ const stampHTML=(by,at)=>by?`<div class="stamp">${CHECK}${esc(T('st_by'))} ${esc
 function reviewHTML(){const c=typeof CUST!=='undefined'&&CUST[K];return (c&&c.sb?stampHTML(c.sb,c.sa):'')+reviewHTML0()}
 function reviewHTML0(){const v=REV();return v.name?`<div class="reviewed">${CHECK}${T('rev')} ${v.name}${v.date?' · <span dir="ltr">'+v.date+'</span>':''}</div>`:''}
 /** the interactions of the calculator on screen, read from the interactions page (so an approved edit shows here too) */
-const IKEYS={preg:['fe','ca','fol','iodine','d','omega3','vita'],inf:['fe','d','vitk'],vac:['vita']};
+const IKEYS={preg:['fe','ca','fol','iodine','d','omega3','vita'],inf:['fe','d','vitk'],vac:['vita'],bar:['fe','ca','d','b12','zn','copper','vita','vitk'],thi:['b1']};
 function interHTML(){
   const ks=IKEYS[K]||[K],list=(typeof INTER!=='undefined'?INTER:[]).filter(x=>ks.includes(x[0])&&x[7]&&!x[8]).sort((a,b)=>SEVORD[a[6]]-SEVORD[b[6]]);
   if(!list.length)return '';
@@ -69,7 +69,7 @@ function render(r){
   updateBar();
 }
 /** one line naming the sources of the result (for the copied text and the patient card) */
-const srcLine=()=>LAST&&LAST.srcNames&&LAST.srcNames.length?T('srcs')+' '+LAST.srcNames.join(' · '):'';
+const srcLine=()=>MODE!=='pt'&&LAST&&LAST.srcNames&&LAST.srcNames.length?T('srcs')+' '+LAST.srcNames.join(' · '):'';
 function copyRes(){
   if(!LAST)return;
   const strip=plain;

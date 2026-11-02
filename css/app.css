@@ -871,3 +871,10 @@ span.lkc{cursor:default}
 .pwr li.ok{color:var(--ok)}
 .pwr li.ok::before{content:"✓ "}
 .pvbar{background:var(--bad);color:#fff;font:700 13px var(--f-body);text-align:center;padding:6px 12px;position:relative;z-index:40}
+
+/* 1.13.0 patient mode: no sources; the sources tab is «my lab results» */
+#t-sources .ptl{display:none!important}
+body.ptm #t-sources>svg:not(.ptl),body.ptm #t-sources>span:not(.ptl){display:none!important}
+body.ptm #t-sources>svg.ptl{display:block!important}
+body.ptm #t-sources>span.full.ptl{display:inline!important}
+@media (max-width:420px){body.ptm #t-sources>span.full.ptl{display:none!important}body.ptm #t-sources>span.short.ptl{display:inline!important}}
