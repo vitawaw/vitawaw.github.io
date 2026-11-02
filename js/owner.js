@@ -565,15 +565,7 @@ async function afterLogin(){
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null;OWN.parts=partsOf()}
 const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[],brand:c.brand||DEFAULT_CFG.brand,review:c.review||DEFAULT_CFG.review,menus:c.menus||DEFAULT_CFG.menus,tools:c.tools||DEFAULT_CFG.tools});
 /** the page «How to use and FAQ» is split in two: «How to use» (the first part) and «FAQ» (the questions) */
-function splitHowto(){
-  const P=CFG.pages;if(!Array.isArray(P)||P.some(p=>p.id==='howto'))return false;
-  const f=P.find(p=>p.id==='faq');if(!f||!/طريقة الاستخدام/.test((f.t&&f.t.ar)||''))return false;
-  const cut=(x,head)=>{const b=String(x||'').split(/\n\s*\n/);return [b[0].replace(head,'').trim(),b.slice(1).join('\n\n').trim()]};
-  const [ha,fa]=cut(f.b.ar,/^طريقة الاستخدام\s*\n?/),[he,fe]=cut(f.b.en,/^How to use\s*\n?/i);
-  P.splice(P.indexOf(f),0,{id:'howto',t:{ar:'طريقة الاستخدام',en:'How to use'},b:{ar:ha,en:he},hidden:!!f.hidden});
-  f.t={ar:'الأسئلة الشائعة',en:'Frequently asked questions'};f.b={ar:fa,en:fe};
-  return true;
-}
+function splitHowto(){const P=Array.isArray(CFG.pages)&&splitPages(CFG.pages);if(!P)return false;CFG.pages=P;return true}
 function startOwner({local,role,draft,content}){
   OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;OWN.preview=false;
   CFG=mergeCfg(DEFAULT_CFG,draft||PUBLISHED);if(content)applyContent(content);

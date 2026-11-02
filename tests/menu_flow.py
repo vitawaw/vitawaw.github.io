@@ -44,7 +44,7 @@ with sync_playwright() as p:
     check('Escape closes window and tool returns to its page', not v.is_visible('#sheet') and v.locator('#tools #tool-gz').count() == 1)
     v.click('#t-menu'); v.wait_for_timeout(300)
     check('☰ opens the Menu page', v.evaluate('cur') == 'menu' and v.is_visible('#menu') and v.get_attribute('#t-menu', 'aria-selected') == 'true')
-    check('Menu: folding lists start closed', v.locator('#menu-b details.macc[open]').count() == 0 and v.locator('#menu-b details.macc').count() == 1)
+    check('Menu: how to use, FAQ, privacy and disclaimer each on its own', v.locator('#menu-b details.macc').count() == 0 and v.locator('#menu-b .mg.one').count() >= 2)
     t = menutext(v)
     check('Menu: account card, shortcuts, settings', all(x in t for x in ['الحساب', 'تسجيل الدخول', 'لديّ دعوة', 'اختصارات', 'القادم', 'سياسة الخصوصية', 'مشاركة التطبيق', 'الإعدادات', 'اللغة', 'المظهر', 'وضع العرض']), t[:200])
     check('Menu shortcuts are tiles (sections outside the bar first)', v.locator('#menu-b .mtile').count() >= 5 and 'القادم' in v.inner_text('#menu-b .mtile >> nth=0'))

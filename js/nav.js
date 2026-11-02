@@ -29,7 +29,15 @@ const colorVars=p=>CFG.colors[p]?`--pc:${CFG.colors[p][0]};--pc2:${CFG.colors[p]
 const paras=t=>String(t||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('');
 /** «suggest a feature or report an error» is a page like the others (editable); until the owner edits it, it uses the default texts */
 const SUGGEST=()=>{const t=k=>(CFG.text&&CFG.text[k])||{ar:I18N[k][0],en:I18N[k][1]};return {id:'suggest',t:t('sg_t'),b:t('sg_l'),hidden:false}};
-const allPages=()=>{const P=CFG.pages||[];return P.some(p=>p.id==='suggest')?P:[...P,SUGGEST()]};
+/** «How to use and FAQ» (one old page) is shown as two pages to everyone until the owner saves the split (owner.js splitHowto) */
+function splitPages(P){
+  if(P.some(p=>p.id==='howto'))return null;
+  const f=P.find(p=>p.id==='faq');if(!f||!/طريقة الاستخدام/.test((f.t&&f.t.ar)||''))return null;
+  const cut=(x,head)=>{const b=String(x||'').split(/\n\s*\n/);return [b[0].replace(head,'').trim(),b.slice(1).join('\n\n').trim()]};
+  const [ha,fa]=cut(f.b.ar,/^طريقة الاستخدام\s*\n?/),[he,fe]=cut(f.b.en,/^How to use\s*\n?/i),i=P.indexOf(f);
+  return [...P.slice(0,i),{id:'howto',t:{ar:'طريقة الاستخدام',en:'How to use'},b:{ar:ha,en:he},hidden:!!f.hidden},{...f,t:{ar:'الأسئلة الشائعة',en:'Frequently asked questions'},b:{ar:fa,en:fe}},...P.slice(i+1)];
+}
+const allPages=()=>{let P=CFG.pages||[];P=splitPages(P)||P;return P.some(p=>p.id==='suggest')?P:[...P,SUGGEST()]};
 const visiblePages=(all=SHOWALL())=>allPages().filter(p=>all||!p.hidden);
 
 /* Every menu button stores its action here; data-na="d3" = side menu action 3, "m" = Menu page, "s" = floating window, "n" = notifications. */
@@ -244,8 +252,6 @@ function menuHTML(r){
   const tiles=[...navMore().map(p=>({label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,f:()=>go(p)})),
     ...(pg('suggest')?[{...pgItem(pg('suggest')),ico:MI.mail}]:[]),{label:T('lb_t'),ico:ICO.chart,page:'tools',f:()=>openToolPage('tool-labs')},...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(pgItem)];
   h+=`<div class="mg"><h3>${esc(T('mn_short'))}</h3><div class="mtiles">${tiles.map(tile).join('')}</div></div>`;
-  // how to use · FAQ (each on its own)
-  h+=grp('',['howto','faq'].map(pg).filter(Boolean).map(p=>row({...pgItem(p),ico:p.id==='faq'?MI2.q:MI2.book})).join(''));
   // three rectangles on one line: contact (WhatsApp · e-mail · call), and at the end the settings
   const r3=(title,list)=>list.length?`<div class="mg"><h3>${esc(title)}</h3><div class="m3">${list.map(c=>{const inner=`<span class="di">${c.ico}</span><b>${esc(c.label)}</b>${c.v?`<small>${esc(c.v)}</small>`:''}`;
     return c.href?`<a class="m3b" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`:`<button type="button" class="m3b" data-na="${r}${ACT[r].push(c.f)-1}">${inner}</button>`}).join('')}</div></div>`:'';
@@ -254,9 +260,10 @@ function menuHTML(r){
   if(EMAILF())con.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
   if(PHONEF())con.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
   if(!(own&&!ISOWNER()))h+=r3(T('ma_contact'),con); // an invited pharmacist talks to the owner directly, not through the public contact
-  // privacy (folding), then install and share right under it
-  h+=`<div class="mg"><div class="ml maccs">`+acc('priv',MI2.shield,T('ma_priv'),['privacy','disclaimer'].map(pg).filter(Boolean).map(pgItem).map(row).join(''))+
-    row({label:T('mr_install'),ico:MI.install,f:installApp})+row({label:T('mr_share'),ico:MI.share,f:shareApp})+`</div></div>`;
+  // under contact, each on its own: how to use · FAQ · privacy policy · disclaimer; then install and share
+  const PICO={howto:MI2.book,faq:MI2.q,privacy:MI2.shield,disclaimer:ICO.info};
+  h+=['howto','faq','privacy','disclaimer'].map(pg).filter(Boolean).map(p=>grp('',row({...pgItem(p),ico:PICO[p.id]}),'one')).join('');
+  h+=grp('',row({label:T('mr_install'),ico:MI.install,f:installApp})+row({label:T('mr_share'),ico:MI.share,f:shareApp}));
   // the team: management sections, pharmacists (own page), my account
   const A=own?adminGroups():[];
   if(A.length)h+=`<div class="mg"><h3>${esc(T('nv_admin'))}</h3><div class="ml maccs">`+
