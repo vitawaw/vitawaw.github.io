@@ -120,5 +120,13 @@ export default {
   // Daily keep-alive so the free Supabase project never pauses for inactivity.
   async scheduled(event, env, ctx) {
     ctx.waitUntil(loadFromSupabase(env).catch(e => console.error('keep-alive failed (Supabase may pause):', e.message)));
+    // the free test project used by the preview links pauses after 7 idle days too: wake it with the same daily request
+    if (env.TEST_SUPABASE_URL && env.TEST_SUPABASE_ANON_KEY) {
+      const k = env.TEST_SUPABASE_ANON_KEY;
+      ctx.waitUntil(fetch(env.TEST_SUPABASE_URL.replace(/\/$/, '') + '/rest/v1/site_config?id=eq.published&select=id',
+        { headers: { apikey: k, Authorization: 'Bearer ' + k }, signal: AbortSignal.timeout(5000) })
+        .then(r => { if (!r.ok) throw new Error('supabase ' + r.status); })
+        .catch(e => console.error('test project keep-alive failed:', e.message)));
+    }
   },
 };

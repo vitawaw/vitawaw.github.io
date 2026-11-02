@@ -14,15 +14,18 @@
   // public values only (the anon key is meant to be public; data is protected by RLS)
   "vars": {
     "SUPABASE_URL": "https://zrlapysswtqrwfsywbvl.supabase.co",
-    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybGFweXNzd3Rxcndmc3l3YnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMjIxODcsImV4cCI6MjEwODY5ODE4N30.b8tbg5S8g4ojb3Iams4_nik8K6AvLlV5rNZHe2Nthiw"
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybGFweXNzd3Rxcndmc3l3YnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMjIxODcsImV4cCI6MjEwODY5ODE4N30.b8tbg5S8g4ojb3Iams4_nik8K6AvLlV5rNZHe2Nthiw",
+    // the test project (preview links) — only woken up by the daily cron
+    "TEST_SUPABASE_URL": "https://qzxdvdesscsyqbaqyuqb.supabase.co",
+    "TEST_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6eGR2ZGVzc2NzeXFiYXF5dXFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2NDc2MzcsImV4cCI6MjEwOTIyMzYzN30.NH41HaD3KZIix0TFqffoqLb05jiFiXJeF4H29rXKoWY"
   },
   "triggers": { "crons": ["17 4 * * *"] },
   "observability": { "enabled": true },
-  // previews do not inherit production settings, so the same public vars are repeated here
+  // previews use the separate free test project «vitawaw-test» (same tables, its own data), so a preview never touches the live site
   "previews": {
     "vars": {
-      "SUPABASE_URL": "https://zrlapysswtqrwfsywbvl.supabase.co",
-      "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybGFweXNzd3Rxcndmc3l3YnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMjIxODcsImV4cCI6MjEwODY5ODE4N30.b8tbg5S8g4ojb3Iams4_nik8K6AvLlV5rNZHe2Nthiw"
+      "SUPABASE_URL": "https://qzxdvdesscsyqbaqyuqb.supabase.co",
+      "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6eGR2ZGVzc2NzeXFiYXF5dXFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2NDc2MzcsImV4cCI6MjEwOTIyMzYzN30.NH41HaD3KZIix0TFqffoqLb05jiFiXJeF4H29rXKoWY"
     }
   }
 }

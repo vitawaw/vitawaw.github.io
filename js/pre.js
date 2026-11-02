@@ -11,7 +11,7 @@ try{
   const h=location.hostname;
   if(/\.workers\.dev$/.test(h)&&h!=='billowing-glade-6627.vitawaw26.workers.dev'){
     const b=document.createElement('div');b.className='pvbar';b.setAttribute('role','note');
-    b.textContent=localStorage.getItem('vw-lang')==='en'?'Test version — publishing here changes the live site':'نسخة تجريبية — النشر هنا يغيّر الموقع الرسمي';
+    b.textContent=localStorage.getItem('vw-lang')==='en'?'Test version — uses a separate test database; nothing here changes the live site':'نسخة تجريبية — قاعدة بيانات تجريبية منفصلة، لا شيء هنا يغيّر الموقع الرسمي';
     document.body.prepend(b);
   }
 }catch(e){}

@@ -69,6 +69,12 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-11-02)
+- **1.12.2 (preview)**: preview links use a separate free Supabase project **vitawaw-test** (`qzxdvdesscsyqbaqyuqb`, same org): `SB_LIVE`/`SB_TEST`/`IS_PREVIEW`
+  in config.js (*.workers.dev ≠ production → test), `_headers` connect-src has both, `wrangler.jsonc` previews vars → test, production cron
+  also wakes the test project (`TEST_SUPABASE_*` vars). Built by `supabase/test_project_setup.sql` (all migrations except the 3 content-only
+  files + copy of the live published content + content tables rebuilt from it; refuses to run twice). He runs it in the TEST project's SQL editor
+  (…/project/qzxdvdesscsyqbaqyuqb/sql/new), then signs up on the preview with vitawaw26@gmail.com (owner invite is in the file).
+  Every future DB migration must be applied to BOTH projects (test first).
 - **1.12.1** also has his answers to the full review: red preview bar (`.pvbar` from pre.js on *.workers.dev ≠ production), owner backup `downloadBackup()` (owner.js), «امسح بياناتي» `clearMyData()` (nav.js), DB file `20261102190000_notifications_read_only.sql` (he must run it), review stamp picker in `editReview()` + `REV0()` maps «الصيدلي سيف الدين» → «د. سيف الدين», hidden tools/vitamins gone everywhere (`toolHidden()`, `nutOff()`), result buttons grid, menu: «المساعدة والمعلومات» heading, contact above settings, empty result box hidden (`#calc.nores`), search on sources `#ssearch` and tools `#tsearch` (`toolSearch()`), login `dialog({two:true})`, password rules `PWRULES`/`pwOK()` (8+, A-Z, a-z, 0-9, symbol) on every new password, 🔔 = sheet `openNotif()` (moves `#notifbox`). Pending from him: MFA on his account (he does it), a second free Supabase project for previews (needs him to create it).
 - **Live: 1.12.1** (he said «جاهز» on 2026-11-02; main fast-forwarded): link check — all three counts clickable (`LKF` ok/broken/blocked, `LINKS.ok` saved by new checks), scroll to the list; vitamin chips `#filters`/`#sfilters` as an equal grid 3/5/7. Custom domain: he postponed it (he will tell which domain/registrar; it is set in Cloudflare → Workers → Domains, not in the owner page).
 - **Live: 1.12.0** (he approved publishing on 2026-11-02: «نعم موافق اعطني الروابط لانشرة»; main fast-forwarded from this branch).

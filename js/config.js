@@ -3,11 +3,16 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.12.1';
+const APP_VERSION='1.12.2';
 /* the medical review stamp is set by the owner (menu → site → «ختم المراجعة الطبية») and published with the settings: CFG.review */
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
-const SB={url:'https://zrlapysswtqrwfsywbvl.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybGFweXNzd3Rxcndmc3l3YnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMjIxODcsImV4cCI6MjEwODY5ODE4N30.b8tbg5S8g4ojb3Iams4_nik8K6AvLlV5rNZHe2Nthiw'}; // e.g. {url:'https://xxxx.supabase.co', key:'eyJ... (anon public key)'}
+/* the live site (production) uses the real project; the preview links (*.workers.dev other than production) use the separate
+   free test project «vitawaw-test», so saving and publishing on a preview never touches the live site (1.12.2) */
+const SB_LIVE={url:'https://zrlapysswtqrwfsywbvl.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybGFweXNzd3Rxcndmc3l3YnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMjIxODcsImV4cCI6MjEwODY5ODE4N30.b8tbg5S8g4ojb3Iams4_nik8K6AvLlV5rNZHe2Nthiw'};
+const SB_TEST={url:'https://qzxdvdesscsyqbaqyuqb.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6eGR2ZGVzc2NzeXFiYXF5dXFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2NDc2MzcsImV4cCI6MjEwOTIyMzYzN30.NH41HaD3KZIix0TFqffoqLb05jiFiXJeF4H29rXKoWY'};
+const IS_PREVIEW=/\.workers\.dev$/.test(location.hostname)&&location.hostname!=='billowing-glade-6627.vitawaw26.workers.dev';
+const SB=IS_PREVIEW?SB_TEST:SB_LIVE; // public anon keys only (data is protected by RLS); never the service_role key
 
 /* ===================== editable configuration ===================== */
 const DEFAULT_CFG={
