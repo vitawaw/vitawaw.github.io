@@ -68,8 +68,12 @@ node tests/worker_links_test.mjs # link check
 ```
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
-## Where we are (2026-10-30)
-- **1.12.0 (second try, preview, waiting for «جاهز»)**: built on 1.11.1 with only the items he picked from the proposals (he pasted them).
+## Where we are (2026-11-02)
+- **Live: 1.12.0** (he approved publishing on 2026-11-02: «نعم موافق اعطني الروابط لانشرة»; main fast-forwarded from this branch).
+  DB file `20261102120000_stamps_and_science_only.sql` given to him to run (check afterwards: column `author`, function `private.stamp_name`).
+  He also has to add the production + preview URLs in Supabase → Auth → URL configuration for «forgot password», and log in → save → publish
+  (how-to/FAQ split, menus/tools settings).
+- **1.12.0 (second try)**: built on 1.11.1 with only the items he picked from the proposals (he pasted them).
   Bottom bar (<1024px): calc · interactions · tools · 🔔 + ☰ (`.offbar` = sources, roadmap → ☰ tiles). Computers: header shows a
   Facebook-like top bar (`#hsearch` start side, section tabs as icons in the middle incl. sources, 🔔 `#t-notif` and ☰ `#t-menu`
   absolute on the end side); ☰ on computers = `toggleSide()` (body.noside, localStorage vw-side). Same `menuHTML()` on the ☰ page
