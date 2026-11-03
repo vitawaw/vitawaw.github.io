@@ -34,6 +34,12 @@ with sync_playwright() as p:
     check('no More panel, no side menu on phones', v.locator('#more, #more-btn').count() == 0 and not v.is_visible('#side'))
     v.click('#t-interactions'); v.wait_for_timeout(200)
     check('tab opens its page', v.evaluate('cur') == 'interactions')
+    tiles = "[...document.querySelectorAll('#menu-b *')].filter(e=>e.children.length===0).map(e=>e.textContent.trim())"
+    v.evaluate("setMode('pro');go('menu')"); v.wait_for_timeout(200); t = v.evaluate(tiles)
+    check('visiting pharmacist: «sources» among the sections, no link check', 'المصادر' in t and 'روابط المصادر' not in t)
+    v.evaluate("setMode('pt');go('menu')"); v.wait_for_timeout(200); t = v.evaluate(tiles)
+    check('patient mode: no «sources» among the sections', 'المصادر' not in t)
+    v.evaluate("setMode('pro');go('interactions')"); v.wait_for_timeout(150)
     v.locator('#filters button').nth(1).click(); v.wait_for_timeout(200)
     check('interaction filter on the page', v.evaluate('IF') != 'all')
     v.evaluate("openToolSheet('tool-gz')"); v.wait_for_timeout(250)
@@ -203,7 +209,7 @@ with sync_playwright() as p:
     after = o.evaluate(txt)
     check('interactions: reorder inside a supplement group', len(after) == len(before) and after[k - 1] == before[k] and after[k] == before[k - 1], f'{before[k-1:k+1]} -> {after[k-1:k+1]}')
     o.click('#t-menu'); o.wait_for_timeout(200)
-    check('team: «sources» among the sections even though it is in the bar', o.evaluate("[...document.querySelectorAll('#menu-b *')].some(e=>e.children.length===0&&e.textContent.trim()==='المصادر')"))
+    check('sources among the sections even though it is in the bar', o.evaluate("[...document.querySelectorAll('#menu-b *')].some(e=>e.children.length===0&&e.textContent.trim()==='المصادر')"))
     # ---- 1.14.1: add buttons at the top of every section; source types as chips with counts ----
     top = "s=>{const a=document.querySelector(s);const sec=a&&a.closest('.page');if(!a||!sec)return false;const f=sec.querySelector('.nsearch,.filters,.rm-grid,#medsb');return !f||!!(a.compareDocumentPosition(f)&Node.DOCUMENT_POSITION_FOLLOWING)}"
     check('interactions: add button above the search', o.evaluate(top, '#iadd'))
