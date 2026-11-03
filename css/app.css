@@ -300,9 +300,11 @@ footer .vno{font:500 calc(12px*var(--fsb,1)) var(--f-body);font-variant-numeric:
 
 .oedit{display:none}
 body.owner:not(.preview) .oedit{display:flex;gap:6px;margin-top:6px}
-.oaddli{display:none!important}
-body.owner:not(.preview) .oaddli{display:block!important;background:transparent!important;padding:0!important}
-body.owner:not(.preview) #iadd,body.owner:not(.preview) #radd{min-height:64px;width:100%}
+/* 1.14.1: one identity — the team's add button sits at the top of every section, under the banner */
+body.owner:not(.preview) .oadd.otop{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:10px 14px;margin:0 0 12px}
+.oadd.otop svg{flex:none}
+#sfilters>button{gap:6px}
+#sfilters .fc{font:700 calc(12px*var(--fsb,1)) var(--f-body);min-width:22px;padding:1px 6px;border-radius:99px;background:color-mix(in srgb,currentColor 12%,transparent)}
 .dlg .checks{display:grid;gap:4px;max-height:220px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--bg)}
 .dlg .ck{display:flex;gap:8px;align-items:flex-start;font-size:calc(13px*var(--fsb,1));line-height:1.4;cursor:pointer}
 .dlg .ck input{margin-top:3px;flex:none;width:16px;height:16px;accent-color:var(--royal)}
@@ -804,7 +806,7 @@ ol.refs .used{display:none}
 .rm .rmact{margin-top:0}
 .rmfilters{margin:0 0 12px}
 #rmaddw:empty,#refbulk:empty{display:none}
-#rmaddw,#refbulk{margin-top:10px}
+#refbulk{margin-top:10px}
 /* the whole card in a floating window */
 .cardfull{display:grid;gap:8px}
 .cardfull .what,.cardfull p,.cardfull .ttl{display:block;-webkit-line-clamp:unset;overflow:visible}
@@ -849,10 +851,12 @@ span.lkc{cursor:default}
 .stamp{display:flex;align-items:center;gap:5px;font:600 calc(12px*var(--fsb,1)) var(--f-body);color:var(--ok)}
 .stamp svg{width:14px;height:14px;flex:none}
 /* vitamins at the top of interactions and sources: buttons of one size — 3 a row on phones, 5 on tablets, 7 on computers */
-#filters,#sfilters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-@media (min-width:700px){#filters,#sfilters{grid-template-columns:repeat(5,minmax(0,1fr))}}
-@media (min-width:1024px){#filters,#sfilters{grid-template-columns:repeat(7,minmax(0,1fr))}}
-#filters>button,#sfilters>button{width:100%;min-width:0;min-height:44px;margin:0;padding:6px 8px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.25;border-radius:12px}
+#filters,#sfilters,#rmlegend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+@media (min-width:700px){#filters,#sfilters,#rmlegend{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media (min-width:1024px){#filters{grid-template-columns:repeat(7,minmax(0,1fr))}}
+/* 1.14.1: source types — all + up to 5 types: 3 a row on phones, one row from tablets */
+@media (min-width:700px){#sfilters{grid-template-columns:repeat(auto-fit,minmax(0,1fr));grid-auto-flow:column}}
+#filters>button,#sfilters>button,#rmlegend>button{width:100%;min-width:0;min-height:44px;margin:0;padding:6px 8px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.25;border-radius:12px}
 #filters>.srcf{grid-column:1/-1}
 /* 1.12.1: no empty result box until the visitor enters data or asks for an example */
 #calc.nores #resbox,#calc.nores .rbar{display:none}

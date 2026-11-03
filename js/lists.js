@@ -20,14 +20,15 @@ function renderInter(){
   const ish=INTER.filter(im);
   const card=x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}${x[8]?' hid':''}" data-sid="${x[5]}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div>${stampHTML(x[10],x[11])}${icActs(x)}${actBar('i',x[5],{rv:x[7],hidden:x[8],drag:true})}</div>`,bySev=(a,b)=>SEVORD[a[6]]-SEVORD[b[6]];
   // 1.14.0: with no filter, the long list is grouped by supplement (tap a group to open it); filters, search, my medicines and editing show the flat list
-  const grouped=!onMeds&&!ISRC&&IF==='all'&&!iq.length&&!mine&&!(typeof OWN!=='undefined'&&OWN.on&&CAN('inter'))&&ish.length>12;
+  const grouped=!onMeds&&!ISRC&&IF==='all'&&!iq.length&&!mine&&ish.length>12; // 1.14.1: the team sees the same groups (drag stays inside a group)
   const body=grouped?KEYS.filter(k=>k!=='all'&&ish.some(x=>x[0]===k)).map(k=>{const g=ish.filter(x=>x[0]===k).sort(bySev),n=s=>g.filter(x=>x[6]===s).length;
     return `<details class="igrp" data-ig="${esc(k)}"${IGOPEN.includes(k)?' open':''}><summary><b>${esc(kname(k))}</b><span class="igc">${['major','moderate','minor'].filter(s=>n(s)).map(s=>`<span class="sev sev-${s}">${n(s)} ${T('sev_'+s)}</span>`).join('')}</span></summary><div class="cgrid">${g.map(card).join('')}</div></details>`}).join('')
     :'<div class="cgrid">'+ish.sort(bySev).map(card).join('')+'</div>';
-  $('ilist').innerHTML=(ish.length?'':`<p class="inone">${T(onMeds&&!MEDS.length?'mp_none':'i_none')}</p>`)+bulkBar('i',ish.filter(x=>!x[7]).length)+body+`<button class="oadd" type="button" id="iadd">${PLUS}${T('o_iadd')}</button>`;
+  $('ilist').innerHTML=(ish.length?'':`<p class="inone">${T(onMeds&&!MEDS.length?'mp_none':'i_none')}</p>`)+bulkBar('i',ish.filter(x=>!x[7]).length)+body;
   $('icount').textContent=INTER.length;
   // owner: drag ⋮⋮ to change the order of interactions (dangerous ones always stay first: the order counts inside each severity)
-  sortable($('ilist'),'.icard',ids=>{if(!ISOWNER()||!Array.isArray(CFG.inter))return;
+  sortable($('ilist'),'.icard',(ids,it)=>{if(!ISOWNER()||!Array.isArray(CFG.inter))return;
+    if(it&&it.parentNode){const g=new Set([...it.parentNode.querySelectorAll('.icard')].map(x=>x.dataset.sid));ids=ids.filter(x=>g.has(x))} // only the dragged card's group moves
     const idx=ids.map(Number),slots=[...idx].sort((a,b)=>a-b),old=CFG.inter.slice();
     slots.forEach((s,n)=>{CFG.inter[s]=old[idx[n]]});changed()});
 }
@@ -79,7 +80,8 @@ function renderMedCat(){
     .sort((a,b)=>(LANG==='ar'?(a.ar[0]||a.en).localeCompare(b.ar[0]||b.en,'ar'):a.en.localeCompare(b.en)));
   el.innerHTML=(list.length?`<div class="mclist">${list.map(m=>{const n=medHits(m.en),on=MEDS.includes(m.en);
     return `<div class="mcrow${m.hide?' hid':''}"><button type="button" class="mcadd" data-mcadd="${esc(m.en)}"${on||m.hide||!n?' disabled':''}><b>${esc(medLabel({en:m.en,ar:m.ar.length?m.ar:[m.en]}))}</b><small>${on?T('mc_in'):n?T('mc_n').replace('{n}',n):T('mc_none')}</small></button>${team?`<button type="button" class="pen mgpen" data-mcedit="${m.i}" aria-label="${esc(T('o_edit'))}">✎</button>`:''}</div>`}).join('')}</div>`:`<p class="inone">${T('i_none')}</p>`)+
-    (team?`<button class="oadd" type="button" data-mcedit="new">${PLUS}${T('mc_new')}</button>`:'');
+    '';
+  const aw=$('mcaddw');if(aw)aw.innerHTML=team?`<button class="oadd otop" type="button" data-mcedit="new">${PLUS}${T('mc_new')}</button>`:'';
 }
 async function editMed(i){
   const base=JSON.parse(JSON.stringify(medBase())),m=i==='new'?{en:'',ar:[],hide:false}:base[+i];if(!m)return;
@@ -165,7 +167,7 @@ function renderRoadmap(){
   $('rmlegend').innerHTML=['all','now','dev','plan','idea'].map(k=>`<button type="button" data-rmf="${k}" aria-pressed="${k===RMF}">${esc(T(k==='all'?'all':'st_'+k))}</button>`).join('');
   const tx=o=>LANG==='ar'?o.ar:(o.en||o.ar);
   $('rmgrid').innerHTML=CFG.roadmap.map((x,i)=>(x.hidden&&!SHOWALL())||(RMF!=='all'&&x.st!==RMF)?'':`<div class="rm${x.hidden?' hid':''}" data-sid="${i}"><div class="rmh"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${IC[x.ic]||IC.plus}</svg></div><h3>${esc(tx(x.t))}</h3></div><p>${esc(tx(x.d))}</p><div class="rmf">${st(x.st)}${x.st==='now'&&GO[x.go]?`<button class="btn pri rmgo" type="button" data-rmgo="${esc(x.go)}">${T('rm_try')}</button>`:''}</div><div class="rmact">${DRAG(T('o_drag'))}${actBtns('m',i,{hidden:!!x.hidden})}</div></div>`).join('');
-  $('rmaddw').innerHTML=`<button class="oadd" type="button" id="rmadd"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>${T('o_add')}</button>`;
+  $('rmaddw').innerHTML=`<button class="oadd otop" type="button" id="rmadd">${PLUS}${T('o_add')}</button>`;
   sortable($('rmgrid'),'.rm',ids=>{if(!ISOWNER())return;const keep=CFG.roadmap.filter((_,n)=>!ids.includes(String(n)));CFG.roadmap=[...ids.map(n=>CFG.roadmap[+n]),...keep];changed()});
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-rmf]');if(!b)return;RMF=b.dataset.rmf;renderRoadmap()});
@@ -184,13 +186,15 @@ function usedIn(n,x){
   return `<div class="used">${calcs.length||ni?`<span>${T('su_in')}</span>`:''}${calcs.map(k=>`<button type="button" data-gocalc="${esc(k)}">${esc(kname(k))}</button>`).join('')}${ni?`<button type="button" data-isrc="${n}">${T('su_int').replace('{n}',ni)}</button>`:''}${at?`<small>${T('su_at')} <bdi>${at}</bdi></small>`:''}</div>`;
 }
 function renderRefs(){
-  $('sfilters').innerHTML=KEYS.map(k=>`<button data-sf="${esc(k)}" aria-pressed="${k===SF}">${esc(kname(k))}</button>`).join('');
-  if(!KEYS.includes(SF))SF='all';
-  const lk=typeof lkShow==='function'?lkShow():null,show=lk||(SF==='all'?null:REFGROUP[SF]);
+  // 1.14.1: one full list; the chips filter by source type (with counts), like the interactions page
+  const rts=Object.values(REFS).map(rtOf),cnt=k=>k==='all'?rts.length:rts.filter(t=>t===k).length,tks=['all',...Object.keys(RTORD).filter(k=>cnt(k))];
+  if(!tks.includes(SF))SF='all';
+  $('sfilters').innerHTML=tks.map(k=>`<button type="button" data-sf="${k}" aria-pressed="${k===SF}">${esc(T(k==='all'?'all':'rtp_'+k))} <bdi class="fc">${cnt(k)}</bdi></button>`).join('');
+  const lk=typeof lkShow==='function'?lkShow():null,show=lk;
   $('refbulk').innerHTML=SHOWALL()?bulkBar('r',(CFG.refs||[]).filter(x=>x.rv===false).length):'';
   const sq=iTerms(normAr($('ssearch')&&$('ssearch').value)),sm=([n,x])=>!sq.length||sq.some(q=>normAr([n,x[0],x[1],x[3],x[4]].join(' ')).includes(q));
-  $('reflist').innerHTML=Object.entries(REFS).filter(sm).sort((a,b)=>RTORD[rtOf(a[1])]-RTORD[rtOf(b[1])]||a[0]-b[0]).filter(([n])=>!show||show.includes(+n)).map(([n,x])=>
-    `<li id="ref-${n}"${x[6]?' class="hid"':''}><span class="num">${n}</span><div><div class="org"><span class="rtype rt-${rtOf(x)}">${T('rt_'+rtOf(x))}</span>${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl" dir="auto">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div>${stampHTML(x[9],x[10])}${usedIn(+n,x)}${actBar('r',n,{rv:x[5]!==false,hidden:x[6]})}</div></li>`).join('')+`<li class="oaddli"><button class="oadd" type="button" id="radd">${PLUS}${T('o_radd')}</button></li>`;
+  $('reflist').innerHTML=Object.entries(REFS).filter(sm).sort((a,b)=>RTORD[rtOf(a[1])]-RTORD[rtOf(b[1])]||a[0]-b[0]).filter(([n,x])=>(!show||show.includes(+n))&&(lk||SF==='all'||rtOf(x)===SF)).map(([n,x])=>
+    `<li id="ref-${n}"${x[6]?' class="hid"':''}><span class="num">${n}</span><div><div class="org"><span class="rtype rt-${rtOf(x)}">${T('rt_'+rtOf(x))}</span>${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl" dir="auto">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div>${stampHTML(x[9],x[10])}${usedIn(+n,x)}${actBar('r',n,{rv:x[5]!==false,hidden:x[6]})}</div></li>`).join('');
   $('rcount').textContent=Object.keys(REFS).length;
   if(typeof renderLinks==='function')renderLinks();
   $('rev2').hidden=!REV().name;if(REV().name)$('rev2').innerHTML=reviewHTML0().replace(/^<div class="reviewed">|<\/div>$/g,'');

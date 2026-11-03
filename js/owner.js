@@ -224,7 +224,7 @@ const ensureInter=()=>{if(!Array.isArray(CFG.inter))CFG.inter=defInterList()};
 async function confirmDel(info){const q=await dialog({title:T('o_delq2'),info:info||'',buttons:[{label:T('o_back'),action:'cancel'},{label:T('o_yesdel'),action:'ok',pri:1,danger:1}]});return q.action==='ok'}
 const RTYPES=()=>[['',T('o_rt_auto')],...['g','o','d','s','c','x'].map(k=>[k,T('rt_'+k)])];
 async function editRef(id){
-  ensureRefs();const isNew=id==null,o=isNew?{org:'',title:'',url:'',ar:'',en:'',kind:''}:CFG.refs.find(x=>x.id===id);if(!o)return;
+  ensureRefs();const isNew=id==null,o=isNew?{org:'',title:'',url:'',ar:'',en:'',kind:RTORD[SF]!=null?SF:''}:CFG.refs.find(x=>x.id===id);if(!o)return;
   let v=[o.org,o.title,o.url,o.kind||'',o.ar||'',o.en||''],err=null;
   while(true){
     const r=await dialog({err,title:T(isNew?'o_radd':'o_redit'),info:T('o_rinfo'),fields:[{label:T('o_rorg'),value:v[0]},{label:T('o_rtitle'),type:'textarea',value:v[1]},{label:T('o_rurl'),type:'url',value:v[2]},

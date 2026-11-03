@@ -65,7 +65,7 @@ function renderNutAdmin(){
     const w=document.createElement('div');w.className='pkw'+(off?' off':'');w.dataset.sid=k;b.before(w);w.appendChild(b);
     w.insertAdjacentHTML('beforeend',`<div class="pka">${DRAG(T('o_drag'))}${c?actBtns('n',c.id,{rv:c.rv!==false,hidden:!!c.hidden}):
       `<button class="btn" type="button" data-nhide="${k}" aria-label="${esc(T(off?'o_nshow':'o_nhide'))}" title="${esc(T(off?'o_nshow':'o_nhide'))}">${off?EYE:EYEOFF}<span class="lbl">${esc(T(off?'o_nshow':'o_nhide'))}</span></button>`}</div>`)});
-  el.innerHTML=`${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<button class="btn pri" type="button" id="nadd">${T('o_nadd')}</button><p class="hint">${T('o_drag_i')} ${T('o_nhint')}</p>`;
+  el.innerHTML=`<button class="oadd otop" type="button" id="nadd">${PLUS}${T('o_nadd').replace(/^\+\s*/,'')}</button>${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<p class="hint">${T('o_drag_i')} ${T('o_nhint')}</p>`;
   // drag the ⋮⋮ handle to change the vitamins' order (saved with the page settings, then published)
   sortable(pk,'.pkw',ids=>{if(!ISOWNER())return;CFG.nutOrder=ids;changed()});
 }
