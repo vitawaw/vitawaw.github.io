@@ -69,7 +69,7 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-11-03)
-- 2026-11-03 final review: CLAUDE.md was served publicly (not in .assetsignore) → added (1.14.3, preview). Live crawl 8 runs (3 sizes × pro/pt, ar+en on phone): 0 errors, 32 calculators all give results; links 60 ok + 12 blocked (403 publishers), 0 broken.
+- 2026-11-03 final review: CLAUDE.md was served publicly (not in .assetsignore) → added (Live: 1.14.3, he said «جاهز» 2026-11-03). Live crawl 8 runs (3 sizes × pro/pt, ar+en on phone): 0 errors, 32 calculators all give results; links 60 ok + 12 blocked (403 publishers), 0 broken.
 - 2026-11-03 review + load test (report sent to him): live DB healthy (13 MB, RLS on all 7 public tables, anon = read published row only,
   no anon writes/RPC, definer functions all check owner + fixed search_path; advisor = expected definer warnings, leaked-password (paid),
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
