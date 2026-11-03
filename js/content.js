@@ -45,13 +45,17 @@ function buildData(){
   VC.forEach(c=>{const b=document.createElement('button');b.dataset.k=c.id;b.className='cnut';b.innerHTML=`<span>${esc(tx2(c.n))}</span><small>${esc(tx2(c.h))}</small>${c.rv===false?`<em class="pend">${T('o_pending')}</em>`:''}${c.hidden?`<em class="hidb">${T('o_hiddenb')}</em>`:''}`;$('picker').appendChild(b);F[c.id]=()=>fCustom(c.id);EX[c.id]={age:30,sex:'f'}});
   Object.keys(F).forEach(k=>{if(!BUILTIN.includes(k)&&!CUST[k])delete F[k]});
   KEYS.slice(1).forEach(k=>{const b=$('picker').querySelector(`button[data-k="${k}"]`);if(b)$('picker').appendChild(b)}); // picker in the same order
+  // 1.14.0: the special calculators (pregnancy, infant, vitamin A for children, weight-loss surgery, B1 deficiency) come after the vitamins, under their own heading
+  $('picker').querySelectorAll('.pkh').forEach(h=>h.remove());
+  const SPEC=['preg','inf','vac','bar','thi'],spec=KEYS.slice(1).filter(k=>SPEC.includes(k)).map(k=>$('picker').querySelector(`button[data-k="${k}"]`)).filter(Boolean);
+  if(spec.some(b=>!b.hidden)){const h=document.createElement('h3');h.className='pkh';h.dataset.t='pk_spec';h.textContent=T('pk_spec');$('picker').appendChild(h);spec.forEach(b=>$('picker').appendChild(b))}
   if(!KEYS.includes(K)||K==='all')K=KEYS[1]||'d';
   showFor();
   document.querySelectorAll('#picker button[data-k]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===K));
   $('nsw').hidden=$('picker').querySelectorAll('button[data-k]:not([hidden])').length<10;filterNuts();
   renderNutAdmin();
 }
-function filterNuts(){const q=normAr($('nsearch')&&$('nsearch').value);document.querySelectorAll('#picker button[data-k]').forEach(b=>b.classList.toggle('nf',!!q&&!normAr(b.textContent).includes(q)))}
+function filterNuts(){const q=normAr($('nsearch')&&$('nsearch').value);document.querySelectorAll('#picker button[data-k]').forEach(b=>b.classList.toggle('nf',!!q&&!normAr(b.textContent).includes(q)));document.querySelectorAll('#picker .pkh').forEach(h=>h.classList.toggle('nf',!!q))}
 /** owner: each vitamin carries its own buttons (drag ⋮⋮ to reorder · edit · hide/show · delete); «add» is under the list */
 function renderNutAdmin(){
   const el=$('nadm'),pk=$('picker');if(!el)return;

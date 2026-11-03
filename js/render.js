@@ -55,7 +55,7 @@ function render(r){
    (r.plan&&r.plan.length?`<p class="plan-h">${T('plan')}</p><ol class="plan">${r.plan.map(s=>`<li><b>${s.h}</b><span>${s.d||''}</span></li>`).join('')}</ol>`:'')+
    (acts.length?`<div class="ract">${acts.filter(a=>{const m=a.match(/data-tool="(\w+)"/);return !m||typeof toolHidden!=='function'||!toolHidden(m[1])}).join('')}</div>`:'')+
    `<details class="more"${pt?'':' open'}><summary>${T(pt?'more_pt':'more_pro')}</summary>`+
-     (pt&&r.pt?`<h3 style="font-size:17px">${r.title}${R(r.refs||[])}</h3><p class="sub">${r.sub||''}</p>`:'')+
+     (pt&&r.pt?`<h3 style="font-size:calc(17px*var(--fsh,1))">${r.title}${R(r.refs||[])}</h3><p class="sub">${r.sub||''}</p>`:'')+
      (r.kv&&r.kv.length?`<div class="kv">${r.kv.map(x=>`<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div>`:'')+
      (r.opts&&r.opts.length?`<div class="opts">${r.opts.map(o=>`<div class="opt"><small>${o.h}</small><b>${o.b}${R(o.r||[])}</b>${o.d?`<span>${o.d}</span>`:''}</div>`).join('')}</div>`:'')+
      interHTML()+

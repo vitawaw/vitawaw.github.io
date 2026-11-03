@@ -6,7 +6,7 @@
 const OWN={on:false,local:false,role:null,client:null,base:'',preview:false,perms:{},name:''};
 // texts editable from their own page
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
-function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,nutOrder:CFG.nutOrder,brand:CFG.brand,review:CFG.review,menus:CFG.menus,tools:CFG.tools,medcat:CFG.medcat||null,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
+function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,nutOrder:CFG.nutOrder,brand:CFG.brand,review:CFG.review,menus:CFG.menus,tools:CFG.tools,medcat:CFG.medcat||null,look:CFG.look,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
 function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent=whoLabel();
@@ -96,6 +96,15 @@ function drawTexts(){
   $('sheet-b').innerHTML=`<p class="hint">${esc(T('tx_all_s'))}</p><div class="nsearch"><input type="search" id="txq" dir="auto" autocomplete="off" placeholder="${esc(T('tx_q'))}" value="${esc(TXQ)}"></div>`+
     `<p class="hint">${esc(T('tx_n').replace('{n}',list.length))}</p><div class="ml">${list.slice(0,40).map(k=>`<button type="button" class="mi" data-edtext="${esc(k)}"><span class="mt">${esc(T(k))}${CFG.text[k]?` · <b>${esc(T('tx_changed'))}</b>`:''}<small dir="auto">${esc(LANG==='ar'?I18N[k][1]:I18N[k][0])}</small></span></button>`).join('')}</div>`;
   const i=$('txq');i.addEventListener('input',()=>{TXQ=i.value;drawTexts();const j=$('txq');j.focus();j.setSelectionRange(j.value.length,j.value.length)});
+}
+/** 1.14.0: fonts and sizes of the whole site (Menu → Site appearance) */
+async function editLook(){
+  const l=CFG.look||DEFAULT_CFG.look,F=[['tajawal','Tajawal'],['cairo','Cairo'],['system',T('lk_sys')]],S=[['0.9',T('lk_s09')],['1',T('lk_s1')],['1.1',T('lk_s11')],['1.2',T('lk_s12')]];
+  const r=await dialog({title:T('lk_title'),info:T('lk_info'),fields:[{type:'select',label:T('lk_fb'),options:F,value:l.fb},{type:'select',label:T('lk_sb'),options:S,value:String(l.sb)},{type:'select',label:T('lk_fh'),options:F,value:l.fh},{type:'select',label:T('lk_sh'),options:S,value:String(l.sh)}],
+    buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  if(r.action==='ok')CFG.look={fb:r.values[0],sb:+r.values[1],fh:r.values[2],sh:+r.values[3]};
+  if(r.action==='reset')CFG.look=clone(DEFAULT_CFG.look);
+  if(r.action!=='cancel')changed();
 }
 async function editColors(p){
   const r=await dialog({title:T('o_colors'),fields:[{type:'colors',labels:[T('o_c1'),T('o_c2')],value:CFG.colors[p]}],
@@ -296,7 +305,7 @@ let SEEN=[];try{SEEN=JSON.parse(localStorage.getItem('vw-seen')||'[]').filter(x=
 const LABDUE=90; // days after the last saved result before the reminder (a reminder to ask, not a medical rule)
 function pubItems(){
   const out=[];
-  (CFG.roadmap||[]).forEach((x,i)=>{if(x.st==='now'&&!x.hidden)out.push({key:'rm:'+String((x.t&&(x.t.en||x.t.ar))||i).slice(0,40),kind:'feat',x})});
+  (CFG.roadmap||[]).map((x,i)=>[x,i]).filter(([x])=>x.st==='now'&&!x.hidden).slice(-3).forEach(([x,i])=>out.push({key:'rm:'+String((x.t&&(x.t.en||x.t.ar))||i).slice(0,40),kind:'feat',x})); // 1.14.0: the 3 newest only
   LABT.forEach(t=>{const pts=LABS.filter(x=>x.k===t[0]),last=pts[pts.length-1];
     if(last&&(Date.now()-Date.parse(last.d))/864e5>=LABDUE)out.push({key:'lab:'+t[0]+':'+last.d,kind:'lab',t,last})});
   return out;
@@ -617,7 +626,7 @@ async function afterLogin(){
   if(m.role==='owner')teamLoad().then(()=>renderNav());else loadNotes();
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null;OWN.parts=partsOf()}
-const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[],brand:c.brand||DEFAULT_CFG.brand,review:c.review||DEFAULT_CFG.review,menus:c.menus||DEFAULT_CFG.menus,tools:c.tools||DEFAULT_CFG.tools,medcat:c.medcat||null});
+const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[],brand:c.brand||DEFAULT_CFG.brand,review:c.review||DEFAULT_CFG.review,menus:c.menus||DEFAULT_CFG.menus,tools:c.tools||DEFAULT_CFG.tools,medcat:c.medcat||null,look:c.look||DEFAULT_CFG.look});
 /** the page «How to use and FAQ» is split in two: «How to use» (the first part) and «FAQ» (the questions) */
 function splitHowto(){const P=Array.isArray(CFG.pages)&&splitPages(CFG.pages);if(!P)return false;CFG.pages=P;return true}
 function startOwner({local,role,draft,content}){
@@ -672,7 +681,7 @@ function pubSummary(){
   const B={refs:(P.refs||[]).map(st),inter:(P.inter||[]).map(x=>{const y={...x};if(!(y.g&&y.g.d))delete y.g;return st(y)}),nut:((P.nut&&P.nut.custom)||[]).map(st)};
   let n=0;for(const k of ['refs','inter','nut']){const a=new Set(A[k]),b=new Set(B[k]);n+=Math.max([...a].filter(x=>!b.has(x)).length,[...b].filter(x=>!a.has(x)).length)}
   if(st(nutHide)!==st((P.nut&&P.nut.hide)||[]))n++;
-  for(const k of ['contact','colors','text','roadmap','pages','nutOrder','brand','review','menus','tools','medcat'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
+  for(const k of ['contact','colors','text','roadmap','pages','nutOrder','brand','review','menus','tools','medcat','look'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
   return {n,wait:pendingCount()};
 }
 async function publish(){

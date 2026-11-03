@@ -2,7 +2,10 @@
    Small helpers used everywhere: esc() (escape HTML), normAr() (Arabic-insensitive search), $(id), fmt(), R() (source badges).
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /** Escape text before putting it inside HTML (always use this for data from the database). */
-const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/** 1.14.0: «وLatin» (Arabic «and» glued to a Latin word) is shown reversed in right-to-left text; a space keeps it readable */
+const bidiFix=s=>String(s??'').replace(/([A-Za-z0-9)])\s+و(?=[A-Za-z0-9])/g,'$1، ').replace(/([\u0600-\u06FF])?و(?=[A-Za-z0-9])/g,(m,a)=>a?m:'و ');
+/* between two English names the Arabic «و» becomes «،» (in these fonts a lone «و» beside Latin letters looks like «g») */
+const esc=x=>bidiFix(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const normAr=x=>String(x||'').toLowerCase().replace(/[أإآا]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[\u064B-\u0652]/g,'').replace(/\s+/g,' ').trim();
 const $=id=>document.getElementById(id);
 /** HTML → plain text for copying/sharing: removes tags and turns codes like &#39; back into characters */

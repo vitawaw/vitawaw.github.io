@@ -69,6 +69,15 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-11-03)
+- **1.14.0 (preview)**: his «نفذها كلها بالتسلسل» on the 24-item design review + owner fonts. `bidiFix()` (util.js, used by esc() and
+  T() in Arabic): Latin «و» Latin → «،», «وLatin» → «و Latin» (in Tajawal/Cairo a lone و beside Latin looks like «g»). Font sizes:
+  every px font size in app.css is `calc(Npx*var(--fsb|--fsh,1))` on the scale 12/13/14/15/17/20/24 (--fsh where the rule uses
+  --f-display). Owner `CFG.look` {fb,fh,sb,sh} (fonts tajawal|cairo|system, sizes 0.9–1.2) → `applyLook()` (ui.js, in applyColors,
+  cached in localStorage vw-look for pre.js), dialog `editLook()` (owner.js, Menu → Site appearance «الخطوط وأحجامها»). Interactions
+  grouped by supplement (`details.igrp`, IGOPEN) only with no filter/search/meds and not for the team; `.cgrid` rows auto height.
+  Picker: special calculators after an `h3.pkh` «حاسبات خاصة» (content.js). TOOLSUB tool subtitles; shorter result button labels;
+  touch sizes 44 (pointer:coarse); contrast vars `--royal-t`; visitor 🔔 = last 3 'now' roadmap items. DB: content_1_14_0.sql fixes
+  two owner texts in the DRAFT (w_t, menus.groups.names.apps). tools_flow 97.
 - **Live: 1.13.0** (he said «جاهز» on 2026-11-03; main fast-forwarded). Claude APPLIED on the live DB via apply_migration (it worked from
   here this time): `20261103043132_medicine_list.sql` and `content_1_13_0.sql` (version 20261103043252); checked: 10 new sources +
   12 interactions + 3 renamed interactions waiting in 🔔, draft roadmap (10) and the 5 corrected pages identical to the test DB.

@@ -3,7 +3,7 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.13.0';
+const APP_VERSION='1.14.0';
 /* the medical review stamp is set by the owner (menu → site → «ختم المراجعة الطبية») and published with the settings: CFG.review */
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
@@ -24,6 +24,8 @@ const DEFAULT_CFG={
   /* owner only (1.12.0): the tools page — order, hidden tools, names {id:{ar,en}} */
   tools:{order:[],hide:[],names:{}},
   text:{},
+  /* 1.14.0 owner: fonts of the body text and the headings (self-hosted Tajawal / Cairo, or the device's own) and their sizes */
+  look:{fb:'tajawal',fh:'cairo',sb:1,sh:1},
   medcat:null, /* 1.13.0: the medicines the site recognizes [{en, ar:[names], hide}]; null = the built-in list (lists.js DRUG_AR). Owner edits; pharmacists propose. */
   nutOrder:[], /* order of the vitamins (ids); empty = default order. Owner only. */
   brand:{l1:'',l2:'',url:''},
@@ -79,6 +81,8 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   if(over.colors)Object.assign(out.colors,over.colors);
   if(over.text)out.text=Object.assign({},over.text);
   if(Array.isArray(over.roadmap))out.roadmap=over.roadmap;
+  if(over.look&&typeof over.look==='object'){const F=['tajawal','cairo','system'],S=[0.9,1,1.1,1.2],l=over.look;
+    out.look={fb:F.includes(l.fb)?l.fb:'tajawal',fh:F.includes(l.fh)?l.fh:'cairo',sb:S.includes(+l.sb)?+l.sb:1,sh:S.includes(+l.sh)?+l.sh:1}}
   if(Array.isArray(over.medcat))out.medcat=over.medcat.filter(m=>m&&typeof m.en==='string'&&/^[a-z0-9][a-z0-9 -]{1,40}$/.test(m.en.trim().toLowerCase())).map(m=>({en:m.en.trim().toLowerCase(),ar:(Array.isArray(m.ar)?m.ar:[]).filter(a=>typeof a==='string'&&a.trim()).map(a=>a.trim().slice(0,40)).slice(0,12),hide:!!m.hide})).slice(0,400);
   if(Array.isArray(over.pages))out.pages=over.pages;
   if(Array.isArray(over.nutOrder))out.nutOrder=over.nutOrder;

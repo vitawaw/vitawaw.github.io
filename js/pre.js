@@ -5,6 +5,7 @@ try{
   if(!localStorage.getItem('vw-welcome'))document.getElementById('welcome').hidden=false;
   const th=localStorage.getItem('vw-theme');if(th)document.documentElement.dataset.theme=th;
   if(localStorage.getItem('vw-lang')==='en'){document.documentElement.lang='en';document.documentElement.dir='ltr'}
+  const lk=JSON.parse(localStorage.getItem('vw-look')||'null');if(lk&&typeof lk==='object')Object.entries(lk).forEach(([k,v])=>{if(/^--(f-body|f-display|fsb|fsh)$/.test(k)&&typeof v==='string'&&!/[<>;{}]/.test(v))document.documentElement.style.setProperty(k,v)});
 }catch(e){}
 /* preview links (Cloudflare previews of a branch) use the SAME database as the live site: a red bar says so */
 try{

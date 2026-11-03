@@ -245,7 +245,15 @@ $('ulage').addEventListener('change',ul);$('ulin').addEventListener('input',ul);
 $('ght').addEventListener('input',()=>{gtTouched=true;gz()});
 
 /* ===================== colors ===================== */
+const LOOKF={tajawal:'Tajawal,Cairo,"Segoe UI",Tahoma,sans-serif',cairo:'Cairo,Tajawal,"Segoe UI",Tahoma,sans-serif',system:'system-ui,-apple-system,"Segoe UI","Noto Sans Arabic",Tahoma,sans-serif'};
+/** 1.14.0: the owner's fonts and sizes (CSS variables used by every font size in app.css) */
+function applyLook(){
+  const l=CFG.look||DEFAULT_CFG.look,r=document.documentElement.style,v={'--f-body':LOOKF[l.fb]||LOOKF.tajawal,'--f-display':LOOKF[l.fh]||LOOKF.cairo,'--fsb':String(l.sb||1),'--fsh':String(l.sh||1)};
+  Object.entries(v).forEach(([k,x])=>r.setProperty(k,x));
+  try{localStorage.setItem('vw-look',JSON.stringify(v))}catch(e){}
+}
 function applyColors(){
+  applyLook();
   Object.entries(CFG.colors).forEach(([p,c])=>{const el=$(p);if(!el)return;el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1]);const t=$('t-'+p);if(t)t.style.setProperty('--ti',c[1])});
   [['meds','interactions'],['links','sources']].forEach(([p,q])=>{const c=CFG.colors[q],el=$(p);if(c&&el){el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1])}}); // own pages take the colours of their section
 }

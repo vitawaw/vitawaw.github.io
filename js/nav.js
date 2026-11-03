@@ -21,6 +21,8 @@ const ICO={
 };
 const CHEV='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 const TOOLS=[['tool-pill','tl_pill','tt_t'],['tool-d','tl_d','td_t'],['tool-ca','tl_ca','tp_t'],['tool-gz','tl_gz','tg_t'],['tool-ml','tl_ml','ml_t'],['tool-sch','tl_sch','sc_t'],['tool-labs','tl_labs','lb_t'],['tool-ul','tl_ul','tl_t'],['tool-u','tl_u','tu_t']];
+/** the line under a tool's name on the tools page (1.14.0: never the same words as the name) */
+const TOOLSUB={'tool-sch':'ts_sch','tool-labs':'ts_labs','tool-u':'ts_u'};
 const tabIco=p=>{const s=p==='sources'&&MODE==='pt'&&$('tool-labs')?$('tool-labs').querySelector('.ttl-ic svg'):(p==='meds'||p==='links')&&$(p)?$(p).querySelector('.hi svg'):$('t-'+p)&&$('t-'+p).querySelector('svg');return s?s.outerHTML:ICO.info};
 /** true when the signed-in account may edit this part: 'nut' | 'inter' | 'refs' | 'text' */
 const CAN=k=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner'||(k!=='text'&&!!(OWN.perms&&OWN.perms[k]))); // texts and pages: owner only
@@ -113,6 +115,7 @@ function adminGroups(){
   const look=[];
   if(CAN('text'))look.push({label:T('pg_order_l'),sub:T('pg_order_s'),ico:ICO.page,n:(CFG.pages||[]).length,f:openPagesOrder});
   if(ISOWNER())look.unshift({label:T('nv_order'),sub:T('nv_order_s'),ico:ICO.menu,f:openNavManager});
+  if(ISOWNER())look.push({label:T('lk_title'),sub:T('lk_sub'),ico:ICO.page,f:editLook});
   if(ISOWNER())look.push({label:T('tx_all'),sub:T('tx_all_s'),ico:ICO.page,f:openTexts});
   if(ISOWNER())look.push({label:T('br_t'),ico:ICO.image,f:()=>editBrand()});
   if(look.length)A.push({id:'look',ico:ICO.site,label:T('ad_look'),rows:look});
@@ -147,7 +150,7 @@ const toolName=t=>{const n=CFG.tools&&CFG.tools.names&&CFG.tools.names[t[0]];ret
 function renderToolsGrid(){
   if(!$('tgrid'))return;
   const own=ISOWNER()&&!OWN.preview,hide=(CFG.tools&&CFG.tools.hide)||[];
-  $('tgrid').innerHTML=toolList().map(t=>{const b=`<button type="button" data-tv="${t[0]}"><span>${esc(toolName(t))}</span><small>${esc(T(t[2]))}</small></button>`,off=hide.includes(t[0]);
+  $('tgrid').innerHTML=toolList().map(t=>{const b=`<button type="button" data-tv="${t[0]}"><span>${esc(toolName(t))}</span><small>${esc(T(TOOLSUB[t[0]]||t[2]))}</small></button>`,off=hide.includes(t[0]);
     return own?`<div class="pkw tkw${off?' off':''}" data-sid="${t[0]}">${b}<div class="pka">${DRAG(T('o_drag'))}<button class="btn" type="button" data-tled="${t[0]}" aria-label="${esc(T('o_edit'))}" title="${esc(T('o_edit'))}">${PEN}</button><button class="btn" type="button" data-tlhide="${t[0]}" aria-label="${esc(T(off?'o_nshow':'o_nhide'))}" title="${esc(T(off?'o_nshow':'o_nhide'))}">${off?EYE:EYEOFF}</button></div></div>`:b}).join('')+
     (own?`<p class="hint tlhint">${T('tl_hint')}</p>`:'');
   if(own)sortable($('tgrid'),'.tkw',ids=>{if(!ISOWNER())return;CFG.tools={...CFG.tools,order:ids};changed()});
@@ -285,7 +288,7 @@ function menuHTML(r){
     :`<div class="mcard"><span class="av">${MI2.user}</span><div class="mt"><b>${esc(T('mr_account'))}</b><small>${esc(T('mn_guest'))}</small></div></div><div class="mcard-a"><div class="filters">${chipH(r,{label:T('o_login'),cls:'pri',f:()=>openOwner()})}${chipH(r,{label:T('mr_join'),f:()=>openOwner({join:''})})}</div></div>`;
   // search is fixed at the top of every page (opposite 🔔), not repeated here
   // 1.13.0: the groups below are named, ordered and filled by the owner (✎ and ⋮⋮ in «edit texts» mode); defaults as before
-  const ed=MEDIT(),SPECIAL=['faq','howto','privacy','disclaimer','suggest','who'];
+  const ed=MEDIT(),SPECIAL=['faq','howto','privacy','disclaimer','suggest','who','about','method'];
   const G={};
   // «your shortcuts»: round, scrolls sideways, the last 6 used (not arranged by hand)
   G.recent=RECENT.map(recentItem).filter(Boolean).slice(0,6);
@@ -296,8 +299,8 @@ function menuHTML(r){
     ...(own&&CAN('refs')&&!OWN.preview?[{key:'links',label:T('lk_t'),ico:tabIco('links'),page:'sources',f:()=>go('links')}]:[]),
     ...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(p=>({key:'pg-'+p.id,...pgItem(p)}))];
   // «help and information», each on its own: how to use · FAQ · about us · suggest a feature · privacy policy · disclaimer
-  const PICO={howto:MI2.book,faq:MI2.q,who:MI2.user,suggest:MI.mail,privacy:MI2.shield,disclaimer:ICO.info};
-  G.help=['howto','faq','who','suggest','privacy','disclaimer'].map(pg).filter(Boolean).map(p=>({key:'pg-'+p.id,...pgItem(p),ico:PICO[p.id]}));
+  const PICO={howto:MI2.book,faq:MI2.q,who:MI2.user,about:ICO.info,method:MI2.book,suggest:MI.mail,privacy:MI2.shield,disclaimer:ICO.info};
+  G.help=['howto','faq','who','about','method','suggest','privacy','disclaimer'].map(pg).filter(Boolean).map(p=>({key:'pg-'+p.id,...pgItem(p),ico:PICO[p.id]}));
   G.apps=[{key:'install',label:T('mr_install'),ico:MI.install,f:installApp},{key:'share',label:T('mr_share'),ico:MI.share,f:shareApp},{key:'clear',label:T('cd_t'),ico:MI.trash,f:clearMyData}];
   // the team: management sections, pharmacists (own page)
   G.admin=(own?adminGroups():[]).map(g=>({...g,key:g.id}));

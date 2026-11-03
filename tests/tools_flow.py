@@ -80,6 +80,13 @@ with sync_playwright() as p:
     pg.evaluate("CFG.medcat=[{en:'levothyroxine',ar:['التروكسين الجديد'],hide:false}]")
     check('an edited name is recognised', ','.join(pg.evaluate("iTerms(normAr('التروكسين الجديد'))")), 'levothyroxine')
     pg.evaluate("CFG.medcat=null")
+    # 1.14.0: «و» beside English names, owner fonts and sizes, interactions grouped
+    check('و between English names', pg.evaluate("bidiFix('(Omeprazole وLansoprazole)')"), '(Omeprazole، Lansoprazole)')
+    check('و before an English name', pg.evaluate("bidiFix('الحديد وB12')"), 'الحديد و B12')
+    pg.evaluate("CFG.look={fb:'cairo',fh:'cairo',sb:1.2,sh:1};applyLook()")
+    check('owner font size applied', pg.evaluate("getComputedStyle(document.body).fontSize"), '18px')
+    pg.evaluate("CFG.look=null;applyLook()")
+    check('default font size back', pg.evaluate("getComputedStyle(document.body).fontSize"), '15px')
     # menu groups: the owner's names and order are used
     pg.evaluate("CFG.menus.groups={order:['settings','help'],names:{help:{ar:'مساعدة',en:'Help'}},items:{}};renderMenu()")
     check('menu: owner order and name', pg.evaluate("[...document.querySelectorAll('#menu-b .mgs>.mg')].slice(0,2).map(g=>g.dataset.sid+':'+(g.querySelector('h3')||{}).textContent).join(',')"), 'settings:الإعدادات,help:مساعدة')

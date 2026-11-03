@@ -48,7 +48,7 @@ with sync_playwright() as p:
     check('Menu: how to use, FAQ, privacy and disclaimer each on its own', v.locator('#menu-b details.macc').count() == 0 and v.locator('#menu-b .ml.one').count() >= 2)
     t = menutext(v)
     check('Menu: account card, shortcuts, settings', all(x in t for x in ['الحساب', 'تسجيل الدخول', 'لديّ دعوة', 'اختصارات', 'القادم', 'سياسة الخصوصية', 'مشاركة التطبيق', 'الإعدادات', 'اللغة', 'المظهر', 'وضع العرض']), t[:200])
-    check('Menu shortcuts are tiles (sections outside the bar first)', v.locator('#menu-b .mtile').count() >= 4 and 'القادم' in v.inner_text('#menu-b .mtile >> nth=0'))
+    check('Menu shortcuts are tiles (sections outside the bar first)', v.locator('#menu-b .mtile').count() >= 3 and 'القادم' in v.inner_text('#menu-b .mtile >> nth=0'))
     check('Menu: your shortcuts (last used), contact and settings as three rectangles', v.locator('#menu-b .mrc').count() >= 2 and 'التواصل' in t and 'الخصوصية' in t and v.locator('#menu-b .m3').count() >= 1 and v.locator('#menu-b .m3').last.locator('.m3b').count() == 3)
     check('visitor: no management in Menu', 'الإدارة' not in t)
     v.screenshot(path='tests/shots/menu_ar.png', full_page=True)
