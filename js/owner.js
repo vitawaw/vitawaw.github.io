@@ -6,7 +6,7 @@
 const OWN={on:false,local:false,role:null,client:null,base:'',preview:false,perms:{},name:''};
 // texts editable from their own page
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
-function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,nutOrder:CFG.nutOrder,brand:CFG.brand,review:CFG.review,menus:CFG.menus,tools:CFG.tools,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
+function cfgJSON(){return JSON.stringify({contact:CFG.contact,colors:CFG.colors,text:CFG.text,roadmap:CFG.roadmap,pages:CFG.pages,nutOrder:CFG.nutOrder,brand:CFG.brand,review:CFG.review,menus:CFG.menus,tools:CFG.tools,medcat:CFG.medcat||null,refs:CFG.refs,inter:CFG.inter,nut:CFG.nut})}
 function dirty(){return cfgJSON()!==OWN.base}
 function ownerBar(){
   $('owho').textContent=whoLabel();
@@ -299,12 +299,19 @@ function pubNotifHTML(){
 }
 const NKIND={r:'tab_src',i:'tab_int',n:'ad_vit',x:'nt_texts_k'};
 /** what a pharmacist's texts proposal changes: page texts and info pages (titles) */
+/** the medicines a pharmacist's proposal adds, renames or hides (compared with the owner's list) */
+function medChanges(tm){
+  if(!tm||!Array.isArray(tm.medcat))return[];
+  const was=Object.fromEntries(medBase().map(m=>[m.en,JSON.stringify(m)]));
+  return tm.medcat.filter(m=>was[m.en]!==JSON.stringify({en:m.en,ar:m.ar||[],hide:!!m.hide}));
+}
 function textChanges(tm){
   const out=[],cur=CFG.text||{},pg=CFG.pages||[],np=tm.pages||[];
   const tx=Object.keys({...cur,...(tm.text||{})}).filter(k=>JSON.stringify(cur[k]||null)!==JSON.stringify((tm.text||{})[k]||null));
   if(tx.length)out.push(T('nt_tx_n').replace('{n}',tx.length));
   const ch=np.filter(p=>JSON.stringify(pg.find(x=>x.id===p.id)||null)!==JSON.stringify(p)).length+pg.filter(p=>!np.some(x=>x.id===p.id)).length;
   if(ch)out.push(T('nt_pg_n').replace('{n}',ch));
+  const mc=medChanges(tm);if(mc.length)out.push(T('nt_med_n').replace('{n}',mc.length));
   return out;
 }
 const NICO={new:'<path d="M12 5v14M5 12h14"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',del:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',approved:'<path d="M5 12l5 5 9-10"/>',rejected:'<path d="M6 6l12 12M18 6L6 18"/>'};
@@ -380,7 +387,8 @@ function viewItem(n){
   if(n.t==='x'){const tm=OWN.team||{},cur=CFG.text||{},nt=tm.text||{};
     const rows=Object.keys({...cur,...nt}).filter(k=>JSON.stringify(cur[k]||null)!==JSON.stringify(nt[k]||null)).map(k=>`<div class="ncard"><div class="nb"><div class="nh">${esc(T('nt_was'))} ${esc((cur[k]&&cur[k].ar)||(I18N[k]||[''])[0])}</div><div class="nl">${esc((nt[k]&&nt[k].ar)||(I18N[k]||[''])[0])}</div></div></div>`);
     const pg=(tm.pages||[]).filter(p=>JSON.stringify((CFG.pages||[]).find(x=>x.id===p.id)||null)!==JSON.stringify(p)).map(p=>`<div class="ncard"><div class="nb"><div class="nh">${esc(T('ad_pages'))}</div><div class="nl">${esc(tx2(p.t))}</div><div class="nw">${esc(tx2(p.b)).slice(0,300)}</div></div></div>`);
-    openSheet(T('nt_texts'),rows.concat(pg).join('')||`<p class="inone">${T('nt_none')}</p>`);return}
+    const md=medChanges(tm).map(m=>`<div class="ncard"><div class="nb"><div class="nh">${esc(T('mm_t'))}${m.hide?' · '+esc(T('pg_hidden')):''}</div><div class="nl">${esc(m.en)}</div><div class="nw">${esc((m.ar||[]).join('، '))}</div></div></div>`);
+    openSheet(T('nt_texts'),rows.concat(pg,md).join('')||`<p class="inone">${T('nt_none')}</p>`);return}
   if(n.t==='r'){SF='all';renderRefs();go('sources');setTimeout(()=>{const el=$('ref-'+n.id);if(el){el.scrollIntoView({block:'center'});el.classList.add('hl')}},80);return}
   if(n.t==='i'){IF='all';$('isearch').value='';renderInter();go('interactions');setTimeout(()=>{const el=document.querySelector(`#ilist [data-act][data-kind="i"][data-id="${n.idx}"]`);if(el)el.closest('.icard').scrollIntoView({block:'center'})},80);return}
   pickNut(n.id);setTimeout(()=>{const el=document.querySelector(`#nadm [data-kind="n"][data-id="${n.id}"]`);if(el)el.scrollIntoView({block:'center'})},80);
@@ -410,7 +418,7 @@ async function _decide(n,accept,quiet){
 async function decideTexts(accept,quiet){
   const tm=OWN.team;if(!tm)return true;
   if(dirty()&&!(await _saveDraft()))return false;
-  if(accept){if(tm.text)CFG.text=clone(tm.text);if(Array.isArray(tm.pages))CFG.pages=clone(tm.pages)}
+  if(accept){if(tm.text)CFG.text=clone(tm.text);if(Array.isArray(tm.pages))CFG.pages=clone(tm.pages);if(Array.isArray(tm.medcat))CFG.medcat=clone(tm.medcat)}
   if(!OWN.local){const data=JSON.parse(cfgJSON());const {error}=await OWN.client.from('site_config').upsert({id:'draft',data:{...settingsOf(data),team_done:true},updated_at:new Date().toISOString()});if(error){toast(T('o_neterr'));return false}}
   OWN.team=null;OWN.base=cfgJSON();OWN.parts=partsOf();OWN.saved=true;
   if(!quiet){changed();renderNotif();toast(T(accept?'o_approved':'rc_restored'))}
@@ -578,7 +586,7 @@ async function firstSetup(email0,key){
 function draftFor(d,role){
   OWN.team=d&&d.team?clean(d.team):null;
   if(!d||!d.team||role==='owner')return d&&d.team?Object.fromEntries(Object.entries(d).filter(([k])=>k!=='team')):d;
-  return {...d,text:d.team.text||d.text,pages:d.team.pages||d.pages};
+  return {...d,text:d.team.text||d.text,pages:d.team.pages||d.pages,medcat:d.team.medcat||d.medcat};
 }
 async function afterLogin(){
   const c=OWN.client;const {data:{user}}=await c.auth.getUser();if(!user){toast(T('o_badlogin'));return}
@@ -593,7 +601,7 @@ async function afterLogin(){
   if(m.role==='owner')teamLoad().then(()=>renderNav());else loadNotes();
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null;OWN.parts=partsOf()}
-const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[],brand:c.brand||DEFAULT_CFG.brand,review:c.review||DEFAULT_CFG.review,menus:c.menus||DEFAULT_CFG.menus,tools:c.tools||DEFAULT_CFG.tools});
+const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[],brand:c.brand||DEFAULT_CFG.brand,review:c.review||DEFAULT_CFG.review,menus:c.menus||DEFAULT_CFG.menus,tools:c.tools||DEFAULT_CFG.tools,medcat:c.medcat||null});
 /** the page «How to use and FAQ» is split in two: «How to use» (the first part) and «FAQ» (the questions) */
 function splitHowto(){const P=Array.isArray(CFG.pages)&&splitPages(CFG.pages);if(!P)return false;CFG.pages=P;return true}
 function startOwner({local,role,draft,content}){
@@ -628,7 +636,8 @@ async function _saveDraft(){
         return false;
       }
     }
-    if(CAN('text')&&now.set!==was.set){const {error}=await c.from('site_config').upsert({id:'draft',data:settingsOf(data),updated_at:new Date().toISOString()});if(error){toast(T('o_neterr'));return false}}
+    if((CAN('text')||CAN('inter'))&&now.set!==was.set){ // a pharmacist's write keeps only his proposed medicine list (draft_guard)
+      if(!CAN('text'))toast(T('mc_sent'));const {error}=await c.from('site_config').upsert({id:'draft',data:settingsOf(data),updated_at:new Date().toISOString()});if(error){toast(T('o_neterr'));return false}}
     if(Object.keys(p).length){const {error:e2}=await c.rpc('save_content',{p});if(e2){console.error(e2);toast(T('o_saveerr'));return false}}
     const {data:ct,error:e3}=await c.rpc('get_content');if(!e3&&ct){applyContent(ct);refreshAll()}
   }
@@ -647,7 +656,7 @@ function pubSummary(){
   const B={refs:(P.refs||[]).map(st),inter:(P.inter||[]).map(x=>{const y={...x};if(!(y.g&&y.g.d))delete y.g;return st(y)}),nut:((P.nut&&P.nut.custom)||[]).map(st)};
   let n=0;for(const k of ['refs','inter','nut']){const a=new Set(A[k]),b=new Set(B[k]);n+=Math.max([...a].filter(x=>!b.has(x)).length,[...b].filter(x=>!a.has(x)).length)}
   if(st(nutHide)!==st((P.nut&&P.nut.hide)||[]))n++;
-  for(const k of ['contact','colors','text','roadmap','pages','nutOrder','brand','review','menus','tools'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
+  for(const k of ['contact','colors','text','roadmap','pages','nutOrder','brand','review','menus','tools','medcat'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
   return {n,wait:pendingCount()};
 }
 async function publish(){
@@ -769,7 +778,7 @@ async function logout(){
 $('o-save').addEventListener('click',saveDraft);$('o-publish').addEventListener('click',publish);
 $('o-pvexit').addEventListener('click',()=>setPreview(false));
 // page texts are edited only after «✎ النصوص» is switched on (the page stays calm otherwise)
-$('o-texts').addEventListener('click',()=>{document.body.classList.toggle('textedit');ownerBar()});
+$('o-texts').addEventListener('click',()=>{document.body.classList.toggle('textedit');ownerBar();if(typeof renderMenu==='function')renderMenu()});
 addEventListener('resize',()=>{if(OWN.on)ownerBar()});$('o-preview').addEventListener('click',()=>setPreview(true));$('o-discard').addEventListener('click',discard);
 addEventListener('beforeunload',e=>{if(OWN.on&&dirty()){e.preventDefault();e.returnValue=''}});
 

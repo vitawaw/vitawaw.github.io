@@ -73,6 +73,17 @@ with sync_playwright() as p:
     pg.goto('http://app.test/#interactions'); pg.wait_for_timeout(200)
     check('back on the interactions page', pg.evaluate("$('mymed').closest('.page').id+','+$('ilist').closest('.page').id"), 'interactions,interactions')
     pg.goto('http://app.test/#links'); pg.wait_for_timeout(200); check('link check: visitors are sent to the calculator', pg.evaluate('cur'), 'calc')
+    pg.goto('http://app.test/#meds'); pg.wait_for_timeout(200)
+    check('medicines in the app are listed', str(pg.locator('#medcat .mcadd').count()>3), 'True')
+    check('visitors cannot edit the list', str(pg.locator('#medcat [data-mcedit]').count()), '0')
+    check('Arabic names come from the editable list', ','.join(pg.evaluate("iTerms(normAr('ليفوثيروكسين'))")), 'ليفوثيروكسين,levothyroxine')
+    pg.evaluate("CFG.medcat=[{en:'levothyroxine',ar:['التروكسين الجديد'],hide:false}]")
+    check('an edited name is recognised', ','.join(pg.evaluate("iTerms(normAr('التروكسين الجديد'))")), 'levothyroxine')
+    pg.evaluate("CFG.medcat=null")
+    # menu groups: the owner's names and order are used
+    pg.evaluate("CFG.menus.groups={order:['settings','help'],names:{help:{ar:'مساعدة',en:'Help'}},items:{}};renderMenu()")
+    check('menu: owner order and name', pg.evaluate("[...document.querySelectorAll('#menu-b .mgs>.mg')].slice(0,2).map(g=>g.dataset.sid+':'+(g.querySelector('h3')||{}).textContent).join(',')"), 'settings:الإعدادات,help:مساعدة')
+    pg.evaluate("delete CFG.menus.groups;renderMenu()")
     # calculator -> tools, filled in
     pg.goto('http://app.test/#calc'); pg.wait_for_timeout(300)
     def calc(k, fields, sx='f'):

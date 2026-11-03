@@ -882,3 +882,19 @@ body.ptm #t-sources>span.full.ptl{display:inline!important}
 /* 1.13.0 own pages for «my medicines» and the link check (the same elements as on interactions / sources) */
 #links #reflist{display:none}#links.lkf #reflist{display:block}
 #medsb .mymed{margin-top:0}
+
+/* 1.13.0 menu layout by the owner («edit texts» mode): ⋮⋮ moves a group or an item, ✎ renames a group */
+.mgh{display:flex;align-items:center;gap:6px}.mgh h3{flex:1;margin:0}
+.mgh .drag,.medit .drag{cursor:grab;touch-action:none;user-select:none;padding:6px 8px;border-radius:8px;color:var(--mute);font-weight:900;letter-spacing:-2px}
+.mgpen{min-width:36px;min-height:36px;border:1px solid var(--line);background:var(--tile);color:var(--ink);border-radius:10px;cursor:pointer;font-size:15px}
+.medit{display:flex;align-items:center;gap:10px;cursor:default}
+.mg.dragging,.medit.dragging{opacity:.6;outline:2px dashed var(--pc2,#075BFF)}
+.mgedh{margin:6px 4px 10px}
+
+/* 1.13.0 «medicines in the app» on the my-medicines page; the team edits each one (✎) */
+.medcatw{margin-top:14px}.medcatw h3{margin:0 0 4px;font-size:16px}
+.mclist{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
+@media (min-width:640px){.mclist{grid-template-columns:1fr 1fr}}
+.mcrow{display:flex;gap:8px;align-items:stretch}.mcrow.hid{opacity:.55}
+.mcadd{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:start;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--tile);color:var(--ink);cursor:pointer;min-height:44px;font:inherit}
+.mcadd small{color:var(--mute);font-size:12.5px}.mcadd:disabled{cursor:default}

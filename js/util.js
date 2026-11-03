@@ -14,11 +14,11 @@ const PEN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-wid
 const PLUS='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>';
 /** Drag to reorder: press the ⋮⋮ handle (.drag) of an item and move it, or use the arrow keys on the handle.
    onDone(ids) gets the new order of the items' data-sid. Works for lists and wrapped grids. */
-function sortable(box,sel,onDone){
+function sortable(box,sel,onDone,hsel='.drag'){
   if(!box||box._sortable)return;box._sortable=true;
   const ids=()=>[...box.querySelectorAll(sel)].map(x=>x.dataset.sid);
   box.addEventListener('pointerdown',e=>{
-    const h=e.target.closest('.drag');if(!h||!box.contains(h))return;const item=h.closest(sel);if(!item)return;
+    const h=e.target.closest(hsel);if(!h||!box.contains(h))return;const item=h.closest(sel);if(!item||!box.contains(item))return;
     e.preventDefault();const start=ids().join();item.classList.add('dragging');box.setPointerCapture(e.pointerId);
     const move=ev=>{
       if(ev.clientY<70)scrollBy(0,-12);else if(ev.clientY>innerHeight-90)scrollBy(0,12);
@@ -31,7 +31,7 @@ function sortable(box,sel,onDone){
     box.addEventListener('pointermove',move);box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up);
   });
   box.addEventListener('keydown',e=>{
-    const h=e.target.closest('.drag');if(!h)return;const d={ArrowUp:-1,ArrowLeft:-1,ArrowDown:1,ArrowRight:1}[e.key];if(!d)return;
+    const h=e.target.closest(hsel);if(!h||!box.contains(h))return;const d={ArrowUp:-1,ArrowLeft:-1,ArrowDown:1,ArrowRight:1}[e.key];if(!d)return;
     e.preventDefault();const now=ids(),i=now.indexOf(h.closest(sel).dataset.sid),j=i+(document.dir==='rtl'&&/Left|Right/.test(e.key)?-d:d);
     if(j<0||j>=now.length)return;[now[i],now[j]]=[now[j],now[i]];onDone(now);
     setTimeout(()=>{const n=box.querySelector(`${sel}[data-sid="${CSS.escape(now[j])}"] .drag`);if(n)n.focus()},0);

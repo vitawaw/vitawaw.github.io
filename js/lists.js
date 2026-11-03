@@ -7,10 +7,10 @@ const BUILTIN=['d','b12','fol','fe','ca','mg','c','zn','preg','inf','vac','bar',
 let KEYS=['all',...BUILTIN],INTER=[],REFGROUP={},CUST={};
 const tx2=o=>o?(LANG==='ar'?o.ar:(o.en||o.ar)):'';
 const kname=k=>k==='all'?T('all'):CUST[k]?tx2(CUST[k].n):T('n_'+k);
-const DRUG_AR={"التروموباج": "eltrombopag", "ايلتروموباج": "eltrombopag", "بروماكتا": "eltrombopag", "ريفوليد": "eltrombopag", "بالوكسافير": "baloxavir", "زوفلوزا": "baloxavir", "اكزوفلوزا": "baloxavir", "جابابنتين": "gabapentin", "غابابنتين": "gabapentin", "نيورونتين": "gabapentin", "بكتيغرافير": "bictegravir", "بيكتيغرافير": "bictegravir", "بكتارفي": "biktarvy", "بيكتارفي": "biktarvy", "وارفارين": "warfarin", "ليفوثيروكسين": "levothyroxine", "ثيروكسين": "levothyroxine", "ميتفورمين": "metformin", "ميثوتريكسات": "methotrexate", "اورليستات": "orlistat", "بنسيلامين": "penicillamine", "سيمفاستاتين": "simvastatin", "ثيوفيلين": "theophylline", "ليفودوبا": "levodopa", "ليثيوم": "lithium", "دولوتغرافير": "dolutegravir", "دولوتجرافير": "dolutegravir", "سيسبلاتين": "cisplatin", "فلورويوراسيل": "fluorouracil", "ايزونيازيد": "isoniazid", "سيكلوسيرين": "cycloserine", "فوروسيمايد": "furosemide", "فيوروسمايد": "furosemide", "لازكس": "furosemide", "كوليسترامين": "cholestyramine", "اليندرونات": "alendronate", "سيبروفلوكساسين": "ciprofloxacin", "موكسيفلوكساسين": "moxifloxacin", "اوميبرازول": "omeprazole", "لانسوبرازول": "lansoprazole", "سبيرونولاكتون": "spironolactone", "اميلورايد": "amiloride", "لوسارتان": "losartan", "بينازيبريل": "benazepril", "ليسينوبريل": "lisinopril", "فوسينوبريل": "fosinopril", "كاربامازيبين": "carbamazepine", "فينيتوين": "phenytoin", "فينوباربيتال": "phenobarbital", "بريميدون": "primidone", "فالبروات": "valproate", "ديباكين": "valproate", "ميثيمازول": "methimazole", "سلفاسالازين": "sulfasalazine", "بيرازيناميد": "pyrazinamide", "اسيتريتين": "acitretin", "بيكساروتين": "bexarotene", "بيوميتانيد": "bumetanide", "ميتولازون": "metolazone", "كلوروثيازيد": "chlorothiazide", "تتراسايكلين": "tetracycline", "تتراسيكلين": "tetracycline", "سيفالوسبورين": "cephalosporin", "ستيرويد": "glucocorticoid", "كورتيزون": "glucocorticoid", "بريدنيزولون": "glucocorticoid", "اسبرين": "antiplatelet", "كلوبيدوغريل": "antiplatelet", "تروبونين": "troponin", "نياسين": "niacin", "كوليستيبول": "colestipol", "دوكسيسايكلين": "doxycycline", "دوكسيسيكلين": "doxycycline", "ليفوفلوكساسين": "quinolone", "ريسيدرونات": "risedronate", "ريزيدرونات": "risedronate", "فوساماكس": "alendronate", "يوثيروكس": "levothyroxine", "التروكسين": "levothyroxine", "دولوتيغرافير": "dolutegravir", "تيفيكاي": "dolutegravir", "انسولين": "insulin", "ثيازيد": "thiazide", "هيدروكلوروثيازيد": "thiazide", "مضاد حموضه": "antacid", "مضادات الحموضه": "antacid", "بانتوبرازول": "proton pump", "ايزوميبرازول": "proton pump", "نيكسيوم": "proton pump", "سيفوبيرازون": "cefoperazone", "كيموثيرابي": "chemotherapy", "علاج كيميائي": "chemotherapy", "رانيتيدين": "h2 blocker", "فاموتيدين": "h2 blocker", "كابتوبريل": "ace inhibitor", "اينالابريل": "ace inhibitor", "ريفاروكسابان": "anticoagulant", "ابيكسابان": "anticoagulant", "انوكسابارين": "anticoagulant", "هيبارين": "anticoagulant"};
+const DRUG_AR={"التروموباج": "eltrombopag", "ايلتروموباج": "eltrombopag", "بروماكتا": "eltrombopag", "ريفوليد": "eltrombopag", "بالوكسافير": "baloxavir", "زوفلوزا": "baloxavir", "اكزوفلوزا": "baloxavir", "جابابنتين": "gabapentin", "غابابنتين": "gabapentin", "نيورونتين": "gabapentin", "بكتيغرافير": "bictegravir", "بيكتيغرافير": "bictegravir", "بكتارفي": "biktarvy", "بيكتارفي": "biktarvy", "وارفارين": "warfarin", "ليفوثيروكسين": "levothyroxine", "ثيروكسين": "levothyroxine", "ميتفورمين": "metformin", "ميثوتريكسات": "methotrexate", "اورليستات": "orlistat", "بنسيلامين": "penicillamine", "سيمفاستاتين": "simvastatin", "ثيوفيلين": "theophylline", "ليفودوبا": "levodopa", "ليثيوم": "lithium", "دولوتغرافير": "dolutegravir", "دولوتجرافير": "dolutegravir", "سيسبلاتين": "cisplatin", "فلورويوراسيل": "fluorouracil", "ايزونيازيد": "isoniazid", "سيكلوسيرين": "cycloserine", "فوروسيمايد": "furosemide", "فيوروسمايد": "furosemide", "لازكس": "furosemide", "كوليسترامين": "cholestyramine", "اليندرونات": "alendronate", "سيبروفلوكساسين": "ciprofloxacin", "موكسيفلوكساسين": "moxifloxacin", "اوميبرازول": "omeprazole", "لانسوبرازول": "lansoprazole", "سبيرونولاكتون": "spironolactone", "اميلورايد": "amiloride", "لوسارتان": "losartan", "بينازيبريل": "benazepril", "ليسينوبريل": "lisinopril", "فوسينوبريل": "fosinopril", "كاربامازيبين": "carbamazepine", "فينيتوين": "phenytoin", "فينوباربيتال": "phenobarbital", "بريميدون": "primidone", "فالبروات": "valproate", "ديباكين": "valproate", "ميثيمازول": "methimazole", "سلفاسالازين": "sulfasalazine", "بيرازيناميد": "pyrazinamide", "اسيتريتين": "acitretin", "بيكساروتين": "bexarotene", "بيوميتانيد": "bumetanide", "ميتولازون": "metolazone", "كلوروثيازيد": "chlorothiazide", "تتراسايكلين": "tetracycline", "تتراسيكلين": "tetracycline", "سيفالوسبورين": "cephalosporin", "ستيرويد": "glucocorticoid", "كورتيزون": "glucocorticoid", "بريدنيزولون": "glucocorticoid", "اسبرين": "antiplatelet", "كلوبيدوغريل": "antiplatelet", "تروبونين": "troponin", "نياسين": "niacin", "كوليستيبول": "colestipol", "دوكسيسايكلين": "doxycycline", "دوكسيسيكلين": "doxycycline", "ليفوفلوكساسين": "levofloxacin", "ريسيدرونات": "risedronate", "ريزيدرونات": "risedronate", "فوساماكس": "alendronate", "يوثيروكس": "levothyroxine", "التروكسين": "levothyroxine", "دولوتيغرافير": "dolutegravir", "تيفيكاي": "dolutegravir", "انسولين": "insulin", "ثيازيد": "thiazide", "هيدروكلوروثيازيد": "thiazide", "مضاد حموضه": "antacid", "مضادات الحموضه": "antacid", "بانتوبرازول": "proton pump", "ايزوميبرازول": "proton pump", "نيكسيوم": "proton pump", "سيفوبيرازون": "cefoperazone", "كيموثيرابي": "chemotherapy", "علاج كيميائي": "chemotherapy", "رانيتيدين": "h2 blocker", "فاموتيدين": "h2 blocker", "كابتوبريل": "ace inhibitor", "اينالابريل": "ace inhibitor", "ريفاروكسابان": "anticoagulant", "ابيكسابان": "anticoagulant", "انوكسابارين": "anticoagulant", "هيبارين": "anticoagulant"};
 /** English names of medicines whose interactions are listed under their class */
 const DRUG_CLASS={levofloxacin:'quinolone',ofloxacin:'quinolone',norfloxacin:'quinolone',minocycline:'tetracycline',ibandronate:'bisphosphonate'};
-const iTerms=q=>{if(!q)return[];const t=[q];if(q.length>=3){for(const[a,e]of Object.entries(DRUG_AR))if(normAr(a).includes(q))t.push(e);for(const[a,e]of Object.entries(DRUG_CLASS))if(a.includes(q)||q.includes(a))t.push(e)}return t};
+const iTerms=q=>{if(!q)return[];const t=[q];if(q.length>=3){for(const m of medBase())for(const a of m.ar)if(normAr(a).includes(q))t.push(m.en);for(const[a,e]of Object.entries(DRUG_CLASS))if(a.includes(q)||q.includes(a))t.push(e)}return t};
 function renderInter(){
   $('filters').innerHTML=(ISRC&&REFS[ISRC]?`<button type="button" class="srcf" data-clrsrc="1" aria-pressed="true">${T('su_src').replace('{n}',ISRC)} ×</button>`:'')+KEYS.filter(k=>k==='all'||INTER.some(x=>x[0]===k)).map(k=>`<button data-f="${esc(k)}" aria-pressed="${!ISRC&&k===IF}">${esc(kname(k))}</button>`).join('');
   if(IF!=='all'&&!INTER.some(x=>x[0]===IF))IF='all';
@@ -50,12 +50,52 @@ const medMatch=x=>{const h=normAr([x[2][0],x[2][1],x[3][0],x[3][1]].join(' '));r
 /** the medicines the site knows (Arabic and English names of every drug in DRUG_AR that appears in a published interaction):
     the visitor picks from these suggestions instead of having to spell the name exactly */
 const MEDSKIP=['troponin'];
-function medCatalog(){
+/** the list of medicines (1.13.0: the team edits it on «My medicines»; CFG.medcat replaces the built-in list once saved) */
+function medBase(){
+  if(Array.isArray(CFG.medcat))return CFG.medcat;
   const by={};
-  Object.entries(DRUG_AR).forEach(([ar,en])=>{if(MEDSKIP.includes(en))return;(by[en]=by[en]||{en,ar:[]}).ar.push(ar)});
-  const live=INTER.filter(x=>x[7]&&!x[8]).map(x=>normAr([x[2][0],x[2][1],x[3][0],x[3][1]].join(' ')));
-  return Object.values(by).filter(m=>live.some(h=>h.includes(m.en)));
+  Object.entries(DRUG_AR).forEach(([ar,en])=>{if(MEDSKIP.includes(en))return;(by[en]=by[en]||{en,ar:[],hide:false}).ar.push(ar)});
+  return Object.values(by);
 }
+const liveInter=()=>INTER.filter(x=>x[7]&&!x[8]).map(x=>normAr([x[2][0],x[2][1],x[3][0],x[3][1]].join(' ')));
+/** how many published interactions name this medicine (English name or its group) */
+const medHits=en=>{const terms=[en,...Object.entries(DRUG_CLASS).filter(([a])=>a===en).map(([,c])=>c)];return liveInter().filter(h=>terms.some(t=>h.includes(t))).length};
+function medCatalog(){
+  const live=liveInter();
+  return medBase().filter(m=>!m.hide&&m.ar.length&&live.some(h=>h.includes(m.en)||(DRUG_CLASS[m.en]&&h.includes(DRUG_CLASS[m.en]))));
+}
+/* «My medicines» page: every medicine the site knows; tap to add it to your list. The team edits (✎) or adds (+). */
+let MCQ='';
+function renderMedCat(){
+  const el=$('medcat');if(!el)return;
+  const team=typeof CAN==='function'&&CAN('inter')&&!(typeof OWN!=='undefined'&&OWN.preview),q=normAr(MCQ);
+  const list=medBase().map((m,i)=>({...m,i})).filter(m=>(team||(!m.hide&&medHits(m.en)))&&(!q||normAr(m.en+' '+m.ar.join(' ')).includes(q)))
+    .sort((a,b)=>(LANG==='ar'?(a.ar[0]||a.en).localeCompare(b.ar[0]||b.en,'ar'):a.en.localeCompare(b.en)));
+  el.innerHTML=(list.length?`<div class="mclist">${list.map(m=>{const n=medHits(m.en),on=MEDS.includes(m.en);
+    return `<div class="mcrow${m.hide?' hid':''}"><button type="button" class="mcadd" data-mcadd="${esc(m.en)}"${on||m.hide||!n?' disabled':''}><b>${esc(medLabel({en:m.en,ar:m.ar.length?m.ar:[m.en]}))}</b><small>${on?T('mc_in'):n?T('mc_n').replace('{n}',n):T('mc_none')}</small></button>${team?`<button type="button" class="pen mgpen" data-mcedit="${m.i}" aria-label="${esc(T('o_edit'))}">✎</button>`:''}</div>`}).join('')}</div>`:`<p class="inone">${T('i_none')}</p>`)+
+    (team?`<button class="oadd" type="button" data-mcedit="new">${PLUS}${T('mc_new')}</button>`:'');
+}
+async function editMed(i){
+  const base=JSON.parse(JSON.stringify(medBase())),m=i==='new'?{en:'',ar:[],hide:false}:base[+i];if(!m)return;
+  let err=null,vals=[m.en,m.ar.join('، ')];
+  for(;;){
+    const r=await dialog({title:i==='new'?T('mc_new'):T('mc_edit'),info:T('mc_info'),err,fields:[{label:T('mc_en'),value:vals[0],ltr:1},{label:T('mc_ar'),value:vals[1]}],
+      buttons:[...(i==='new'?[]:[{label:T(m.hide?'mc_show':'mc_hide'),action:'hide',danger:!m.hide}]),{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    if(r.action==='cancel')return;
+    if(r.action==='hide'){m.hide=!m.hide;break}
+    vals=r.values;const en=vals[0].trim().toLowerCase(),ar=vals[1].split(/[،,]/).map(x=>x.trim()).filter(Boolean);
+    if(!/^[a-z0-9][a-z0-9 -]{1,40}$/.test(en)){err={i:0,msg:T('mc_bad_en')};continue}
+    if(base.some((x,j)=>x.en===en&&String(j)!==String(i))){err={i:0,msg:T('mc_dup')};continue}
+    if(!ar.length){err={i:1,msg:T('mc_bad_ar')};continue}
+    m.en=en;m.ar=ar;break;
+  }
+  if(i==='new')base.push(m);
+  CFG.medcat=base;changed();renderMedCat();renderInter();
+}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-mcadd]');if(a){addMed(a.dataset.mcadd);renderMedCat();return}
+  const ed=e.target.closest('[data-mcedit]');if(ed){e.preventDefault();editMed(ed.dataset.mcedit)}
+});
 const medLabel=m=>{const en=m.en.charAt(0).toUpperCase()+m.en.slice(1);return LANG==='ar'?`${m.ar[0]} · ${en}`:`${en} · ${m.ar[0]}`};
 /** suggestions for what was typed (any spelling of the Arabic name, or the English name) */
 function medSuggest(q){
@@ -67,7 +107,7 @@ function renderSug(){
   box.hidden=!typed;$('medin').setAttribute('aria-expanded',String(typed&&!!list.length));
   box.innerHTML=list.length?list.map(m=>`<button type="button" role="option" data-addmed="${esc(m.en)}">${esc(medLabel(m))}</button>`).join(''):`<p class="hint">${T('mm_nomatch')}</p>`;
 }
-function addMed(en){if(en&&!MEDS.includes(en)&&MEDS.length<20){MEDS.push(en);saveMeds()}$('medin').value='';renderSug();renderInter()}
+function addMed(en){if(en&&!MEDS.includes(en)&&MEDS.length<20){MEDS.push(en);saveMeds()}$('medin').value='';renderSug();renderInter();renderMedCat()}
 function saveMeds(){try{localStorage.setItem('vw-meds',JSON.stringify(MEDS))}catch(e){}}
 function renderMeds(){
   const el=$('medchips');if(!el)return;

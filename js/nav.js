@@ -79,7 +79,7 @@ function renderTabs(){
   n.order.forEach((p,i)=>{const t=$('t-'+p);if(!t)return;t.style.order=i;t.classList.toggle('offbar',!n.bar.includes(p));t.hidden=n.hide.includes(p)&&!SHOWALL()});
   $('t-notif').style.order=98;$('t-menu').style.order=99;
 }
-function navSave(n){CFG.menus={order:n.order,bar:n.bar,hide:n.hide};changed();drawNavManager()}
+function navSave(n){CFG.menus={...(CFG.menus||{}),order:n.order,bar:n.bar,hide:n.hide};changed();drawNavManager()}
 function openNavManager(){if(!ISOWNER())return;openSheet(T('nv_order'),'',{key:'navmgr'});drawNavManager()}
 function drawNavManager(){
   if(!SHEET||SHEET.key!=='navmgr')return;
@@ -232,6 +232,33 @@ const MI2={
   shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/></svg>'
 };
 const CHEVS='<svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+/* 1.13.0 menu groups: the owner renames them (✎), orders them and the items inside them (⋮⋮) while «edit texts» is on.
+   CFG.menus.groups = {order:[group ids], names:{id:{ar,en}}, items:{id:[item keys]}} — published with the settings, owner only. */
+const MGROUPS=['recent','short','help','apps','admin','contact','settings'];
+const MGNAME={recent:'mn_recent',short:'mn_short',help:'mg_help',admin:'nv_admin',contact:'ma_contact',settings:'mr_settings'}; // «apps» (install · share · clear my data) has no title until the owner gives one
+const MGCFG=()=>(CFG.menus&&CFG.menus.groups)||{};
+const mgName=id=>{const n=(MGCFG().names||{})[id];return n&&(n.ar||n.en)?tx2(n):(MGNAME[id]?T(MGNAME[id]):'')};
+const mgOrder=()=>[...new Set([...(MGCFG().order||[]).filter(x=>MGROUPS.includes(x)),...MGROUPS])];
+function mgItems(id,list){const o=(MGCFG().items||{})[id]||[],ix=k=>{const i=o.indexOf(k);return i<0?999:i};
+  return list.map((x,i)=>[x,i]).sort((a,b)=>ix(a[0].key)-ix(b[0].key)||a[1]-b[1]).map(a=>a[0])}
+const MEDIT=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview&&ISOWNER()&&document.body.classList.contains('textedit');
+function mgSet(f){const g=JSON.parse(JSON.stringify(MGCFG()));f(g);CFG.menus={...(CFG.menus||{}),groups:g};changed();renderMenu()}
+async function mgRename(id){
+  const cur=(MGCFG().names||{})[id]||{},d=MGNAME[id]?I18N[MGNAME[id]]:['',''];
+  const r=await dialog({title:T('mg_ren'),fields:[{label:T('nv_name'),value:cur.ar||d[0]},{label:T('nv_name_en'),value:cur.en||d[1],ltr:1}],buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+  if(r.action==='cancel')return;
+  mgSet(g=>{g.names=g.names||{};const ar=r.action==='ok'?r.values[0].trim():'',en=r.action==='ok'?r.values[1].trim():'';
+    if(!ar&&!en||(ar===d[0]&&en===d[1]))delete g.names[id];else g.names[id]={ar:ar||en,en:en||ar}});
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-mgren]');if(b){e.preventDefault();mgRename(b.dataset.mgren)}});
+/** after drawing: groups and their items can be dragged */
+function mgSortable(){
+  if(!MEDIT())return;
+  document.querySelectorAll('.mgs').forEach(box=>{
+    sortable(box,'.mg[data-sid]',ids=>mgSet(g=>{g.order=ids}),'.gdrag');
+    box.querySelectorAll('.mgl').forEach(l=>sortable(l,'.medit',ids=>mgSet(g=>{g.items=g.items||{};g.items[l.dataset.g]=ids}),'.idrag'));
+  });
+}
 /** The menu: on the «Menu» page (r='m', Facebook style: account card, shortcut tiles, lists) and in the side menu (r='d', lists). */
 function menuHTML(r){
   const page=r==='m',own=typeof OWN!=='undefined'&&OWN.on;
@@ -256,34 +283,51 @@ function menuHTML(r){
     ?`<div class="mcard solo"><span class="av">${MI2.shield}</span><div class="mt"><b>${esc(whoLabel())}</b><small>${esc(T('mn_team'))}</small></div></div>`
     :`<div class="mcard"><span class="av">${MI2.user}</span><div class="mt"><b>${esc(T('mr_account'))}</b><small>${esc(T('mn_guest'))}</small></div></div><div class="mcard-a"><div class="filters">${chipH(r,{label:T('o_login'),cls:'pri',f:()=>openOwner()})}${chipH(r,{label:T('mr_join'),f:()=>openOwner({join:''})})}</div></div>`;
   // search is fixed at the top of every page (opposite 🔔), not repeated here
-  // «your shortcuts»: round, scrolls sideways, the last 6 used
-  const rec=RECENT.map(recentItem).filter(Boolean).slice(0,6);
-  if(rec.length)h+=`<div class="mg"><h3>${esc(T('mn_recent'))}</h3><div class="mrec">${rec.map(c=>`<button type="button" class="mrc" data-na="${r}${ACT[r].push(c.f)-1}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span>${esc(c.label)}</span></button>`).join('')}</div></div>`;
-  // shortcut tiles: sources (phones), coming next, «suggest a feature», my lab results, information pages
-  const SPECIAL=['faq','howto','privacy','disclaimer','suggest'];
-  const tiles=[...navMore().map(p=>({label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,f:()=>go(p)})),
-    ...(pg('suggest')?[{...pgItem(pg('suggest')),ico:MI.mail}]:[]),...(toolHidden('tool-labs')?[]:[{label:T('lb_t'),ico:ICO.chart,page:'tools',f:()=>openToolPage('tool-labs')}]),{label:T('mm_t'),ico:tabIco('meds'),page:'interactions',f:()=>go('meds')},...(own&&CAN('refs')&&!OWN.preview?[{label:T('lk_t'),ico:tabIco('links'),page:'sources',f:()=>go('links')}]:[]),...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(pgItem)];
-  h+=`<div class="mg"><h3>${esc(T('mn_short'))}</h3><div class="mtiles">${tiles.map(tile).join('')}</div></div>`;
-  // three rectangles on one line: contact (WhatsApp · e-mail · call), and at the end the settings
-  const r3=(title,list)=>list.length?`<div class="mg"><h3>${esc(title)}</h3><div class="m3">${list.map(c=>{const inner=`<span class="di">${c.ico}</span><b>${esc(c.label)}</b>${c.v?`<small>${esc(c.v)}</small>`:''}`;
-    return c.href?`<a class="m3b" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`:`<button type="button" class="m3b" data-na="${r}${ACT[r].push(c.f)-1}">${inner}</button>`}).join('')}</div></div>`:'';
+  // 1.13.0: the groups below are named, ordered and filled by the owner (✎ and ⋮⋮ in «edit texts» mode); defaults as before
+  const ed=MEDIT(),SPECIAL=['faq','howto','privacy','disclaimer','suggest','who'];
+  const G={};
+  // «your shortcuts»: round, scrolls sideways, the last 6 used (not arranged by hand)
+  G.recent=RECENT.map(recentItem).filter(Boolean).slice(0,6);
+  // shortcut tiles: sections not in the bar, my lab results, my medicines, the link check (team), information pages
+  G.short=[...navMore().map(p=>({key:'p-'+p,label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,f:()=>go(p)})),
+    ...(toolHidden('tool-labs')?[]:[{key:'labs',label:T('lb_t'),ico:ICO.chart,page:'tools',f:()=>openToolPage('tool-labs')}]),
+    {key:'meds',label:T('mm_t'),ico:tabIco('meds'),page:'interactions',f:()=>go('meds')},
+    ...(own&&CAN('refs')&&!OWN.preview?[{key:'links',label:T('lk_t'),ico:tabIco('links'),page:'sources',f:()=>go('links')}]:[]),
+    ...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(p=>({key:'pg-'+p.id,...pgItem(p)}))];
+  // «help and information», each on its own: how to use · FAQ · about us · suggest a feature · privacy policy · disclaimer
+  const PICO={howto:MI2.book,faq:MI2.q,who:MI2.user,suggest:MI.mail,privacy:MI2.shield,disclaimer:ICO.info};
+  G.help=['howto','faq','who','suggest','privacy','disclaimer'].map(pg).filter(Boolean).map(p=>({key:'pg-'+p.id,...pgItem(p),ico:PICO[p.id]}));
+  G.apps=[{key:'install',label:T('mr_install'),ico:MI.install,f:installApp},{key:'share',label:T('mr_share'),ico:MI.share,f:shareApp},{key:'clear',label:T('cd_t'),ico:MI.trash,f:clearMyData}];
+  // the team: management sections, pharmacists (own page)
+  G.admin=(own?adminGroups():[]).map(g=>({...g,key:g.id}));
+  // contact (WhatsApp · e-mail · call) right above the settings; an invited pharmacist talks to the owner directly
   const con=[];
-  if(PHONEF())con.push({label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
-  if(EMAILF())con.push({label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
-  if(PHONEF())con.push({label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
-  // «help and information», each on its own: how to use · FAQ · privacy policy · disclaimer; then install, share, clear my data
-  const PICO={howto:MI2.book,faq:MI2.q,privacy:MI2.shield,disclaimer:ICO.info};
-  h+=['howto','faq','privacy','disclaimer'].map(pg).filter(Boolean).map((p,i)=>grp(i?'':T('mg_help'),row({...pgItem(p),ico:PICO[p.id]}),'one')).join('');
-  h+=grp('',row({label:T('mr_install'),ico:MI.install,f:installApp})+row({label:T('mr_share'),ico:MI.share,f:shareApp})+row({label:T('cd_t'),ico:MI.trash,f:clearMyData}));
-  // the team: management sections, pharmacists (own page), my account
-  const A=own?adminGroups():[];
-  if(A.length)h+=`<div class="mg"><h3>${esc(T('nv_admin'))}</h3><div class="ml maccs">`+
-    A.map(g=>g.go?row({label:g.label,ico:g.ico,n:g.n,f:g.go}):acc('ad-'+g.id,g.ico,g.label,g.rows.map(row).join(''))).join('')+`</div></div>`;
+  if(PHONEF())con.push({key:'wa',label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
+  if(EMAILF())con.push({key:'mail',label:T('mr_mail'),ico:MI.mail,href:mailto('VITAWAW – '+L('اقتراح','Suggestion'))});
+  if(PHONEF())con.push({key:'call',label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
+  G.contact=own&&!ISOWNER()?[]:con;
+  G.settings=[{key:'lang',label:T('mr_lang'),v:LANG==='ar'?'العربية':'English',ico:MI.lang,f:()=>setLang(LANG==='ar'?'en':'ar')},
+    {key:'theme',label:T('mr_theme'),v:T(isDark()?'mr_dark':'mr_light'),ico:MI.theme,f:()=>setTheme(isDark()?'light':'dark')},
+    {key:'mode',label:T('mr_mode'),v:T(MODE==='pro'?'m_pro':'m_pt'),ico:MI.mode,f:()=>setMode(MODE==='pro'?'pt':'pro')}];
+  const r3b=c=>{const inner=`<span class="di">${c.ico}</span><b>${esc(c.label)}</b>${c.v?`<small>${esc(c.v)}</small>`:''}`;
+    return c.href?`<a class="m3b" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`:`<button type="button" class="m3b" data-na="${r}${ACT[r].push(c.f)-1}">${inner}</button>`};
+  // edit mode: items are not links, each has ⋮⋮ to drag inside its group
+  const eItem=(c,cls)=>`<div class="${cls} medit" data-sid="${esc(c.key)}"><span class="drag idrag" tabindex="0" role="button" aria-label="${esc(T('o_drag'))}">⋮⋮</span><span class="di">${c.ico||ICO.info}</span><span class="mt">${esc(c.label)}</span></div>`;
+  const head=(id,t)=>ed?`<div class="mgh"><span class="drag gdrag" tabindex="0" role="button" aria-label="${esc(T('o_drag'))}">⋮⋮</span><h3>${esc(t||T('mg_noname'))}</h3><button type="button" class="pen mgpen" data-mgren="${id}" aria-label="${esc(T('o_edit'))}">✎</button></div>`:(t?`<h3>${esc(t)}</h3>`:'');
+  const body=(id,items)=>{
+    if(!items.length)return '';
+    if(id==='recent')return ed?'':`<div class="mrec">${items.map(c=>`<button type="button" class="mrc" data-na="${r}${ACT[r].push(c.f)-1}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span>${esc(c.label)}</span></button>`).join('')}</div>`;
+    items=mgItems(id,items);
+    if(ed)return `<div class="ml mgl" data-g="${id}">${items.map(c=>eItem(c,'mi')).join('')}</div>`;
+    if(id==='short')return `<div class="mtiles">${items.map(tile).join('')}</div>`;
+    if(id==='help')return items.map(c=>`<div class="ml one">${row(c)}</div>`).join('');
+    if(id==='admin')return `<div class="ml maccs">${items.map(g=>g.go?row({label:g.label,ico:g.ico,n:g.n,f:g.go}):acc('ad-'+g.id,g.ico,g.label,g.rows.map(row).join(''))).join('')}</div>`;
+    if(id==='contact'||id==='settings')return `<div class="m3">${items.map(r3b).join('')}</div>`;
+    return `<div class="ml">${items.map(row).join('')}</div>`;
+  };
+  if(ed)h+=`<p class="hint mgedh">${esc(T('mg_hint'))}</p>`;
+  h+=`<div class="mgs" data-r="${r}">`+mgOrder().map(id=>{const b=body(id,G[id]||[]);return b||(ed&&id!=='recent'&&(G[id]||[]).length)?`<div class="mg" data-sid="${id}">${head(id,mgName(id))}${b}</div>`:''}).join('')+`</div>`;
   if(own)h+=`<div class="mg"><div class="ml maccs">`+acc('mine',MI.key,T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join(''))+`</div></div>`;
-  if(!(own&&!ISOWNER()))h+=r3(T('ma_contact'),con); // contact, right above the settings (an invited pharmacist talks to the owner directly)
-  h+=r3(T('mr_settings'),[{label:T('mr_lang'),v:LANG==='ar'?'العربية':'English',ico:MI.lang,f:()=>setLang(LANG==='ar'?'en':'ar')},
-    {label:T('mr_theme'),v:T(isDark()?'mr_dark':'mr_light'),ico:MI.theme,f:()=>setTheme(isDark()?'light':'dark')},
-    {label:T('mr_mode'),v:T(MODE==='pro'?'m_pro':'m_pt'),ico:MI.mode,f:()=>setMode(MODE==='pro'?'pt':'pro')}]);
   if(own)h+=`<button type="button" class="mout" data-na="${r}${ACT[r].push(logout)-1}">${MI.out}<span>${esc(T('o_logout'))}</span></button>`;
   return h;
 }
@@ -296,6 +340,7 @@ function renderMenu(){
   if(!$('side'))return;
   ACT.d=[];const sb=$('side-b'),keep=sb.scrollTop;sb.innerHTML=menuHTML('d');sb.scrollTop=keep;
   ACT.m=[];$('menu-b').innerHTML=menuHTML('m');
+  mgSortable();
 }
 // switching between phone and wide layouts (rotating a tablet): leave the menu page on wide screens
 matchMedia('(min-width:1024px)').addEventListener('change',()=>{if(WIDE()&&cur==='menu')show('calc');renderNav()});

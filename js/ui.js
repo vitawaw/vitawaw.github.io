@@ -27,7 +27,7 @@ function show(p,view){
    the same elements move to the page that is open, so there is one list and one check */
 function sharedParts(p){
   const put=(id,box)=>{const el=$(id);if(el&&el.parentNode!==box)box.append(el)},home=id=>{const el=$(id),a=$(id+'-home');if(el&&a&&el.previousElementSibling!==a)a.after(el)};
-  if(p==='meds'){put('mymed',$('medsb'));put('ilist',$('medsb'));if(typeof renderInter==='function')renderInter()}
+  if(p==='meds'){put('mymed',$('medsb'));put('ilist',$('medsb'));if(typeof renderInter==='function')renderInter();if(typeof renderMedCat==='function')renderMedCat()}
   else if(p==='interactions'&&$('mymed').parentNode.id==='medsb'){home('mymed');home('ilist');if(typeof renderInter==='function')renderInter()}
   if(p==='links'){put('lkbox',$('linksb'));put('reflist',$('linksb'));if(typeof renderRefs==='function')renderRefs();if(typeof linksAuto==='function'&&OWN.on)linksAuto()}
   else if(p==='sources'&&$('lkbox').parentNode.id==='linksb'){home('lkbox');home('reflist');if(typeof renderRefs==='function')renderRefs()}
@@ -250,3 +250,5 @@ function applyColors(){
   [['meds','interactions'],['links','sources']].forEach(([p,q])=>{const c=CFG.colors[q],el=$(p);if(c&&el){el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1])}}); // own pages take the colours of their section
 }
 function refreshAll(){applyColors();setLang(LANG);decorate()}
+
+$('mcq').addEventListener('input',()=>{MCQ=$('mcq').value;renderMedCat()});

@@ -17,7 +17,7 @@
 <link rel="preload" href="fonts/tajawal-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/tajawal-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.13.0-3329b329">
+<link rel="stylesheet" href="css/app.css?v=1.13.0-756e5fac">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu">القائمة</h2><div id="side-b"></div></aside>
@@ -98,7 +98,7 @@
       <div class="unit"><input type="number" id="dlab" min="1" max="400" step="0.5" inputmode="decimal" placeholder="مثال: 14" data-ph="ph_d"><select id="dunit" aria-label="unit"><option value="ng">ng/mL</option><option value="nmol">nmol/L</option></select></div>
       <p class="hint" id="dconv"></p>
       <label class="chk"><input type="checkbox" id="mal"><span><span data-t="mal">سوء امتصاص أو عملية تكميم/تحويل مسار</span><small data-t="mal_s">من حالات الاحتياج الأعلى في إرشادات Endocrine Society</small></span></label>
-      <label class="chk"><input type="checkbox" id="med"><span><span data-t="med">أدوية تقلل فيتامين D</span><small data-t="med_s">مثل مضادات الصرع والكورتيزون وأدوية HIV</small></span></label>
+      <label class="chk"><input type="checkbox" id="med"><span><span data-t="med">أدوية تقلل فيتامين D</span><small data-t="med_s">مثل مضادات الصرع والكورتيكوستيرويدات وأدوية HIV</small></span></label>
     </div>
 
     <div data-for="b12" class="block">
@@ -198,7 +198,7 @@
 
 <!-- ================= TOOLS ================= -->
 <div class="page narrow" id="tools" role="tabpanel" aria-labelledby="t-tools" hidden>
-  <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3.5 17.3a1.8 1.8 0 0 0 2.6 2.6l5.8-5.8a4 4 0 0 0 5.2-5.4l-2.4 2.4-2.5-.4-.4-2.5z"/></svg></span><h2 data-t="ht_t">أدوات الحساب</h2></div><p data-t="ht_l">حوّل الجرعة إلى حبات وقطرات، وصحّح الكالسيوم حسب الألبومين، واحسب جرعة الحديد الوريدي.</p></section>
+  <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3.5 17.3a1.8 1.8 0 0 0 2.6 2.6l5.8-5.8a4 4 0 0 0 5.2-5.4l-2.4 2.4-2.5-.4-.4-2.5z"/></svg></span><h2 data-t="ht_t">أدوات الحساب</h2></div><p data-t="ht_l">حوّل الجرعة إلى حبات وقطرات ومل، رتّب جدول المكملات اليومي، تابع تحاليلك، افحص الحد الأعلى الآمن وحوّل الوحدات. وللصيدلي: تصحيح الكالسيوم والحديد الوريدي.</p></section>
   <div class="cback tvback"><button type="button" class="btn tback" id="tback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg><span data-t="tab_tools">الأدوات</span></button></div>
   <section class="tgsec"><div class="nsearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="tsearch" dir="auto" autocomplete="off" data-ph="ph_ts" placeholder="ابحث عن أداة"></div><div class="picker tgrid" id="tgrid"></div></section>
   <section id="tool-pill">
@@ -337,7 +337,7 @@
 <!-- ================= SOURCES ================= -->
 <div class="page narrow" id="sources" role="tabpanel" aria-labelledby="t-sources" hidden>
   <button class="btn back" id="back" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path id="backarrow" d="M9 6l6 6-6 6"/></svg><span data-t="back">رجوع</span></button>
-  <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg></span><h2 data-t="ts_t">المصادر العلمية</h2></div><p data-t="hs_l">كل جرعة في الحاسبة مأخوذة من مصدر طبي موثوق: الإرشادات السريرية (Endocrine Society وNICE وWHO وAAP)، وNIH، ونشرات الأدوية الرسمية، ومراجعات Cochrane.</p></section>
+  <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg></span><h2 data-t="ts_t">المصادر العلمية</h2></div><p data-t="hs_l">كل جرعة في الحاسبة مأخوذة من مصدر طبي موثوق: الإرشادات السريرية (Endocrine Society وNICE وWHO وAAP وBSG وASMBS)، وNIH وNHS، ونشرات الأدوية الرسمية، ومراجعات Cochrane.</p></section>
   <section>
     <i id="lkbox-home" hidden></i>
     <div class="lkbox" id="lkbox" hidden></div>
@@ -357,6 +357,9 @@
 <div class="page narrow" id="meds" hidden>
   <section class="hero"><div class="hi"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="7" width="12" height="14" rx="2"/><path d="M7.5 3h9v4h-9zM12 11v6M9 14h6"/></svg></span><h2 data-t="mm_t">أدويتي</h2></div><p data-t="mp_l">أضف الأدوية التي تأخذها فتظهر تحتها التداخلات التي تخصها مع المكملات فقط. هي نفس القائمة في صفحة التداخلات.</p></section>
   <section id="medsb"></section>
+  <section class="medcatw"><h3 data-t="mc_t">الأدوية في التطبيق</h3><p class="hint" data-t="mc_h">اضغط الدواء لإضافته إلى أدويتي.</p>
+    <div class="nsearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="mcq" dir="auto" autocomplete="off" data-ph="mc_ph" placeholder="ابحث في الأدوية"></div>
+    <div id="medcat"></div></section>
 </div>
 
 <!-- ================= LINK CHECK (1.13.0: its own page for the team; the same box as on the sources page) ================= -->
@@ -406,20 +409,20 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see">عرض النتيجة</span></div>
 
-<script src="js/config.js?v=1.13.0-cb35a58e" defer></script>
-<script src="js/i18n.js?v=1.13.0-936343ce" defer></script>
+<script src="js/config.js?v=1.13.0-74ca2338" defer></script>
+<script src="js/i18n.js?v=1.13.0-a8cc3610" defer></script>
 <script src="js/data.js?v=1.13.0-5e682832" defer></script>
-<script src="js/util.js?v=1.13.0-79bc26a7" defer></script>
+<script src="js/util.js?v=1.13.0-2f899d89" defer></script>
 <script src="js/validation.js?v=1.13.0-37b8f300" defer></script>
 <script src="js/render.js?v=1.13.0-dec0f6d6" defer></script>
 <script src="js/calculators.js?v=1.13.0-746d4342" defer></script>
 <script src="js/content.js?v=1.13.0-f26d1ff7" defer></script>
 <script src="js/tools.js?v=1.13.0-648e05fa" defer></script>
-<script src="js/lists.js?v=1.13.0-f92f442b" defer></script>
-<script src="js/ui.js?v=1.13.0-a9aa5a60" defer></script>
+<script src="js/lists.js?v=1.13.0-88ebc983" defer></script>
+<script src="js/ui.js?v=1.13.0-a1fa28d2" defer></script>
 <script src="js/published.js?v=1.13.0-87f710f2" defer></script>
-<script src="js/owner.js?v=1.13.0-a04cc79a" defer></script>
-<script src="js/nav.js?v=1.13.0-0c465b6d" defer></script>
+<script src="js/owner.js?v=1.13.0-af10334e" defer></script>
+<script src="js/nav.js?v=1.13.0-9885de1b" defer></script>
 <script src="js/team.js?v=1.13.0-ca6436a6" defer></script>
 <script src="js/boot.js?v=1.13.0-fa591121" defer></script>
 </body>

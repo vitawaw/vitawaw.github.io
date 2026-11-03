@@ -91,6 +91,13 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   content_1_13_0.sql (§4: jsonb_set roadmap on the draft, or a new draft from published). Names unified (n_d «فيتامين D», labs B12,
   الموليبدنوم, n_thi «نقص فيتامين B1 (الثيامين)»); §3 of the SQL renames البايفوسفونيت→البيسفوسفونات and الكورتيزون→الكورتيكوستيرويدات
   as pending edits (pub kept). tools_flow 88.
+  Third round (2026-11-03): medicine list `medBase()` (CFG.medcat [{en,ar[],hide}] or DRUG_AR), `renderMedCat()`/`editMed()` on #meds
+  (#medcat, search #mcq), iTerms/medCatalog/medHits read it; pharmacists (CAN('inter')) save → draft_guard keeps ONLY team.medcat
+  (migration `20261103000000_medicine_list.sql`: policies text OR inter + new guard), owner approves in 🔔 (medChanges/decideTexts).
+  Menu groups: `CFG.menus.groups` {order,names,items} (mergeCfg), MGROUPS recent/short/help/apps/admin/contact/settings, edit mode =
+  owner + body.textedit (✎ `mgRename`, ⋮⋮ `mgSortable` with sortable(…, hsel)); who + suggest now in «help». Pages who/about/howto/faq/
+  method rewritten in content_1_13_0.sql §5 (draft) and DEFAULT_CFG (who/about). «من نحن» lists MEU + the 4 team names he gave.
+  tools_flow 93.
 - **1.12.2 (preview)**: preview links use a separate free Supabase project **vitawaw-test** (`qzxdvdesscsyqbaqyuqb`, same org): `SB_LIVE`/`SB_TEST`/`IS_PREVIEW`
   in config.js (*.workers.dev ≠ production → test), `_headers` connect-src has both, `wrangler.jsonc` previews vars → test, production cron
   also wakes the test project (`TEST_SUPABASE_*` vars). Built by `supabase/test_project_setup.sql` (all migrations except the 3 content-only
