@@ -68,7 +68,11 @@ node tests/worker_links_test.mjs # link check
 ```
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
-## Where we are (2026-11-02)
+## Where we are (2026-11-03)
+- **Live: 1.13.0** (he said «جاهز» on 2026-11-03; main fast-forwarded). Claude APPLIED on the live DB via apply_migration (it worked from
+  here this time): `20261103043132_medicine_list.sql` and `content_1_13_0.sql` (version 20261103043252); checked: 10 new sources +
+  12 interactions + 3 renamed interactions waiting in 🔔, draft roadmap (10) and the 5 corrected pages identical to the test DB.
+  He must: log in → approve in 🔔 → publish (roadmap, pages and new content reach visitors only then).
 - **1.13.0 (preview)**: his «طبقها كلها مع الملاحضات» after the scientific review (every item checked against its source; 2 proposals
   dropped for lack of an official source: vegan B12 dose in pregnancy, vitamin D + digoxin). Patient mode: `R()` (util.js) and `srcLine()`
   return nothing, search has no sources, `SECKEY` is a Proxy (sources → 'tl_labs'), show('sources') → tools/tool-labs, `body.ptm`
@@ -93,7 +97,7 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   as pending edits (pub kept). tools_flow 88.
   Third round (2026-11-03): medicine list `medBase()` (CFG.medcat [{en,ar[],hide}] or DRUG_AR), `renderMedCat()`/`editMed()` on #meds
   (#medcat, search #mcq), iTerms/medCatalog/medHits read it; pharmacists (CAN('inter')) save → draft_guard keeps ONLY team.medcat
-  (migration `20261103000000_medicine_list.sql`: policies text OR inter + new guard), owner approves in 🔔 (medChanges/decideTexts).
+  (migration `20261103043132_medicine_list.sql`: policies text OR inter + new guard), owner approves in 🔔 (medChanges/decideTexts).
   Menu groups: `CFG.menus.groups` {order,names,items} (mergeCfg), MGROUPS recent/short/help/apps/admin/contact/settings, edit mode =
   owner + body.textedit (✎ `mgRename`, ⋮⋮ `mgSortable` with sortable(…, hsel)); who + suggest now in «help». Pages who/about/howto/faq/
   method rewritten in content_1_13_0.sql §5 (draft) and DEFAULT_CFG (who/about). «من نحن» lists MEU + the 4 team names he gave.
