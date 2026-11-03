@@ -183,8 +183,9 @@ with sync_playwright() as p:
     pg.click('#tback'); pg.wait_for_timeout(200); check('back to the tools', str(pg.is_visible('#tgrid')), 'True')
     # 1.12.0: patient mode hides the pharmacist tools; the owner's hidden tool and renamed tool; a pharmacist's stamp on an item
     pg.evaluate("setMode('pt')"); pg.wait_for_timeout(100); check('patient mode: pharmacist tools hidden', str(pg.locator('#tgrid [data-tv]').count()), '4')
-    pg.evaluate("setMode('pro');CFG.tools={order:['tool-ul'],hide:['tool-gz'],names:{'tool-ul':{ar:'فحص الحد',en:'UL'}}};renderNav()"); pg.wait_for_timeout(100)
-    check('owner: order, hide, name of tools', pg.evaluate("[...document.querySelectorAll('#tgrid [data-tv]')].map(b=>b.dataset.tv).join(',')"), 'tool-ul,tool-pill')
+    pg.evaluate("setMode('pro');CFG.tools={order:['tool-u','tool-ul'],hide:['tool-gz'],names:{'tool-ul':{ar:'فحص الحد',en:'UL'}}};renderNav()"); pg.wait_for_timeout(100)
+    order = pg.evaluate("[...document.querySelectorAll('#tgrid [data-tv]')].map(b=>b.dataset.tv).join(',')")  # 1.14.1: the owner's order inside each part
+    check('owner: order, hide, name of tools', str(order.startswith('tool-u,tool-pill') and 'tool-ul,tool-sch' in order and 'tool-gz' not in order), 'True')
     check('owner: renamed tool', T('tgrid'), 'فحص الحد'); check('owner: hidden tool gone', str(pg.locator('#tgrid [data-tv="tool-gz"]').count()), '0')
     check('stamp of a pharmacist', pg.evaluate("stampHTML('د. أحمد','2026-11-02')"), 'راجعه: د. أحمد')
     print('page errors:', errs)

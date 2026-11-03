@@ -72,6 +72,8 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
 - **1.14.1 (preview)**: SECTIONS + meds, sch, labs (SECTOOL sch→tool-sch, labs→tool-labs; go()/show() map them; tabs #t-meds #t-sch
   #t-labs in index.html, short bar labels «الجدول»/«تحاليلي»); they appear in the nav manager (bar/order/rename/colors/hide) and as
   «الأقسام» tiles via navMore (manual labs/meds tiles removed). Patient mode: no duplicate «sources→labs» when labs is a section.
+  Also `ul` (tool-ul, #t-ul; hidden in patient mode like PROONLY), tools page split: FOLLOW sch/ul/labs after `h3.tgh` «أدوات المتابعة»;
+  interaction group summary = grid (name / chips + arrow at the end).
 - **Live: 1.14.0** (he said «جاهز» on 2026-11-03; main fast-forwarded). content_1_14_0.sql applied by Claude on the live DB (version
   20261103060053): the two owner texts are fixed in the live DRAFT; they reach visitors when he publishes.
 - **1.14.0**: his «نفذها كلها بالتسلسل» on the 24-item design review + owner fonts. `bidiFix()` (util.js, used by esc() and

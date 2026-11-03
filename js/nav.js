@@ -59,9 +59,9 @@ document.addEventListener('click',e=>{
 // (account card, shortcuts, settings, log out). Wide screens (≥1024px): the same menu is a fixed side menu.
 const WIDE=()=>matchMedia('(min-width:1024px)').matches;
 const pickNut=k=>openNut(k);
-const SECTIONS=['calc','tools','interactions','sources','roadmap','meds','sch','labs']; // 1.14.1: meds/sch/labs are sections too (owner: bar, order, names)
-const SECTOOL={sch:'tool-sch',labs:'tool-labs'}; // sections that are a tool's own page
-const SECKEY0={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t',meds:'mm_t',links:'lk_t',sch:'tl_sch',labs:'tl_labs'};
+const SECTIONS=['calc','tools','interactions','sources','roadmap','meds','sch','labs','ul']; // 1.14.1: meds/sch/labs are sections too (owner: bar, order, names)
+const SECTOOL={sch:'tool-sch',labs:'tool-labs',ul:'tool-ul'}; // sections that are a tool's own page
+const SECKEY0={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t',meds:'mm_t',links:'lk_t',sch:'tl_sch',labs:'tl_labs',ul:'tl_ul'};
 /* patient mode (1.13.0): the sources section becomes «my lab results» (the labs tool) everywhere */
 const SECKEY=new Proxy(SECKEY0,{get:(o,k)=>k==='sources'&&MODE==='pt'?'tl_labs':o[k]});
 /* ===================== main sections (owner, 1.12.0): order everywhere, the bar (≤4), hidden ones, names, colors =====================
@@ -76,11 +76,12 @@ function NAV(){
 }
 const navHidden=p=>NAV().hide.includes(p);
 /** sections not in the bar, in the owner's order (they are tiles in the menu) */
-const navMore=()=>{const n=NAV();return n.order.filter(p=>!n.bar.includes(p)&&(!n.hide.includes(p)||SHOWALL())&&!(p==='sources'&&MODE==='pt')&&!(SECTOOL[p]&&toolHidden(SECTOOL[p])))};
+const navMore=()=>{const n=NAV();return n.order.filter(p=>!n.bar.includes(p)&&(!n.hide.includes(p)||SHOWALL())&&!(p==='sources'&&MODE==='pt')&&!(SECTOOL[p]&&(toolHidden(SECTOOL[p])||(MODE==='pt'&&PROONLY.includes(SECTOOL[p])))))};
 function renderTabs(){
   const n=NAV();
   n.order.forEach((p,i)=>{const t=$('t-'+p);if(!t)return;t.style.order=i;t.classList.toggle('offbar',!n.bar.includes(p));t.hidden=n.hide.includes(p)&&!SHOWALL()});
-  if(MODE==='pt'&&n.bar.includes('labs'))$('t-sources').classList.add('offbar'); // patient mode: «sources» is «my lab results», already in the bar
+  if(MODE==='pt'&&n.bar.includes('labs'))$('t-sources').classList.add('offbar');
+  if(MODE==='pt')$('t-ul').classList.add('offbar'); // the upper-limit checker is a pharmacist tool // patient mode: «sources» is «my lab results», already in the bar
   $('t-notif').style.order=98;$('t-menu').style.order=99;
 }
 function navSave(n){CFG.menus={...(CFG.menus||{}),order:n.order,bar:n.bar,hide:n.hide};changed();drawNavManager()}
@@ -152,14 +153,15 @@ const toolName=t=>{const n=CFG.tools&&CFG.tools.names&&CFG.tools.names[t[0]];ret
 function renderToolsGrid(){
   if(!$('tgrid'))return;
   const own=ISOWNER()&&!OWN.preview,hide=(CFG.tools&&CFG.tools.hide)||[];
-  $('tgrid').innerHTML=toolList().map(t=>{const b=`<button type="button" data-tv="${t[0]}"><span>${esc(toolName(t))}</span><small>${esc(T(TOOLSUB[t[0]]||t[2]))}</small></button>`,off=hide.includes(t[0]);
-    return own?`<div class="pkw tkw${off?' off':''}" data-sid="${t[0]}">${b}<div class="pka">${DRAG(T('o_drag'))}<button class="btn" type="button" data-tled="${t[0]}" aria-label="${esc(T('o_edit'))}" title="${esc(T('o_edit'))}">${PEN}</button><button class="btn" type="button" data-tlhide="${t[0]}" aria-label="${esc(T(off?'o_nshow':'o_nhide'))}" title="${esc(T(off?'o_nshow':'o_nhide'))}">${off?EYE:EYEOFF}</button></div></div>`:b}).join('')+
+  const FOLLOW=['tool-sch','tool-ul','tool-labs'],tl=toolList(),grp=[...tl.filter(t=>!FOLLOW.includes(t[0])),...tl.filter(t=>FOLLOW.includes(t[0]))],first=grp.findIndex(t=>FOLLOW.includes(t[0]));
+  $('tgrid').innerHTML=grp.map((t,i)=>(i===first&&i>0?`<h3 class="pkh tgh">${esc(T('tg_follow'))}</h3>`:'')+(t=>{const b=`<button type="button" data-tv="${t[0]}"><span>${esc(toolName(t))}</span><small>${esc(T(TOOLSUB[t[0]]||t[2]))}</small></button>`,off=hide.includes(t[0]);
+    return own?`<div class="pkw tkw${off?' off':''}" data-sid="${t[0]}">${b}<div class="pka">${DRAG(T('o_drag'))}<button class="btn" type="button" data-tled="${t[0]}" aria-label="${esc(T('o_edit'))}" title="${esc(T('o_edit'))}">${PEN}</button><button class="btn" type="button" data-tlhide="${t[0]}" aria-label="${esc(T(off?'o_nshow':'o_nhide'))}" title="${esc(T(off?'o_nshow':'o_nhide'))}">${off?EYE:EYEOFF}</button></div></div>`:b})(t)).join('')+
     (own?`<p class="hint tlhint">${T('tl_hint')}</p>`:'');
   if(own)sortable($('tgrid'),'.tkw',ids=>{if(!ISOWNER())return;CFG.tools={...CFG.tools,order:ids};changed()});
   toolSearch();
 }
 /** the search box above the tools keeps only the tools whose name matches */
-function toolSearch(){const q=normAr($('tsearch')&&$('tsearch').value).trim();document.querySelectorAll('#tgrid [data-tv]').forEach(b=>{(b.closest('.tkw')||b).hidden=!!q&&!normAr(b.textContent).includes(q)})}
+function toolSearch(){const q=normAr($('tsearch')&&$('tsearch').value).trim();document.querySelectorAll('#tgrid [data-tv]').forEach(b=>{(b.closest('.tkw')||b).hidden=!!q&&!normAr(b.textContent).includes(q)});document.querySelectorAll('#tgrid .tgh').forEach(h=>{h.hidden=!!q})}
 document.addEventListener('click',async e=>{
   const h=e.target.closest('[data-tlhide]'),ed=e.target.closest('[data-tled]');if(!(h||ed)||!ISOWNER())return;e.preventDefault();
   const c=CFG.tools={order:[],hide:[],names:{},...CFG.tools};

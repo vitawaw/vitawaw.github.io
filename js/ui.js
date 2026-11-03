@@ -14,8 +14,8 @@ function show(p,view){
   cur=p;CALCV=p==='calc'&&view==='v';$('calc').classList.toggle('cv',CALCV);TOOLV=p==='tools'&&/^tool-/.test(view||'')?view:'';$('tools').classList.toggle('tv',!!TOOLV);if(TOOLV)$('tback').querySelector('span').textContent=typeof TOOLFROM!=='undefined'&&TOOLFROM&&TOOLFROM!=='#tools'?L('رجوع','Back'):T('tab_tools');document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));if(CALCV)$('cvname').textContent=kname(K);if(typeof rememberRecent==='function')rememberRecent('p:'+p);
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
   // a section that is a tool's page (schedule, lab results) is the selected tab while its tool is open
-  ['t-sch','t-labs'].forEach(id=>$(id).setAttribute('aria-selected',false));
-  if(TOOLV==='tool-sch'||TOOLV==='tool-labs'){const own=$(TOOLV==='tool-sch'?'t-sch':'t-labs'),pt=MODE==='pt'&&TOOLV==='tool-labs'&&own.classList.contains('offbar');
+  ['t-sch','t-labs','t-ul'].forEach(id=>$(id).setAttribute('aria-selected',false));
+  if(TOOLV==='tool-sch'||TOOLV==='tool-labs'||TOOLV==='tool-ul'){const own=$({'tool-sch':'t-sch','tool-labs':'t-labs','tool-ul':'t-ul'}[TOOLV]),pt=MODE==='pt'&&TOOLV==='tool-labs'&&own.classList.contains('offbar');
     if(!own.classList.contains('offbar')||pt){$('t-tools').setAttribute('aria-selected',false);(pt?$('t-sources'):own).setAttribute('aria-selected',true)}}
   if(p==='team'&&typeof openTeamPage==='function')openTeamPage();
   sharedParts(p);

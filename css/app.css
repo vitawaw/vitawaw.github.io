@@ -928,3 +928,12 @@ details.igrp>.cgrid{padding:0 10px 10px}
 /* 1.14.0 calculator list: a heading before the special calculators */
 #picker .pkh{grid-column:1/-1;margin:10px 2px 0;font:800 calc(15px*var(--fsh,1)) var(--f-display);color:var(--ink)}
 #picker .pkh.nf{display:none}
+
+/* 1.14.2 tools page in two parts: a heading before the follow-up tools (schedule, upper limit, lab results) */
+#tgrid .tgh{grid-column:1/-1;margin:10px 2px 0;font:800 calc(15px*var(--fsh,1)) var(--f-display);color:var(--ink)}
+/* interaction groups: name on top; under it the severity chips, and the arrow at the end of that second line (left in Arabic, right in English) */
+details.igrp>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n n" "c a";align-items:center;row-gap:6px}
+details.igrp>summary b{grid-area:n;min-width:0}
+details.igrp>summary .igc{grid-area:c}
+details.igrp>summary::after{grid-area:a;margin:0 6px}
+details.igrp>summary::after{margin-top:-6px}

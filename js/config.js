@@ -18,7 +18,7 @@ const SB=IS_PREVIEW?SB_TEST:SB_LIVE; // public anon keys only (data is protected
 const DEFAULT_CFG={
   contact:{email:'vitawaw26@gmail.com',phone:''},
   refs:null,inter:null,nut:{hide:[],custom:[]},
-  colors:{calc:['#0B6B6E','#8E1B54'],tools:['#00167a','#075BFF'],interactions:['#7a2e00','#d9731f'],sources:['#0a4a2c','#17915a'],roadmap:['#3a1678','#7c4dff'],meds:['#7a2e00','#d9731f'],sch:['#00167a','#075BFF'],labs:['#00167a','#075BFF']},
+  colors:{calc:['#0B6B6E','#8E1B54'],tools:['#00167a','#075BFF'],interactions:['#7a2e00','#d9731f'],sources:['#0a4a2c','#17915a'],roadmap:['#3a1678','#7c4dff'],meds:['#7a2e00','#d9731f'],sch:['#00167a','#075BFF'],labs:['#00167a','#075BFF'],ul:['#00167a','#075BFF']},
   /* owner only (1.12.0): main sections — order everywhere, the four in the bottom bar (and the top bar on computers), hidden ones */
   menus:{order:['calc','interactions','tools','sources','roadmap'],bar:['calc','interactions','tools','sources'],hide:[]},
   /* owner only (1.12.0): the tools page — order, hidden tools, names {id:{ar,en}} */
