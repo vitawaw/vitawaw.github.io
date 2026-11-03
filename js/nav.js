@@ -76,7 +76,8 @@ function NAV(){
 }
 const navHidden=p=>NAV().hide.includes(p);
 /** sections not in the bar, in the owner's order (they are tiles in the menu) */
-const navMore=()=>{const n=NAV();return n.order.filter(p=>!n.bar.includes(p)&&(!n.hide.includes(p)||SHOWALL())&&!(p==='sources'&&MODE==='pt')&&!(SECTOOL[p]&&(toolHidden(SECTOOL[p])||(MODE==='pt'&&PROONLY.includes(SECTOOL[p])))))};
+// 1.14.5: «الأقسام» lists every section (also those in the bar), as the owner chose; same filters as before otherwise
+const navMore=()=>{const n=NAV();return n.order.filter(p=>(!n.hide.includes(p)||SHOWALL())&&!(p==='sources'&&MODE==='pt')&&!(SECTOOL[p]&&(toolHidden(SECTOOL[p])||(MODE==='pt'&&PROONLY.includes(SECTOOL[p])))))};
 function renderTabs(){
   const n=NAV();
   n.order.forEach((p,i)=>{const t=$('t-'+p);if(!t)return;t.style.order=i;t.classList.toggle('offbar',!n.bar.includes(p));t.hidden=n.hide.includes(p)&&!SHOWALL()});
@@ -298,9 +299,6 @@ function menuHTML(r){
   G.recent=RECENT.map(recentItem).filter(Boolean).slice(0,6);
   // shortcut tiles: sections not in the bar, my lab results, my medicines, the link check (team), information pages
   G.short=[...navMore().map(p=>({key:'p-'+p,label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,f:()=>go(p)})),
-    // 1.14.4: everyone in pharmacist mode (owner, team, visiting pharmacist) finds «sources» among the sections, even when it
-    // also sits in the bar; never in patient mode. The link check stays a team-only tile.
-    ...(MODE!=='pt'&&!navMore().includes('sources')&&!navHidden('sources')?[{key:'p-sources',label:T(SECKEY.sources),ico:tabIco('sources'),page:'sources',f:()=>go('sources')}]:[]),
     ...(own&&CAN('refs')&&!OWN.preview?[{key:'links',label:T('lk_t'),ico:tabIco('links'),page:'sources',f:()=>go('links')}]:[]),
     ...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(p=>({key:'pg-'+p.id,...pgItem(p)}))];
   // «help and information», each on its own: how to use · FAQ · about us · suggest a feature · privacy policy · disclaimer

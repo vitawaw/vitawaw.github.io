@@ -75,6 +75,8 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
+- **1.14.5 (preview)**: he chose «كل الأقسام في المكانين»: navMore() no longer excludes bar sections, so «الأقسام» tiles = every
+  section (hidden ones only for the team, no sources in patient mode, no hidden/PROONLY tools); the special p-sources tile is gone.
 - **Live: 1.14.4** (he said «جاهز» on 2026-11-03; main fast-forwarded; the first Workers Build of 7d9318f failed after ~10 min with no log on both main and the branch; Cloudflare incident «Workers and Pages build errors» 14:46–18:10 UTC; rebuilt after their fix): the p-sources tile in «الأقسام» is for EVERYONE in pharmacist mode (owner, team, visitor), never patient mode;
   link-check tile stays team-only.
 - **Live: 1.14.2** (he said «جاهز» on 2026-11-03; main fast-forwarded): team (OWN.on, not preview, not patient mode) always gets a «sources» tile (key p-sources) in «الأقسام»
