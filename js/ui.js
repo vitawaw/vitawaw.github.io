@@ -8,11 +8,15 @@ let cur='calc',CALCV=false,TOOLV=''; // CALCV: the chosen vitamin's page (patien
 function show(p,view){
   if(p==='notif'){if(typeof openNotif==='function')setTimeout(openNotif,0);p=cur&&cur!=='notif'?cur:'calc'} // 🔔 is a floating window, not a page
   if(p==='sources'&&MODE==='pt'){p='tools';view='tool-labs'} // patient mode: no sources page; that place is «my lab results»
+  if(typeof SECTOOL!=='undefined'&&SECTOOL[p]){view=SECTOOL[p];p='tools'} // the schedule and lab results sections are tool pages
   if(p==='links'&&!(typeof CAN==='function'&&CAN('refs')))p='calc'; // the link check is for the team
   if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='team'&&!ISOWNER())||(navHidden(p)&&!SHOWALL()))p='calc'; // a section the owner hid is not shown // wide screens show the menu at the side
   cur=p;CALCV=p==='calc'&&view==='v';$('calc').classList.toggle('cv',CALCV);TOOLV=p==='tools'&&/^tool-/.test(view||'')?view:'';$('tools').classList.toggle('tv',!!TOOLV);if(TOOLV)$('tback').querySelector('span').textContent=typeof TOOLFROM!=='undefined'&&TOOLFROM&&TOOLFROM!=='#tools'?L('رجوع','Back'):T('tab_tools');document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));if(CALCV)$('cvname').textContent=kname(K);if(typeof rememberRecent==='function')rememberRecent('p:'+p);
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
-  if(MODE==='pt'&&TOOLV==='tool-labs'){$('t-sources').setAttribute('aria-selected',true);$('t-tools').setAttribute('aria-selected',false)}
+  // a section that is a tool's page (schedule, lab results) is the selected tab while its tool is open
+  ['t-sch','t-labs'].forEach(id=>$(id).setAttribute('aria-selected',false));
+  if(TOOLV==='tool-sch'||TOOLV==='tool-labs'){const own=$(TOOLV==='tool-sch'?'t-sch':'t-labs'),pt=MODE==='pt'&&TOOLV==='tool-labs'&&own.classList.contains('offbar');
+    if(!own.classList.contains('offbar')||pt){$('t-tools').setAttribute('aria-selected',false);(pt?$('t-sources'):own).setAttribute('aria-selected',true)}}
   if(p==='team'&&typeof openTeamPage==='function')openTeamPage();
   sharedParts(p);
   if(typeof rememberRecent==='function')rememberRecent(TOOLV?'t:'+TOOLKIND[TOOLV]:'p:'+p);
@@ -32,7 +36,7 @@ function sharedParts(p){
   if(p==='links'){put('lkbox',$('linksb'));put('reflist',$('linksb'));if(typeof renderRefs==='function')renderRefs();if(typeof linksAuto==='function'&&OWN.on)linksAuto()}
   else if(p==='sources'&&$('lkbox').parentNode.id==='linksb'){home('lkbox');home('reflist');if(typeof renderRefs==='function')renderRefs()}
 }
-function go(p){if(location.hash!=='#'+p)location.hash=p;else show(p);window.scrollTo(0,0)}
+function go(p){if(typeof SECTOOL!=='undefined'&&SECTOOL[p])p=SECTOOL[p];if(location.hash!=='#'+p)location.hash=p;else if(/^tool-/.test(p))show('tools',p);else show(p);window.scrollTo(0,0)}
 window.addEventListener('hashchange',()=>{if(routeSpecial())return;show(location.hash.slice(1));window.scrollTo(0,0)});
 /* links that open something instead of a tab: #owner (sign in), #join=<email> (invited pharmacist), #info-<page> (info page) */
 function routeSpecial(){
@@ -254,8 +258,8 @@ function applyLook(){
 }
 function applyColors(){
   applyLook();
-  Object.entries(CFG.colors).forEach(([p,c])=>{const el=$(p);if(!el)return;el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1]);const t=$('t-'+p);if(t)t.style.setProperty('--ti',c[1])});
-  [['meds','interactions'],['links','sources']].forEach(([p,q])=>{const c=CFG.colors[q],el=$(p);if(c&&el){el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1])}}); // own pages take the colours of their section
+  Object.entries(CFG.colors).forEach(([p,c])=>{const el=$(p),t=$('t-'+p);if(t)t.style.setProperty('--ti',c[1]);if(!el)return;el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1])});
+  [['meds','meds'],['links','sources']].forEach(([p,q])=>{const c=CFG.colors[q]||CFG.colors.interactions,el=$(p);if(c&&el){el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1])}}); // own pages take the colours of their section
 }
 function refreshAll(){applyColors();setLang(LANG);decorate()}
 

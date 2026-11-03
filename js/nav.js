@@ -59,8 +59,9 @@ document.addEventListener('click',e=>{
 // (account card, shortcuts, settings, log out). Wide screens (≥1024px): the same menu is a fixed side menu.
 const WIDE=()=>matchMedia('(min-width:1024px)').matches;
 const pickNut=k=>openNut(k);
-const SECTIONS=['calc','tools','interactions','sources','roadmap'];
-const SECKEY0={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t',meds:'mm_t',links:'lk_t'};
+const SECTIONS=['calc','tools','interactions','sources','roadmap','meds','sch','labs']; // 1.14.1: meds/sch/labs are sections too (owner: bar, order, names)
+const SECTOOL={sch:'tool-sch',labs:'tool-labs'}; // sections that are a tool's own page
+const SECKEY0={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t',meds:'mm_t',links:'lk_t',sch:'tl_sch',labs:'tl_labs'};
 /* patient mode (1.13.0): the sources section becomes «my lab results» (the labs tool) everywhere */
 const SECKEY=new Proxy(SECKEY0,{get:(o,k)=>k==='sources'&&MODE==='pt'?'tl_labs':o[k]});
 /* ===================== main sections (owner, 1.12.0): order everywhere, the bar (≤4), hidden ones, names, colors =====================
@@ -75,10 +76,11 @@ function NAV(){
 }
 const navHidden=p=>NAV().hide.includes(p);
 /** sections not in the bar, in the owner's order (they are tiles in the menu) */
-const navMore=()=>{const n=NAV();return n.order.filter(p=>!n.bar.includes(p)&&(!n.hide.includes(p)||SHOWALL()))};
+const navMore=()=>{const n=NAV();return n.order.filter(p=>!n.bar.includes(p)&&(!n.hide.includes(p)||SHOWALL())&&!(p==='sources'&&MODE==='pt')&&!(SECTOOL[p]&&toolHidden(SECTOOL[p])))};
 function renderTabs(){
   const n=NAV();
   n.order.forEach((p,i)=>{const t=$('t-'+p);if(!t)return;t.style.order=i;t.classList.toggle('offbar',!n.bar.includes(p));t.hidden=n.hide.includes(p)&&!SHOWALL()});
+  if(MODE==='pt'&&n.bar.includes('labs'))$('t-sources').classList.add('offbar'); // patient mode: «sources» is «my lab results», already in the bar
   $('t-notif').style.order=98;$('t-menu').style.order=99;
 }
 function navSave(n){CFG.menus={...(CFG.menus||{}),order:n.order,bar:n.bar,hide:n.hide};changed();drawNavManager()}
@@ -294,8 +296,6 @@ function menuHTML(r){
   G.recent=RECENT.map(recentItem).filter(Boolean).slice(0,6);
   // shortcut tiles: sections not in the bar, my lab results, my medicines, the link check (team), information pages
   G.short=[...navMore().map(p=>({key:'p-'+p,label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,f:()=>go(p)})),
-    ...(toolHidden('tool-labs')?[]:[{key:'labs',label:T('lb_t'),ico:ICO.chart,page:'tools',f:()=>openToolPage('tool-labs')}]),
-    {key:'meds',label:T('mm_t'),ico:tabIco('meds'),page:'interactions',f:()=>go('meds')},
     ...(own&&CAN('refs')&&!OWN.preview?[{key:'links',label:T('lk_t'),ico:tabIco('links'),page:'sources',f:()=>go('links')}]:[]),
     ...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(p=>({key:'pg-'+p.id,...pgItem(p)}))];
   // «help and information», each on its own: how to use · FAQ · about us · suggest a feature · privacy policy · disclaimer
