@@ -27,8 +27,11 @@ function decorate(){
   document.querySelectorAll('.edp').forEach(b=>b.remove());
   document.querySelectorAll('[data-ed]').forEach(el=>el.removeAttribute('data-ed'));
   if(!OWN.on)return;
-  if(CAN('text'))EDITABLE.forEach(k=>document.querySelectorAll(`[data-t="${k}"]`).forEach(el=>{
+  // 1.13.0: a pen next to every heading and explanation with an interface text (inside buttons, links and labels the pen would
+  // break the click: those texts are changed from Menu → Site appearance → «Edit every text in the app»)
+  if(CAN('text'))[...new Set([...EDITABLE,...[...document.querySelectorAll('[data-t]')].map(e=>e.dataset.t).filter(TXOK)])].forEach(k=>document.querySelectorAll(`[data-t="${k}"]`).forEach(el=>{
     if(el.closest('.tabs'))return; // section names: Menu → Management → Arrange the menus
+    if(!EDITABLE.includes(k)&&el.closest('button,a,label,select,option,summary,#picker,#sheet,#dlg,.obar,#obar'))return;
     el.setAttribute('data-ed','');
     const b=document.createElement('button');b.type='button';b.className='edp';b.innerHTML=PEN;b.title=T('o_edit');b.dataset.edtext=k;
     el.after(b);
@@ -75,11 +78,24 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('dlg').hidden&&d
 /* ----- editors ----- */
 async function editText(k){
   const cur=CFG.text[k]||{},defAr=I18N[k][0],defEn=I18N[k][1];
-  const long=(cur.ar||defAr).length>60;
-  const r=await dialog({title:T('o_edit'),fields:[{label:T('o_text'),type:long?'textarea':'text',value:cur.ar||defAr},{label:T('o_texten'),type:long?'textarea':'text',value:cur.en||defEn}],
+  const long=(cur.ar||defAr).length>60,ph=[...new Set((defAr+' '+defEn).match(/\{\w+\}/g)||[])];
+  const info=[ph.length?T('tx_ph').replace('{p}',ph.join(' ')):'',/\d/.test(defAr)?T('tx_num'):''].filter(Boolean).join(' ');
+  const r=await dialog({title:T('o_edit'),info,fields:[{label:T('o_text'),type:long?'textarea':'text',value:cur.ar||defAr},{label:T('o_texten'),type:long?'textarea':'text',value:cur.en||defEn}],
     buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
-  if(r.action==='ok'){const ar=r.values[0].trim()||defAr,en=r.values[1].trim()||defEn;if(ar===defAr&&en===defEn)delete CFG.text[k];else CFG.text[k]={ar,en};changed();if(ar!==defAr&&en===defEn)toast(T('o_enwarn'))}
+  if(r.action==='ok'){const ar=r.values[0].trim()||defAr,en=r.values[1].trim()||defEn;if(ph.some(p=>!ar.includes(p)||!en.includes(p))){toast(T('tx_ph').replace('{p}',ph.join(' ')));return editText(k)}if(ar===defAr&&en===defEn)delete CFG.text[k];else CFG.text[k]={ar,en};changed();if(ar!==defAr&&en===defEn)toast(T('o_enwarn'))}
   if(r.action==='reset'){delete CFG.text[k];changed()}
+  if(SHEET&&SHEET.key==='texts')drawTexts();
+}
+/** every interface text: search what you see, tap to reword it (Arabic and English) */
+let TXQ='';
+function openTexts(){if(!ISOWNER())return;openSheet(T('tx_all'),'',{key:'texts'});drawTexts()}
+function drawTexts(){
+  if(!SHEET||SHEET.key!=='texts')return;
+  const q=normAr(TXQ),keys=Object.keys(I18N).filter(k=>TXOK(k)||EDITABLE.includes(k)),hit=k=>{const t=CFG.text[k]||{};return normAr([I18N[k][0],I18N[k][1],t.ar||'',t.en||''].join(' ')).includes(q)};
+  const list=q.length<2?keys.filter(k=>CFG.text[k]):keys.filter(hit);
+  $('sheet-b').innerHTML=`<p class="hint">${esc(T('tx_all_s'))}</p><div class="nsearch"><input type="search" id="txq" dir="auto" autocomplete="off" placeholder="${esc(T('tx_q'))}" value="${esc(TXQ)}"></div>`+
+    `<p class="hint">${esc(T('tx_n').replace('{n}',list.length))}</p><div class="ml">${list.slice(0,40).map(k=>`<button type="button" class="mi" data-edtext="${esc(k)}"><span class="mt">${esc(T(k))}${CFG.text[k]?` · <b>${esc(T('tx_changed'))}</b>`:''}<small dir="auto">${esc(LANG==='ar'?I18N[k][1]:I18N[k][0])}</small></span></button>`).join('')}</div>`;
+  const i=$('txq');i.addEventListener('input',()=>{TXQ=i.value;drawTexts();const j=$('txq');j.focus();j.setSelectionRange(j.value.length,j.value.length)});
 }
 async function editColors(p){
   const r=await dialog({title:T('o_colors'),fields:[{type:'colors',labels:[T('o_c1'),T('o_c2')],value:CFG.colors[p]}],

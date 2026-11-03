@@ -98,6 +98,9 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   owner + body.textedit (✎ `mgRename`, ⋮⋮ `mgSortable` with sortable(…, hsel)); who + suggest now in «help». Pages who/about/howto/faq/
   method rewritten in content_1_13_0.sql §5 (draft) and DEFAULT_CFG (who/about). «من نحن» lists MEU + the 4 team names he gave.
   tools_flow 93.
+  Any interface text: T() uses CFG.text[key] for every I18N key without HTML (`TXOK`); `openTexts()`/`drawTexts()` (owner.js, Menu →
+  Site appearance → tx_all) searches all keys; editText keeps {placeholders}; decorate() puts ✎ on every [data-t] heading/paragraph
+  (not inside buttons/links/labels). Labels: nv_order «تعديل وترتيب القوائم», pg_order_l «تعديل وترتيب الصفحات», o_texts «تعديل وترتيب».
 - **1.12.2 (preview)**: preview links use a separate free Supabase project **vitawaw-test** (`qzxdvdesscsyqbaqyuqb`, same org): `SB_LIVE`/`SB_TEST`/`IS_PREVIEW`
   in config.js (*.workers.dev ≠ production → test), `_headers` connect-src has both, `wrangler.jsonc` previews vars → test, production cron
   also wakes the test project (`TEST_SUPABASE_*` vars). Built by `supabase/test_project_setup.sql` (all migrations except the 3 content-only

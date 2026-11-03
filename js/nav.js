@@ -113,6 +113,7 @@ function adminGroups(){
   const look=[];
   if(CAN('text'))look.push({label:T('pg_order_l'),sub:T('pg_order_s'),ico:ICO.page,n:(CFG.pages||[]).length,f:openPagesOrder});
   if(ISOWNER())look.unshift({label:T('nv_order'),sub:T('nv_order_s'),ico:ICO.menu,f:openNavManager});
+  if(ISOWNER())look.push({label:T('tx_all'),sub:T('tx_all_s'),ico:ICO.page,f:openTexts});
   if(ISOWNER())look.push({label:T('br_t'),ico:ICO.image,f:()=>editBrand()});
   if(look.length)A.push({id:'look',ico:ICO.site,label:T('ad_look'),rows:look});
   if(ISOWNER())A.push({id:'contact',ico:MI.mail,label:T('ad_contact'),rows:[{label:T('o_contact'),sub:[CFG.contact.email,CFG.contact.phone].filter(Boolean).join(' · '),ico:MI.mail,f:()=>editContact()}]});
