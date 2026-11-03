@@ -69,7 +69,9 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-11-03)
-- **1.14.0 (preview)**: his «نفذها كلها بالتسلسل» on the 24-item design review + owner fonts. `bidiFix()` (util.js, used by esc() and
+- **Live: 1.14.0** (he said «جاهز» on 2026-11-03; main fast-forwarded). content_1_14_0.sql applied by Claude on the live DB (version
+  20261103060053): the two owner texts are fixed in the live DRAFT; they reach visitors when he publishes.
+- **1.14.0**: his «نفذها كلها بالتسلسل» on the 24-item design review + owner fonts. `bidiFix()` (util.js, used by esc() and
   T() in Arabic): Latin «و» Latin → «،», «وLatin» → «و Latin» (in Tajawal/Cairo a lone و beside Latin looks like «g»). Font sizes:
   every px font size in app.css is `calc(Npx*var(--fsb|--fsh,1))` on the scale 12/13/14/15/17/20/24 (--fsh where the rule uses
   --f-display). Owner `CFG.look` {fb,fh,sb,sh} (fonts tajawal|cairo|system, sizes 0.9–1.2) → `applyLook()` (ui.js, in applyColors,
