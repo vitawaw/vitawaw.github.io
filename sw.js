@@ -1,13 +1,13 @@
 // VITAWAW service worker: lets the installed app open offline.
 // VERSION and FILES are updated by tools/set_version.py; do not edit them by hand.
-const VERSION='vitawaw-1.14.1-41f580c5';
+const VERSION='vitawaw-1.14.1-ea1b08a9';
 const FILES=[
   './',
   './index.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
-  './css/app.css?v=1.14.1-e8618805',
+  './css/app.css?v=1.14.1-6692a023',
   './js/pre.js?v=1.14.1-a7245292',
   './js/config.js?v=1.14.1-eb7a6868',
   './js/i18n.js?v=1.14.1-3bee53bb',
@@ -18,10 +18,10 @@ const FILES=[
   './js/calculators.js?v=1.14.1-746d4342',
   './js/content.js?v=1.14.1-c687ea5f',
   './js/tools.js?v=1.14.1-648e05fa',
-  './js/lists.js?v=1.14.1-7ac791c1',
-  './js/ui.js?v=1.14.1-d3a64110',
+  './js/lists.js?v=1.14.1-d54bfd16',
+  './js/ui.js?v=1.14.1-595569f6',
   './js/published.js?v=1.14.1-87f710f2',
-  './js/owner.js?v=1.14.1-62c5910b',
+  './js/owner.js?v=1.14.1-b05ea66a',
   './js/nav.js?v=1.14.1-afebd642',
   './js/team.js?v=1.14.1-ca6436a6',
   './js/boot.js?v=1.14.1-fa591121',

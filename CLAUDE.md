@@ -76,8 +76,9 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   interaction group summary = grid (name / chips + arrow at the end).
   Second round (his «نفذ النقطتين مع الملاحظات»): ONE identity — the team's add button `.oadd.otop` is the first thing under the banner
   in every section (#nadd in #nadm above #nsw, static #iadd/#radd in index.html, #mcaddw on #meds, #rmaddw above the roadmap chips);
-  sections without add start with search. Sources: one full list, `#sfilters` = type chips with counts (SF = all|g|o|d|s|c|x, `rtOf`),
-  editRef presets the kind from SF. Team sees interactions grouped too; sortable() only moves inside the same parent and passes the
+  sections without add start with search. Sources: one full list; `#rtfilters` (RTF = all|g|o|d|s|c|x, `rtOf`) ABOVE the search, vitamin chips `#sfilters`
+  (SF) BELOW it, both combine, `.fc` counts follow the other filter + search (also on #filters); editRef presets the kind from RTF.
+  `#lkbox` on the sources page = folded `details.lkd` (LKOPEN), open on #links. Roadmap h2 rm_next removed. Team sees interactions grouped too; sortable() only moves inside the same parent and passes the
   item (renderInter keeps the reorder inside the group). #rmlegend uses the equal chip grid. DB `content_1_14_1.sql` (explicit kind
   for all 72 sources, 77→c 78→s 22→g 38→o, keeps reviewed/pub): APPLIED on TEST; apply on LIVE at release, then he publishes.
 - **Live: 1.14.0** (he said «جاهز» on 2026-11-03; main fast-forwarded). content_1_14_0.sql applied by Claude on the live DB (version

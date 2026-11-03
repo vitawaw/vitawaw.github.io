@@ -224,7 +224,7 @@ const ensureInter=()=>{if(!Array.isArray(CFG.inter))CFG.inter=defInterList()};
 async function confirmDel(info){const q=await dialog({title:T('o_delq2'),info:info||'',buttons:[{label:T('o_back'),action:'cancel'},{label:T('o_yesdel'),action:'ok',pri:1,danger:1}]});return q.action==='ok'}
 const RTYPES=()=>[['',T('o_rt_auto')],...['g','o','d','s','c','x'].map(k=>[k,T('rt_'+k)])];
 async function editRef(id){
-  ensureRefs();const isNew=id==null,o=isNew?{org:'',title:'',url:'',ar:'',en:'',kind:RTORD[SF]!=null?SF:''}:CFG.refs.find(x=>x.id===id);if(!o)return;
+  ensureRefs();const isNew=id==null,o=isNew?{org:'',title:'',url:'',ar:'',en:'',kind:RTORD[RTF]!=null?RTF:''}:CFG.refs.find(x=>x.id===id);if(!o)return;
   let v=[o.org,o.title,o.url,o.kind||'',o.ar||'',o.en||''],err=null;
   while(true){
     const r=await dialog({err,title:T(isNew?'o_radd':'o_redit'),info:T('o_rinfo'),fields:[{label:T('o_rorg'),value:v[0]},{label:T('o_rtitle'),type:'textarea',value:v[1]},{label:T('o_rurl'),type:'url',value:v[2]},
@@ -385,18 +385,24 @@ async function linksCheck(){
 function linksAuto(){if(!OWN.local&&(!LINKS||Date.now()-Date.parse(LINKS.at)>7*864e5))linksCheck()}
 /** top of the sources page (owner, and pharmacists who edit sources): the link check, like «My medicines» on interactions.
    The numbers filter the list: tap «not working» to see only those sources. */
-let LKF=''; // '' | 'broken' | 'blocked'
+let LKF='',LKOPEN=false; // LKF: '' | 'ok' | 'broken' | 'blocked'; LKOPEN: the folded box on the sources page is open
 function renderLinks(){
   const el=$('lkbox');if(!el)return;
   if(typeof OWN==='undefined'||!OWN.on||OWN.preview||!CAN('refs')){el.hidden=true;el.innerHTML='';LKF='';return}
   const L2=LINKS,ok=L2?L2.n-L2.broken.length-L2.blocked.length:0;
   const chip=(k,n,cls,label)=>`<button type="button" class="lkc ${cls}" data-lkf="${k}" aria-pressed="${LKF===k}"${n?'':' disabled'}><b>${n}</b> ${esc(label)}</button>`;
   el.hidden=false;if($('links'))$('links').classList.toggle('lkf',!!LKF);
-  el.innerHTML=`<div class="lkh"><b>${T('lk_t')}</b><button type="button" class="btn${linksBusy?'':' pri'}" id="lknow"${linksBusy?' disabled':''}>${T(linksBusy?'lk_busy':'lk_now')}</button></div>
-    <p class="hint">${L2?T('lk_last').replace('{d}','<bdi>'+esc(L2.at)+'</bdi>').replace('{n}',L2.n):T('lk_never')}</p>`+
+  const btn=`<button type="button" class="btn${linksBusy?'':' pri'}" id="lknow"${linksBusy?' disabled':''}>${T(linksBusy?'lk_busy':'lk_now')}</button>`,
+    rest=`<p class="hint">${L2?T('lk_last').replace('{d}','<bdi>'+esc(L2.at)+'</bdi>').replace('{n}',L2.n):T('lk_never')}</p>`+
     (L2?`<div class="lkcs">${chip('ok',ok,'ok',T('lk_ok'))}${chip('broken',L2.broken.length,'bad',T('lk_bad'))}${chip('blocked',L2.blocked.length,'warn',T('lk_hand'))}</div>`:'')+
     (LKF?`<p class="hint">${T(LKF==='ok'?'lk_ok_h':LKF==='broken'?'lk_broken_h':'lk_blocked_h')} <button type="button" class="linkbtn" data-lkf="">${T('lk_all')}</button></p>`:'');
+  // 1.14.1: on the sources page the box is one line (title + the three counts) that opens on tap; on its own page it is always open
+  if(el.parentNode&&el.parentNode.id==='linksb'){el.classList.remove('lkfold');el.innerHTML=`<div class="lkh"><b>${T('lk_t')}</b>${btn}</div>`+rest;return}
+  el.classList.add('lkfold');
+  const mini=L2?`<span class="lkmini"><b class="ok">${ok}</b><b class="bad">${L2.broken.length}</b><b class="warn">${L2.blocked.length}</b></span>`:'';
+  el.innerHTML=`<details class="lkd"${LKOPEN||LKF?' open':''}><summary><b>${T('lk_t')}</b>${mini}</summary><div class="lkdb"><div class="lkh">${btn}</div>${rest}</div></details>`;
 }
+document.addEventListener('toggle',e=>{if(e.target.matches&&e.target.matches('details.lkd'))LKOPEN=e.target.open},true);
 document.addEventListener('click',e=>{
   if(e.target.closest('#lknow')){linksCheck();return}
   const b=e.target.closest('[data-lkf]');if(!b)return;LKF=LKF===b.dataset.lkf?'':b.dataset.lkf;renderRefs();
@@ -414,7 +420,7 @@ function viewItem(n){
     const pg=(tm.pages||[]).filter(p=>JSON.stringify((CFG.pages||[]).find(x=>x.id===p.id)||null)!==JSON.stringify(p)).map(p=>`<div class="ncard"><div class="nb"><div class="nh">${esc(T('ad_pages'))}</div><div class="nl">${esc(tx2(p.t))}</div><div class="nw">${esc(tx2(p.b)).slice(0,300)}</div></div></div>`);
     const md=medChanges(tm).map(m=>`<div class="ncard"><div class="nb"><div class="nh">${esc(T('mm_t'))}${m.hide?' · '+esc(T('pg_hidden')):''}</div><div class="nl">${esc(m.en)}</div><div class="nw">${esc((m.ar||[]).join('، '))}</div></div></div>`);
     openSheet(T('nt_texts'),rows.concat(pg,md).join('')||`<p class="inone">${T('nt_none')}</p>`);return}
-  if(n.t==='r'){SF='all';renderRefs();go('sources');setTimeout(()=>{const el=$('ref-'+n.id);if(el){el.scrollIntoView({block:'center'});el.classList.add('hl')}},80);return}
+  if(n.t==='r'){SF='all';RTF='all';renderRefs();go('sources');setTimeout(()=>{const el=$('ref-'+n.id);if(el){el.scrollIntoView({block:'center'});el.classList.add('hl')}},80);return}
   if(n.t==='i'){IF='all';$('isearch').value='';renderInter();go('interactions');setTimeout(()=>{const el=document.querySelector(`#ilist [data-act][data-kind="i"][data-id="${n.idx}"]`);if(el)el.closest('.icard').scrollIntoView({block:'center'})},80);return}
   pickNut(n.id);setTimeout(()=>{const el=document.querySelector(`#nadm [data-kind="n"][data-id="${n.id}"]`);if(el)el.scrollIntoView({block:'center'})},80);
 }

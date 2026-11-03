@@ -303,8 +303,8 @@ body.owner:not(.preview) .oedit{display:flex;gap:6px;margin-top:6px}
 /* 1.14.1: one identity — the team's add button sits at the top of every section, under the banner */
 body.owner:not(.preview) .oadd.otop{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:10px 14px;margin:0 0 12px}
 .oadd.otop svg{flex:none}
-#sfilters>button{gap:6px}
-#sfilters .fc{font:700 calc(12px*var(--fsb,1)) var(--f-body);min-width:22px;padding:1px 6px;border-radius:99px;background:color-mix(in srgb,currentColor 12%,transparent)}
+#filters>button,#sfilters>button,#rtfilters>button{gap:6px}
+.filters .fc{font:700 calc(12px*var(--fsb,1)) var(--f-body);min-width:22px;padding:1px 6px;border-radius:99px;background:color-mix(in srgb,currentColor 12%,transparent)}
 .dlg .checks{display:grid;gap:4px;max-height:220px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--bg)}
 .dlg .ck{display:flex;gap:8px;align-items:flex-start;font-size:calc(13px*var(--fsb,1));line-height:1.4;cursor:pointer}
 .dlg .ck input{margin-top:3px;flex:none;width:16px;height:16px;accent-color:var(--royal)}
@@ -839,6 +839,16 @@ html,body{overflow-x:clip}
 /* sources page: the link check (team) */
 .lkbox{border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 12px;background:var(--bg);display:grid;gap:8px}
 .lkbox .hint{margin:0}
+.lkbox.lkfold{padding:0;gap:0}
+.lkd>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:0 14px;cursor:pointer;list-style:none}
+.lkd>summary::-webkit-details-marker{display:none}
+.lkd>summary::after{content:'';width:8px;height:8px;border:solid var(--mute);border-width:0 2px 2px 0;transform:rotate(45deg);margin-inline-start:4px;transition:transform .15s}
+.lkd[open]>summary::after{transform:rotate(-135deg)}
+.lkd>summary>b:first-child{margin-inline-end:auto}
+.lkmini{display:flex;gap:6px}
+.lkmini b{min-width:26px;padding:2px 8px;border-radius:99px;text-align:center;font:700 calc(13px*var(--fsb,1)) var(--f-body);background:var(--bg)}
+.lkmini .ok{color:var(--ok)}.lkmini .bad{color:var(--bad)}.lkmini .warn{color:var(--warn)}
+.lkdb{display:grid;gap:8px;padding:0 12px 12px}
 .lkh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .lkcs{display:flex;gap:8px;flex-wrap:wrap}
 .lkc{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);font:600 calc(14px*var(--fsb,1)) var(--f-body);color:var(--ink);cursor:pointer}
@@ -851,12 +861,13 @@ span.lkc{cursor:default}
 .stamp{display:flex;align-items:center;gap:5px;font:600 calc(12px*var(--fsb,1)) var(--f-body);color:var(--ok)}
 .stamp svg{width:14px;height:14px;flex:none}
 /* vitamins at the top of interactions and sources: buttons of one size — 3 a row on phones, 5 on tablets, 7 on computers */
-#filters,#sfilters,#rmlegend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+#filters,#sfilters,#rtfilters,#rmlegend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 @media (min-width:700px){#filters,#sfilters,#rmlegend{grid-template-columns:repeat(5,minmax(0,1fr))}}
-@media (min-width:1024px){#filters{grid-template-columns:repeat(7,minmax(0,1fr))}}
+@media (min-width:1024px){#filters,#sfilters{grid-template-columns:repeat(7,minmax(0,1fr))}}
 /* 1.14.1: source types — all + up to 5 types: 3 a row on phones, one row from tablets */
-@media (min-width:700px){#sfilters{grid-template-columns:repeat(auto-fit,minmax(0,1fr));grid-auto-flow:column}}
-#filters>button,#sfilters>button,#rmlegend>button{width:100%;min-width:0;min-height:44px;margin:0;padding:6px 8px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.25;border-radius:12px}
+@media (min-width:700px){#rtfilters{grid-template-columns:repeat(auto-fit,minmax(0,1fr));grid-auto-flow:column}}
+#rtfilters{margin-bottom:10px}
+#filters>button,#sfilters>button,#rtfilters>button,#rmlegend>button{width:100%;min-width:0;min-height:44px;margin:0;padding:6px 8px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.25;border-radius:12px}
 #filters>.srcf{grid-column:1/-1}
 /* 1.12.1: no empty result box until the visitor enters data or asks for an example */
 #calc.nores #resbox,#calc.nores .rbar{display:none}

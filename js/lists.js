@@ -2,7 +2,7 @@
    Interactions tab (filters + search incl. Arabic drug names), sources tab, roadmap ('coming next') and contact links.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== interactions & sources ===================== */
-let IF='all',SF='all',ISRC=null,IGOPEN=[]; // IGOPEN: interaction groups the visitor opened (1.14.0) // ISRC: show only the interactions that cite this source (from the sources page)
+let IF='all',SF='all',RTF='all',ISRC=null,IGOPEN=[]; // IGOPEN: interaction groups the visitor opened (1.14.0) // ISRC: show only the interactions that cite this source (from the sources page)
 const BUILTIN=['d','b12','fol','fe','ca','mg','c','zn','preg','inf','vac','bar','thi'];
 let KEYS=['all',...BUILTIN],INTER=[],REFGROUP={},CUST={};
 const tx2=o=>o?(LANG==='ar'?o.ar:(o.en||o.ar)):'';
@@ -12,7 +12,7 @@ const DRUG_AR={"التروموباج": "eltrombopag", "ايلتروموباج": 
 const DRUG_CLASS={levofloxacin:'quinolone',ofloxacin:'quinolone',norfloxacin:'quinolone',minocycline:'tetracycline',ibandronate:'bisphosphonate'};
 const iTerms=q=>{if(!q)return[];const t=[q];if(q.length>=3){for(const m of medBase())for(const a of m.ar)if(normAr(a).includes(q))t.push(m.en);for(const[a,e]of Object.entries(DRUG_CLASS))if(a.includes(q)||q.includes(a))t.push(e)}return t};
 function renderInter(){
-  $('filters').innerHTML=(ISRC&&REFS[ISRC]?`<button type="button" class="srcf" data-clrsrc="1" aria-pressed="true">${T('su_src').replace('{n}',ISRC)} ×</button>`:'')+KEYS.filter(k=>k==='all'||INTER.some(x=>x[0]===k)).map(k=>`<button data-f="${esc(k)}" aria-pressed="${!ISRC&&k===IF}">${esc(kname(k))}</button>`).join('');
+  $('filters').innerHTML=(ISRC&&REFS[ISRC]?`<button type="button" class="srcf" data-clrsrc="1" aria-pressed="true">${T('su_src').replace('{n}',ISRC)} ×</button>`:'')+KEYS.filter(k=>k==='all'||INTER.some(x=>x[0]===k)).map(k=>`<button data-f="${esc(k)}" aria-pressed="${!ISRC&&k===IF}">${esc(kname(k))}<bdi class="fc">${INTER.filter(x=>k==='all'||x[0]===k).length}</bdi></button>`).join('');
   if(IF!=='all'&&!INTER.some(x=>x[0]===IF))IF='all';
   const onMeds=typeof cur!=='undefined'&&cur==='meds'; // «my medicines» page: only the medicines decide (no supplement chip, search or source filter)
   const iq=onMeds?[]:iTerms(normAr($('isearch')&&$('isearch').value)),mine=MEDS.length?medMatch:null,im=x=>{if(onMeds)return !!mine&&mine(x);if(ISRC&&!x[4].includes(ISRC))return false;if(!ISRC&&!(IF==='all'||x[0]===IF))return false;if(mine&&!mine(x))return false;if(!iq.length)return true;const h=normAr([x[1][0],x[1][1],x[2][0],x[2][1],x[3][0],x[3][1]].join(' '));return iq.some(q=>h.includes(q))};
@@ -186,14 +186,18 @@ function usedIn(n,x){
   return `<div class="used">${calcs.length||ni?`<span>${T('su_in')}</span>`:''}${calcs.map(k=>`<button type="button" data-gocalc="${esc(k)}">${esc(kname(k))}</button>`).join('')}${ni?`<button type="button" data-isrc="${n}">${T('su_int').replace('{n}',ni)}</button>`:''}${at?`<small>${T('su_at')} <bdi>${at}</bdi></small>`:''}</div>`;
 }
 function renderRefs(){
-  // 1.14.1: one full list; the chips filter by source type (with counts), like the interactions page
-  const rts=Object.values(REFS).map(rtOf),cnt=k=>k==='all'?rts.length:rts.filter(t=>t===k).length,tks=['all',...Object.keys(RTORD).filter(k=>cnt(k))];
-  if(!tks.includes(SF))SF='all';
-  $('sfilters').innerHTML=tks.map(k=>`<button type="button" data-sf="${k}" aria-pressed="${k===SF}">${esc(T(k==='all'?'all':'rtp_'+k))} <bdi class="fc">${cnt(k)}</bdi></button>`).join('');
-  const lk=typeof lkShow==='function'?lkShow():null,show=lk;
-  $('refbulk').innerHTML=SHOWALL()?bulkBar('r',(CFG.refs||[]).filter(x=>x.rv===false).length):'';
+  // 1.14.1: one full list. Above the search: source types; below it: vitamins (like interactions). Counts follow the other filter + search.
+  if(!KEYS.includes(SF))SF='all';
+  const lk=typeof lkShow==='function'?lkShow():null;
   const sq=iTerms(normAr($('ssearch')&&$('ssearch').value)),sm=([n,x])=>!sq.length||sq.some(q=>normAr([n,x[0],x[1],x[3],x[4]].join(' ')).includes(q));
-  $('reflist').innerHTML=Object.entries(REFS).filter(sm).sort((a,b)=>RTORD[rtOf(a[1])]-RTORD[rtOf(b[1])]||a[0]-b[0]).filter(([n,x])=>(!show||show.includes(+n))&&(lk||SF==='all'||rtOf(x)===SF)).map(([n,x])=>
+  const base=Object.entries(REFS).filter(sm),inV=(n,k)=>k==='all'||(REFGROUP[k]||[]).includes(+n),inT=(x,k)=>k==='all'||rtOf(x)===k;
+  const tc=k=>base.filter(([n,x])=>inV(n,SF)&&inT(x,k)).length,vc=k=>base.filter(([n,x])=>inT(x,RTF)&&inV(n,k)).length;
+  const tks=['all',...Object.keys(RTORD).filter(k=>Object.values(REFS).some(x=>rtOf(x)===k))];
+  if(!tks.includes(RTF))RTF='all';
+  $('rtfilters').innerHTML=tks.map(k=>`<button type="button" data-rtf="${k}" aria-pressed="${k===RTF}">${esc(T(k==='all'?'all':'rtp_'+k))}<bdi class="fc">${tc(k)}</bdi></button>`).join('');
+  $('sfilters').innerHTML=KEYS.map(k=>`<button type="button" data-sf="${esc(k)}" aria-pressed="${k===SF}">${esc(kname(k))}<bdi class="fc">${vc(k)}</bdi></button>`).join('');
+  $('refbulk').innerHTML=SHOWALL()?bulkBar('r',(CFG.refs||[]).filter(x=>x.rv===false).length):'';
+  $('reflist').innerHTML=base.sort((a,b)=>RTORD[rtOf(a[1])]-RTORD[rtOf(b[1])]||a[0]-b[0]).filter(([n,x])=>lk?lk.includes(+n):inT(x,RTF)&&inV(n,SF)).map(([n,x])=>
     `<li id="ref-${n}"${x[6]?' class="hid"':''}><span class="num">${n}</span><div><div class="org"><span class="rtype rt-${rtOf(x)}">${T('rt_'+rtOf(x))}</span>${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl" dir="auto">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div>${stampHTML(x[9],x[10])}${usedIn(+n,x)}${actBar('r',n,{rv:x[5]!==false,hidden:x[6]})}</div></li>`).join('');
   $('rcount').textContent=Object.keys(REFS).length;
   if(typeof renderLinks==='function')renderLinks();
