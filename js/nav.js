@@ -298,6 +298,8 @@ function menuHTML(r){
   G.recent=RECENT.map(recentItem).filter(Boolean).slice(0,6);
   // shortcut tiles: sections not in the bar, my lab results, my medicines, the link check (team), information pages
   G.short=[...navMore().map(p=>({key:'p-'+p,label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,f:()=>go(p)})),
+    // 1.14.1: the team always finds «sources» among the sections (their workspace), even when it also sits in the bar
+    ...(own&&!OWN.preview&&MODE!=='pt'&&!navMore().includes('sources')&&!navHidden('sources')?[{key:'p-sources',label:T(SECKEY.sources),ico:tabIco('sources'),page:'sources',f:()=>go('sources')}]:[]),
     ...(own&&CAN('refs')&&!OWN.preview?[{key:'links',label:T('lk_t'),ico:tabIco('links'),page:'sources',f:()=>go('links')}]:[]),
     ...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(p=>({key:'pg-'+p.id,...pgItem(p)}))];
   // «help and information», each on its own: how to use · FAQ · about us · suggest a feature · privacy policy · disclaimer

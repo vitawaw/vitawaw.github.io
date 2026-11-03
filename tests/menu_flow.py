@@ -202,6 +202,8 @@ with sync_playwright() as p:
     o.locator(f'#ilist .icard[data-sid="{cards[k]}"] .drag').focus(); o.keyboard.press('ArrowUp'); o.wait_for_timeout(250)
     after = o.evaluate(txt)
     check('interactions: reorder inside a supplement group', len(after) == len(before) and after[k - 1] == before[k] and after[k] == before[k - 1], f'{before[k-1:k+1]} -> {after[k-1:k+1]}')
+    o.click('#t-menu'); o.wait_for_timeout(200)
+    check('team: «sources» among the sections even though it is in the bar', o.evaluate("[...document.querySelectorAll('#menu-b *')].some(e=>e.children.length===0&&e.textContent.trim()==='المصادر')"))
     # ---- 1.14.1: add buttons at the top of every section; source types as chips with counts ----
     top = "s=>{const a=document.querySelector(s);const sec=a&&a.closest('.page');if(!a||!sec)return false;const f=sec.querySelector('.nsearch,.filters,.rm-grid,#medsb');return !f||!!(a.compareDocumentPosition(f)&Node.DOCUMENT_POSITION_FOLLOWING)}"
     check('interactions: add button above the search', o.evaluate(top, '#iadd'))

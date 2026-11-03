@@ -69,6 +69,8 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-11-03)
+- **1.14.2 (preview)**: team (OWN.on, not preview, not patient mode) always gets a «sources» tile (key p-sources) in «الأقسام»
+  (G.short in nav.js) even when sources is in the bar — he could not find it there.
 - **Live: 1.14.1** (he said «جاهز» on 2026-11-03; main fast-forwarded). content_1_14_1.sql applied on LIVE (version 20261103075928;
   checked g20 o31 d12 s7 c2, all still reviewed). Kinds reach visitors when he publishes.
 - **1.14.1**: SECTIONS + meds, sch, labs (SECTOOL sch→tool-sch, labs→tool-labs; go()/show() map them; tabs #t-meds #t-sch
