@@ -69,6 +69,11 @@ node tests/worker_links_test.mjs # link check
 Gotcha: CSS class names are global; `details.more` already exists (that's why the ⋯ panel is `.mpanel`). Search before naming.
 
 ## Where we are (2026-11-03)
+- 2026-11-03 review + load test (report sent to him): live DB healthy (13 MB, RLS on all 7 public tables, anon = read published row only,
+  no anon writes/RPC, definer functions all check owner + fixed search_path; advisor = expected definer warnings, leaked-password (paid),
+  1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
+  ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
+  assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
 - **Live: 1.14.2** (he said «جاهز» on 2026-11-03; main fast-forwarded): team (OWN.on, not preview, not patient mode) always gets a «sources» tile (key p-sources) in «الأقسام»
   (G.short in nav.js) even when sources is in the bar — he could not find it there.
 - **Live: 1.14.1** (he said «جاهز» on 2026-11-03; main fast-forwarded). content_1_14_1.sql applied on LIVE (version 20261103075928;
