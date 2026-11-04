@@ -48,7 +48,7 @@ with sync_playwright() as p:
     check('interaction filter on the page', v.evaluate('IF') != 'all')
     v.evaluate("openToolSheet('tool-gz')"); v.wait_for_timeout(250)
     check('tool opens in floating window', v.is_visible('#sheet') and v.locator('#sheet-b #tool-gz').count() == 1)
-    v.fill('#gw', '70'); v.dispatch_event('#gw', 'input'); v.wait_for_timeout(100)
+    v.fill('#gw', '70'); v.fill('#gha', '9'); v.dispatch_event('#gw', 'input'); v.wait_for_timeout(100)  # 1.16.3: the live site starts with empty fields
     check('tool works inside window', 'ملغ' in v.inner_text('#gmg'))
     v.screenshot(path='tests/shots/tool_sheet.png')
     v.keyboard.press('Escape'); v.wait_for_timeout(150)

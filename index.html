@@ -17,7 +17,7 @@
 <link rel="preload" href="fonts/tajawal-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/tajawal-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.16.2-dd8d1317">
+<link rel="stylesheet" href="css/app.css?v=1.16.3-b91a42a1">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu">القائمة</h2><div id="side-b"></div></aside>
@@ -63,7 +63,7 @@
    <div class="wh"><h2 data-t="w_t">أهلاً بك في VITAWAW</h2><button class="x" id="wclose" aria-label="close">×</button></div>
    <ol class="steps"><li data-t="w_1">اختر الفيتامين أو المعدن</li><li data-t="w_2">أدخل العمر ونتيجة التحليل</li><li data-t="w_3">تظهر الجرعة وخطة العلاج ومصدرها</li></ol>
  </section>
- <script src="js/pre.js?v=1.16.2-ce28d413"></script>
+ <script src="js/pre.js?v=1.16.3-ce28d413"></script>
  <div class="cback" id="cback"><button class="btn tback" type="button" id="cbackb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg><span data-t="cb_back">الفيتامينات</span></button><b id="cvname"></b></div>
  <div class="calc">
   <div class="col">
@@ -211,8 +211,8 @@
     <div class="grid">
       <div class="f" style="grid-column:1/-1"><label class="l" for="salt" data-t="salt">نوع الحبة</label>
         <select id="salt"></select></div>
-      <div class="f"><label class="l" for="tabmg" id="tabmg-l"></label><input type="number" id="tabmg" value="65" min="0.01" step="any" inputmode="decimal"></div>
-      <div class="f"><label class="l" for="needmg" data-t="needmg">الجرعة المطلوبة (ملغ عنصري)</label><input type="number" id="needmg" value="60" min="0.01" step="any" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="tabmg" id="tabmg-l"></label><input type="number" id="tabmg" placeholder="—" min="0.01" step="any" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="needmg" data-t="needmg">الجرعة المطلوبة (ملغ عنصري)</label><input type="number" id="needmg" placeholder="—" min="0.01" step="any" inputmode="decimal"></div>
     </div>
     <div class="out">
       <div><small data-t="o_el">العنصري في الحبة الواحدة</small><b id="elper"></b><i id="elperi"></i></div>
@@ -224,7 +224,7 @@
     <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg></span><span data-t="td_t">محوّل جرعة فيتامين D3</span></h2>
     <p class="lead" data-t="td_l">يتعبأ تلقائياً بالجرعة اليومية من نتيجة الحاسبة، ويمكنك تغييره.</p>
     <div class="grid">
-      <div class="f"><label class="l" for="iu" data-t="iu">الجرعة اليومية (IU)</label><input type="number" id="iu" value="6000" min="100" step="100" inputmode="numeric"></div>
+      <div class="f"><label class="l" for="iu" data-t="iu">الجرعة اليومية (IU)</label><input type="number" id="iu" placeholder="—" min="100" step="100" inputmode="numeric"></div>
       <div class="f"><label class="l" for="cc" data-t="cc">تركيز القطرات في العبوة</label><select id="cc"><option value="100" data-t="cc100">100 IU لكل قطرة</option><option value="200" data-t="cc200">200 IU لكل قطرة</option><option value="400" data-t="cc400" selected>400 IU لكل قطرة</option><option value="1000" data-t="cc1000">1,000 IU لكل قطرة</option><option value="ml400" data-t="ccml">400 IU لكل 1 مل</option></select></div>
       <div class="f"><label class="l" for="ampiu" data-t="ampiu">تركيز الأمبولة</label><select id="ampiu"><option value="100000">100,000 IU</option><option value="200000" selected>200,000 IU</option><option value="300000">300,000 IU</option><option value="600000">600,000 IU</option></select></div>
     </div>
@@ -239,8 +239,8 @@
   <section id="tool-ca">
     <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg></span><span data-t="tp_t">الكالسيوم المصحح حسب الألبومين (Payne)</span></h2>
     <div class="grid">
-      <div class="f"><label class="l" for="tca" data-t="tca">الكالسيوم الكلي (mg/dL)</label><div class="unit"><input type="number" id="tca" value="8.6" step="any" inputmode="decimal"><select id="tcau" aria-label="unit"><option value="mgdl">mg/dL</option><option value="mmol">mmol/L</option></select></div></div>
-      <div class="f"><label class="l" for="alb" data-t="alb">الألبومين (g/dL)</label><div class="unit"><input type="number" id="alb" value="3.2" step="any" inputmode="decimal"><select id="albu" aria-label="unit"><option value="gdl">g/dL</option><option value="gl">g/L</option></select></div></div>
+      <div class="f"><label class="l" for="tca" data-t="tca">الكالسيوم الكلي (mg/dL)</label><div class="unit"><input type="number" id="tca" placeholder="—" step="any" inputmode="decimal"><select id="tcau" aria-label="unit"><option value="mgdl">mg/dL</option><option value="mmol">mmol/L</option></select></div></div>
+      <div class="f"><label class="l" for="alb" data-t="alb">الألبومين (g/dL)</label><div class="unit"><input type="number" id="alb" placeholder="—" step="any" inputmode="decimal"><select id="albu" aria-label="unit"><option value="gdl">g/dL</option><option value="gl">g/L</option></select></div></div>
     </div>
     <div class="out"><div><small data-t="o_cca">الكالسيوم المصحح</small><b id="cca"></b><i id="ccat"></i></div></div>
     <p class="hint" data-th="tp_h"></p>
@@ -249,8 +249,8 @@
     <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 2l4 4M17 7l3-3M19 9L8.5 19.5 4 20l.5-4.5L15 5zM14 6l4 4M6 18l-4 4"/></svg></span><span data-t="tg_t">عجز الحديد للحديد الوريدي (Ganzoni)</span></h2>
     <p class="lead" data-t="tg_l">يأخذ الوزن من بيانات المريض في الحاسبة.</p>
     <div class="grid">
-      <div class="f"><label class="l" for="gw" data-t="wt">الوزن (كغم)</label><input type="number" id="gw" value="60" min="3" max="250" inputmode="decimal"></div>
-      <div class="f"><label class="l" for="gha" data-t="gha">Hb الحالي (g/dL)</label><input type="number" id="gha" value="9" step="0.1" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="gw" data-t="wt">الوزن (كغم)</label><input type="number" id="gw" placeholder="—" min="3" max="250" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="gha" data-t="gha">Hb الحالي (g/dL)</label><input type="number" id="gha" placeholder="—" step="0.1" inputmode="decimal"></div>
       <div class="f"><label class="l" for="ght" data-t="ght">Hb المستهدف (g/dL)</label><input type="number" id="ght" value="15" step="0.5" inputmode="decimal"></div>
     </div>
     <div class="out">
@@ -265,10 +265,10 @@
     <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 3h6M10 3v4l-4 3v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V10l-4-3V3"/><path d="M6 14h12"/></svg></span><span data-t="ml_t">كم مل من الشراب أو القطرات؟</span></h2>
     <p class="lead" data-t="ml_l">يحسب الجرعة حسب الوزن ويحوّلها إلى مل أو قطرات حسب تركيز العبوة. يتعبأ من نتيجة الحديد للأطفال والرضيع.</p>
     <div class="grid">
-      <div class="f"><label class="l" for="mlwt" data-t="wt">الوزن (كغم)</label><input type="number" id="mlwt" value="10" min="0.5" max="150" step="any" inputmode="decimal"></div>
-      <div class="f"><label class="l" for="mlmgkg" data-t="mlmgkg">الجرعة (ملغ/كغم في المرة)</label><input type="number" id="mlmgkg" value="3" min="0" step="any" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="mlwt" data-t="wt">الوزن (كغم)</label><input type="number" id="mlwt" placeholder="—" min="0.5" max="150" step="any" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="mlmgkg" data-t="mlmgkg">الجرعة (ملغ/كغم في المرة)</label><input type="number" id="mlmgkg" placeholder="—" min="0" step="any" inputmode="decimal"></div>
       <div class="f"><label class="l" for="mlfreq" data-t="mlfreq">عدد المرات يومياً</label><select id="mlfreq"><option value="1" data-t="fq1">مرة واحدة</option><option value="2" data-t="fq2">مرتين</option><option value="3" data-t="fq3">3 مرات</option></select></div>
-      <div class="f"><label class="l" for="mlconc" data-t="mlconc">التركيز: كم ملغ…</label><input type="number" id="mlconc" value="25" min="0" step="any" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="mlconc" data-t="mlconc">التركيز: كم ملغ…</label><input type="number" id="mlconc" placeholder="—" min="0" step="any" inputmode="decimal"></div>
       <div class="f"><label class="l" for="mlper" data-t="mlper">…في كم مل</label><input type="number" id="mlper" value="1" min="0.1" step="any" inputmode="decimal"></div>
       <div class="f"><label class="l" for="mldpm" data-t="mldpm">عدد القطرات في 1 مل (اختياري)</label><input type="number" id="mldpm" min="1" step="any" inputmode="decimal" placeholder="—"></div>
     </div>
@@ -301,9 +301,9 @@
   </section>
   <section id="tool-ul">
     <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h16M6 16V9M10 16V5M14 16v-6M18 16V7"/><path d="M3 4h18" stroke-dasharray="2 2"/></svg></span><span data-t="tl_t">هل تجاوز المريض الحد الأعلى اليومي؟</span></h2>
-    <p class="lead" data-t="tl_l">اجمع ما يأخذه المريض يومياً من كل المكملات، وقارنه بالحد الأعلى الآمن (UL) لعمره.</p>
+    <p class="lead" data-t="tl_l">اجمع ما يأخذه المريض في اليوم الواحد، وقارنه بالحد الأعلى الآمن (UL) لعمره.</p>
     <div class="grid"><div class="f"><label class="l" for="ulage" data-t="ulage">العمر (سنة)</label><select id="ulage"><option value="0">1 – 3</option><option value="1">4 – 8</option><option value="2">9 – 13</option><option value="3">14 – 18</option><option value="4" selected>19 – 50</option><option value="5">51+</option></select></div><div class="f"><label class="l" for="ulper" data-t="ul_per">الكميات المدخلة</label><select id="ulper"><option value="d" data-t="ul_d" selected>في اليوم</option><option value="w" data-t="ul_w">في الأسبوع (تُقسم على 7)</option></select></div></div>
-    <div class="ulwhat"><b data-t="ul_what_t">ما هو الحد الأعلى؟</b><p data-t="ul_what">أعلى كمية يومية يمكن أخذها كل يوم ولفترة طويلة دون ضرر متوقع عند معظم الناس. أدخل مجموع ما يأخذه المريض في اليوم الواحد من كل المكملات معاً (مثلاً حبتان × 1,000 IU = 2,000 IU). للجرعات الأسبوعية اختر «في الأسبوع». جرعات العلاج التي يصفها الطبيب قد تتجاوزه لفترة محدودة.</p></div>
+    <div class="ulwhat"><b data-t="ul_what_t">ما هو الحد الأعلى؟</b><p data-t="ul_what">أعلى كمية يومية يمكن أخذها كل يوم ولفترة طويلة دون ضرر متوقع عند معظم الناس. أدخل مجموع ما يأخذه المريض في اليوم الواحد (مثلاً حبتان × 1,000 IU = 2,000 IU). تحت كل عنصر ما يُحسب: «غذاء + مكملات» لمعظم العناصر، و«من المكملات فقط» لفيتامين E والنياسين وحمض الفوليك والمغنيسيوم. للجرعات الأسبوعية اختر «في الأسبوع». جرعات العلاج التي يصفها الطبيب قد تتجاوزه لفترة محدودة.</p></div>
     <div class="grid ulg" id="ulin"></div>
     <div class="ulout" id="ulout" aria-live="polite"></div>
     <p class="hint" data-th="tl_h"></p>
@@ -313,7 +313,7 @@
     <p class="lead" data-t="tu_l">حوّل بين IU وmcg وmg للفيتامينات، وبين وحدات التحاليل.</p>
     <div class="grid">
       <div class="f" style="grid-column:1/-1"><label class="l" for="ucv" data-t="ucv">التحويل</label><select id="ucv"></select></div>
-      <div class="f"><label class="l" for="uval" data-t="uval">القيمة</label><input type="number" id="uval" value="1000" min="0" step="any" inputmode="decimal"></div>
+      <div class="f"><label class="l" for="uval" data-t="uval">القيمة</label><input type="number" id="uval" placeholder="—" min="0" step="any" inputmode="decimal"></div>
     </div>
     <div class="out"><div><small data-t="o_uout">النتيجة</small><b id="uout"></b><i id="uouti"></i></div></div>
     <p class="hint" data-th="tu_h"></p>
@@ -418,21 +418,21 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see">عرض النتيجة</span></div>
 
-<script src="js/config.js?v=1.16.2-f05ba82f" defer></script>
-<script src="js/i18n.js?v=1.16.2-8936a743" defer></script>
-<script src="js/data.js?v=1.16.2-78a70643" defer></script>
-<script src="js/util.js?v=1.16.2-ece5b126" defer></script>
-<script src="js/validation.js?v=1.16.2-37b8f300" defer></script>
-<script src="js/render.js?v=1.16.2-0d83e90b" defer></script>
-<script src="js/calculators.js?v=1.16.2-1dff5b6c" defer></script>
-<script src="js/content.js?v=1.16.2-5406ea95" defer></script>
-<script src="js/tools.js?v=1.16.2-374df62f" defer></script>
-<script src="js/lists.js?v=1.16.2-2bffe93a" defer></script>
-<script src="js/ui.js?v=1.16.2-25c9186c" defer></script>
-<script src="js/published.js?v=1.16.2-87f710f2" defer></script>
-<script src="js/owner.js?v=1.16.2-8e1dfedb" defer></script>
-<script src="js/nav.js?v=1.16.2-ee3dff2a" defer></script>
-<script src="js/team.js?v=1.16.2-ca6436a6" defer></script>
-<script src="js/boot.js?v=1.16.2-de688673" defer></script>
+<script src="js/config.js?v=1.16.3-4522cb54" defer></script>
+<script src="js/i18n.js?v=1.16.3-2cc951c6" defer></script>
+<script src="js/data.js?v=1.16.3-78a70643" defer></script>
+<script src="js/util.js?v=1.16.3-ece5b126" defer></script>
+<script src="js/validation.js?v=1.16.3-37b8f300" defer></script>
+<script src="js/render.js?v=1.16.3-0d83e90b" defer></script>
+<script src="js/calculators.js?v=1.16.3-1dff5b6c" defer></script>
+<script src="js/content.js?v=1.16.3-5406ea95" defer></script>
+<script src="js/tools.js?v=1.16.3-04d933b1" defer></script>
+<script src="js/lists.js?v=1.16.3-2bffe93a" defer></script>
+<script src="js/ui.js?v=1.16.3-25c9186c" defer></script>
+<script src="js/published.js?v=1.16.3-87f710f2" defer></script>
+<script src="js/owner.js?v=1.16.3-8e1dfedb" defer></script>
+<script src="js/nav.js?v=1.16.3-ee3dff2a" defer></script>
+<script src="js/team.js?v=1.16.3-ca6436a6" defer></script>
+<script src="js/boot.js?v=1.16.3-139efae7" defer></script>
 </body>
 </html>

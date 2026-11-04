@@ -20,6 +20,9 @@ document.querySelectorAll('#picker button').forEach(b=>b.setAttribute('aria-pres
 applyColors();
 setLang(startLang);
 show(startPage);
+// 1.16.3: «جرّب مثالاً» and the example numbers exist only on the test site
+document.body.classList.toggle('demo',typeof IS_PREVIEW!=='undefined'&&IS_PREVIEW);
+if(typeof IS_PREVIEW!=='undefined'&&IS_PREVIEW){toolExamples();['tool-pill','tool-d','tool-ca','tool-gz','tool-ml','tool-u'].forEach(id=>{try{TOOLEX[id]()}catch(e){}})}
 if(FRAME){$('welcome').hidden=true;loadPublished().finally(frameDraft)}
 else{loadPublished();if(!routeSpecial())resumeSession()}
 if('serviceWorker' in navigator&&location.protocol==='https:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}

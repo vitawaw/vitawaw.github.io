@@ -76,7 +76,11 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
-- **1.16.2 (preview)**: his 5 notes: «3 أحجام» title row + sizes row (`.sztop`/`.szsizes`); `TEAMX()` (nav.js) = team pages (log, links)
+- **1.16.3 (preview)**: examples ONLY on the test site: body.demo when IS_PREVIEW (boot.js) → calc #example / [data-ex] / tool `.tex`
+  buttons (CSS hides them otherwise); `TOOLEX` + `toolExamples()` (tools.js) for the 9 tools; on the test site boot pre-fills the tools;
+  the live index.html tool inputs have no value= any more (conv/cca/gz show «—» when empty). UL reviewed vs NIH (all values match);
+  `ULSUP` e/b3/fol/mg = supplements only, others food + supplements (`.ulsc` tag + row note). tools_flow 103.
+- **1.16.2**: his 5 notes: «3 أحجام» title row + sizes row (`.sztop`/`.szsizes`); `TEAMX()` (nav.js) = team pages (log, links)
   shared by menu G.short and follow-up «+ إضافة» ('x:<key>', mergeCfg allows); UL per day/week (`#ulper`, ÷7) + «ما هو الحد الأعلى؟»
   box, tl_t «…الحد الأعلى اليومي؟»; install bar `installBar()` (ui.js) hidden when standalone / appinstalled (vw-installed) / × this
   visit (sessionStorage vw-instx) / frame. tools_flow 101.

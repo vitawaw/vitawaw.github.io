@@ -38,7 +38,8 @@ function pills(){
   $('ntabsi').textContent=L(`يعطي ${fmt(Math.round(half*el*10)/10)} ملغ عنصري`,`Gives ${fmt(Math.round(half*el*10)/10)} mg elemental`)+(sx[1]==='mg'?` (${fmt(Math.round(half*el/24.3*10)/10)} mmol)`:'');
 }
 function conv(){
-  let d=nv('iu');if(!(d>0))d=1000;const c=$('cc').value,amp=+$('ampiu').value;
+  let d=nv('iu');const c=$('cc').value,amp=+$('ampiu').value;
+  if(!(d>0)){['dr','drs','cp1','wk','cp50','amp'].forEach(id=>{if($(id))$(id).textContent='—'});return} // 1.16.3: no number yet
   $('dr').textContent=c==='ml400'?fmt(d/400)+L(' مل يومياً',' mL daily'):fmt(d/+c)+L(' قطرة يومياً',' drops daily');
   $('drs').textContent=fmt(d/40)+L(' mcg يومياً',' mcg daily');
   $('cp1').textContent=fmt(d/1000)+L(' كبسولة يومياً',' capsules daily');
@@ -50,7 +51,7 @@ function conv(){
   $('amp').textContent=fmt(Math.round(amp/d))+L(' يوماً',' days');
 }
 function cca(){
-  let ca=nv('tca'),al=nv('alb');if(ca==null||al==null)return;
+  let ca=nv('tca'),al=nv('alb');if(ca==null||al==null){$('cca').textContent='—';$('ccat').textContent='';return}
   if($('tcau').value==='mmol')ca*=4.008; if($('albu').value==='gl')al/=10; // work in mg/dL and g/dL (Payne 1973)
   const c=ca+0.8*(4-al);
   const f2=n=>Number(n.toFixed(2)).toLocaleString('en-US');
@@ -64,7 +65,7 @@ function ferTable(w,hb){
   const hi=w>=70;return {mg:hb<10?(hi?2000:1500):hb<14?(hi?1500:1000):500};
 }
 function gz(){
-  const w=nv('gw'),a=nv('gha');if(w==null||a==null)return;
+  const w=nv('gw'),a=nv('gha');if(w==null||a==null){['gmg','gven','gfer','gtab'].forEach(id=>{if($(id))$(id).textContent='—'});['gform','gfers','gtabi'].forEach(id=>{if($(id))$(id).textContent=''});return}
   if(!gtTouched)$('ght').value=w<35?13:15;
   const t=nv('ght'),store=w<35?Math.round(w*15):500;
   const def=Math.max(0,Math.round(w*(t-a)*2.4+store));
@@ -93,6 +94,23 @@ function mlc(){
   $('mlvoli').textContent=(dpm?mlT+' · ':'')+qT+' · '+L(`التركيز ${fmt(c)} ملغ لكل ${fmt(per)} مل`,`strength ${fmt(c)} mg per ${fmt(per)} mL`);
 }
 let ML={wt:10,mgkg:3,q:1};
+/* 1.16.3 «جرّب مثالاً» in every calculator and tool — on the TEST site only (IS_PREVIEW), for showing the app to the committee.
+   The live site starts with empty fields; the test site starts with these numbers already filled in. */
+const TOOLEX={
+  'tool-pill':()=>{$('salt').value='fsd';$('tabmg').value=200;$('needmg').value=60;pills()},
+  'tool-d':()=>{$('iu').value=6000;conv()},
+  'tool-ca':()=>{$('tcau').value='mg';$('albu').value='gdl';$('tca').value=8.6;$('alb').value=3.2;cca()},
+  'tool-gz':()=>{$('gw').value=60;$('gha').value=9;gtTouched=false;gz()},
+  'tool-ml':()=>{$('mlwt').value=10;$('mlmgkg').value=3;$('mlconc').value=25;$('mlper').value=1;mlc()},
+  'tool-sch':()=>{SCI.forEach(x=>{const c=$('sc-'+x[0]);if(c)c.checked=['levo','fe','ca','d'].includes(x[0])});sch()},
+  'tool-labs':()=>{if(!LABS.some(x=>x.k==='d')){const d=new Date();d.setMonth(d.getMonth()-3);LABS.push({k:'d',v:12,d:d.toISOString().slice(0,10)});LABS.sort((a,b)=>a.d.localeCompare(b.d));saveLabs()}$('lbk').value='d';$('lbv').value=28;$('lbd').value=today();labs()},
+  'tool-ul':()=>{$('ulage').value='4';if($('ulper'))$('ulper').value='d';ULT.forEach(x=>{const e=$('ul-'+x[0]);if(e)e.value={d:2000,fe:60,ca:1200,zn:25}[x[0]]||''});ul()},
+  'tool-u':()=>{$('ucv').value='d';$('uval').value=1000;ucv()}};
+function toolExamples(){ // called by boot only on the test site
+  Object.keys(TOOLEX).forEach(id=>{const sec=$(id),lead=sec&&sec.querySelector('.lead');if(!sec||sec.querySelector('.tex'))return;
+    const d=document.createElement('div');d.className='ract tex';d.innerHTML=`<button class="btn" type="button" data-tex="${id}" data-t="ex">${esc(T('ex'))}</button>`;(lead||sec.querySelector('h2')).after(d)});
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-tex]');if(!b)return;e.preventDefault();const f=TOOLEX[b.dataset.tex];if(f)f()});
 /* the calculator opens a tool already filled in: PILL (tablets), ML (syrup), UCVSET (units), ULSET (upper limit), SCHSET (daily schedule) */
 let UCVSET=null,ULSET=null,SCHSET=null;
 function openTool(kind){
@@ -133,20 +151,23 @@ async function editToolItem(k){
 document.addEventListener('click',e=>{const b=e.target.closest('[data-tied]');if(!b||!ISOWNER())return;e.preventDefault();e.stopPropagation();editToolItem(b.dataset.tied)},true);
 /** age in years → the UL age group (1–3, 4–8, 9–13, 14–18, 19–50, 51+) */
 const ulGroup=a=>a<=3?0:a<=8?1:a<=13?2:a<=18?3:a<=50?4:5;
-/* supplement total vs the upper limit (UL, NIH / Institute of Medicine); age groups 1–3, 4–8, 9–13, 14–18, 19–50, 51+.
-   [id, name ar, name en, unit, ULs, source, note ar, note en] — the UL counts supplements only, except calcium (food + supplements) */
+/* daily total vs the upper limit (UL, NIH Office of Dietary Supplements / Institute of Medicine); age groups 1–3, 4–8, 9–13, 14–18, 19–50, 51+.
+   [id, name ar, name en, unit, ULs, source, note ar, note en]. 1.16.3 review against the NIH fact sheets: every value matches; what
+   the UL counts differs — food AND supplements for most nutrients, supplements (and fortified foods) only for vitamin E, niacin,
+   folic acid and magnesium (ULSUP) — so each row now says which. */
+const ULSUP=['e','b3','fol','mg'];
 const ULT=[
  ['d','فيتامين D','Vitamin D','IU',[2500,3000,4000,4000,4000,4000],4],
  ['a','فيتامين A','Vitamin A','mcg RAE',[600,900,1700,2800,3000,3000],30,'فيتامين A الجاهز فقط، وليس Beta-carotene. مع Isotretinoin أو Acitretin تُتجنّب مكملاته','Preformed vitamin A only, not beta-carotene. Avoid it with isotretinoin or acitretin'],
- ['e','فيتامين E','Vitamin E','mg',[200,300,600,800,1000,1000],31],
+ ['e','فيتامين E','Vitamin E','mg',[200,300,600,800,1000,1000],31,'أي شكل من alpha-tocopherol في المكملات','Any form of supplemental alpha-tocopherol'],
  ['c','فيتامين C','Vitamin C','mg',[400,650,1200,1800,2000,2000],23],
  ['b6','فيتامين B6','Vitamin B6','mg',[30,40,60,80,100,100],33],
- ['b3','فيتامين B3 (النياسين)','Vitamin B3 (niacin)','mg',[10,15,20,30,35,35],35],
- ['fol','حمض الفوليك','Folic acid','mcg',[300,400,600,800,1000,1000],11],
+ ['b3','فيتامين B3 (النياسين)','Vitamin B3 (niacin)','mg',[10,15,20,30,35,35],35,'النياسين المضاف وليس الموجود في الطعام طبيعياً','Added niacin, not niacin naturally in food'],
+ ['fol','حمض الفوليك','Folic acid','mcg',[300,400,600,800,1000,1000],11,'حمض الفوليك الصناعي فقط، وليس الفولات الطبيعي في الطعام','Synthetic folic acid only, not natural food folate'],
  ['fe','الحديد','Iron','mg',[40,40,40,45,45,45],15,'لا ينطبق على جرعات العلاج بإشراف طبي','Does not apply to supervised treatment doses'],
  ['zn','الزنك','Zinc','mg',[7,12,23,34,40,40],25],
- ['ca','الكالسيوم (غذاء + مكمل)','Calcium (food + supplements)','mg',[2500,2500,3000,3000,2500,2000],18,'يُحسب الغذاء والمكمل معاً','Food and supplements together'],
- ['mg','المغنيسيوم (مكمل)','Magnesium (supplements)','mg',[65,110,350,350,350,350],20,'من المكملات والأدوية فقط، وليس من الطعام','From supplements and medicines only, not food'],
+ ['ca','الكالسيوم','Calcium','mg',[2500,2500,3000,3000,2500,2000],18,'',''],
+ ['mg','المغنيسيوم','Magnesium','mg',[65,110,350,350,350,350],20,'من المكملات والأدوية (مثل مضادات الحموضة والملينات) فقط، وليس من الطعام','From supplements and medicines (such as antacids and laxatives) only, not food'],
  ['se','السيلينيوم','Selenium','mcg',[90,150,280,400,400,400],39],
  ['io','اليود','Iodine','mcg',[200,300,600,900,1100,1100],37],
  // 1.13.0 (NIH): useful after weight-loss surgery, where zinc and copper are taken together
@@ -159,7 +180,7 @@ const ULT=[
 const nutOff=k=>{k={ab12:'b12',ca2:'ca',hb:'fe',fer:'fe'}[k]||k;return typeof SHOWALL==='function'&&!SHOWALL()&&(NHIDE().includes(k)||!!(typeof CUST!=='undefined'&&CUST[k]&&CUST[k].hidden))};
 function ulBuild(){
   const old=Object.fromEntries(ULT.map(x=>[x[0],$('ul-'+x[0])?$('ul-'+x[0]).value:'']));
-  $('ulin').innerHTML=ULT.filter(x=>!nutOff(x[0])&&!tiOff('ul:'+x[0])).map(x=>`<div class="f${TI()['ul:'+x[0]]&&TI()['ul:'+x[0]].off?' tioff':''}"><label class="l" for="ul-${x[0]}">${esc(tiTx('ul:'+x[0],'n',x[1],x[2]))} <small dir="ltr">${x[3]}</small>${tiPen('ul:'+x[0])}</label><input type="number" id="ul-${x[0]}" min="0" step="any" inputmode="decimal" placeholder="—" value="${esc(old[x[0]]||'')}"></div>`).join('');
+  $('ulin').innerHTML=ULT.filter(x=>!nutOff(x[0])&&!tiOff('ul:'+x[0])).map(x=>`<div class="f${TI()['ul:'+x[0]]&&TI()['ul:'+x[0]].off?' tioff':''}"><label class="l" for="ul-${x[0]}">${esc(tiTx('ul:'+x[0],'n',x[1],x[2]))} <small dir="ltr">${x[3]}</small>${tiPen('ul:'+x[0])}</label><small class="ulsc ${ULSUP.includes(x[0])?'s':'t'}">${esc(T(ULSUP.includes(x[0])?'ul_sup':'ul_tot'))}</small><input type="number" id="ul-${x[0]}" min="0" step="any" inputmode="decimal" placeholder="—" value="${esc(old[x[0]]||'')}"></div>`).join('');
   ul();
 }
 function ul(){
@@ -168,7 +189,7 @@ function ul(){
   const over=rows.filter(o=>o.v>o.x[4][g]);
   $('ulout').innerHTML=`<div class="ulsum ${over.length?'bad':'ok'}">${over.length?L('تجاوز الحد الأعلى: ','Above the upper limit: ')+over.map(o=>tiTx('ul:'+o.x[0],'n',o.x[1],o.x[2])).join(L('، ',', ')):L('المجموع ضمن الحد الأعلى','The total is within the upper limit')}</div>`+
     rows.map(o=>{const u=o.x[4][g],pc=Math.round(o.v/u*100),cls=pc>100?'bad':pc>=80?'warn':'ok';
-      return `<div class="ulr ${cls}"><div class="ulh"><b>${esc(tiTx('ul:'+o.x[0],'n',o.x[1],o.x[2]))}</b><span dir="ltr">${o.w!=null?`${fmt(o.w)}/${L('أسبوع','wk')} ≈ `:''}${fmt(o.v)} / ${fmt(u)} ${o.x[3]} ${L('يومياً','daily')}</span></div><div class="ulbar"><i style="width:${Math.min(100,pc)}%"></i></div><small>${pc}% ${L('من الحد الأعلى','of the upper limit')}${o.x[6]?' · '+L(o.x[6],o.x[7]):''}${R([o.x[5]])}</small></div>`}).join('');
+      return `<div class="ulr ${cls}"><div class="ulh"><b>${esc(tiTx('ul:'+o.x[0],'n',o.x[1],o.x[2]))}</b><span dir="ltr">${o.w!=null?`${fmt(o.w)}/${L('أسبوع','wk')} ≈ `:''}${fmt(o.v)} / ${fmt(u)} ${o.x[3]} ${L('يومياً','daily')}</span></div><div class="ulbar"><i style="width:${Math.min(100,pc)}%"></i></div><small>${pc}% ${L('من الحد الأعلى','of the upper limit')} · ${esc(T(ULSUP.includes(o.x[0])?'ul_sup':'ul_tot'))}${o.x[6]?' · '+L(o.x[6],o.x[7]):''}${R([o.x[5]])}</small></div>`}).join('');
 }
 /* unit converter: [id, label ar, label en, factor, from unit, to unit, source] — to = from × factor */
 const UCV=[

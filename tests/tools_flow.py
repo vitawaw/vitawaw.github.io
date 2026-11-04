@@ -190,6 +190,13 @@ with sync_playwright() as p:
     pg.evaluate("openToolPage('tool-ul')"); pg.select_option('#ulper', 'w'); pg.fill('#ul-d', '50000'); pg.dispatch_event('#ul-d', 'input'); pg.wait_for_timeout(150)
     check('1.16.2 upper limit: a weekly amount counts per day (÷7)', str('7,142.9' in pg.inner_text('#ulout') and 'تجاوز' in pg.inner_text('#ulout')), 'True')
     pg.select_option('#ulper', 'd'); pg.fill('#ul-d', ''); pg.dispatch_event('#ul-d', 'input')
+    # 1.16.3 «جرّب مثالاً»: only on the test site; the live site has no example button and starts with empty tool fields
+    check('1.16.3 live site: no example buttons in the tools', str(pg.locator('.tex').count()==0 and pg.evaluate("getComputedStyle(document.getElementById('example')).display")=='none'), 'True')
+    pg.evaluate("document.body.classList.add('demo');toolExamples()")
+    ok_ex = pg.evaluate("""(()=>{const out={};Object.keys(TOOLEX).forEach(id=>{openToolPage(id);document.querySelector('#'+id+' [data-tex]').click()});
+      return [document.getElementById('gmg').textContent,document.getElementById('dr').textContent,document.getElementById('cca').textContent,document.getElementById('ntabs').textContent,document.getElementById('mlvol').textContent]})()""")
+    check('1.16.3 test site: every tool has «جرّب مثالاً» and fills a result', str(pg.locator('.tex').count()==9 and all(x and x!='—' for x in ok_ex)), 'True')
+    pg.evaluate("document.body.classList.remove('demo')")
     # 1.16.0 schedule: the label gaps of the new drugs (Cefdinir ↔ iron/magnesium 2 h, Mycophenolate before magnesium ≥2 h, Penicillamine ↔ iron 2 h)
     gaps = pg.evaluate("""(()=>{const g=(a,b)=>{const s=schSolve([a,b]);if(!s)return 'none';return Math.min(...doseTimes(a,s[a]).flatMap(x=>doseTimes(b,s[b]).map(y=>Math.abs(x-y))))/60};
       const m=schSolve(['mmf','mg']);return [g('cef','fe'),g('cef','mg'),g('pen','fe'),m&&Math.min(...doseTimes('mmf',m.mmf).map(t=>m.mg-t).filter(d=>d>=0))/60]})()""")

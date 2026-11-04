@@ -1101,3 +1101,9 @@ html.frame #instbar{display:none}
 .ulwhat{border:1px solid var(--edge);border-inline-start:4px solid var(--pc2,var(--royal));border-radius:12px;padding:10px 12px;margin:4px 0 12px;background:var(--card)}
 .ulwhat b{display:block;margin-bottom:2px;font:800 calc(14px*var(--fsh,1)) var(--f-display);color:var(--pc2,var(--royal))}
 .ulwhat p{margin:0;font-size:calc(13px*var(--fsb,1));line-height:1.7}
+
+/* 1.16.3 examples only on the test site (body.demo) */
+body:not(.demo) #example,body:not(.demo) [data-ex],body:not(.demo) .tex{display:none!important}
+.tex{margin:0 0 10px}
+.ulsc{display:inline-block;margin:-2px 0 4px;padding:1px 8px;border-radius:99px;font:700 calc(11px*var(--fsb,1)) var(--f-body)}
+.ulsc.t{background:var(--chip);color:var(--royal)}.ulsc.s{background:var(--warn-bg);color:var(--warn)}
