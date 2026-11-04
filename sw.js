@@ -1,15 +1,15 @@
 // VITAWAW service worker: lets the installed app open offline.
 // VERSION and FILES are updated by tools/set_version.py; do not edit them by hand.
-const VERSION='vitawaw-1.16.0-a73f01a2';
+const VERSION='vitawaw-1.16.0-bf503f45';
 const FILES=[
   './',
   './index.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
-  './css/app.css?v=1.16.0-0081d56a',
+  './css/app.css?v=1.16.0-8a784ef8',
   './js/pre.js?v=1.16.0-ce28d413',
-  './js/config.js?v=1.16.0-c05f16e2',
+  './js/config.js?v=1.16.0-5a021158',
   './js/i18n.js?v=1.16.0-1016b977',
   './js/data.js?v=1.16.0-78a70643',
   './js/util.js?v=1.16.0-ece5b126',
@@ -18,11 +18,11 @@ const FILES=[
   './js/calculators.js?v=1.16.0-1dff5b6c',
   './js/content.js?v=1.16.0-5406ea95',
   './js/tools.js?v=1.16.0-648e05fa',
-  './js/lists.js?v=1.16.0-d0effb0e',
+  './js/lists.js?v=1.16.0-116b1500',
   './js/ui.js?v=1.16.0-84bf8dd2',
   './js/published.js?v=1.16.0-87f710f2',
   './js/owner.js?v=1.16.0-89320a20',
-  './js/nav.js?v=1.16.0-b2ee8f54',
+  './js/nav.js?v=1.16.0-2987e195',
   './js/team.js?v=1.16.0-ca6436a6',
   './js/boot.js?v=1.16.0-de688673',
   './fonts/cairo-700.woff2',

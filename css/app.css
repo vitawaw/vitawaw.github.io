@@ -1018,3 +1018,23 @@ html.frame .obar,html.frame .pvbar{display:none!important}
 .pblist li span{flex:1;min-width:0;overflow-wrap:anywhere}
 .pblist .btn{min-height:34px;padding:4px 10px;flex:none}
 @media (max-width:600px){.obar{gap:4px}.obar .btn.ico,.obar #o-texts{padding-inline:7px}}
+/* ===== 1.16.0 (his note): every card and tile stands out from the ones above and below it ===== */
+:root{--elev:0 1px 2px rgba(0,22,122,.07),0 4px 14px rgba(0,22,122,.09);--elev-h:0 2px 4px rgba(0,22,122,.09),0 8px 22px rgba(0,22,122,.13);--edge:color-mix(in srgb,var(--pc2,var(--royal)) 24%,var(--line))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--elev:0 1px 2px rgba(0,0,0,.45),0 4px 14px rgba(0,0,0,.4);--elev-h:0 2px 6px rgba(0,0,0,.5),0 10px 24px rgba(0,0,0,.45)}}
+:root[data-theme="dark"]{--elev:0 1px 2px rgba(0,0,0,.45),0 4px 14px rgba(0,0,0,.4);--elev-h:0 2px 6px rgba(0,0,0,.5),0 10px 24px rgba(0,0,0,.45)}
+.icard,ol.refs>li,.rm,.mcadd,.picker button[data-k],.picker button[data-tv],.mtile,.m3b,.ml .mi,.ml.one .mi{border:1px solid var(--edge);box-shadow:var(--elev);transition:box-shadow .15s,transform .15s,border-color .15s}
+@media (hover:hover){.icard:hover,ol.refs>li:hover,.rm:hover,.mcadd:not(:disabled):hover,.picker button[data-k]:hover,.picker button[data-tv]:hover,.mtile:hover,.m3b:hover{box-shadow:var(--elev-h);transform:translateY(-1px);border-color:color-mix(in srgb,var(--pc2,var(--royal)) 45%,var(--line))}}
+.cgrid,ol.refs,.rm-grid,.mclist{gap:12px!important}
+.picker,.mtiles,.m3{gap:10px}
+/* a coloured edge on the reading side of every card: severity for interactions, status for «coming next», royal for sources */
+.icard.sevb-moderate{border-inline-start:4px solid var(--warn)}.icard.sevb-minor{border-inline-start:4px solid var(--royal)}
+ol.refs>li{border-inline-start:4px solid color-mix(in srgb,var(--pc2,var(--royal)) 70%,transparent)}
+/* «coming next» like the interactions: one card per line */
+.rm-grid{grid-template-columns:minmax(0,1fr)!important}
+.rm.rmst-now{border-inline-start:4px solid var(--ok)}.rm.rmst-dev{border-inline-start:4px solid color-mix(in srgb,var(--ok) 55%,var(--line))}.rm.rmst-plan{border-inline-start:4px solid var(--royal)}.rm.rmst-idea{border-inline-start:4px solid var(--warn)}
+.rm .rmh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rm .rmh .ic{width:30px;height:30px}.rm .rmh .ic svg{width:17px;height:17px}
+.rm .rmh h3{flex:1;min-width:0}
+.rm p{-webkit-line-clamp:unset!important;display:block!important}
+#rmlegend>button .fc{margin-inline-start:6px}
+.medit.rw>details{flex:1;min-width:0}

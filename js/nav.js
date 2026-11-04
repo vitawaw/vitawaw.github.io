@@ -267,14 +267,14 @@ const MEDIT=()=>ISOWNER()&&EDITING(); // 1.16.0: only after «تعديل وتر�
 function mgSet(f){const g=JSON.parse(JSON.stringify(MGCFG()));f(g);CFG.menus={...(CFG.menus||{}),groups:g};changed();renderMenu()}
 /** 1.16.0 ✎ on a menu group or item (owner): its name in Arabic and English and hide/show for visitors, in one floating window.
    An information page opens its own editor (title, text, hide, delete). */
-const MGTEXT={share:'mr_share',clear:'cd_t',lang:'mr_lang',theme:'mr_theme',install:'mr_install',wa:'mr_wa',mail:'mr_mail',call:'mr_call',links:'lk_t'};
+const MGTEXT={'ad-look':'ad_look','ad-contact':'ad_contact','ad-team':'ad_team','ad-pub':'ad_pub',share:'mr_share',clear:'cd_t',lang:'mr_lang',theme:'mr_theme',install:'mr_install',wa:'mr_wa',mail:'mr_mail',call:'mr_call',links:'lk_t'};
 async function mgEdit(key){
   if(!ISOWNER())return;
   if(key.startsWith('g:'))return mgGroupEdit(key.slice(2));
   if(key.startsWith('pg-'))return editPage(key.slice(3));
   const tk=key.startsWith('p-')?SECKEY[key.slice(2)]:MGTEXT[key];if(!tk||!I18N[tk])return;
-  const d=I18N[tk],c=CFG.text[tk]||{ar:d[0],en:d[1]},off=mgOff(key);
-  const r=await dialog({title:T(tk),fields:[{label:T('nv_name'),value:c.ar},{label:T('nv_name_en'),value:c.en||'',ltr:1}],buttons:EDB({hidden:off,del:false,reset:true})});
+  const d=I18N[tk],c=CFG.text[tk]||{ar:d[0],en:d[1]},off=mgOff(key),adm=key.startsWith('ad-'); // management is never shown to visitors: no hide
+  const r=await dialog({title:T(tk),fields:[{label:T('nv_name'),value:c.ar},{label:T('nv_name_en'),value:c.en||'',ltr:1}],buttons:EDB({hidden:off,hide:!adm,del:false,reset:true})});
   if(r.action==='hide')return mgToggle(key);
   if(r.action==='reset'){delete CFG.text[tk];changed();renderNav();return}
   if(r.action!=='ok')return;
@@ -335,7 +335,7 @@ function menuHTML(r){
   G.help=['howto','faq','who','about','method','suggest','privacy','disclaimer'].map(pg).filter(Boolean).map(p=>({key:'pg-'+p.id,...pgItem(p),ico:PICO[p.id]}));
   G.apps=[{key:'share',label:T('mr_share'),ico:MI.share,f:shareApp},{key:'clear',label:T('cd_t'),ico:MI.trash,f:clearMyData}];
   // the team: management sections, pharmacists (own page)
-  G.admin=(own?adminGroups():[]).map(g=>({...g,key:g.id}));
+  G.admin=(own?adminGroups():[]).map(g=>({...g,key:'ad-'+g.id}));
   // contact (WhatsApp · e-mail · call) right above the settings; an invited pharmacist talks to the owner directly
   const con=[];
   if(PHONEF())con.push({key:'wa',label:T('mr_wa'),ico:MI.wa,href:waLink('VITAWAW')});
@@ -357,10 +357,12 @@ function menuHTML(r){
     items=mgItems(id,items);
     // 1.14.6: what the owner hid is gone for visitors; the team sees it marked «hidden»
     if(id!=='admin'){if(!own)items=items.filter(c=>!mgOff(c.key));else items=items.map(c=>mgOff(c.key)?{...c,label:c.label+' · '+T('pg_hidden')}:c);if(!items.length)return ''}
-    const E=ed&&id!=='admin',L=(cls,x)=>E?`<div class="${cls} mgl" data-g="${id}">${x}</div>`:`<div class="${cls}">${x}</div>`;
+    const E=ed,L=(cls,x)=>E?`<div class="${cls} mgl" data-g="${id}">${x}</div>`:`<div class="${cls}">${x}</div>`;
     if(id==='short')return L('mtiles',items.map(c=>E?eWrap(c,tile(c),'tw'):tile(c)).join(''));
     if(id==='help')return E?L('mlh',items.map(c=>eWrap(c,`<div class="ml one">${row(c)}</div>`,'rw')).join('')):items.map(c=>`<div class="ml one">${row(c)}</div>`).join('');
-    if(id==='admin')return `<div class="ml maccs">${items.map(g=>g.go?row({label:g.label,ico:g.ico,n:g.n,f:g.go}):acc('ad-'+g.id,g.ico,g.label,g.rows.map(row).join(''))).join('')}</div>`;
+    // 1.16.0: the management lists can be moved too (⋮⋮ inside the group, the group itself with its heading's ⋮⋮)
+    const adm=g=>g.go?row({label:g.label,ico:g.ico,n:g.n,f:g.go}):acc('ad-'+g.id,g.ico,g.label,g.rows.map(row).join(''));
+    if(id==='admin')return E?L('ml maccs',items.map(g=>eWrap(g,adm(g),'rw')).join('')):`<div class="ml maccs">${items.map(adm).join('')}</div>`;
     if(id==='contact'||id==='settings')return L('m3',items.map(c=>E?eWrap(c,r3b(c),'tw'):r3b(c)).join(''));
     return L('ml',items.map(c=>E?eWrap(c,row(c),'rw'):row(c)).join(''));
   };

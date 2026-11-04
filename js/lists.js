@@ -165,14 +165,19 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-copyphone]
   try{navigator.clipboard.writeText(P).then(done).catch(()=>fallback(P,done))}catch(err){fallback(P,done)}});
 /** «جرّبه» on a feature that is available now: where each feature lives */
 const GO={sch:()=>openTool('sch'),meds:()=>{go('meds');setTimeout(()=>$('medin')&&$('medin').focus(),80)},preg:()=>openNut('preg'),bar:()=>openNut('bar'),thi:()=>openNut('thi'),
-  labs:()=>openTool('labs'),report:()=>go('calc'),search:()=>openSearch(),calc:()=>go('calc'),tools:()=>go('tools')};
-const GOLIST=()=>[['',T('rm_go_none')],['sch',T('tl_sch')],['meds',T('mm_t')],['preg',T('n_preg')],['bar',T('n_bar')],['thi',T('n_thi')],['labs',T('lb_t')],['report',T('rp_t')],['search',T('gs_t')],['calc',T('tab_calc')],['tools',T('tab_tools')]];
+  labs:()=>openTool('labs'),report:()=>go('calc'),sources:()=>go('sources'),search:()=>openSearch(),calc:()=>go('calc'),tools:()=>go('tools')};
+const GOLIST=()=>[['',T('rm_go_none')],['sch',T('tl_sch')],['meds',T('mm_t')],['preg',T('n_preg')],['bar',T('n_bar')],['thi',T('n_thi')],['labs',T('lb_t')],['report',T('rp_t')],['search',T('gs_t')],['calc',T('tab_calc')],['tools',T('tab_tools')],['sources',T('tab_src')]];
 let RMF='all'; // roadmap filter: all | now | dev | plan | idea
+/* 1.16.0: «coming next» laid out like the interactions: status chips with counts at the top, then one card per line,
+   sorted by status (available now → in development → planned → idea) as interactions are by severity; the owner's
+   order counts inside each status. */
+const RMORD={now:0,dev:1,plan:2,idea:3};
 function renderRoadmap(){
-  const st=k=>`<span class="st st-${esc(k)}">${esc(T('st_'+k))}</span>`;
-  $('rmlegend').innerHTML=['all','now','dev','plan','idea'].map(k=>`<button type="button" data-rmf="${k}" aria-pressed="${k===RMF}">${esc(T(k==='all'?'all':'st_'+k))}</button>`).join('');
-  const tx=o=>LANG==='ar'?o.ar:(o.en||o.ar);
-  $('rmgrid').innerHTML=CFG.roadmap.map((x,i)=>(x.hidden&&!SHOWALL())||(RMF!=='all'&&x.st!==RMF)?'':`<div class="rm${x.hidden?' hid':''}" data-sid="${i}"><div class="rmh"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${IC[x.ic]||IC.plus}</svg></div><h3>${esc(tx(x.t))}</h3></div><p>${esc(tx(x.d))}</p><div class="rmf">${st(x.st)}${x.st==='now'&&GO[x.go]?`<button class="btn pri rmgo" type="button" data-rmgo="${esc(x.go)}">${T('rm_try')}</button>`:''}</div><div class="rmact">${actBtns('m',i,{hidden:!!x.hidden,drag:true})}</div></div>`).join('');
+  const st=k=>`<span class="st st-${esc(k)}">${esc(T('st_'+k))}</span>`,tx=o=>LANG==='ar'?o.ar:(o.en||o.ar);
+  const vis=CFG.roadmap.map((x,i)=>[x,i]).filter(([x])=>!x.hidden||SHOWALL());
+  $('rmlegend').innerHTML=['all','now','dev','plan','idea'].map(k=>`<button type="button" data-rmf="${k}" aria-pressed="${k===RMF}">${esc(T(k==='all'?'all':'st_'+k))}<bdi class="fc">${vis.filter(([x])=>k==='all'||x.st===k).length}</bdi></button>`).join('');
+  const list=vis.filter(([x])=>RMF==='all'||x.st===RMF).sort((a,b)=>(RMORD[a[0].st]??9)-(RMORD[b[0].st]??9)||a[1]-b[1]);
+  $('rmgrid').innerHTML=list.map(([x,i])=>`<div class="rm rmst-${esc(x.st)}${x.hidden?' hid':''}" data-sid="${i}"><div class="rmh">${st(x.st)}<div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${IC[x.ic]||IC.plus}</svg></div><h3>${esc(tx(x.t))}</h3></div><p>${esc(tx(x.d))}</p>${x.st==='now'&&GO[x.go]?`<div class="rmf"><button class="btn pri rmgo" type="button" data-rmgo="${esc(x.go)}">${T('rm_try')}</button></div>`:''}<div class="rmact">${actBtns('m',i,{hidden:!!x.hidden,drag:true})}</div></div>`).join('')||`<p class="inone">${T('i_none')}</p>`;
   $('rmaddw').innerHTML=`<button class="oadd otop" type="button" id="rmadd">${PLUS}${T('o_add')}</button>`;
   sortable($('rmgrid'),'.rm',ids=>{if(!ISOWNER())return;const keep=CFG.roadmap.filter((_,n)=>!ids.includes(String(n)));CFG.roadmap=[...ids.map(n=>CFG.roadmap[+n]),...keep];changed()});
 }
