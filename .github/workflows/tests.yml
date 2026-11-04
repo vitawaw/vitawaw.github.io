@@ -35,5 +35,6 @@ jobs:
         run: |
           python3 tests/owner_flow.py
           python3 tests/menu_flow.py
+          python3 tests/owner_panel.py
           python3 tests/tools_flow.py | tee tf.txt
           ! grep -qiE '^fail|traceback' tf.txt

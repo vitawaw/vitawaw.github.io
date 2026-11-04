@@ -14,10 +14,13 @@ const CANAPPROVE=()=>typeof OWN!=='undefined'&&(OWN.role==='owner'||OWN.local);
    everything about it (Arabic and English name, description, hide/show, delete). A waiting item shows «awaiting review»
    (for the owner it opens 🔔 notifications, where changes are approved or rejected).
    kind: r = source, i = interaction, n = added vitamin, m = roadmap feature. The database checks every change. */
+/** 1.16.0: ⋮⋮ and ✎ show only after «تعديل وترتيب» is pressed (body.textedit); the normal view stays as visitors see it */
+const EDITING=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview&&document.body.classList.contains('textedit');
 const EPEN=(attrs,lbl)=>`<button class="btn epen" type="button" ${attrs} aria-label="${esc(lbl||T('o_editall'))}" title="${esc(lbl||T('o_editall'))}">${PEN}</button>`;
 function actBtns(kind,id,{rv=true,hidden=false,edit=true,drag=false}={}){
-  return (drag?DRAG(T('o_drag')):'')+(rv?'':CANAPPROVE()?`<button class="pend" type="button" data-gonotif="1">${T('o_pending')} ›</button>`:`<span class="pend">${T('o_pending')}</span>`)+(hidden?`<span class="hidb">${T('o_hiddenb')}</span>`:'')+
-    (edit?EPEN(`data-act="edit" data-kind="${kind}" data-id="${esc(String(id))}"`):'');
+  const ed=EDITING();
+  return (drag&&ed?DRAG(T('o_drag')):'')+(rv?'':CANAPPROVE()?`<button class="pend" type="button" data-gonotif="1">${T('o_pending')} ›</button>`:`<span class="pend">${T('o_pending')}</span>`)+(hidden?`<span class="hidb">${T('o_hiddenb')}</span>`:'')+
+    (edit&&ed?EPEN(`data-act="edit" data-kind="${kind}" data-id="${esc(String(id))}"`):'');
 }
 /** the buttons at the bottom of an item's floating window: hide/show · delete · (reset) · cancel · save */
 const EDB=({hidden=false,hide=true,del=true,reset=false,isNew=false}={})=>[...(!isNew&&hide?[{label:T(hidden?'o_nshow':'o_nhide'),action:'hide'}]:[]),...(!isNew&&del?[{label:T('o_del'),action:'del',danger:1}]:[]),
@@ -75,14 +78,16 @@ function renderNutAdmin(){
   const el=$('nadm'),pk=$('picker');if(!el)return;
   if(typeof OWN==='undefined'||!OWN.on||OWN.preview){el.innerHTML='';return}
   const hide=NHIDE(),cust=Object.fromEntries(NCUST().map(c=>[c.id,c]));
+  const ed=EDITING();
   pk.querySelectorAll('button[data-k]').forEach(b=>{const k=b.dataset.k,c=cust[k],off=c?!!c.hidden:hide.includes(k);
-    const w=document.createElement('div');w.className='pkw'+(off?' off':'');w.dataset.sid=k;b.before(w);w.appendChild(b);
     if(off&&!c)b.insertAdjacentHTML('beforeend',`<em class="hidb bh">${T('o_hiddenb')}</em>`);
+    if(!ed)return;
+    const w=document.createElement('div');w.className='pkw'+(off?' off':'');w.dataset.sid=k;b.before(w);w.appendChild(b);
     // ⋮⋮ (owner: the order is a site setting) and ✎ (an added vitamin: whoever may edit vitamins; a built-in one: the owner)
     w.insertAdjacentHTML('beforeend',`<div class="pka">${ISOWNER()?DRAG(T('o_drag')):''}${c?(CAN('nut')?EPEN(`data-act="edit" data-kind="n" data-id="${esc(c.id)}"`):''):ISOWNER()?EPEN(`data-nedit="${k}"`):''}</div>`)});
-  el.innerHTML=`<button class="oadd otop" type="button" id="nadd">${PLUS}${T('o_nadd').replace(/^\+\s*/,'')}</button>${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<p class="hint">${T('o_tile_hint')}</p>`;
+  el.innerHTML=`<button class="oadd otop" type="button" id="nadd">${PLUS}${T('o_nadd').replace(/^\+\s*/,'')}</button>${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}${ed?`<p class="hint">${T('o_tile_hint')}</p>`:''}`;
   // drag the ⋮⋮ handle to change the vitamins' order (saved with the page settings, then published)
-  sortable(pk,'.pkw',ids=>{if(!ISOWNER())return;CFG.nutOrder=ids;changed()});
+  if(ed)sortable(pk,'.pkw',ids=>{if(!ISOWNER())return;CFG.nutOrder=ids;changed()});
 }
 /* custom nutrient calculator: dose table by age and sex */
 const SEXES=()=>[['all',T('o_sx_all')],['m',T('sx_m')],['f',T('sx_f')],['p',T('sx_p')],['l',T('sx_l')]];

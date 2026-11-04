@@ -13,16 +13,48 @@ function ownerBar(){
   const d=dirty();$('odot').classList.toggle('dirty',d||OWN.saved);
   const st=d?'o_dirty':OWN.saved?'o_saved':'o_clean';$('ostate').textContent=T(innerWidth<600?st+'_s':st);
   const nar=innerWidth<600;$('o-save').textContent=T(nar?'o_save_s':ISOWNER()?'o_save':'mr_savemine');$('o-publish').textContent=T('o_publish');$('o-pvexit').textContent=T('o_pvexit');
-  $('o-preview').textContent=T('o_preview');$('o-discard').title=$('o-discard').ariaLabel=T('o_discard');$('o-discard-l').textContent=T('o_discard_s');
-  $('o-publish').hidden=$('o-preview').hidden=!ISOWNER();
-  $('o-texts').hidden=!CAN('text');$('o-texts-l').textContent=T('o_texts');$('o-texts').title=T('o_texts_t');$('o-texts').setAttribute('aria-pressed',document.body.classList.contains('textedit'));
+  $('o-preview-l').textContent=T('o_preview');$('o-preview').title=$('o-preview').ariaLabel=T('o_preview');$('o-discard').title=$('o-discard').ariaLabel=T('o_discard');$('o-discard-l').textContent=T('o_discard_s');
+  $('o-publish').hidden=$('o-preview').hidden=$('o-sizes').hidden=!ISOWNER();$('o-undo').disabled=!UNDO.length;$('o-undo').title=$('o-undo').ariaLabel=T('ud_t');$('o-undo-l').textContent=T('ud_s');$('o-sizes-l').textContent=T('sz_btn');$('o-sizes').title=T('sz_t');
+  $('o-texts').hidden=!!OWN.preview;$('o-texts-l').textContent=T('o_texts');$('o-texts').title=T('o_texts_t');$('o-texts').setAttribute('aria-pressed',document.body.classList.contains('textedit'));
   // what this account may edit: hides the edit buttons it cannot use (the database refuses them anyway)
   ['nut','inter','refs','text'].forEach(k=>document.body.classList.toggle('cant-'+k,!CAN(k)));
   document.body.classList.toggle('not-owner',!ISOWNER());
   renderNav();
 }
+/** 1.16.0: the page as visitors will see it after publishing, on a phone, an iPad and a computer, side by side in one window.
+   The frame loads this same site (?frame=1): it never signs in and shows the draft that is put in localStorage just before. */
+const SZ=[['phone',390,844],['ipad',820,1180],['pc',1366,900]];let SZK='phone';
+function openSizes(){
+  try{localStorage.setItem('vw-frame',cfgJSON())}catch(e){toast(T('o_neterr'));return}
+  let w=$('szwrap');if(!w){w=document.createElement('div');w.id='szwrap';w.setAttribute('role','dialog');w.setAttribute('aria-modal','true');document.body.appendChild(w)}
+  w.innerHTML=`<div class="szbar"><b>${esc(T('sz_t'))}</b><div class="filters">${SZ.map(([k])=>`<button type="button" data-szk="${k}" aria-pressed="${k===SZK}">${esc(T('sz_'+k))}</button>`).join('')}</div><button type="button" class="btn" id="szx" aria-label="${esc(L('إغلاق','Close'))}">✕</button></div><div class="szstage"><iframe id="szf" title="${esc(T('sz_t'))}" src="./?frame=1#${esc(cur==='menu'?'calc':cur)}"></iframe></div>`;
+  w.hidden=false;document.body.style.overflow='hidden';sizeFrame();$('szx').focus();
+}
+function sizeFrame(){const f=$('szf'),st=document.querySelector('#szwrap .szstage');if(!f||!st)return;const [,fw,fh]=SZ.find(x=>x[0]===SZK);
+  const sc=Math.min(1,(st.clientWidth-16)/fw,(st.clientHeight-16)/fh);f.style.width=fw+'px';f.style.height=fh+'px';f.style.transform=`scale(${sc})`;f.parentNode.style.setProperty('--szh',Math.round(fh*sc)+'px')}
+function closeSizes(){const w=$('szwrap');if(w){w.hidden=true;w.innerHTML=''}document.body.style.overflow='';try{localStorage.removeItem('vw-frame')}catch(e){}$('o-sizes').focus()}
+document.addEventListener('click',e=>{const k=e.target.closest('[data-szk]');if(k){SZK=k.dataset.szk;document.querySelectorAll('[data-szk]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.szk===SZK));sizeFrame();return}if(e.target.closest('#szx'))closeSizes()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('szwrap')&&!$('szwrap').hidden&&$('dlg').hidden){e.stopImmediatePropagation();closeSizes()}},true);
+addEventListener('resize',()=>{if($('szwrap')&&!$('szwrap').hidden)sizeFrame()});
 function setPreview(on){OWN.preview=on;document.body.classList.toggle('preview',on);refreshAll()}
-function changed(){refreshAll();ownerBar()}
+/* 1.16.0 «تراجع»: every change keeps the state before it (up to 30 steps), so the last change can be taken back.
+   Auto-save: a minute after the last change the draft is saved by itself (never while a window or a save is open). */
+let UNDO=[],UNDO_LAST=null,AUTOSAVE=null;
+function undoReset(){UNDO=[];UNDO_LAST=null}
+function changed(){
+  if(OWN.on){const now=cfgJSON();if(UNDO_LAST==null)UNDO_LAST=OWN.base||now;if(now!==UNDO_LAST){UNDO.push(UNDO_LAST);if(UNDO.length>30)UNDO.shift();UNDO_LAST=now}}
+  refreshAll();ownerBar();autoSave();
+}
+function undoLast(){
+  if(!UNDO.length){toast(T('ud_none'));return}
+  const prev=UNDO.pop(),o=JSON.parse(prev);Object.keys(o).forEach(k=>{CFG[k]=o[k]});UNDO_LAST=prev;
+  refreshAll();ownerBar();autoSave();toast(T('ud_done'));
+}
+function autoSave(){
+  clearTimeout(AUTOSAVE);if(!OWN.on||OWN.local||OWN.preview||!dirty())return;
+  AUTOSAVE=setTimeout(()=>{if(!OWN.on||!dirty()||OWN.busy||!$('dlg').hidden||(SHEET&&SHEET.key==='look')){autoSave();return}
+    locked(async()=>{if(await _saveDraft())toast(T('as_done'))})},60000);
+}
 function decorate(){
   document.querySelectorAll('.edp').forEach(b=>b.remove());
   document.querySelectorAll('[data-ed]').forEach(el=>el.removeAttribute('data-ed'));
@@ -51,6 +83,7 @@ function dialog({title,fields=[],info='',buttons,err=null,two=false}){
     $('dlg-b').innerHTML=(info?`<p class="info">${esc(info)}</p>`:'')+fields.map((f,i)=>{
       const id='dlgf'+i,lab=`<label class="l" for="${id}">${esc(f.label)}</label>`;
       if(f.type==='image')return `<div class="row">${lab}<div class="imgf"><span class="imgp">${f.value?`<img src="${esc(f.value)}" alt="">`:(f.empty||'')}</span><input type="file" id="${id}" accept="image/png,image/jpeg,image/webp">${f.value?`<label class="ck"><input type="checkbox" id="${id}x"><span>${esc(T('br_remove'))}</span></label>`:''}</div></div>`;
+      if(f.type==='html')return f.html;
       if(f.type==='qr')return `<div class="row qr"><img src="${esc(f.value[0])}" alt="QR" width="180" height="180"><code dir="ltr">${esc(f.value[1])}</code></div>`;
       if(f.type==='textarea')return `<div class="row">${lab}<textarea id="${id}"${f.ph?` placeholder="${esc(f.ph)}"`:''}${f.ltr?' dir="ltr"':''}>${esc(f.value)}</textarea></div>`;
       if(f.type==='checks')return `<div class="row"><label class="l" for="${id}">${esc(f.label)}</label><div class="checks" id="${id}">${f.options.map(o=>`<label class="ck"><input type="checkbox" value="${o[0]}"${f.value.includes(o[0])?' checked':''}><span>${esc(o[1])}</span></label>`).join('')}</div></div>`;
@@ -62,7 +95,7 @@ function dialog({title,fields=[],info='',buttons,err=null,two=false}){
     if(err&&err.i!=null){const f=$('dlgf'+err.i)||$('dlgf'+err.i+'a');const row=f&&f.closest('.row');if(row){row.classList.add('bad');row.insertAdjacentHTML('beforeend',`<p class="ferr" role="alert">${esc(err.msg)}</p>`)}}
     $('dlg-a').classList.toggle('two',!!two);
     $('dlg-a').innerHTML=buttons.map((b,i)=>`<button class="btn${b.pri?' pri':''}${b.danger?' danger':''}" type="${b.pri?'submit':'button'}" data-bi="${i}">${esc(b.label)}</button>`).join('');
-    const read=()=>fields.map((f,i)=>f.type==='qr'?null:f.type==='image'?{file:$('dlgf'+i).files[0]||null,remove:!!($('dlgf'+i+'x')&&$('dlgf'+i+'x').checked)}:f.type==='colors'?[$('dlgf'+i+'a').value,$('dlgf'+i+'b').value]:f.type==='checks'?[...$('dlgf'+i).querySelectorAll('input:checked')].map(x=>+x.value):$('dlgf'+i).value);
+    const read=()=>fields.map((f,i)=>f.type==='qr'||f.type==='html'?null:f.type==='image'?{file:$('dlgf'+i).files[0]||null,remove:!!($('dlgf'+i+'x')&&$('dlgf'+i+'x').checked)}:f.type==='colors'?[$('dlgf'+i+'a').value,$('dlgf'+i+'b').value]:f.type==='checks'?[...$('dlgf'+i).querySelectorAll('input:checked')].map(x=>+x.value):$('dlgf'+i).value);
     const finish=v=>{$('dlg').hidden=true;$('dlgf').onsubmit=null;$('dlg-a').onclick=null;res(v)};
     $('dlg-a').onclick=e=>{const b=e.target.closest('[data-bi]');if(!b||b.type==='submit')return;finish({action:buttons[+b.dataset.bi].action,values:read()})};
     $('dlgf').onsubmit=e=>{e.preventDefault();const b=buttons.find(x=>x.pri);finish({action:b.action,values:read()})};
@@ -97,15 +130,39 @@ function drawTexts(){
     `<p class="hint">${esc(T('tx_n').replace('{n}',list.length))}</p><div class="ml">${list.slice(0,40).map(k=>`<button type="button" class="mi" data-edtext="${esc(k)}"><span class="mt">${esc(T(k))}${CFG.text[k]?` · <b>${esc(T('tx_changed'))}</b>`:''}<small dir="auto">${esc(LANG==='ar'?I18N[k][1]:I18N[k][0])}</small></span></button>`).join('')}</div>`;
   const i=$('txq');i.addEventListener('input',()=>{TXQ=i.value;drawTexts();const j=$('txq');j.focus();j.setSelectionRange(j.value.length,j.value.length)});
 }
-/** 1.14.0: fonts and sizes of the whole site (Menu → Site appearance) */
-async function editLook(){
-  const l=CFG.look||DEFAULT_CFG.look,F=[['tajawal','Tajawal'],['cairo','Cairo'],['system',T('lk_sys')]],S=[['0.9',T('lk_s09')],['1',T('lk_s1')],['1.1',T('lk_s11')],['1.2',T('lk_s12')]];
-  const r=await dialog({title:T('lk_title'),info:T('lk_info'),fields:[{type:'select',label:T('lk_fb'),options:F,value:l.fb},{type:'select',label:T('lk_sb'),options:S,value:String(l.sb)},{type:'select',label:T('lk_fh'),options:F,value:l.fh},{type:'select',label:T('lk_sh'),options:S,value:String(l.sh)}],
-    buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
-  if(r.action==='ok')CFG.look={fb:r.values[0],sb:+r.values[1],fh:r.values[2],sh:+r.values[3]};
-  if(r.action==='reset')CFG.look=clone(DEFAULT_CFG.look);
-  if(r.action!=='cancel')changed();
+/** 1.16.0 «مظهر الموقع»: fonts, sizes (text, headings, tile names), the colours of every section and the logos in ONE floating
+   window. Every change shows at once on the page behind it; «تراجع» puts back what was there when the window opened. */
+let LOOK0=null;
+const LOOKSEC=()=>Object.keys(CFG.colors).filter(p=>SECKEY[p]||p==='team');
+function editLook(){
+  if(!ISOWNER())return;
+  LOOK0=JSON.stringify({look:CFG.look,colors:CFG.colors});
+  openSheet(T('lk_win'),'',{key:'look',onClose:()=>{if(LOOK0&&JSON.stringify({look:CFG.look,colors:CFG.colors})!==LOOK0)changed();LOOK0=null}});
+  drawLook();
 }
+function drawLook(){
+  if(!SHEET||SHEET.key!=='look')return;
+  const l={...DEFAULT_CFG.look,...(CFG.look||{})},F=[['tajawal','Tajawal'],['cairo','Cairo'],['system',T('lk_sys')]];
+  const sel=(id,v)=>`<select id="${id}">${F.map(o=>`<option value="${o[0]}"${o[0]===v?' selected':''}>${esc(o[1])}</option>`).join('')}</select>`;
+  const rng=(id,v,lab)=>`<div class="lkrow"><label class="l" for="${id}">${esc(lab)} <b id="${id}v">${Math.round(v*100)}%</b></label><input type="range" id="${id}" min="0.85" max="1.3" step="0.05" value="${v}"></div>`;
+  ACT.s=[];const S=c=>chipH('s',c);
+  $('sheet-b').innerHTML=`<div class="lksample" aria-hidden="true"><h3>${esc(T('lk_s_h'))}</h3><p>${esc(T('lk_s_p'))}</p><div class="picker lktiles"><button type="button" tabindex="-1"><i class="tico">D</i><span>${esc(T('n_d'))}</span></button><button type="button" tabindex="-1"><i class="tico">Fe</i><span>${esc(T('n_fe'))}</span></button></div></div>
+    <h4 class="lkh4">${esc(T('lk_fonts'))}</h4><div class="lkrow"><label class="l" for="lkfb">${esc(T('lk_fb'))}</label>${sel('lkfb',l.fb)}</div><div class="lkrow"><label class="l" for="lkfh">${esc(T('lk_fh'))}</label>${sel('lkfh',l.fh)}</div>
+    <h4 class="lkh4">${esc(T('lk_sizes'))}</h4>${rng('lksb',l.sb,T('lk_sb'))}${rng('lksh',l.sh,T('lk_sh'))}${rng('lkst',l.st||1,T('lk_st'))}
+    <h4 class="lkh4">${esc(T('lk_cols'))}</h4><div class="lkcols">${LOOKSEC().map(p=>`<div class="lkcol" style="${colorVars(p)}"><span class="lkn">${esc(p==='team'?T('ad_team'):T(SECKEY[p]))}</span><input type="color" data-lkc="${p}" data-i="0" value="${CFG.colors[p][0]}" aria-label="${esc(T('o_c1'))}"><input type="color" data-lkc="${p}" data-i="1" value="${CFG.colors[p][1]}" aria-label="${esc(T('o_c2'))}"></div>`).join('')}</div>
+    <h4 class="lkh4">${esc(T('br_t'))}</h4><div class="filters">${S({label:T('lk_logos'),f:()=>{closeSheet(false);editBrand()}})}</div>
+    <div class="lkact filters">${S({label:T('lk_undo'),f:()=>{if(!LOOK0)return;const o=JSON.parse(LOOK0);CFG.look=o.look;CFG.colors=o.colors;applyColors();drawLook()}})}${S({label:T('o_reset'),f:()=>{CFG.look=clone(DEFAULT_CFG.look);CFG.colors=clone(DEFAULT_CFG.colors);applyColors();drawLook()}})}${S({label:T('lk_done'),cls:'pri',f:()=>closeSheet()})}</div>`;
+}
+document.addEventListener('input',e=>{
+  if(!SHEET||SHEET.key!=='look')return;const t=e.target;
+  CFG.look={...DEFAULT_CFG.look,...(CFG.look||{})};
+  if(t.id==='lkfb'||t.id==='lkfh')CFG.look[t.id==='lkfb'?'fb':'fh']=t.value;
+  else if(/^lks[bht]$/.test(t.id)){CFG.look[t.id.slice(2)]=Math.round(+t.value*20)/20;const v=$(t.id+'v');if(v)v.textContent=Math.round(+t.value*100)+'%'}
+  else if(t.dataset.lkc){const p=t.dataset.lkc,c=[...CFG.colors[p]];c[+t.dataset.i]=t.value;CFG.colors={...CFG.colors,[p]:c}}
+  else return;
+  applyColors(); // live: the page behind the window changes at once (saved as a draft when the window closes)
+});
+document.addEventListener('change',e=>{if(SHEET&&SHEET.key==='look'&&(e.target.id==='lkfb'||e.target.id==='lkfh'))e.target.dispatchEvent(new Event('input',{bubbles:true}))});
 async function editColors(p){
   const r=await dialog({title:T('o_colors'),fields:[{type:'colors',labels:[T('o_c1'),T('o_c2')],value:CFG.colors[p]}],
     buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
@@ -463,7 +520,7 @@ async function decideTexts(accept,quiet){
 }
 async function reloadContent(msg){
   const {data:ct,error}=await OWN.client.rpc('get_content');if(error||!ct){toast(T('o_neterr'));return}
-  applyContent(ct);OWN.base=cfgJSON();OWN.saved=true;changed();renderNotif();if(msg)toast(T(msg));
+  applyContent(ct);OWN.base=cfgJSON();OWN.saved=true;undoReset();changed();renderNotif();if(msg)toast(T(msg));
 }
 async function decideAll(list){
   const q=await dialog({title:T('nt_all'),info:T('o_approveall_i').replace('{n}',list.length),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('nt_all'),action:'ok',pri:1}]});
@@ -657,7 +714,7 @@ function splitHowto(){const P=Array.isArray(CFG.pages)&&splitPages(CFG.pages);if
 function startOwner({local,role,draft,content}){
   OWN.on=true;OWN.local=local;OWN.role=role;OWN.saved=false;OWN.preview=false;
   CFG=mergeCfg(DEFAULT_CFG,draft||PUBLISHED);if(content)applyContent(content);
-  OWN.base=cfgJSON();OWN.saved=!!draft&&JSON.stringify(draft)!==JSON.stringify(PUBLISHED);
+  OWN.base=cfgJSON();undoReset();OWN.saved=!!draft&&JSON.stringify(draft)!==JSON.stringify(PUBLISHED);
   if(ISOWNER()&&splitHowto())changed(); // 1.12.0: «How to use» and «FAQ» become two pages (saved and published by the owner)
   document.body.classList.add('owner');changed();
 }
@@ -682,7 +739,7 @@ async function _saveDraft(){
       const cs=clean(srv),ps={refs:JSON.stringify(cs.refs||[]),inter:JSON.stringify(cs.inter||[]),nut:JSON.stringify({hide:(cs.nut&&cs.nut.hide)||[],custom:(cs.nut&&cs.nut.custom)||[]})};
       if(Object.keys(p).some(k=>was[k]!=null&&ps[k]!==was[k])){
         const q=await dialog({title:T('o_conflict_t'),info:T('o_conflict_i'),buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_reload'),action:'ok',pri:1}]});
-        if(q.action==='ok'){applyContent(srv);OWN.base=cfgJSON();changed()}
+        if(q.action==='ok'){applyContent(srv);OWN.base=cfgJSON();undoReset();changed()}
         return false;
       }
     }
@@ -691,7 +748,29 @@ async function _saveDraft(){
     if(Object.keys(p).length){const {error:e2}=await c.rpc('save_content',{p});if(e2){console.error(e2);toast(T('o_saveerr'));return false}}
     const {data:ct,error:e3}=await c.rpc('get_content');if(!e3&&ct){applyContent(ct);refreshAll()}
   }
-  OWN.base=cfgJSON();OWN.parts=partsOf();OWN.saved=true;ownerBar();toast(T('o_savedone'));return true;
+  OWN.base=cfgJSON();OWN.parts=partsOf();OWN.saved=true;undoReset();ownerBar();toast(T('o_savedone'));return true;
+}
+/** 1.16.0: the same comparison as pubSummary, one line per change, each with where to see it */
+function pubList(){
+  const st=v=>v&&typeof v==='object'?Array.isArray(v)?'['+v.map(st).join(',')+']':'{'+Object.keys(v).filter(k=>v[k]!==undefined&&v[k]!=='').sort().map(k=>JSON.stringify(k)+':'+st(v[k])).join(',')+'}':JSON.stringify(v??'');
+  const ok=x=>x.rv===false?x.pv||null:x,live=x=>x&&!x.hidden,P=PUBLISHED||{},d=DELS(),out=[];
+  const W=(kind,label,go)=>out.push({t:T('pb_'+kind)+' '+label,go});
+  const cmp=(A,B,key,lab,go)=>{const a=new Map(A.map(x=>[key(x),x])),b=new Map(B.map(x=>[key(x),x]));
+    a.forEach((x,k)=>{if(!b.has(k))W('add',lab(x),go(x));else if(st(x)!==st(b.get(k)))W('chg',lab(x),go(x))});
+    b.forEach((x,k)=>{if(!a.has(k))W('del',lab(x),null)})};
+  const norm=(x,f)=>{const y={};f.forEach(k=>{if(x[k]!==undefined&&!(k==='g'&&!(x.g&&x.g.d)))y[k]=x[k]});return y};
+  const RF=['id','org','title','url','ar','en','kind'],IF=['k','a','b','d','sev','r','g'],NF=['id','n','h','uk','rows','plan','note','r'];
+  cmp([...(CFG.refs||[]),...(d.refs||[])].map(ok).filter(live).map(x=>norm(x,RF)),(P.refs||[]).map(x=>norm(x,RF)),x=>x.id,x=>`${x.id}. ${x.org}`,x=>()=>{go('sources');setTimeout(()=>{const e=$('ref-'+x.id);if(e)e.scrollIntoView({block:'center'})},250)});
+  cmp([...(CFG.inter||[]),...(d.inter||[])].map(ok).filter(live).map(x=>norm(x,IF)),(P.inter||[]).map(x=>norm(x,IF)),x=>x.k+'|'+((x.b&&(x.b.en||x.b.ar))||''),x=>`${kname(x.k)} + ${tx2(x.b)}`,()=>()=>go('interactions'));
+  cmp([...NCUST(),...(d.nut||[])].map(ok).filter(live).map(x=>norm(x,NF)),((P.nut&&P.nut.custom)||[]).map(x=>norm(x,NF)),x=>x.id,x=>tx2(x.n),x=>()=>{go('calc');if(typeof openNut==='function')openNut(x.id)});
+  if(st(NHIDE())!==st((P.nut&&P.nut.hide)||[]))W('chg',T('pb_nhide'),()=>go('calc'));
+  const S=k=>st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]);
+  if(S('text')){const a=CFG.text||{},b=P.text||{};[...new Set([...Object.keys(a),...Object.keys(b)])].filter(k=>st(a[k])!==st(b[k])&&I18N[k]).forEach(k=>W(a[k]?(b[k]?'chg':'add'):'del',`«${T(k).slice(0,50)}»`,null))}
+  if(S('pages')){const a=CFG.pages||[],b=P.pages||DEFAULT_CFG.pages;cmp(a,b,x=>x.id,x=>T('pb_page')+' «'+tx2(x.t)+'»',x=>()=>openPage(x.id))}
+  [['roadmap','pb_rm',()=>go('roadmap')],['look','lk_win',editLook],['colors','lk_cols',editLook],['menus','pb_menus',()=>go('menu')],['tools','pb_tools',()=>go('tools')],
+   ['brand','br_t',()=>editBrand()],['review','pb_review',()=>editReview()],['contact','o_contact',()=>editContact()],['nutOrder','pb_order',()=>go('calc')],['medcat','pb_medcat',()=>go('meds')]]
+    .forEach(([k,lab,g])=>{if(S(k))W('chg',T(lab),g)});
+  return out;
 }
 /** what «Publish» will change for visitors (approved content and page settings) and what still waits for review */
 function pubSummary(){
@@ -709,19 +788,25 @@ function pubSummary(){
   for(const k of ['contact','colors','text','roadmap','pages','nutOrder','brand','review','menus','tools','medcat','look'])if(st(CFG[k])!==st(P[k]??DEFAULT_CFG[k]))n++;
   return {n,wait:pendingCount()};
 }
+let PBGO=[];
+// «show me»: close the publish window and go to the change
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pbgo]');if(!b)return;e.preventDefault();const x=PBGO[+b.dataset.pbgo];if(dialog.cancel)dialog.cancel();if(x&&x.go)setTimeout(x.go,50)});
 async function publish(){
   if(!(OWN.local||OWN.role==='owner')){toast(T('o_onlyowner'));return}
   if(OWN.busy)return;
   const sm=pubSummary(),info=(sm.n?T('o_pub_will').replace('{n}',sm.n):T('o_pub_none'))+(sm.wait?'\n'+T('o_pub_wait').replace('{n}',sm.wait):'');
-  const r=await dialog({title:T('o_pubq'),info,fields:[{label:T('o_note'),value:''}],buttons:[...(sm.wait?[{label:T('nt_open'),action:'notif'}]:[]),{label:T('o_cancel'),action:'cancel'},{label:T('o_publish'),action:'ok',pri:1}]});
+  PBGO=pubList();
+  const list=PBGO.length?{type:'html',html:`<div class="row"><span class="l">${esc(T('pb_list'))}</span><ul class="pblist">${PBGO.map((x,i)=>`<li><span>${esc(x.t)}</span>${x.go?`<button type="button" class="btn" data-pbgo="${i}">${esc(T('pb_go'))}</button>`:''}</li>`).join('')}</ul></div>`}:null;
+  const r=await dialog({title:T('o_pubq'),info,fields:[...(list?[list]:[]),{label:T('o_note'),value:''}],buttons:[...(sm.wait?[{label:T('nt_open'),action:'notif'}]:[]),{label:T('o_cancel'),action:'cancel'},{label:T('o_publish'),action:'ok',pri:1}]});
   if(r.action==='notif'){openNotif();return}
   if(r.action!=='ok')return;
+  const note=r.values[r.values.length-1]||'';
   return locked(async()=>{
   if(!(await _saveDraft()))return;
   const data=JSON.parse(cfgJSON());
   if(OWN.local){try{localStorage.setItem('vw-cfg',JSON.stringify(data))}catch(e){}}
   else{
-    const {error}=await OWN.client.rpc('publish_site',{note:r.values[0]||''});if(error){console.error(error);toast(T('o_neterr'));return}
+    const {error}=await OWN.client.rpc('publish_site',{note});if(error){console.error(error);toast(T('o_neterr'));return}
     const {data:pub}=await OWN.client.from('site_config').select('data').eq('id','published').maybeSingle();
     if(pub&&pub.data){PUBLISHED=pub.data;try{localStorage.setItem('vw-cfg',JSON.stringify(PUBLISHED))}catch(e){}}
     OWN.saved=false;ownerBar();toast(T('o_pubdone'));return;
@@ -736,9 +821,9 @@ async function discard(){
     const c=OWN.client;const {data:dr}=await c.from('site_config').select('data').eq('id','draft').maybeSingle();
     const {data:ct,error}=await c.rpc('get_content');if(error||!ct){toast(T('o_neterr'));return}
     CFG=mergeCfg(DEFAULT_CFG,draftFor(dr&&dr.data,OWN.role)||PUBLISHED);applyContent(ct);
-    OWN.saved=!!(dr&&dr.data);OWN.base=cfgJSON();changed();toast(T('o_discdone'));return;
+    OWN.saved=!!(dr&&dr.data);OWN.base=cfgJSON();undoReset();changed();toast(T('o_discdone'));return;
   }
-  OWN.base=cfgJSON();OWN.saved=false;changed();toast(T('o_discdone'));
+  OWN.base=cfgJSON();OWN.saved=false;undoReset();changed();toast(T('o_discdone'));
 }
 /* ===================== account & security (owner and pharmacists) =====================
    Password (the current one is checked first), two-step verification with an authenticator app (TOTP),
@@ -828,8 +913,8 @@ async function logout(){
 $('o-save').addEventListener('click',saveDraft);$('o-publish').addEventListener('click',publish);
 $('o-pvexit').addEventListener('click',()=>setPreview(false));
 // page texts are edited only after «✎ النصوص» is switched on (the page stays calm otherwise)
-$('o-texts').addEventListener('click',()=>{document.body.classList.toggle('textedit');ownerBar();if(typeof renderMenu==='function')renderMenu()});
-addEventListener('resize',()=>{if(OWN.on)ownerBar()});$('o-preview').addEventListener('click',()=>setPreview(true));$('o-discard').addEventListener('click',discard);
+$('o-texts').addEventListener('click',()=>{document.body.classList.toggle('textedit');refreshAll();ownerBar()});
+addEventListener('resize',()=>{if(OWN.on)ownerBar()});$('o-preview').addEventListener('click',()=>setPreview(true));$('o-undo').addEventListener('click',undoLast);$('o-sizes').addEventListener('click',openSizes);$('o-discard').addEventListener('click',discard);
 addEventListener('beforeunload',e=>{if(OWN.on&&dirty()){e.preventDefault();e.returnValue=''}});
 
 // 👁 shows or hides what is typed in a password field

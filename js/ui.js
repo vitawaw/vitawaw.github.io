@@ -244,7 +244,7 @@ $('ght').addEventListener('input',()=>{gtTouched=true;gz()});
 const LOOKF={tajawal:'Tajawal,Cairo,"Segoe UI",Tahoma,sans-serif',cairo:'Cairo,Tajawal,"Segoe UI",Tahoma,sans-serif',system:'system-ui,-apple-system,"Segoe UI","Noto Sans Arabic",Tahoma,sans-serif'};
 /** 1.14.0: the owner's fonts and sizes (CSS variables used by every font size in app.css) */
 function applyLook(){
-  const l=CFG.look||DEFAULT_CFG.look,r=document.documentElement.style,v={'--f-body':LOOKF[l.fb]||LOOKF.tajawal,'--f-display':LOOKF[l.fh]||LOOKF.cairo,'--fsb':String(l.sb||1),'--fsh':String(l.sh||1)};
+  const l=CFG.look||DEFAULT_CFG.look,r=document.documentElement.style,v={'--f-body':LOOKF[l.fb]||LOOKF.tajawal,'--f-display':LOOKF[l.fh]||LOOKF.cairo,'--fsb':String(l.sb||1),'--fsh':String(l.sh||1),'--fst':String(l.st||1)};
   Object.entries(v).forEach(([k,x])=>r.setProperty(k,x));
   try{localStorage.setItem('vw-look',JSON.stringify(v))}catch(e){}
 }

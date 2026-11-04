@@ -28,7 +28,16 @@ const tabIco=p=>{const s=(p==='meds'||p==='links')&&$(p)?$(p).querySelector('.hi
 const CAN=k=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner'||(k!=='text'&&!!(OWN.perms&&OWN.perms[k]))); // texts and pages: owner only
 const ISOWNER=()=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner');
 const colorVars=p=>CFG.colors[p]?`--pc:${CFG.colors[p][0]};--pc2:${CFG.colors[p][1]}`:'';
-const paras=t=>String(t||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('');
+/** page text → HTML. 1.16.0 simple formatting from the page editor's buttons: a line «## …» = heading, «- …» = list item,
+   **…** = bold. Everything is escaped first, so a page can never carry HTML. */
+const mdB=s=>s.replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>');
+const paras=t=>String(t||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(blk=>{
+  let h='',ul=[],p=[];const flushP=()=>{if(p.length){h+=`<p>${p.join('<br>')}</p>`;p=[]}},flushU=()=>{if(ul.length){h+=`<ul>${ul.map(x=>`<li>${x}</li>`).join('')}</ul>`;ul=[]}};
+  blk.split('\n').forEach(line=>{const e=mdB(esc(line.trim()));
+    if(/^##\s+/.test(line.trim())){flushP();flushU();h+=`<h3>${e.replace(/^##\s+/,'')}</h3>`}
+    else if(/^[-•]\s+/.test(line.trim())){flushP();ul.push(e.replace(/^[-•]\s+/,''))}
+    else{flushU();p.push(e)}});
+  flushP();flushU();return h}).join('');
 /** «suggest a feature or report an error» is a page like the others (editable); until the owner edits it, it uses the default texts */
 const SUGGEST=()=>{const t=k=>(CFG.text&&CFG.text[k])||{ar:I18N[k][0],en:I18N[k][1]};return {id:'suggest',t:t('sg_t'),b:t('sg_l'),hidden:false}};
 /** «How to use and FAQ» (one old page) is shown as two pages to everyone until the owner saves the split (owner.js splitHowto) */
@@ -116,9 +125,8 @@ function adminGroups(){
   const look=[];
   if(CAN('text'))look.push({label:T('pg_order_l'),sub:T('pg_order_s'),ico:ICO.page,n:(CFG.pages||[]).length,f:openPagesOrder});
   if(ISOWNER())look.unshift({label:T('nv_order'),sub:T('nv_order_s'),ico:ICO.menu,f:openNavManager});
-  if(ISOWNER())look.push({label:T('lk_title'),sub:T('lk_sub'),ico:ICO.page,f:editLook});
+  if(ISOWNER())look.unshift({label:T('lk_win'),sub:T('lk_win_s'),ico:ICO.site,f:editLook});
   if(ISOWNER())look.push({label:T('tx_all'),sub:T('tx_all_s'),ico:ICO.page,f:openTexts});
-  if(ISOWNER())look.push({label:T('br_t'),ico:ICO.image,f:()=>editBrand()});
   if(look.length)A.push({id:'look',ico:ICO.site,label:T('ad_look'),rows:look});
   if(ISOWNER())A.push({id:'contact',ico:MI.mail,label:T('ad_contact'),rows:[{label:T('o_contact'),sub:[CFG.contact.email,CFG.contact.phone].filter(Boolean).join(' · '),ico:MI.mail,f:()=>editContact()}]});
   if(ISOWNER())A.push({id:'team',ico:ICO.team,label:T('ad_team'),n:TEAM.list?TEAM.list.members.filter(m=>m.role==='editor').length:0,go:()=>go('team')});
@@ -150,10 +158,10 @@ function toolList(){
 const toolName=t=>{const n=CFG.tools&&CFG.tools.names&&CFG.tools.names[t[0]];return (n&&(LANG==='ar'?n.ar:(n.en||n.ar)))||T(t[1])};
 function renderToolsGrid(){
   if(!$('tgrid'))return;
-  const own=ISOWNER()&&!OWN.preview,hide=(CFG.tools&&CFG.tools.hide)||[];
+  const own=ISOWNER()&&EDITING(),hide=(CFG.tools&&CFG.tools.hide)||[];
   const FOLLOW=['tool-sch','tool-ul','tool-labs'],tl=toolList(),grp=[...tl.filter(t=>!FOLLOW.includes(t[0])),...tl.filter(t=>FOLLOW.includes(t[0]))],first=grp.findIndex(t=>FOLLOW.includes(t[0]));
   const tic=id=>{const sv=$(id)&&$(id).querySelector('.ttl-ic svg');return sv?sv.outerHTML:ICO.info};
-  $('tgrid').innerHTML=grp.map((t,i)=>(i===first&&i>0?`<h3 class="pkh tgh">${esc(T('tg_follow'))}</h3>`:'')+(t=>{const off=hide.includes(t[0]),b=`<button type="button" data-tv="${t[0]}"><i class="tico" aria-hidden="true">${tic(t[0])}</i><span>${esc(toolName(t))}</span><small>${esc(T(toolSubKey(t)))}</small>${own&&off?`<em class="hidb">${T('o_hiddenb')}</em>`:''}</button>`;
+  $('tgrid').innerHTML=grp.map((t,i)=>(i===first&&i>0?`<h3 class="pkh tgh">${esc(T('tg_follow'))}</h3>`:'')+(t=>{const off=hide.includes(t[0]),b=`<button type="button" data-tv="${t[0]}"><i class="tico" aria-hidden="true">${tic(t[0])}</i><span>${esc(toolName(t))}</span><small>${esc(T(toolSubKey(t)))}</small>${SHOWALL()&&off?`<em class="hidb">${T('o_hiddenb')}</em>`:''}</button>`;
     return own?`<div class="pkw tkw${off?' off':''}" data-sid="${t[0]}">${b}<div class="pka">${DRAG(T('o_drag'))}${EPEN(`data-tled="${t[0]}"`)}</div></div>`:b})(t)).join('')+
     (own?`<p class="hint tlhint">${T('o_tile_hint')}</p>`:'');
   if(own)sortable($('tgrid'),'.tkw',ids=>{if(!ISOWNER())return;CFG.tools={...CFG.tools,order:ids};changed()});
@@ -255,7 +263,7 @@ function mgItems(id,list){const o=(MGCFG().items||{})[id]||[],ix=k=>{const i=o.i
 const mgOff=k=>((MGCFG().off)||[]).includes(k);
 function mgToggle(k){mgSet(g=>{const o=new Set(g.off||[]);o.has(k)?o.delete(k):o.add(k);g.off=[...o]})}
 // 1.16.0: the owner always sees ⋮⋮ and ✎ on the menu's groups and items (no separate «edit» mode)
-const MEDIT=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview&&ISOWNER();
+const MEDIT=()=>ISOWNER()&&EDITING(); // 1.16.0: only after «تعديل وترتيب»
 function mgSet(f){const g=JSON.parse(JSON.stringify(MGCFG()));f(g);CFG.menus={...(CFG.menus||{}),groups:g};changed();renderMenu()}
 /** 1.16.0 ✎ on a menu group or item (owner): its name in Arabic and English and hide/show for visitors, in one floating window.
    An information page opens its own editor (title, text, hide, delete). */
@@ -459,20 +467,35 @@ async function editPage(id){
   if(!Array.isArray(CFG.pages))CFG.pages=clone(DEFAULT_CFG.pages);
   if(id==='suggest'&&!CFG.pages.some(p=>p.id==='suggest'))CFG.pages.push(SUGGEST());
   const isNew=id==null,o=isNew?{t:{ar:'',en:''},b:{ar:'',en:''},hidden:false}:CFG.pages.find(x=>x.id===id);if(!o)return;
+  // 1.16.0: buttons that add a heading, bold text or a list item, and a preview of the page as visitors will see it
+  const bar=n=>({type:'html',html:`<div class="mdbar" role="toolbar" aria-label="${esc(T('md_bar'))}">${[['h','md_h','##'],['b','md_b','B'],['l','md_l','•']].map(([k,l,ic])=>`<button type="button" class="btn" data-md="${k}" data-for="dlgf${n}" title="${esc(T(l))}"><b>${ic}</b> ${esc(T(l))}</button>`).join('')}</div>`});
   let v=[o.t.ar,o.t.en||'',o.b.ar,o.b.en||'',o.hidden?'h':'s'],err=null;
   while(true){
     const btns=EDB({isNew,hide:false,del:id!=='suggest'});
-    const r=await dialog({err,title:T(isNew?'pg_new':'pg_edit'),fields:[{label:T('pg_t'),value:v[0]},{label:T('pg_ten'),value:v[1],ltr:1},{label:T('pg_b'),type:'textarea',value:v[2]},{label:T('pg_ben'),type:'textarea',value:v[3],ltr:1},
-      {label:T('pg_vis'),type:'select',options:[['s',T('pg_shown')],['h',T('pg_hiddenv')]],value:v[4]}],buttons:btns});
+    const pr=dialog({err,title:T(isNew?'pg_new':'pg_edit'),fields:[{label:T('pg_t'),value:v[0]},{label:T('pg_ten'),value:v[1],ltr:1},bar(3),{label:T('pg_b'),type:'textarea',value:v[2]},bar(5),{label:T('pg_ben'),type:'textarea',value:v[3],ltr:1},
+      {label:T('pg_vis'),type:'select',options:[['s',T('pg_shown')],['h',T('pg_hiddenv')]],value:v[4]},{type:'html',html:`<div class="row"><span class="l">${esc(T('md_prev'))}</span><div class="mdprev prose" id="mdprev"></div></div>`}],buttons:btns});
+    mdPreview();
+    const r=await pr;
     if(r.action==='del'){if(await confirmDel(tx2(o.t))){CFG.pages=CFG.pages.filter(x=>x.id!==id);closeSheet(false);changed()}return}
     if(r.action!=='ok')return;
-    v=r.values.map(x=>x.trim());
-    if(!v[0]||!v[2]){err={i:v[0]?2:0,msg:T('pg_need')};continue}
+    v=[r.values[0],r.values[1],r.values[3],r.values[5],r.values[6]].map(x=>x.trim());
+    if(!v[0]||!v[2]){err={i:v[0]?3:0,msg:T('pg_need')};continue}
     const item={id:isNew?'p'+Date.now().toString(36).slice(-7):id,t:{ar:v[0],en:v[1]},b:{ar:v[2],en:v[3]},hidden:v[4]==='h'};
     if(isNew)CFG.pages.push(item);else CFG.pages[CFG.pages.findIndex(x=>x.id===id)]=item;
     changed();if(isNew||!item.hidden)openPage(item.id);return;
   }
 }
+/** the page preview under the editor follows what is typed (Arabic text in Arabic, English text in English) */
+function mdPreview(){const pv=$('mdprev');if(!pv)return;const a=$('dlgf3'),e=$('dlgf5');pv.innerHTML=paras(LANG==='en'&&e&&e.value.trim()?e.value:(a?a.value:''))}
+document.addEventListener('input',e=>{if(e.target&&(e.target.id==='dlgf3'||e.target.id==='dlgf5')&&$('mdprev'))mdPreview()});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-md]');if(!b)return;e.preventDefault();
+  const ta=$(b.dataset.for);if(!ta)return;const s=ta.selectionStart,en=ta.selectionEnd,val=ta.value,sel=val.slice(s,en);
+  const lineStart=val.lastIndexOf('\n',s-1)+1;let out,cur;
+  if(b.dataset.md==='b'){const w=sel||T('md_btxt');out=val.slice(0,s)+'**'+w+'**'+val.slice(en);cur=s+2+w.length+2}
+  else{const pre=b.dataset.md==='h'?'## ':'- ';out=val.slice(0,lineStart)+pre+val.slice(lineStart);cur=en+pre.length}
+  ta.value=out;ta.focus();ta.setSelectionRange(cur,cur);mdPreview();
+});
 
 /* ===================== keyboard ===================== */
 document.addEventListener('keydown',e=>{

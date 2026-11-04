@@ -25,7 +25,7 @@ const DEFAULT_CFG={
   tools:{order:[],hide:[],names:{}},
   text:{},
   /* 1.14.0 owner: fonts of the body text and the headings (self-hosted Tajawal / Cairo, or the device's own) and their sizes */
-  look:{fb:'tajawal',fh:'cairo',sb:1,sh:1},
+  look:{fb:'tajawal',fh:'cairo',sb:1,sh:1,st:1},
   medcat:null, /* 1.13.0: the medicines the site recognizes [{en, ar:[names], hide}]; null = the built-in list (lists.js DRUG_AR). Owner edits; pharmacists propose. */
   nutOrder:[], /* order of the vitamins (ids); empty = default order. Owner only. */
   brand:{l1:'',l2:'',url:''},
@@ -80,8 +80,8 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   if(over.colors)Object.assign(out.colors,over.colors);
   if(over.text)out.text=Object.assign({},over.text);
   if(Array.isArray(over.roadmap))out.roadmap=over.roadmap;
-  if(over.look&&typeof over.look==='object'){const F=['tajawal','cairo','system'],S=[0.9,1,1.1,1.2],l=over.look;
-    out.look={fb:F.includes(l.fb)?l.fb:'tajawal',fh:F.includes(l.fh)?l.fh:'cairo',sb:S.includes(+l.sb)?+l.sb:1,sh:S.includes(+l.sh)?+l.sh:1}}
+  if(over.look&&typeof over.look==='object'){const F=['tajawal','cairo','system'],l=over.look,S=v=>{const n=Math.round(+v*20)/20;return n>=0.85&&n<=1.3?n:1}; // 1.16.0: 85%–130% in 5% steps
+    out.look={fb:F.includes(l.fb)?l.fb:'tajawal',fh:F.includes(l.fh)?l.fh:'cairo',sb:S(l.sb),sh:S(l.sh),st:S(l.st==null?1:l.st)}}
   if(Array.isArray(over.medcat))out.medcat=over.medcat.filter(m=>m&&typeof m.en==='string'&&/^[a-z0-9][a-z0-9 -]{1,40}$/.test(m.en.trim().toLowerCase())).map(m=>({en:m.en.trim().toLowerCase(),ar:(Array.isArray(m.ar)?m.ar:[]).filter(a=>typeof a==='string'&&a.trim()).map(a=>a.trim().slice(0,40)).slice(0,12),hide:!!m.hide})).slice(0,400);
   if(Array.isArray(over.pages))out.pages=over.pages;
   if(Array.isArray(over.nutOrder))out.nutOrder=over.nutOrder;

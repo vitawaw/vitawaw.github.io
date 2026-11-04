@@ -83,7 +83,7 @@ function renderMedCat(){
   list.forEach(m=>{const n=medHits(m.en),on=MEDS.includes(m.en),l=mcLetter(m,k);
     if(l!==last){rows+=`<h4 class="mclet" dir="${k==='ar'?'rtl':'ltr'}">${esc(l)}</h4>`;last=l}
     const nm=k==='ar'?`${m.ar[0]||m.en} · ${m.en.charAt(0).toUpperCase()+m.en.slice(1)}`:`${m.en.charAt(0).toUpperCase()+m.en.slice(1)} · ${m.ar[0]||''}`;
-    rows+=`<div class="mcrow${m.hide?' hid':''}"><button type="button" class="mcadd" data-mcadd="${esc(m.en)}"${on||m.hide||!n?' disabled':''}><b dir="auto">${esc(nm)}</b><small>${on?T('mc_in'):n?T('mc_n').replace('{n}',n):T('mc_none')}</small></button>${team?EPEN(`data-mcedit="${m.i}"`):''}</div>`});
+    rows+=`<div class="mcrow${m.hide?' hid':''}"><button type="button" class="mcadd" data-mcadd="${esc(m.en)}"${on||m.hide||!n?' disabled':''}><b dir="auto">${esc(nm)}</b><small>${on?T('mc_in'):n?T('mc_n').replace('{n}',n):T('mc_none')}</small></button>${team&&EDITING()?EPEN(`data-mcedit="${m.i}"`):''}</div>`});
   el.innerHTML=`<div class="filters mcsort" role="group" aria-label="${esc(T('mc_sort'))}"><span class="hint">${esc(T('mc_sort'))}</span>${[['ar','أ – ي'],['en','A – Z']].map(([v,l])=>`<button type="button" data-mcsort="${v}" aria-pressed="${k===v}">${l}</button>`).join('')}</div>`+
     (list.length?`<div class="mclist">${rows}</div>`:`<p class="hint">${T('mc_empty')}</p>`);
   const aw=$('mcaddw');if(aw)aw.innerHTML=team?`<button class="oadd otop" type="button" data-mcedit="new">${PLUS}${T('mc_new')}</button>`:'';
@@ -172,7 +172,7 @@ function renderRoadmap(){
   const st=k=>`<span class="st st-${esc(k)}">${esc(T('st_'+k))}</span>`;
   $('rmlegend').innerHTML=['all','now','dev','plan','idea'].map(k=>`<button type="button" data-rmf="${k}" aria-pressed="${k===RMF}">${esc(T(k==='all'?'all':'st_'+k))}</button>`).join('');
   const tx=o=>LANG==='ar'?o.ar:(o.en||o.ar);
-  $('rmgrid').innerHTML=CFG.roadmap.map((x,i)=>(x.hidden&&!SHOWALL())||(RMF!=='all'&&x.st!==RMF)?'':`<div class="rm${x.hidden?' hid':''}" data-sid="${i}"><div class="rmh"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${IC[x.ic]||IC.plus}</svg></div><h3>${esc(tx(x.t))}</h3></div><p>${esc(tx(x.d))}</p><div class="rmf">${st(x.st)}${x.st==='now'&&GO[x.go]?`<button class="btn pri rmgo" type="button" data-rmgo="${esc(x.go)}">${T('rm_try')}</button>`:''}</div><div class="rmact">${DRAG(T('o_drag'))}${actBtns('m',i,{hidden:!!x.hidden})}</div></div>`).join('');
+  $('rmgrid').innerHTML=CFG.roadmap.map((x,i)=>(x.hidden&&!SHOWALL())||(RMF!=='all'&&x.st!==RMF)?'':`<div class="rm${x.hidden?' hid':''}" data-sid="${i}"><div class="rmh"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${IC[x.ic]||IC.plus}</svg></div><h3>${esc(tx(x.t))}</h3></div><p>${esc(tx(x.d))}</p><div class="rmf">${st(x.st)}${x.st==='now'&&GO[x.go]?`<button class="btn pri rmgo" type="button" data-rmgo="${esc(x.go)}">${T('rm_try')}</button>`:''}</div><div class="rmact">${actBtns('m',i,{hidden:!!x.hidden,drag:true})}</div></div>`).join('');
   $('rmaddw').innerHTML=`<button class="oadd otop" type="button" id="rmadd">${PLUS}${T('o_add')}</button>`;
   sortable($('rmgrid'),'.rm',ids=>{if(!ISOWNER())return;const keep=CFG.roadmap.filter((_,n)=>!ids.includes(String(n)));CFG.roadmap=[...ids.map(n=>CFG.roadmap[+n]),...keep];changed()});
 }

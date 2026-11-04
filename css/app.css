@@ -926,8 +926,8 @@ a.flag,.flag a{display:inline-block;padding:10px 0}
 /* ===== 1.16.0: one tile design — menu sections, vitamins and tools, four in a row on every screen ===== */
 .picker,.mtiles,.side .mtiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .picker button[data-k],.picker button[data-tv],.mtile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;min-height:100px;padding:10px 4px 8px;border:1px solid var(--line);border-radius:14px;
-  background:var(--card);color:var(--ink);text-align:center;font:700 calc(13px*var(--fsh,1))/1.3 var(--f-display);box-shadow:0 1px 3px rgba(0,22,122,.05);overflow-wrap:break-word}
-@media (max-width:419px){.picker button[data-k],.picker button[data-tv],.mtile{font-size:calc(12px*var(--fsh,1));padding-inline:2px}}
+  background:var(--card);color:var(--ink);text-align:center;font:700 calc(13px*var(--fst,1))/1.3 var(--f-display);box-shadow:0 1px 3px rgba(0,22,122,.05);overflow-wrap:break-word}
+@media (max-width:419px){.picker button[data-k],.picker button[data-tv],.mtile{font-size:calc(12px*var(--fst,1));padding-inline:2px}}
 .picker button[data-k]>span,.picker button[data-tv]>span,.mtile .tl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;line-height:1.3}
 .picker button small{display:none}
 .tico,.mtile .di{width:42px;height:42px;flex:none;border-radius:12px;display:grid;place-items:center;font:800 calc(15px*var(--fsh,1))/1 var(--f-display);font-style:normal;direction:ltr;
@@ -938,9 +938,9 @@ a.flag,.flag a{display:inline-block;padding:10px 0}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tico{color:color-mix(in srgb,var(--pc2,var(--royal)) 55%,#fff)}}
 :root[data-theme="dark"] .tico{color:color-mix(in srgb,var(--pc2,var(--royal)) 55%,#fff)}
 @media (min-width:768px){
-  .picker button[data-k],.picker button[data-tv],.mtile{min-height:118px;padding:14px 8px 10px;font-size:calc(14px*var(--fsh,1))}
+  .picker button[data-k],.picker button[data-tv],.mtile{min-height:118px;padding:14px 8px 10px;font-size:calc(14px*var(--fst,1))}
   .picker button small{display:block;font:500 calc(12px*var(--fsb,1))/1.35 var(--f-body);color:var(--mute)}
-  .side .mtile{min-height:96px;padding:10px 4px 8px;font-size:calc(12px*var(--fsh,1))}
+  .side .mtile{min-height:96px;padding:10px 4px 8px;font-size:calc(12px*var(--fst,1))}
 }
 .side .mtiles{gap:6px}
 .side .mtile .di{width:36px;height:36px}
@@ -984,3 +984,37 @@ a.flag,.flag a{display:inline-block;padding:10px 0}
 .lkurl{font-size:calc(12px*var(--fsb,1));color:var(--mute);overflow-wrap:anywhere}
 .picker button[data-k][aria-pressed="true"]{background:var(--pc,var(--sel));border-color:var(--pc,var(--sel));border-style:solid;color:#fff}
 .picker button[data-k][aria-pressed="true"] small{color:rgba(255,255,255,.88)}
+/* 1.16.0 «site appearance» window: live sample at the top, then fonts, sizes, colours, logos */
+.lksample{position:sticky;top:-1px;z-index:2;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:0 4px 12px rgba(0,22,122,.08)}
+.lksample h3{margin:0 0 4px;font:800 calc(17px*var(--fsh,1)) var(--f-display)}
+.lksample p{margin:0 0 8px;font:500 calc(14px*var(--fsb,1))/1.6 var(--f-body)}
+.lktiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+.lktiles button{pointer-events:none}
+.lkh4{margin:14px 2px 6px;font:800 calc(14px*var(--fsh,1)) var(--f-display);color:var(--mute)}
+.lkrow{display:grid;gap:4px;margin-bottom:8px}.lkrow b{color:var(--royal)}
+.lkrow input[type=range]{width:100%;accent-color:var(--royal)}
+.lkcols{display:grid;gap:6px}
+.lkcol{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:12px;border-inline-start:6px solid var(--pc2,var(--royal))}
+.lkcol .lkn{flex:1;font-weight:700}
+.lkcol input[type=color]{width:44px;height:36px;border:1px solid var(--line);border-radius:8px;padding:2px;background:var(--card)}
+.lkact{margin-top:16px;position:sticky;bottom:0;background:var(--card);padding:8px 0}
+/* 1.16.0 page editor: formatting buttons and a preview */
+.mdbar{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 -4px}
+.mdbar .btn{min-height:34px;padding:4px 10px;font-size:calc(13px*var(--fsb,1))}
+.mdprev{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;max-height:240px;overflow:auto;background:var(--bg)}
+.prose h3{margin:12px 0 4px;font:800 calc(16px*var(--fsh,1)) var(--f-display)}
+.prose ul{margin:4px 0 10px;padding-inline-start:20px}.prose li{margin:2px 0}
+/* 1.16.0 three-size preview (owner) */
+#szwrap{position:fixed;inset:0;z-index:90;background:rgba(10,16,40,.72);display:flex;flex-direction:column}
+#szwrap[hidden]{display:none}
+.szbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;background:var(--card);color:var(--ink)}
+.szbar b{font:800 calc(15px*var(--fsh,1)) var(--f-display)}.szbar .filters{margin:0;flex:1}
+.szstage{flex:1;overflow:hidden;display:flex;justify-content:center;align-items:flex-start;padding:8px}
+.szstage iframe{border:0;border-radius:14px;background:#fff;transform-origin:top center;box-shadow:0 10px 30px rgba(0,0,0,.35);flex:none}
+html.frame .obar,html.frame .pvbar{display:none!important}
+/* 1.16.0 publish window: one line per change, with «show me» */
+.pblist{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:6px;max-height:40vh;overflow:auto}
+.pblist li{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.pblist li span{flex:1;min-width:0;overflow-wrap:anywhere}
+.pblist .btn{min-height:34px;padding:4px 10px;flex:none}
+@media (max-width:600px){.obar{gap:4px}.obar .btn.ico,.obar #o-texts{padding-inline:7px}}

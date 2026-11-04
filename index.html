@@ -17,7 +17,7 @@
 <link rel="preload" href="fonts/tajawal-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/tajawal-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.16.0-5c274953">
+<link rel="stylesheet" href="css/app.css?v=1.16.0-0081d56a">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu">القائمة</h2><div id="side-b"></div></aside>
@@ -46,7 +46,9 @@
     <button class="btn ico danger" type="button" id="o-discard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7"/><path d="M4 4v4.5h4.5"/></svg><span class="lbl" id="o-discard-l"></span></button>
     <span class="sp"></span>
     <button class="btn" type="button" id="o-texts" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg><span class="lbl" id="o-texts-l"></span></button>
-    <button class="btn" type="button" id="o-preview"></button>
+    <button class="btn ico" type="button" id="o-undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span class="lbl" id="o-undo-l"></span></button>
+    <button class="btn ico" type="button" id="o-preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span class="lbl" id="o-preview-l"></span></button>
+    <button class="btn ico" type="button" id="o-sizes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="5" width="13" height="10" rx="1.5"/><rect x="16" y="8" width="6" height="11" rx="1.5"/><path d="M6 19h6"/></svg><span class="lbl" id="o-sizes-l"></span></button>
     <button class="btn" type="button" id="o-save"></button>
     <button class="btn pri" type="button" id="o-publish"></button>
   </div>
@@ -61,7 +63,7 @@
    <div class="wh"><h2 data-t="w_t">أهلاً بك في VITAWAW</h2><button class="x" id="wclose" aria-label="close">×</button></div>
    <ol class="steps"><li data-t="w_1">اختر الفيتامين أو المعدن</li><li data-t="w_2">أدخل العمر ونتيجة التحليل</li><li data-t="w_3">تظهر الجرعة وخطة العلاج ومصدرها</li></ol>
  </section>
- <script src="js/pre.js?v=1.16.0-a7245292"></script>
+ <script src="js/pre.js?v=1.16.0-ce28d413"></script>
  <div class="cback" id="cback"><button class="btn tback" type="button" id="cbackb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg><span data-t="cb_back">الفيتامينات</span></button><b id="cvname"></b></div>
  <div class="calc">
   <div class="col">
@@ -414,21 +416,21 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see">عرض النتيجة</span></div>
 
-<script src="js/config.js?v=1.16.0-c8f17ce8" defer></script>
-<script src="js/i18n.js?v=1.16.0-e1fa558a" defer></script>
+<script src="js/config.js?v=1.16.0-c05f16e2" defer></script>
+<script src="js/i18n.js?v=1.16.0-1016b977" defer></script>
 <script src="js/data.js?v=1.16.0-78a70643" defer></script>
 <script src="js/util.js?v=1.16.0-ece5b126" defer></script>
 <script src="js/validation.js?v=1.16.0-37b8f300" defer></script>
 <script src="js/render.js?v=1.16.0-0d83e90b" defer></script>
 <script src="js/calculators.js?v=1.16.0-1dff5b6c" defer></script>
-<script src="js/content.js?v=1.16.0-9059d608" defer></script>
+<script src="js/content.js?v=1.16.0-5406ea95" defer></script>
 <script src="js/tools.js?v=1.16.0-648e05fa" defer></script>
-<script src="js/lists.js?v=1.16.0-0585c75b" defer></script>
-<script src="js/ui.js?v=1.16.0-6f32c36b" defer></script>
+<script src="js/lists.js?v=1.16.0-d0effb0e" defer></script>
+<script src="js/ui.js?v=1.16.0-84bf8dd2" defer></script>
 <script src="js/published.js?v=1.16.0-87f710f2" defer></script>
-<script src="js/owner.js?v=1.16.0-b037a627" defer></script>
-<script src="js/nav.js?v=1.16.0-33d39de3" defer></script>
+<script src="js/owner.js?v=1.16.0-89320a20" defer></script>
+<script src="js/nav.js?v=1.16.0-b2ee8f54" defer></script>
 <script src="js/team.js?v=1.16.0-ca6436a6" defer></script>
-<script src="js/boot.js?v=1.16.0-8af239a3" defer></script>
+<script src="js/boot.js?v=1.16.0-de688673" defer></script>
 </body>
 </html>

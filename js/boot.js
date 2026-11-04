@@ -2,6 +2,8 @@
    Start-up: restores saved preferences, shows the first page, loads published content, registers the offline worker.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== boot ===================== */
+/** 1.16.0 three-size preview: the owner's page puts the draft in localStorage (vw-frame) just before opening the frame */
+function frameDraft(){try{const d=JSON.parse(localStorage.getItem('vw-frame')||'null');if(d&&typeof d==='object'){CFG=mergeCfg(DEFAULT_CFG,d);buildData();refreshAll()}}catch(e){}}
 let startLang='ar',startPage='calc',welcomeSeen=false;
 try{
   const s=localStorage.getItem('vw-k');buildData();if(s&&F[s])K=s;
@@ -18,6 +20,6 @@ document.querySelectorAll('#picker button').forEach(b=>b.setAttribute('aria-pres
 applyColors();
 setLang(startLang);
 show(startPage);
-loadPublished();
-if(!routeSpecial())resumeSession();
+if(FRAME){$('welcome').hidden=true;loadPublished().finally(frameDraft)}
+else{loadPublished();if(!routeSpecial())resumeSession()}
 if('serviceWorker' in navigator&&location.protocol==='https:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
