@@ -76,7 +76,10 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
-- **1.16.0 (preview, includes 1.15.0 + 1.14.6)**: his «نفذ الاقتراحات و التصحيحات و الملاحضات» + notes. ONE tile design (css end of app.css):
+- **Live: 1.16.0** (he said «تمام انشر» on 2026-11-04; main fast-forwarded). DB for live = ONE file `release_1_16_0_live.sql`
+  (content_1_15_0 + content_1_16_0 + cleanup_1_16_0 + activity_log_1_16_0, each twice-safe); he runs it in the SQL editor of both
+  projects, then logs in → approves the 8 interactions in 🔔 → publishes.
+- **1.16.0 (includes 1.15.0 + 1.14.6)**: his «نفذ الاقتراحات و التصحيحات و الملاحضات» + notes. ONE tile design (css end of app.css):
   #picker/#tgrid/.mtiles = 4 per row on every size, `.tico` badge (VBADGE/vBadge in content.js; tools reuse `.ttl-ic svg`). ⋮⋮ + ✎ on
   every item: `EPEN()` + `EDB()` (content.js) — actBtns = drag + pend + ✎ only; hide/delete/reset live in each editor's dialog
   (editRef/editInter/editNut/editFeature/editPage, `editBuiltin(k)` = CFG.text n_k/h_k + hide, `editTool(id)` names + CFG.text desc,
