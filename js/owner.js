@@ -949,7 +949,7 @@ async function logout(){
 $('o-save').addEventListener('click',saveDraft);$('o-publish').addEventListener('click',publish);
 $('o-pvexit').addEventListener('click',()=>setPreview(false));
 // page texts are edited only after «✎ النصوص» is switched on (the page stays calm otherwise)
-$('o-texts').addEventListener('click',()=>{document.body.classList.toggle('textedit');refreshAll();ownerBar()});
+$('o-texts').addEventListener('click',()=>{document.body.classList.toggle('textedit');refreshAll();if(typeof renderMedCat==='function')renderMedCat();ownerBar()});
 addEventListener('resize',()=>{if(OWN.on)ownerBar()});$('o-preview').addEventListener('click',()=>setPreview(true));$('o-undo').addEventListener('click',undoLast);$('o-sizes').addEventListener('click',openSizes);$('o-discard').addEventListener('click',discard);
 addEventListener('beforeunload',e=>{if(OWN.on&&dirty()){e.preventDefault();e.returnValue=''}});
 

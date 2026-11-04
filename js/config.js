@@ -3,7 +3,7 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.16.0';
+const APP_VERSION='1.16.1';
 /* the medical review stamp is set by the owner (menu → site → «ختم المراجعة الطبية») and published with the settings: CFG.review */
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
@@ -93,6 +93,9 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   if(over.menus&&over.menus.groups&&typeof over.menus.groups==='object'){const g=over.menus.groups;out.menus.groups={order:Array.isArray(g.order)?g.order:[],names:g.names&&typeof g.names==='object'?g.names:{},items:g.items&&typeof g.items==='object'?g.items:{},off:Array.isArray(g.off)?g.off.filter(x=>typeof x==='string').slice(0,200):[]}}
   if(over.tools&&typeof over.tools==='object'){out.tools={order:Array.isArray(over.tools.order)?over.tools.order:[],hide:Array.isArray(over.tools.hide)?over.tools.hide:[],names:over.tools.names&&typeof over.tools.names==='object'?over.tools.names:{}};
     // 1.16.0 «follow-up tools»: tools, sections (p:…) and information pages (pg:…) the owner put there, in his order
+    // 1.16.0: the owner's names, directions and hidden items inside the schedule (sch:), upper limit (ul:) and lab results (lab:)
+    if(over.tools.items&&typeof over.tools.items==='object'){const it={},tx=o=>o&&typeof o==='object'?{ar:String(o.ar||'').slice(0,300),en:String(o.en||'').slice(0,300)}:undefined;
+      Object.entries(over.tools.items).slice(0,120).forEach(([k,v])=>{if(/^(sch|ul|lab):[a-z0-9]{1,12}$/.test(k)&&v&&typeof v==='object')it[k]={...(v.n?{n:tx(v.n)}:{}),...(v.h?{h:tx(v.h)}:{}),...(v.off?{off:true}:{})}});out.tools.items=it}
     if(Array.isArray(over.tools.follow))out.tools.follow=[...new Set(over.tools.follow.filter(k=>typeof k==='string'&&/^(tool-[a-z]+|p:[a-z]+|pg:[A-Za-z0-9_-]{1,40})$/.test(k)))].slice(0,40)}
   if(over.brand)out.brand={l1:over.brand.l1||'',l2:over.brand.l2||'',url:over.brand.url||''};
   if(Array.isArray(over.refs))out.refs=over.refs;

@@ -17,7 +17,7 @@
 <link rel="preload" href="fonts/tajawal-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/tajawal-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/api/content" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=1.16.0-0ce7d205">
+<link rel="stylesheet" href="css/app.css?v=1.16.1-1e42fda1">
 </head>
 <body>
 <aside class="side" id="side" aria-labelledby="side-t"><h2 class="sr" id="side-t" data-t="nav_menu">القائمة</h2><div id="side-b"></div></aside>
@@ -63,7 +63,7 @@
    <div class="wh"><h2 data-t="w_t">أهلاً بك في VITAWAW</h2><button class="x" id="wclose" aria-label="close">×</button></div>
    <ol class="steps"><li data-t="w_1">اختر الفيتامين أو المعدن</li><li data-t="w_2">أدخل العمر ونتيجة التحليل</li><li data-t="w_3">تظهر الجرعة وخطة العلاج ومصدرها</li></ol>
  </section>
- <script src="js/pre.js?v=1.16.0-ce28d413"></script>
+ <script src="js/pre.js?v=1.16.1-ce28d413"></script>
  <div class="cback" id="cback"><button class="btn tback" type="button" id="cbackb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg><span data-t="cb_back">الفيتامينات</span></button><b id="cvname"></b></div>
  <div class="calc">
   <div class="col">
@@ -289,6 +289,7 @@
   <section id="tool-labs">
     <h2><span class="ttl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></span><span data-t="lb_t">سجل التحاليل</span></h2>
     <p class="lead" data-t="lb_l">احفظ نتائج تحاليل المريض وشاهد التحسن بين تحليل وآخر.</p>
+    <div id="lbpens"></div>
     <form class="grid" id="lbform">
       <div class="f"><label class="l" for="lbk" data-t="lb_test">التحليل</label><select id="lbk"></select></div>
       <div class="f"><label class="l" for="lbv" id="lbv-l" data-t="lb_val">النتيجة</label><input type="number" id="lbv" min="0" step="any" inputmode="decimal" placeholder="—"></div>
@@ -416,21 +417,21 @@
 <div class="toast" id="toast" hidden></div>
 <div class="rbar gut" id="rbar" hidden role="button" tabindex="0"><span class="dot" id="rdot"></span><span class="tx" id="rtx"></span><span class="go" data-t="see">عرض النتيجة</span></div>
 
-<script src="js/config.js?v=1.16.0-134daa33" defer></script>
-<script src="js/i18n.js?v=1.16.0-5f97e9a9" defer></script>
-<script src="js/data.js?v=1.16.0-78a70643" defer></script>
-<script src="js/util.js?v=1.16.0-ece5b126" defer></script>
-<script src="js/validation.js?v=1.16.0-37b8f300" defer></script>
-<script src="js/render.js?v=1.16.0-0d83e90b" defer></script>
-<script src="js/calculators.js?v=1.16.0-1dff5b6c" defer></script>
-<script src="js/content.js?v=1.16.0-5406ea95" defer></script>
-<script src="js/tools.js?v=1.16.0-648e05fa" defer></script>
-<script src="js/lists.js?v=1.16.0-116b1500" defer></script>
-<script src="js/ui.js?v=1.16.0-84bf8dd2" defer></script>
-<script src="js/published.js?v=1.16.0-87f710f2" defer></script>
-<script src="js/owner.js?v=1.16.0-b9da055f" defer></script>
-<script src="js/nav.js?v=1.16.0-c63b45e3" defer></script>
-<script src="js/team.js?v=1.16.0-ca6436a6" defer></script>
-<script src="js/boot.js?v=1.16.0-de688673" defer></script>
+<script src="js/config.js?v=1.16.1-42f7e417" defer></script>
+<script src="js/i18n.js?v=1.16.1-48007370" defer></script>
+<script src="js/data.js?v=1.16.1-78a70643" defer></script>
+<script src="js/util.js?v=1.16.1-ece5b126" defer></script>
+<script src="js/validation.js?v=1.16.1-37b8f300" defer></script>
+<script src="js/render.js?v=1.16.1-0d83e90b" defer></script>
+<script src="js/calculators.js?v=1.16.1-1dff5b6c" defer></script>
+<script src="js/content.js?v=1.16.1-5406ea95" defer></script>
+<script src="js/tools.js?v=1.16.1-9f809826" defer></script>
+<script src="js/lists.js?v=1.16.1-2bffe93a" defer></script>
+<script src="js/ui.js?v=1.16.1-84bf8dd2" defer></script>
+<script src="js/published.js?v=1.16.1-87f710f2" defer></script>
+<script src="js/owner.js?v=1.16.1-e66dc2c9" defer></script>
+<script src="js/nav.js?v=1.16.1-c63b45e3" defer></script>
+<script src="js/team.js?v=1.16.1-ca6436a6" defer></script>
+<script src="js/boot.js?v=1.16.1-de688673" defer></script>
 </body>
 </html>

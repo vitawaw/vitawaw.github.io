@@ -47,7 +47,8 @@ function schPair(x){
 let MEDS=[];try{MEDS=JSON.parse(localStorage.getItem('vw-meds')||'[]').filter(x=>typeof x==='string').slice(0,20)}catch(e){}
 const MEDSCH={levo:['levothyroxine','ليفوثيروكسين','ثيروكسين','يوثيروكس','التروكسين','euthyrox','eltroxin','synthroid'],bis:['alendronate','risedronate','bisphosphonate','اليندرونات','ريسيدرونات','فوساماكس','بايفوسفونيت'],
  abx:['ciprofloxacin','levofloxacin','moxifloxacin','doxycycline','tetracycline','quinolone','سيبرو','ليفوفلوكساسين','موكسيفلوكساسين','دوكسي','تتراسيكلين','تتراسايكلين','كينولون'],dtg:['dolutegravir','tivicay','دولوتغرافير','دولوتجرافير','دولوتيغرافير'],
- bik:['bictegravir','biktarvy','بكتيغرافير','بيكتيغرافير','بكتارفي','بيكتارفي'],elt:['eltrombopag','promacta','revolade','التروموباج','ايلتروموباج','بروماكتا','ريفوليد'],gaba:['gabapentin','neurontin','جابابنتين','غابابنتين','نيورونتين']};
+ bik:['bictegravir','biktarvy','بكتيغرافير','بيكتيغرافير','بكتارفي','بيكتارفي'],elt:['eltrombopag','promacta','revolade','التروموباج','ايلتروموباج','بروماكتا','ريفوليد'],gaba:['gabapentin','neurontin','جابابنتين','غابابنتين','نيورونتين'],
+ cef:['cefdinir','omnicef','سيفدينير','اومنيسيف'],mmf:['mycophenolate','cellcept','mycophenolic','مايكوفينولات','ميكوفينولات','سيلسبت'],pen:['penicillamine','cuprimine','depen','بنسيلامين','بنيسيلامين']};
 /** the schedule item of a medicine name (Arabic or English), or null */
 const medSch=t=>{const h=normAr(t);for(const [id,words] of Object.entries(MEDSCH))if(words.some(w=>h.includes(normAr(w))))return id;return null};
 const medMatch=x=>{const h=normAr([x[2][0],x[2][1],x[3][0],x[3][1]].join(' '));return MEDS.some(m=>iTerms(normAr(m)).some(q=>h.includes(q)))};

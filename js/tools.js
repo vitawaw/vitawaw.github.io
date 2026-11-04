@@ -110,13 +110,34 @@ function openTool(kind){
   if(kind==='sch'){sec='tool-sch';if(SCHSET)SCHSET.forEach(id=>{const e=$('sc-'+id);if(e)e.checked=true});sch()}
   openToolPage(sec); // a full page (‹ back returns to where it was opened, e.g. the result)
 }
+/* 1.16.0 the owner edits the items of the schedule, the upper limit and the lab results (✎ in «تعديل وترتيب»): name, directions, hide */
+const TI=()=>(CFG.tools&&CFG.tools.items)||{};
+const tiOff=k=>!!(TI()[k]&&TI()[k].off)&&!SHOWALL();
+const tiTx=(k,f,ar,en)=>{const o=TI()[k]&&TI()[k][f];const v=o&&(LANG==='ar'?o.ar:(o.en||o.ar));return v||L(ar,en)};
+const tiPen=k=>typeof EDITING==='function'&&EDITING()&&ISOWNER()?EPEN(`data-tied="${k}"`):'';
+async function editToolItem(k){
+  const [kind,id]=k.split(':'),src=kind==='sch'?SCI.find(x=>x[0]===id):kind==='ul'?ULT.find(x=>x[0]===id):LABT.find(x=>x[0]===id);if(!src)return;
+  const cur=TI()[k]||{},n=cur.n||{ar:src[1],en:src[2]},how=kind==='sch'?(cur.h||{ar:src[4],en:src[5]}):null;
+  const f=[{label:T('nv_name'),value:n.ar},{label:T('nv_name_en'),value:n.en||'',ltr:1},...(how?[{label:T('ti_how'),type:'textarea',value:how.ar},{label:T('ti_how_en'),type:'textarea',value:how.en||'',ltr:1}]:[])];
+  const r=await dialog({title:L(src[1],src[2]),info:T('ti_info'),fields:f,buttons:EDB({hidden:!!cur.off,del:false,reset:true})});
+  const items={...TI()};
+  if(r.action==='hide'){items[k]={...cur,off:!cur.off};if(!items[k].off)delete items[k].off}
+  else if(r.action==='reset')delete items[k];
+  else if(r.action==='ok'){const v=r.values.map(x=>(x||'').trim()),o={...cur};
+    if((v[0]&&v[0]!==src[1])||(v[1]&&v[1]!==src[2]))o.n={ar:v[0]||src[1],en:v[1]||src[2]};else delete o.n;
+    if(how){if((v[2]&&v[2]!==src[4])||(v[3]&&v[3]!==src[5]))o.h={ar:v[2]||src[4],en:v[3]||src[5]};else delete o.h}
+    if(Object.keys(o).length)items[k]=o;else delete items[k]}
+  else return;
+  CFG.tools={order:[],hide:[],names:{},...CFG.tools,items};changed();
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-tied]');if(!b||!ISOWNER())return;e.preventDefault();e.stopPropagation();editToolItem(b.dataset.tied)},true);
 /** age in years → the UL age group (1–3, 4–8, 9–13, 14–18, 19–50, 51+) */
 const ulGroup=a=>a<=3?0:a<=8?1:a<=13?2:a<=18?3:a<=50?4:5;
 /* supplement total vs the upper limit (UL, NIH / Institute of Medicine); age groups 1–3, 4–8, 9–13, 14–18, 19–50, 51+.
    [id, name ar, name en, unit, ULs, source, note ar, note en] — the UL counts supplements only, except calcium (food + supplements) */
 const ULT=[
  ['d','فيتامين D','Vitamin D','IU',[2500,3000,4000,4000,4000,4000],4],
- ['a','فيتامين A','Vitamin A','mcg RAE',[600,900,1700,2800,3000,3000],30,'فيتامين A الجاهز فقط، وليس Beta-carotene','Preformed vitamin A only, not beta-carotene'],
+ ['a','فيتامين A','Vitamin A','mcg RAE',[600,900,1700,2800,3000,3000],30,'فيتامين A الجاهز فقط، وليس Beta-carotene. مع Isotretinoin أو Acitretin تُتجنّب مكملاته','Preformed vitamin A only, not beta-carotene. Avoid it with isotretinoin or acitretin'],
  ['e','فيتامين E','Vitamin E','mg',[200,300,600,800,1000,1000],31],
  ['c','فيتامين C','Vitamin C','mg',[400,650,1200,1800,2000,2000],23],
  ['b6','فيتامين B6','Vitamin B6','mg',[30,40,60,80,100,100],33],
@@ -138,16 +159,16 @@ const ULT=[
 const nutOff=k=>{k={ab12:'b12',ca2:'ca',hb:'fe',fer:'fe'}[k]||k;return typeof SHOWALL==='function'&&!SHOWALL()&&(NHIDE().includes(k)||!!(typeof CUST!=='undefined'&&CUST[k]&&CUST[k].hidden))};
 function ulBuild(){
   const old=Object.fromEntries(ULT.map(x=>[x[0],$('ul-'+x[0])?$('ul-'+x[0]).value:'']));
-  $('ulin').innerHTML=ULT.filter(x=>!nutOff(x[0])).map(x=>`<div class="f"><label class="l" for="ul-${x[0]}">${L(x[1],x[2])} <small dir="ltr">${x[3]}</small></label><input type="number" id="ul-${x[0]}" min="0" step="any" inputmode="decimal" placeholder="—" value="${esc(old[x[0]]||'')}"></div>`).join('');
+  $('ulin').innerHTML=ULT.filter(x=>!nutOff(x[0])&&!tiOff('ul:'+x[0])).map(x=>`<div class="f${TI()['ul:'+x[0]]&&TI()['ul:'+x[0]].off?' tioff':''}"><label class="l" for="ul-${x[0]}">${esc(tiTx('ul:'+x[0],'n',x[1],x[2]))} <small dir="ltr">${x[3]}</small>${tiPen('ul:'+x[0])}</label><input type="number" id="ul-${x[0]}" min="0" step="any" inputmode="decimal" placeholder="—" value="${esc(old[x[0]]||'')}"></div>`).join('');
   ul();
 }
 function ul(){
-  const g=+$('ulage').value,rows=ULT.map(x=>({x,v:nv('ul-'+x[0])})).filter(o=>o.v!=null&&o.v>0);
+  const g=+$('ulage').value,rows=ULT.filter(x=>$('ul-'+x[0])).map(x=>({x,v:nv('ul-'+x[0])})).filter(o=>o.v!=null&&o.v>0);
   if(!rows.length){$('ulout').innerHTML=`<p class="hint">${L('أدخل الكمية اليومية من كل المكملات معاً (اجمع ما في كل العبوات).','Enter the daily amount from all supplements together (add up every product).')}</p>`;return}
   const over=rows.filter(o=>o.v>o.x[4][g]);
-  $('ulout').innerHTML=`<div class="ulsum ${over.length?'bad':'ok'}">${over.length?L('تجاوز الحد الأعلى: ','Above the upper limit: ')+over.map(o=>L(o.x[1],o.x[2])).join(L('، ',', ')):L('المجموع ضمن الحد الأعلى','The total is within the upper limit')}</div>`+
+  $('ulout').innerHTML=`<div class="ulsum ${over.length?'bad':'ok'}">${over.length?L('تجاوز الحد الأعلى: ','Above the upper limit: ')+over.map(o=>tiTx('ul:'+o.x[0],'n',o.x[1],o.x[2])).join(L('، ',', ')):L('المجموع ضمن الحد الأعلى','The total is within the upper limit')}</div>`+
     rows.map(o=>{const u=o.x[4][g],pc=Math.round(o.v/u*100),cls=pc>100?'bad':pc>=80?'warn':'ok';
-      return `<div class="ulr ${cls}"><div class="ulh"><b>${L(o.x[1],o.x[2])}</b><span dir="ltr">${fmt(o.v)} / ${fmt(u)} ${o.x[3]}</span></div><div class="ulbar"><i style="width:${Math.min(100,pc)}%"></i></div><small>${pc}% ${L('من الحد الأعلى','of the upper limit')}${o.x[6]?' · '+L(o.x[6],o.x[7]):''}${R([o.x[5]])}</small></div>`}).join('');
+      return `<div class="ulr ${cls}"><div class="ulh"><b>${esc(tiTx('ul:'+o.x[0],'n',o.x[1],o.x[2]))}</b><span dir="ltr">${fmt(o.v)} / ${fmt(u)} ${o.x[3]}</span></div><div class="ulbar"><i style="width:${Math.min(100,pc)}%"></i></div><small>${pc}% ${L('من الحد الأعلى','of the upper limit')}${o.x[6]?' · '+L(o.x[6],o.x[7]):''}${R([o.x[5]])}</small></div>`}).join('');
 }
 /* unit converter: [id, label ar, label en, factor, from unit, to unit, source] — to = from × factor */
 const UCV=[
@@ -192,9 +213,13 @@ const SCI=[
  // 1.13.0: the drugs of the new label-based interactions
  ['bik','Bictegravir (Biktarvy)','Bictegravir (Biktarvy)',[1*H,0,6*H,12*H],'مرة يومياً في وقت ثابت؛ ويمكن أخذه مع الحديد أو الكالسيوم إذا أُخذا معاً مع وجبة','Once a day at a fixed time; it can be taken with iron or calcium if both are taken together with a meal',[75]],
  ['elt','Eltrombopag (Promacta)','Eltrombopag (Promacta)',[0,15*H,3*H,9*H],'مرة يومياً على معدة فارغة أو مع وجبة قليلة الكالسيوم، بعيداً عن الحليب ومشتقاته','Once a day on an empty stomach or with a low-calcium meal, away from dairy',[72]],
+ // 1.16.0: the label-based interactions of 1.16.0 (Cefdinir, Mycophenolate, Penicillamine)
+ ['cef','Cefdinir (مرتين يومياً)','Cefdinir (twice a day)',[1*H,2*H,0,3*H],'كل 12 ساعة، وبعيداً عن الحديد ومضادات الحموضة بساعتين على الأقل؛ إذا وُصف مرة يومياً فاسأل الصيدلي','Every 12 hours, at least 2 hours away from iron and antacids; if prescribed once a day, ask the pharmacist',[80]],
+ ['mmf','Mycophenolate (CellCept) مرتين يومياً','Mycophenolate (CellCept) twice a day',[0,1*H,2*H],'كل 12 ساعة؛ مضادات الحموضة والمغنيسيوم بعده بساعتين على الأقل','Every 12 hours; antacids and magnesium at least 2 hours after it',[81]],
+ ['pen','Penicillamine','Penicillamine',[0,3*H,9*H,15*H],'على معدة فارغة، قبل الطعام بساعة أو بعده بساعتين، وبعيداً عن الحديد والزنك بساعتين','On an empty stomach, 1 hour before or 2 hours after food, and 2 hours away from iron and zinc',[83,25]],
  ['gaba','Gabapentin (3 مرات يومياً)','Gabapentin (three times a day)',[0,1*H,2*H],'3 مرات يومياً بفاصل متقارب، وبعد مضادات الحموضة التي فيها مغنيسيوم بساعتين على الأقل','Three times a day, evenly spaced, and at least 2 hours after antacids with magnesium',[74]]];
 /** medicines taken more than once a day: offsets of each dose from the first one */
-const SCDOSES={abx:[0,12*H],gaba:[0,6*H,12*H]};
+const SCDOSES={abx:[0,12*H],gaba:[0,6*H,12*H],cef:[0,12*H],mmf:[0,12*H]};
 const doseTimes=(id,t)=>(SCDOSES[id]||[0]).map(o=>t+o);
 /* built-in gaps, used when no interaction in the content sets one: [x, y, b, a, sources] = x at least b hours before y or a hours after it
    (b = a for a simple gap; a = 24 means x must come first). The owner sets the same thing on an interaction («التوقيت في الجدول»):
@@ -203,7 +228,9 @@ const SCDEF=[['levo','fe',4,4,[27]],['levo','ca',4,4,[27]],['levo','mg',4,4,[27]
  ...['levo','fe','zn','d','abx','dtg'].map(m=>['bis',m,0.5,24,[20]]),['bis','ca',2,24,[20]],['bis','mg',2,24,[20]],
  ...['fe','ca','mg','zn'].map(m=>['abx',m,2,6,[45]]),...['fe','ca','mg'].map(m=>['dtg',m,2,6,[60]]),
  ...['fe','ca','mg','zn'].map(m=>['elt',m,2,4,[72]]),['bik','mg',2,6,[75]],['gaba','mg',0,2,[74]],
- ...['levo','fe','zn','d','abx','dtg','bik','elt','gaba'].filter(m=>!['levo','fe','zn','d','abx','dtg'].includes(m)).map(m=>['bis',m,0.5,24,[20]])];
+ ...['levo','fe','zn','d','abx','dtg','bik','elt','gaba','cef','mmf','pen'].filter(m=>!['levo','fe','zn','d','abx','dtg'].includes(m)).map(m=>['bis',m,0.5,24,[20]]),
+ // 1.16.0 labels: Cefdinir 2 h from iron and Mg/Al antacids (80); Mycophenolate first, magnesium antacid ≥2 h after (81); Penicillamine 2 h from iron (83) and zinc (25)
+ ['cef','fe',2,2,[80]],['cef','mg',2,2,[80]],['mmf','mg',2,24,[81]],['pen','fe',2,2,[83]],['pen','zn',2,2,[25]]];
 const SCIDS=()=>SCI.map(x=>x[0]);
 /** the rules in force: interactions with timing (INTER[i][9]) win over the built-in ones; the second calcium dose follows calcium */
 function schRules(){
@@ -219,11 +246,18 @@ function schRules(){
 }
 const hhmm=(m,W)=>{const t=((W*60+m)%1440+1440)%1440;return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`};
 const CALIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 14v4M10 16h4"/></svg>';
+const SCSUP=['fe','ca','ca2','mg','zn','d']; // 1.16.0: supplements first, then medicines
+const scN=x=>tiTx('sch:'+x[0],'n',x[1],x[2]),scH=x=>tiTx('sch:'+x[0],'h',x[4],x[5]);
 function schBuild(){
   const was=Object.fromEntries(SCI.map(x=>[x[0],$('sc-'+x[0])?$('sc-'+x[0]).checked:false]));
-  $('schk').innerHTML=SCI.filter(x=>!nutOff(x[0])).map(x=>`<label class="chk"><input type="checkbox" id="sc-${x[0]}"${was[x[0]]?' checked':''}><span>${esc(L(x[1],x[2]))}</span></label>`).join('');
+  const vis=SCI.filter(x=>!nutOff(x[0])&&!tiOff('sch:'+x[0])),box=x=>`<label class="chk scc${TI()['sch:'+x[0]]&&TI()['sch:'+x[0]].off?' tioff':''}"><input type="checkbox" id="sc-${x[0]}"${was[x[0]]?' checked':''}><span>${esc(scN(x))}</span>${tiPen('sch:'+x[0])}</label>`;
+  const sup=vis.filter(x=>SCSUP.includes(x[0])),med=vis.filter(x=>!SCSUP.includes(x[0]));
+  const mine=MEDS.map(m=>medSch(m)).filter(Boolean);
+  $('schk').innerHTML=`<h4 class="sch4">${esc(T('sc_sup'))}</h4><div class="scg">${sup.map(box).join('')}</div><h4 class="sch4">${esc(T('sc_med'))}</h4>`+
+    (mine.length?`<div class="filters scmine"><button type="button" class="pri" id="scmine">${esc(T('sc_mine').replace('{n}',mine.length))}</button></div>`:'')+`<div class="scg">${med.map(box).join('')}</div>`;
   sch();
 }
+document.addEventListener('click',e=>{if(!e.target.closest('#scmine'))return;e.preventDefault();MEDS.map(m=>medSch(m)).filter(Boolean).forEach(id=>{const c=$('sc-'+id);if(c)c.checked=true});sch()});
 function schSolve(ids){
   const items=ids.map(id=>SCI.find(x=>x[0]===id)),rules=schRules();let best=null;
   const doses=doseTimes;       // the antibiotic twice (12 h apart), gabapentin three times
@@ -253,8 +287,8 @@ function sch(){
     return doseTimes(id,t).map(tt=>({t:tt,x}))})].sort((a,b)=>a.t-b.t||(a.meal?-1:1));
   const pairs=schRules().filter(o=>ids.includes(o.x)&&ids.includes(o.y)&&!(o.x==='ca2'||o.y==='ca2'));
   $('schout').innerHTML=`<div class="ract"><button class="btn pri" type="button" id="schcal">${CALIC}${T('cal_add')}</button></div><ol class="sched">${rows.map(r=>r.meal?`<li class="meal"><time>${hhmm(r.t,W)}</time><span>${esc(r.meal)}</span></li>`:
-    `<li><time>${hhmm(r.t,W)}</time><div><b>${esc(L(r.x[1],r.x[2]))}</b><small>${esc(L(r.x[4],r.x[5]))}${R(r.x[6])}</small></div></li>`).join('')}</ol>`+
-    (pairs.length?`<p class="hint">${T('sc_gaps')}</p><ul class="gaps">${pairs.map(o=>{const n=k=>L(...SCI.find(y=>y[0]===k).slice(1,3)).replace(/ \(.*\)$/,'').replace(/ مرتين يومياً| twice a day/,'');
+    `<li><time>${hhmm(r.t,W)}</time><div><b>${esc(scN(r.x))}</b><small>${esc(scH(r.x))}${R(r.x[6])}</small></div></li>`).join('')}</ol>`+
+    (pairs.length?`<p class="hint">${T('sc_gaps')}</p><ul class="gaps">${pairs.map(o=>{const n=k=>scN(SCI.find(y=>y[0]===k)).replace(/ \(.*\)$/,'').replace(/ مرتين يومياً| twice a day/,'');
       const h=v=>v<1?L(`${v*60} دقيقة`,`${v*60} min`):v===1?L('ساعة','1 h'):v===2?L('ساعتين','2 h'):L(`${fmt(v)} ساعات`,`${fmt(v)} h`);
       const t=o.a>=24?L(`${n(o.x)} أولاً، و${n(o.y)} بعده بـ ${h(o.b)} على الأقل`,`${n(o.x)} first, ${n(o.y)} at least ${h(o.b)} later`):o.a===o.b?L(`فاصل ${h(o.b)} على الأقل`,`at least ${h(o.b)} apart`):L(`${n(o.x)} قبله بـ ${h(o.b)} أو بعده بـ ${h(o.a)}`,`${n(o.x)} ${h(o.b)} before or ${h(o.a)} after`);
       return `<li><b>${esc(n(o.x))} ↔ ${esc(n(o.y))}</b> ${esc(t)}${R(o.r)}${o.def?'':` <span class="own">${T('sc_own')}</span>`}</li>`}).join('')}</ul>`:'');
@@ -288,7 +322,7 @@ function icsDownload(events,name='vitawaw-reminders'){
 function schCalendar(){
   const W=+$('schw').value,ids=SCI.map(x=>x[0]).filter(id=>$('sc-'+id)&&$('sc-'+id).checked),asg=ids.length&&schSolve(ids);if(!asg)return;
   icsDownload(ids.flatMap(id=>{const x=SCI.find(y=>y[0]===id),t=asg[id];
-    return doseTimes(id,t).map(tt=>({title:'VITAWAW · '+L(x[1],x[2]),desc:L(x[4],x[5]),time:hhmm(tt,W),freq:id==='bis'?'WEEKLY':'DAILY'}))}),'vitawaw-schedule');
+    return doseTimes(id,t).map(tt=>({title:'VITAWAW · '+scN(x),desc:scH(x),time:hhmm(tt,W),freq:id==='bis'?'WEEKLY':'DAILY'}))}),'vitawaw-schedule');
 }
 /* ===================== my lab results (on this device only) =====================
    [id, ar, en, unit, reference lines [value, ar, en]] — the lines are the limits the calculators use */
@@ -304,7 +338,8 @@ const saveLabs=()=>{try{localStorage.setItem('vw-labs',JSON.stringify(LABS))}cat
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 function labAdd(k,v,d){if(!LABT.some(t=>t[0]===k)||!(v>0))return false;LABS.push({k,v:Math.round(v*100)/100,d:d||today()});LABS.sort((a,b)=>a.d.localeCompare(b.d));saveLabs();labs();return true}
 function labsBuild(){
-  const v=$('lbk').value||'d';$('lbk').innerHTML=LABT.filter(t=>!nutOff(t[0])).map(t=>`<option value="${t[0]}">${esc(L(t[1],t[2]))} (${t[3]})</option>`).join('');$('lbk').value=v;
+  const v=$('lbk').value||'d';$('lbk').innerHTML=LABT.filter(t=>!nutOff(t[0])&&!tiOff('lab:'+t[0])).map(t=>`<option value="${t[0]}">${esc(tiTx('lab:'+t[0],'n',t[1],t[2]))} (${t[3]})</option>`).join('');$('lbk').value=v;if(!$('lbk').value&&$('lbk').options[0])$('lbk').value=$('lbk').options[0].value;
+  const pe=$('lbpens');if(pe)pe.innerHTML=typeof EDITING==='function'&&EDITING()&&ISOWNER()?`<p class="hint">${esc(T('ti_labs'))}</p><div class="filters">${LABT.filter(t=>!nutOff(t[0])).map(t=>`<button type="button" data-tied="lab:${t[0]}"${TI()['lab:'+t[0]]&&TI()['lab:'+t[0]].off?' class="tioff"':''}>${PEN} ${esc(tiTx('lab:'+t[0],'n',t[1],t[2]))}</button>`).join('')}</div>`:'';
   if(!$('lbd').value)$('lbd').value=today();labs();
 }
 /** a small line chart: dates on the bottom, values on the side, the reference lines dashed */
@@ -323,7 +358,7 @@ function labs(){
   if(!LABS.length){out.innerHTML=`<p class="hint">${T('lb_none')}</p>`;return}
   out.innerHTML=LABT.filter(t=>LABS.some(x=>x.k===t[0])).map(t=>{const pts=LABS.filter(x=>x.k===t[0]),last=pts[pts.length-1],prev=pts[pts.length-2];
     const ch=prev?Math.round((last.v-prev.v)*10)/10:null;
-    return `<div class="lbcard"><div class="lbh"><b>${esc(L(t[1],t[2]))}</b><span dir="ltr">${fmt(last.v)} ${t[3]}${ch!=null?` <small class="${ch>=0?'up':'down'}">${ch>=0?'▲':'▼'} ${fmt(Math.abs(ch))}</small>`:''}</span></div>${labChart(t,pts)}
+    return `<div class="lbcard"><div class="lbh"><b>${esc(tiTx('lab:'+t[0],'n',t[1],t[2]))}</b><span dir="ltr">${fmt(last.v)} ${t[3]}${ch!=null?` <small class="${ch>=0?'up':'down'}">${ch>=0?'▲':'▼'} ${fmt(Math.abs(ch))}</small>`:''}</span></div>${labChart(t,pts)}
       <details><summary>${T('lb_all')} (${pts.length})</summary><ul class="lbl">${pts.map(x=>`<li><bdi>${x.d}</bdi><b dir="ltr">${fmt(x.v)} ${t[3]}</b><button type="button" data-lbdel="${LABS.indexOf(x)}" aria-label="${esc(T('o_del'))}">×</button></li>`).join('')}</ul></details></div>`}).join('')+
     `<div class="ract"><button class="btn danger" type="button" id="lbclear">${T('lb_clear')}</button></div>`;
 }

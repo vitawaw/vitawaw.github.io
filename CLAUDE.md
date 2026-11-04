@@ -76,6 +76,10 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
+- **1.16.1 (preview)**: medicine ✎ in edit mode (o-texts also calls renderMedCat); tools items editable by the owner via
+  CFG.tools.items {'sch:<id>'|'ul:<id>'|'lab:<id>': {n,h,off}} (`TI()`, `tiTx()`, `tiPen()`, `editToolItem()` in tools.js; mergeCfg
+  validates); schedule grouped (SCSUP supplements / medicines, `.scg` cards), new SCI cef/mmf/pen + SCDEF label gaps (80/81/83/25),
+  MEDSCH words, «أضف أدوية المريض» `#scmine` ticks MEDS; UL vitamin A note on retinoids. tools_flow 100.
 - 2026-11-04 general review after 1.16.0: he approved + published (0 waiting, 79 sources / 81 interactions live, activity log 18 lines).
   Live crawl phone ar/en, iPad, PC: 0 errors, 0 overflow, all 32 calculators give results, no Arabic left in English. CI was red
   since it was added (menu_flow wrote to a path of this machine) → fixed, now green. Headers OK, /api/links 401 without a session,
