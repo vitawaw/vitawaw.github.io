@@ -265,7 +265,7 @@ with sync_playwright() as p:
     check('my medicines: new medicine button at the top', o.evaluate(top, '#mcaddw [data-mcedit="new"]'))
     import base64
     png = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
-    lp = '/tmp/claude-0/-home-user-vitawaw-github-io/9dfdc634-3a20-5319-953c-aa4a42100ee6/scratchpad/logo.png'
+    import tempfile; lp = os.path.join(tempfile.gettempdir(), 'vw_test_logo.png')  # any machine (CI too)
     open(lp, 'wb').write(png)
     o.evaluate('void editBrand()'); o.wait_for_timeout(250)
     o.set_input_files('#dlgf1', lp); o.fill('#dlgf2', 'https://example.com'); ok(o); o.wait_for_timeout(600)
