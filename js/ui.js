@@ -169,7 +169,7 @@ function setLang(l){
   try{localStorage.setItem('vw-lang',l)}catch(e){}
   $('pc-wa').textContent=T('pc_wa');$('pc-copy').textContent=T('pc_cp');$('pc-close').textContent=T('pc_x');themeIcon();
   renderInter();renderRefs();renderRoadmap();renderContact();renderNav();
-  if(typeof OWN!=='undefined'&&OWN.on){decorate();ownerBar()}saltBuild();conv();cca();gz();mlc();schBuild();labsBuild();ulBuild();ucvBuild();F[K]();
+  if(typeof OWN!=='undefined'&&OWN.on){decorate();ownerBar()}saltBuild();conv();cca();gz();mlc();schBuild();labsBuild();ulBuild();ucvBuild();if(typeof installBar==='function')installBar();F[K]();
 }
 
 /* ===================== share a result by link =====================
@@ -256,3 +256,20 @@ function applyColors(){
 function refreshAll(){applyColors();setLang(LANG);decorate()}
 
 $('mcq').addEventListener('input',()=>{MCQ=$('mcq').value;renderMedCat()});
+if($('ulper'))$('ulper').addEventListener('change',()=>ul()); // 1.16.2 upper limit: amounts per day or per week
+
+/* 1.16.2 «ثبّت التطبيق الآن» at the very top. Hidden when the site already runs as an installed app (standalone),
+   after it is installed (appinstalled), inside the owner's three-size preview, and for this visit after ×. */
+const INSTALLED=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true||localStorage.getItem('vw-installed')==='1'}catch(e){return false}};
+function installBar(){
+  let b=$('instbar');const hide=INSTALLED()||(typeof FRAME!=='undefined'&&FRAME)||(()=>{try{return sessionStorage.getItem('vw-instx')==='1'}catch(e){return false}})();
+  if(hide){if(b)b.remove();return}
+  if(!b){b=document.createElement('div');b.id='instbar';b.setAttribute('role','region');document.body.prepend(b)}
+  b.innerHTML=`<button type="button" class="ibgo" id="ibgo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/></svg><span>${esc(T('ib_t'))}</span></button><button type="button" class="ibx" id="ibx" aria-label="${esc(L('إغلاق','Close'))}">✕</button>`;
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest('#ibgo')){e.preventDefault();installApp();return}
+  if(e.target.closest('#ibx')){e.preventDefault();try{sessionStorage.setItem('vw-instx','1')}catch(x){}installBar()}
+});
+addEventListener('appinstalled',()=>{try{localStorage.setItem('vw-installed','1')}catch(e){}installBar()});
+try{matchMedia('(display-mode: standalone)').addEventListener('change',installBar)}catch(e){}

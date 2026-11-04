@@ -27,7 +27,7 @@ const SZ=[['phone',390,844],['ipad',820,1180],['pc',1366,900]];let SZK='phone';
 function openSizes(){
   try{localStorage.setItem('vw-frame',cfgJSON())}catch(e){toast(T('o_neterr'));return}
   let w=$('szwrap');if(!w){w=document.createElement('div');w.id='szwrap';w.setAttribute('role','dialog');w.setAttribute('aria-modal','true');document.body.appendChild(w)}
-  w.innerHTML=`<div class="szbar"><b>${esc(T('sz_t'))}</b><div class="filters">${SZ.map(([k])=>`<button type="button" data-szk="${k}" aria-pressed="${k===SZK}">${esc(T('sz_'+k))}</button>`).join('')}</div><button type="button" class="btn" id="szx" aria-label="${esc(L('إغلاق','Close'))}">✕</button></div><div class="szstage"><iframe id="szf" title="${esc(T('sz_t'))}" src="./?frame=1#${esc(cur==='menu'?'calc':cur)}"></iframe></div>`;
+  w.innerHTML=`<div class="szbar"><div class="sztop"><b>${esc(T('sz_t'))}</b><button type="button" class="btn" id="szx" aria-label="${esc(L('إغلاق','Close'))}">✕</button></div><div class="filters szsizes">${SZ.map(([k])=>`<button type="button" data-szk="${k}" aria-pressed="${k===SZK}">${esc(T('sz_'+k))}</button>`).join('')}</div></div><div class="szstage"><iframe id="szf" title="${esc(T('sz_t'))}" src="./?frame=1#${esc(cur==='menu'?'calc':cur)}"></iframe></div>`;
   w.hidden=false;document.body.style.overflow='hidden';sizeFrame();$('szx').focus();
 }
 function sizeFrame(){const f=$('szf'),st=document.querySelector('#szwrap .szstage');if(!f||!st)return;const [,fw,fh]=SZ.find(x=>x[0]===SZK);

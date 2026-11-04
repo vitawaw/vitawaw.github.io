@@ -1084,3 +1084,20 @@ ol.refs>li{border-inline-start:4px solid color-mix(in srgb,var(--pc2,var(--royal
 .prose .pgc ul{margin:2px 0 8px}
 .prose .pgc p{margin:0 0 8px}
 .prose b{color:var(--ink);font-weight:800}
+/* 1.16.2 three-size window: the title on its own line, the three sizes on the line below */
+.szbar{flex-direction:column;align-items:stretch;gap:8px}
+.szbar .sztop{display:flex;align-items:center;gap:10px}
+.szbar .sztop b{flex:1}
+.szbar .szsizes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}
+.szbar .szsizes button{width:100%;justify-content:center}
+/* 1.16.2 «install the app now» bar at the top */
+#instbar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:linear-gradient(90deg,var(--teal,#0B6B6E),var(--rose,#8E1B54));color:#fff;position:relative;z-index:41}
+#instbar .ibgo{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border:0;background:transparent;color:#fff;font:800 calc(14px*var(--fsh,1)) var(--f-display);cursor:pointer}
+#instbar .ibgo svg{width:18px;height:18px}
+#instbar .ibx{width:32px;height:32px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;cursor:pointer;flex:none}
+html.frame #instbar{display:none}
+@media print{#instbar{display:none}}
+/* 1.16.2 upper limit: what it means */
+.ulwhat{border:1px solid var(--edge);border-inline-start:4px solid var(--pc2,var(--royal));border-radius:12px;padding:10px 12px;margin:4px 0 12px;background:var(--card)}
+.ulwhat b{display:block;margin-bottom:2px;font:800 calc(14px*var(--fsh,1)) var(--f-display);color:var(--pc2,var(--royal))}
+.ulwhat p{margin:0;font-size:calc(13px*var(--fsb,1));line-height:1.7}

@@ -76,6 +76,10 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
+- **1.16.2 (preview)**: his 5 notes: «3 أحجام» title row + sizes row (`.sztop`/`.szsizes`); `TEAMX()` (nav.js) = team pages (log, links)
+  shared by menu G.short and follow-up «+ إضافة» ('x:<key>', mergeCfg allows); UL per day/week (`#ulper`, ÷7) + «ما هو الحد الأعلى؟»
+  box, tl_t «…الحد الأعلى اليومي؟»; install bar `installBar()` (ui.js) hidden when standalone / appinstalled (vw-installed) / × this
+  visit (sessionStorage vw-instx) / frame. tools_flow 101.
 - **Live: 1.16.1** (he said «انشر على الموقع الاصلي» on 2026-11-04; main fast-forwarded). content_1_16_1.sql is in the LIVE draft
   (checked); the live PUBLISHED pages were still the old ones at release → he must log in on the live site and press «نشر».
 - **1.16.1**: medicine ✎ in edit mode (o-texts also calls renderMedCat); tools items editable by the owner via

@@ -163,12 +163,12 @@ function ulBuild(){
   ul();
 }
 function ul(){
-  const g=+$('ulage').value,rows=ULT.filter(x=>$('ul-'+x[0])).map(x=>({x,v:nv('ul-'+x[0])})).filter(o=>o.v!=null&&o.v>0);
+  const g=+$('ulage').value,wk=$('ulper')&&$('ulper').value==='w',rows=ULT.filter(x=>$('ul-'+x[0])).map(x=>({x,v:nv('ul-'+x[0])})).filter(o=>o.v!=null&&o.v>0).map(o=>wk?{...o,w:o.v,v:Math.round(o.v/7*10)/10}:o); // 1.16.2: a weekly amount counts as ÷7 per day
   if(!rows.length){$('ulout').innerHTML=`<p class="hint">${L('أدخل الكمية اليومية من كل المكملات معاً (اجمع ما في كل العبوات).','Enter the daily amount from all supplements together (add up every product).')}</p>`;return}
   const over=rows.filter(o=>o.v>o.x[4][g]);
   $('ulout').innerHTML=`<div class="ulsum ${over.length?'bad':'ok'}">${over.length?L('تجاوز الحد الأعلى: ','Above the upper limit: ')+over.map(o=>tiTx('ul:'+o.x[0],'n',o.x[1],o.x[2])).join(L('، ',', ')):L('المجموع ضمن الحد الأعلى','The total is within the upper limit')}</div>`+
     rows.map(o=>{const u=o.x[4][g],pc=Math.round(o.v/u*100),cls=pc>100?'bad':pc>=80?'warn':'ok';
-      return `<div class="ulr ${cls}"><div class="ulh"><b>${esc(tiTx('ul:'+o.x[0],'n',o.x[1],o.x[2]))}</b><span dir="ltr">${fmt(o.v)} / ${fmt(u)} ${o.x[3]}</span></div><div class="ulbar"><i style="width:${Math.min(100,pc)}%"></i></div><small>${pc}% ${L('من الحد الأعلى','of the upper limit')}${o.x[6]?' · '+L(o.x[6],o.x[7]):''}${R([o.x[5]])}</small></div>`}).join('');
+      return `<div class="ulr ${cls}"><div class="ulh"><b>${esc(tiTx('ul:'+o.x[0],'n',o.x[1],o.x[2]))}</b><span dir="ltr">${o.w!=null?`${fmt(o.w)}/${L('أسبوع','wk')} ≈ `:''}${fmt(o.v)} / ${fmt(u)} ${o.x[3]} ${L('يومياً','daily')}</span></div><div class="ulbar"><i style="width:${Math.min(100,pc)}%"></i></div><small>${pc}% ${L('من الحد الأعلى','of the upper limit')}${o.x[6]?' · '+L(o.x[6],o.x[7]):''}${R([o.x[5]])}</small></div>`}).join('');
 }
 /* unit converter: [id, label ar, label en, factor, from unit, to unit, source] — to = from × factor */
 const UCV=[

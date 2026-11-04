@@ -186,6 +186,10 @@ with sync_playwright() as p:
     pg.evaluate("CFG.tools={order:['tool-u','tool-ul'],hide:['tool-gz'],names:{'tool-ul':{ar:'فحص الحد',en:'UL'}}};renderNav()"); pg.wait_for_timeout(100)
     order = pg.evaluate("[...document.querySelectorAll('#tgrid [data-tv]')].map(b=>b.dataset.tv).join(',')")  # 1.14.1: the owner's order inside each part (1.16.0: the follow-up part has its own order, CFG.tools.follow)
     check('owner: order, hide, name of tools', str(order.startswith('tool-u,tool-pill') and 'tool-sch,tool-ul,tool-labs' in order and 'tool-gz' not in order), 'True')
+    # 1.16.2 upper limit per week: 50,000 IU a week = 7,142.9 IU a day, above 4,000
+    pg.evaluate("openToolPage('tool-ul')"); pg.select_option('#ulper', 'w'); pg.fill('#ul-d', '50000'); pg.dispatch_event('#ul-d', 'input'); pg.wait_for_timeout(150)
+    check('1.16.2 upper limit: a weekly amount counts per day (÷7)', str('7,142.9' in pg.inner_text('#ulout') and 'تجاوز' in pg.inner_text('#ulout')), 'True')
+    pg.select_option('#ulper', 'd'); pg.fill('#ul-d', ''); pg.dispatch_event('#ul-d', 'input')
     # 1.16.0 schedule: the label gaps of the new drugs (Cefdinir ↔ iron/magnesium 2 h, Mycophenolate before magnesium ≥2 h, Penicillamine ↔ iron 2 h)
     gaps = pg.evaluate("""(()=>{const g=(a,b)=>{const s=schSolve([a,b]);if(!s)return 'none';return Math.min(...doseTimes(a,s[a]).flatMap(x=>doseTimes(b,s[b]).map(y=>Math.abs(x-y))))/60};
       const m=schSolve(['mmf','mg']);return [g('cef','fe'),g('cef','mg'),g('pen','fe'),m&&Math.min(...doseTimes('mmf',m.mmf).map(t=>m.mg-t).filter(d=>d>=0))/60]})()""")

@@ -160,6 +160,11 @@ const toolName=t=>{const n=CFG.tools&&CFG.tools.names&&CFG.tools.names[t[0]];ret
 /* 1.16.0 «أدوات المتابعة»: the owner chooses what is in it — tools, any section, any information page (also pages added
    later) — with «+ إضافة», removes an item with its ✎ and orders them with ⋮⋮. Saved in CFG.tools.follow. */
 const FOLLOW0=['tool-sch','tool-ul','tool-labs'];
+/** 1.16.2 the team's own pages: one list for the menu («الأقسام») and the follow-up tools' «+ إضافة», so a team page added later
+    appears in both by itself. Shown only to the signed-in team (and «فحص المصادر» only to whoever edits sources). */
+const TEAMX=()=>{const own=typeof OWN!=='undefined'&&OWN.on&&!OWN.preview;return [
+  ...(own?[{k:'log',name:T('lg_t'),ico:ICO.history,page:'roadmap',f:()=>openLog()}]:[]),
+  ...(own&&CAN('refs')?[{k:'links',name:T('lk_t'),ico:tabIco('links'),page:'sources',f:()=>go('links')}]:[])]};
 const FOLLOW=()=>Array.isArray(CFG.tools&&CFG.tools.follow)?CFG.tools.follow:FOLLOW0;
 const fKey=k=>k.startsWith('p:')&&SECTOOL[k.slice(2)]?SECTOOL[k.slice(2)]:k; // a section that is a tool (schedule, lab results…) is that tool
 /** what a follow-up key shows: {name, icon, colours page, hidden} or null when it no longer exists */
@@ -167,6 +172,7 @@ function fItem(k){
   if(k.startsWith('tool-')){const t=TOOLS.find(x=>x[0]===k);return t?{tool:t}:null}
   if(k.startsWith('p:')){const p=k.slice(2);if(!SECKEY[p])return null;return {name:T(SECKEY[p]),ico:tabIco(p),page:p,off:navHidden(p)||mgOff('p-'+p)}}
   if(k.startsWith('pg:')){const pg=allPages().find(x=>x.id===k.slice(3));if(!pg)return null;return {name:tx2(pg.t),ico:ICO.page,off:!!pg.hidden}}
+  if(k.startsWith('x:')){const x=TEAMX().find(y=>y.k===k.slice(2));return x?{name:x.name,ico:x.ico,page:x.page}:null} // visitors: not shown
   return null;
 }
 function renderToolsGrid(){
@@ -202,10 +208,11 @@ function drawFollowAdd(){
   const secs=NAV().order.filter(p=>p!=='tools'),pages=allPages(),tools=TOOLS.filter(t=>!secs.some(p=>SECTOOL[p]===t[0]));
   $('sheet-b').innerHTML=`<p class="hint">${esc(T('fl_add_i'))}</p><h4 class="lkh4">${esc(T('mn_short'))}</h4><div class="ml">${secs.map(p=>row('p:'+p,T(SECKEY[p]),tabIco(p),p)).join('')}</div>`+
     `<h4 class="lkh4">${esc(T('fl_pages'))}</h4><div class="ml">${pages.map(pg=>row('pg:'+pg.id,tx2(pg.t)+(pg.hidden?' · '+T('pg_hidden'):''),ICO.page)).join('')}</div>`+
-    `<h4 class="lkh4">${esc(T('tab_tools'))}</h4><div class="ml">${tools.map(t=>row(t[0],toolName(t),ICO.info)).join('')}</div>`;
+    `<h4 class="lkh4">${esc(T('tab_tools'))}</h4><div class="ml">${tools.map(t=>row(t[0],toolName(t),ICO.info)).join('')}</div>`+
+    (TEAMX().length?`<h4 class="lkh4">${esc(T('fl_team'))}</h4><div class="ml">${TEAMX().map(x=>row('x:'+x.k,x.name,x.ico,x.page)).join('')}</div>`:'');
 }
 document.addEventListener('click',e=>{
-  const g=e.target.closest('[data-fgo]');if(g){e.preventDefault();const k=g.dataset.fgo;if(k.startsWith('p:'))go(k.slice(2));else if(k.startsWith('pg:'))openPage(k.slice(3));return}
+  const g=e.target.closest('[data-fgo]');if(g){e.preventDefault();const k=g.dataset.fgo;if(k.startsWith('p:'))go(k.slice(2));else if(k.startsWith('pg:'))openPage(k.slice(3));else if(k.startsWith('x:')){const x=TEAMX().find(y=>y.k===k.slice(2));if(x)x.f()}return}
   if(e.target.closest('[data-fadd]')){e.preventDefault();openFollowAdd();return}
   const pk=e.target.closest('[data-fpick]');if(pk&&ISOWNER()){e.preventDefault();folSet([...FOLLOW(),fKey(pk.dataset.fpick)]);toast(T('fl_added'));drawFollowAdd();return}
   const fe=e.target.closest('[data-fed]');if(fe&&ISOWNER()){e.preventDefault();e.stopPropagation();editFollow(fe.dataset.fed)}
@@ -215,7 +222,7 @@ async function editFollow(k){
   const it=fItem(k);
   const r=await dialog({title:it?it.name:k,info:T('fl_ed_i'),buttons:[{label:T('fl_remove'),action:'rm',danger:1},{label:T('o_cancel'),action:'cancel'},{label:T('fl_open'),action:'open',pri:1}]});
   if(r.action==='rm'){folSet(FOLLOW().filter(x=>x!==k));toast(T('fl_removed'))}
-  if(r.action==='open'){if(k.startsWith('p:'))go(k.slice(2));else if(k.startsWith('pg:'))openPage(k.slice(3))}
+  if(r.action==='open'){if(k.startsWith('p:'))go(k.slice(2));else if(k.startsWith('pg:'))openPage(k.slice(3));else{const x=TEAMX().find(y=>'x:'+y.k===k);if(x)x.f()}}
 }
 const toolSubKey=t=>TOOLSUB[t[0]]||t[2];
 /** the search box above the tools keeps only the tools whose name matches */
@@ -380,8 +387,7 @@ function menuHTML(r){
   G.recent=RECENT.map(recentItem).filter(Boolean).slice(0,6);
   // shortcut tiles: sections not in the bar, my lab results, my medicines, the link check (team), information pages
   G.short=[...navMore().map(p=>({key:'p-'+p,label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,f:()=>go(p)})),
-    ...(own&&!OWN.preview?[{key:'log',label:T('lg_t'),ico:ICO.history,page:'roadmap',f:()=>openLog()}]:[]),
-    ...(own&&CAN('refs')&&!OWN.preview?[{key:'links',label:T('lk_t'),ico:tabIco('links'),page:'sources',f:()=>go('links')}]:[]),
+    ...TEAMX().map(x=>({key:x.k,label:x.name,ico:x.ico,page:x.page,f:x.f})),
     ...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(p=>({key:'pg-'+p.id,...pgItem(p)}))];
   // «help and information», each on its own: how to use · FAQ · about us · suggest a feature · privacy policy · disclaimer
   const PICO={howto:MI2.book,faq:MI2.q,who:MI2.user,about:ICO.info,method:MI2.book,suggest:MI.mail,privacy:MI2.shield,disclaimer:ICO.info};
