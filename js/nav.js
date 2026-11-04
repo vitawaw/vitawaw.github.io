@@ -156,25 +156,76 @@ function toolList(){
   return order.map(id=>TOOLS.find(t=>t[0]===id)).filter(t=>!hide.includes(t[0])||SHOWALL());
 }
 const toolName=t=>{const n=CFG.tools&&CFG.tools.names&&CFG.tools.names[t[0]];return (n&&(LANG==='ar'?n.ar:(n.en||n.ar)))||T(t[1])};
+/* 1.16.0 «أدوات المتابعة»: the owner chooses what is in it — tools, any section, any information page (also pages added
+   later) — with «+ إضافة», removes an item with its ✎ and orders them with ⋮⋮. Saved in CFG.tools.follow. */
+const FOLLOW0=['tool-sch','tool-ul','tool-labs'];
+const FOLLOW=()=>Array.isArray(CFG.tools&&CFG.tools.follow)?CFG.tools.follow:FOLLOW0;
+const fKey=k=>k.startsWith('p:')&&SECTOOL[k.slice(2)]?SECTOOL[k.slice(2)]:k; // a section that is a tool (schedule, lab results…) is that tool
+/** what a follow-up key shows: {name, icon, colours page, hidden} or null when it no longer exists */
+function fItem(k){
+  if(k.startsWith('tool-')){const t=TOOLS.find(x=>x[0]===k);return t?{tool:t}:null}
+  if(k.startsWith('p:')){const p=k.slice(2);if(!SECKEY[p])return null;return {name:T(SECKEY[p]),ico:tabIco(p),page:p,off:navHidden(p)||mgOff('p-'+p)}}
+  if(k.startsWith('pg:')){const pg=allPages().find(x=>x.id===k.slice(3));if(!pg)return null;return {name:tx2(pg.t),ico:ICO.page,off:!!pg.hidden}}
+  return null;
+}
 function renderToolsGrid(){
   if(!$('tgrid'))return;
-  const own=ISOWNER()&&EDITING(),hide=(CFG.tools&&CFG.tools.hide)||[];
-  const FOLLOW=['tool-sch','tool-ul','tool-labs'],tl=toolList(),grp=[...tl.filter(t=>!FOLLOW.includes(t[0])),...tl.filter(t=>FOLLOW.includes(t[0]))],first=grp.findIndex(t=>FOLLOW.includes(t[0]));
+  const own=ISOWNER()&&EDITING(),hide=(CFG.tools&&CFG.tools.hide)||[],fol=FOLLOW();
   const tic=id=>{const sv=$(id)&&$(id).querySelector('.ttl-ic svg');return sv?sv.outerHTML:ICO.info};
-  $('tgrid').innerHTML=grp.map((t,i)=>(i===first&&i>0?`<h3 class="pkh tgh">${esc(T('tg_follow'))}</h3>`:'')+(t=>{const off=hide.includes(t[0]),b=`<button type="button" data-tv="${t[0]}"><i class="tico" aria-hidden="true">${tic(t[0])}</i><span>${esc(toolName(t))}</span><small>${esc(T(toolSubKey(t)))}</small>${SHOWALL()&&off?`<em class="hidb">${T('o_hiddenb')}</em>`:''}</button>`;
-    return own?`<div class="pkw tkw${off?' off':''}" data-sid="${t[0]}">${b}<div class="pka">${DRAG(T('o_drag'))}${EPEN(`data-tled="${t[0]}"`)}</div></div>`:b})(t)).join('')+
-    (own?`<p class="hint tlhint">${T('o_tile_hint')}</p>`:'');
-  if(own)sortable($('tgrid'),'.tkw',ids=>{if(!ISOWNER())return;CFG.tools={...CFG.tools,order:ids};changed()});
+  const toolTile=t=>{const off=hide.includes(t[0]),b=`<button type="button" data-tv="${t[0]}"><i class="tico" aria-hidden="true">${tic(t[0])}</i><span>${esc(toolName(t))}</span><small>${esc(T(toolSubKey(t)))}</small>${SHOWALL()&&off?`<em class="hidb">${T('o_hiddenb')}</em>`:''}</button>`;
+    return own?`<div class="pkw tkw${off?' off':''}" data-sid="${t[0]}">${b}<div class="pka">${DRAG(T('o_drag'))}${EPEN(`data-tled="${t[0]}"`)}</div></div>`:b};
+  const main=toolList().filter(t=>!fol.includes(t[0]));
+  const fl=fol.map(k=>{const it=fItem(k);if(!it)return '';
+    if(it.tool)return (hide.includes(k)&&!SHOWALL())?'':toolTile(it.tool);
+    if(it.off&&!SHOWALL())return '';
+    const b=`<button type="button" data-fgo="${esc(k)}"${it.page?` style="${colorVars(it.page)}"`:''}><i class="tico" aria-hidden="true">${it.ico}</i><span>${esc(it.name)}</span>${SHOWALL()&&it.off?`<em class="hidb">${T('o_hiddenb')}</em>`:''}</button>`;
+    return own?`<div class="pkw tkw" data-sid="${esc(k)}">${b}<div class="pka">${DRAG(T('o_drag'))}${EPEN(`data-fed="${esc(k)}"`)}</div></div>`:b}).join('');
+  const add=own?`<button type="button" class="tadd" data-fadd="1">${PLUS}<span>${esc(T('fl_add'))}</span></button>`:'';
+  $('tgrid').innerHTML=`<div class="picker tgmain">${main.map(toolTile).join('')}</div>`+
+    (fl||add?`<h3 class="pkh tgh">${esc(T('tg_follow'))}</h3><div class="picker tgfol">${fl}${add}</div>`:'')+
+    (own?`<p class="hint tlhint">${T('o_tile_hint')} ${T('fl_hint')}</p>`:'');
+  if(own){
+    sortable($('tgrid').querySelector('.tgmain'),'.tkw',ids=>{if(!ISOWNER())return;CFG.tools={...CFG.tools,order:ids};changed()});
+    sortable($('tgrid').querySelector('.tgfol'),'.tkw',ids=>{if(!ISOWNER())return;CFG.tools={...CFG.tools,follow:ids};changed()});
+  }
   toolSearch();
+}
+function folSet(list){CFG.tools={order:[],hide:[],names:{},...CFG.tools,follow:[...new Set(list)]};changed()}
+/** «+ إضافة» in the follow-up tools: every section, every information page and every tool not yet there */
+function openFollowAdd(){
+  if(!ISOWNER())return;openSheet(T('fl_add_t'),'',{key:'foladd'});drawFollowAdd();
+}
+function drawFollowAdd(){
+  if(!SHEET||SHEET.key!=='foladd')return;
+  const fol=FOLLOW(),has=k=>fol.includes(fKey(k)),row=(k,name,ico,page)=>`<button type="button" class="mi" data-fpick="${esc(k)}"${has(k)?' disabled':''}><span class="di"${page?` style="${colorVars(page)}"`:''}>${ico}</span><span class="mt">${esc(name)}${has(k)?`<small>${esc(T('fl_in'))}</small>`:''}</span></button>`;
+  const secs=NAV().order.filter(p=>p!=='tools'),pages=allPages(),tools=TOOLS.filter(t=>!secs.some(p=>SECTOOL[p]===t[0]));
+  $('sheet-b').innerHTML=`<p class="hint">${esc(T('fl_add_i'))}</p><h4 class="lkh4">${esc(T('mn_short'))}</h4><div class="ml">${secs.map(p=>row('p:'+p,T(SECKEY[p]),tabIco(p),p)).join('')}</div>`+
+    `<h4 class="lkh4">${esc(T('fl_pages'))}</h4><div class="ml">${pages.map(pg=>row('pg:'+pg.id,tx2(pg.t)+(pg.hidden?' · '+T('pg_hidden'):''),ICO.page)).join('')}</div>`+
+    `<h4 class="lkh4">${esc(T('tab_tools'))}</h4><div class="ml">${tools.map(t=>row(t[0],toolName(t),ICO.info)).join('')}</div>`;
+}
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-fgo]');if(g){e.preventDefault();const k=g.dataset.fgo;if(k.startsWith('p:'))go(k.slice(2));else if(k.startsWith('pg:'))openPage(k.slice(3));return}
+  if(e.target.closest('[data-fadd]')){e.preventDefault();openFollowAdd();return}
+  const pk=e.target.closest('[data-fpick]');if(pk&&ISOWNER()){e.preventDefault();folSet([...FOLLOW(),fKey(pk.dataset.fpick)]);toast(T('fl_added'));drawFollowAdd();return}
+  const fe=e.target.closest('[data-fed]');if(fe&&ISOWNER()){e.preventDefault();e.stopPropagation();editFollow(fe.dataset.fed)}
+});
+/** ✎ on a section or page in the follow-up tools: open it, or take it out of the follow-up tools */
+async function editFollow(k){
+  const it=fItem(k);
+  const r=await dialog({title:it?it.name:k,info:T('fl_ed_i'),buttons:[{label:T('fl_remove'),action:'rm',danger:1},{label:T('o_cancel'),action:'cancel'},{label:T('fl_open'),action:'open',pri:1}]});
+  if(r.action==='rm'){folSet(FOLLOW().filter(x=>x!==k));toast(T('fl_removed'))}
+  if(r.action==='open'){if(k.startsWith('p:'))go(k.slice(2));else if(k.startsWith('pg:'))openPage(k.slice(3))}
 }
 const toolSubKey=t=>TOOLSUB[t[0]]||t[2];
 /** the search box above the tools keeps only the tools whose name matches */
-function toolSearch(){const q=normAr($('tsearch')&&$('tsearch').value).trim();document.querySelectorAll('#tgrid [data-tv]').forEach(b=>{(b.closest('.tkw')||b).hidden=!!q&&!normAr(b.textContent).includes(q)});document.querySelectorAll('#tgrid .tgh').forEach(h=>{h.hidden=!!q})}
+function toolSearch(){const q=normAr($('tsearch')&&$('tsearch').value).trim();document.querySelectorAll('#tgrid [data-tv],#tgrid [data-fgo]').forEach(b=>{(b.closest('.tkw')||b).hidden=!!q&&!normAr(b.textContent).includes(q)});document.querySelectorAll('#tgrid .tgh').forEach(h=>{h.hidden=!!q})}
 /** 1.16.0 ✎ on a tool (owner): Arabic and English name, description, hide/show — one floating window */
 async function editTool(id){
   const c=CFG.tools={order:[],hide:[],names:{},...CFG.tools};
   const t=TOOLS.find(x=>x[0]===id);if(!t)return;const n=c.names[t[0]]||{ar:I18N[t[1]][0],en:I18N[t[1]][1]},dk=toolSubKey(t),d=CFG.text[dk]||{ar:I18N[dk][0],en:I18N[dk][1]},off=c.hide.includes(id);
-  const r=await dialog({title:toolName(t),fields:[{label:T('nv_name'),value:n.ar},{label:T('nv_name_en'),value:n.en||'',ltr:1},{label:T('ed_desc'),value:d.ar},{label:T('ed_desc_en'),value:d.en||'',ltr:1}],buttons:EDB({hidden:off,del:false,reset:true})});
+  const inF=FOLLOW().includes(id);
+  const r=await dialog({title:toolName(t),fields:[{label:T('nv_name'),value:n.ar},{label:T('nv_name_en'),value:n.en||'',ltr:1},{label:T('ed_desc'),value:d.ar},{label:T('ed_desc_en'),value:d.en||'',ltr:1}],buttons:[{label:T(inF?'fl_remove':'fl_to'),action:'fol'},...EDB({hidden:off,del:false,reset:true})]});
+  if(r.action==='fol'){folSet(inF?FOLLOW().filter(x=>x!==id):[...FOLLOW(),id]);return}
   if(r.action==='hide'){c.hide=off?c.hide.filter(x=>x!==id):[...c.hide,id];changed();return}
   if(r.action==='reset'){const nm={...c.names};delete nm[t[0]];c.names=nm;delete CFG.text[dk];changed();return}
   if(r.action!=='ok')return;

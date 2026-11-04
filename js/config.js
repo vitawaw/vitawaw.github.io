@@ -91,7 +91,9 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   if(over.review&&over.review.n)out.review={n:{ar:over.review.n.ar||'',en:over.review.n.en||''},date:/^\d{4}-\d{2}-\d{2}$/.test(over.review.date||'')?over.review.date:''};
   if(over.menus&&typeof over.menus==='object')out.menus={order:Array.isArray(over.menus.order)?over.menus.order:out.menus.order,bar:Array.isArray(over.menus.bar)?over.menus.bar:out.menus.bar,hide:Array.isArray(over.menus.hide)?over.menus.hide:[]};
   if(over.menus&&over.menus.groups&&typeof over.menus.groups==='object'){const g=over.menus.groups;out.menus.groups={order:Array.isArray(g.order)?g.order:[],names:g.names&&typeof g.names==='object'?g.names:{},items:g.items&&typeof g.items==='object'?g.items:{},off:Array.isArray(g.off)?g.off.filter(x=>typeof x==='string').slice(0,200):[]}}
-  if(over.tools&&typeof over.tools==='object')out.tools={order:Array.isArray(over.tools.order)?over.tools.order:[],hide:Array.isArray(over.tools.hide)?over.tools.hide:[],names:over.tools.names&&typeof over.tools.names==='object'?over.tools.names:{}};
+  if(over.tools&&typeof over.tools==='object'){out.tools={order:Array.isArray(over.tools.order)?over.tools.order:[],hide:Array.isArray(over.tools.hide)?over.tools.hide:[],names:over.tools.names&&typeof over.tools.names==='object'?over.tools.names:{}};
+    // 1.16.0 «follow-up tools»: tools, sections (p:…) and information pages (pg:…) the owner put there, in his order
+    if(Array.isArray(over.tools.follow))out.tools.follow=[...new Set(over.tools.follow.filter(k=>typeof k==='string'&&/^(tool-[a-z]+|p:[a-z]+|pg:[A-Za-z0-9_-]{1,40})$/.test(k)))].slice(0,40)}
   if(over.brand)out.brand={l1:over.brand.l1||'',l2:over.brand.l2||'',url:over.brand.url||''};
   if(Array.isArray(over.refs))out.refs=over.refs;
   if(Array.isArray(over.inter))out.inter=over.inter;

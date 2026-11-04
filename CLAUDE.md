@@ -58,6 +58,7 @@ and where the project stands. Details: `README.md` (architecture, file map, test
 ## Tests (run before every preview)
 ```
 python3 tests/owner_flow.py      # owner / visitor / pharmacist flows (fake Supabase: tests/fake_supabase.js)
+python3 tests/owner_panel.py     # 1.16.0 owner panel: edit mode, appearance, page editor, 3 sizes, undo, publish list, follow-up tools
 python3 tests/menu_flow.py       # menus, floating windows, info pages, pharmacist accounts, 3 screen sizes → tests/shots/
 python3 tests/medical_cases.py   # dose results against expected values
 python3 tests/tools_flow.py      # tool formulas + calculator → tools links
@@ -83,6 +84,15 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   Interactions + medicines one column; medicine A–Z (`MCSORT`, `.mclet`). #links = «فحص المصادر»: full #reflist with `lkBadge()`
   (owner.js). Install in settings (.m3 = 3). Labels: أدوية المريض / سجل التحاليل. Zinc `czg=dia` (WHO 2004, source 85 in DEF_REFS).
   Worker /api/links needs a team session token (`teamOnly`, Supabase /auth/v1/user). CI `.github/workflows/tests.yml`.
+  Owner panel round (his «نفذها كلها»): ⋮⋮/✎ only with body.textedit (`EDITING()` in content.js; #o-texts visible for the whole
+  team; refreshAll on toggle); `editLook()` = one live sheet (fonts, sizes sb/sh/st 0.85–1.3 → --fst for tile names, section colours,
+  logos; LOOK0 undo); page editor `.mdbar` (## / ** / -) + `#mdprev`, `paras()` renders them after esc(); dialog field type 'html';
+  «3 أحجام» `openSizes()` = same-origin iframe `?frame=1` (pre.js FRAME, boot frameDraft() reads localStorage vw-frame; _headers
+  frame-ancestors 'self' + SAMEORIGIN); undo `UNDO` stack in changed() (reset on save/reload), `autoSave()` 60 s; publish dialog lists
+  `pubList()` with «اذهب إليه». Then: roadmap like interactions (status chips with counts, one card per line, sorted RMORD, `.rmst-*`),
+  admin items movable/renamable (keys 'ad-<id>', MGTEXT), elevated cards/tiles (`--elev`, `--edge`). Follow-up tools = `CFG.tools.follow`
+  (tool ids, 'p:<section>', 'pg:<page>'; FOLLOW0 default; `fItem()`, `openFollowAdd()`, `editFollow()`, mergeCfg validates).
+  Test file `tests/owner_panel.py` (3 sizes).
   FIXED a stray `@media (max-width:420px){` left by 1.15.0 that limited all later CSS to phones.
   DB: `cleanup_1_16_0.sql` (revoke unused owner invite, drop publish_config) and `content_1_16_0.sql` (sources 79–85, 8 interactions,
   draft privacy text + roadmap) — NOT yet applied anywhere (the MCP approval timed out); apply TEST first, then LIVE at release.
