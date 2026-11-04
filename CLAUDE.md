@@ -78,7 +78,8 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
 - **Live: 1.16.0** (he said «تمام انشر» on 2026-11-04; main fast-forwarded). DB for live = ONE file `release_1_16_0_live.sql`
   (content_1_15_0 + content_1_16_0 + cleanup_1_16_0 + activity_log_1_16_0, each twice-safe); he runs it in the SQL editor of both
-  projects, then logs in → approves the 8 interactions in 🔔 → publishes.
+  projects — DONE by him on 2026-11-04 and checked on BOTH (activity table + 7 log triggers, publish_config gone, owner invite closed,
+  sources 79–85, 8 interactions waiting, draft roadmap 12 items). Left for him: approve the 8 in 🔔 → publish.
 - **1.16.0 (includes 1.15.0 + 1.14.6)**: his «نفذ الاقتراحات و التصحيحات و الملاحضات» + notes. ONE tile design (css end of app.css):
   #picker/#tgrid/.mtiles = 4 per row on every size, `.tico` badge (VBADGE/vBadge in content.js; tools reuse `.ttl-ic svg`). ⋮⋮ + ✎ on
   every item: `EPEN()` + `EDB()` (content.js) — actBtns = drag + pend + ✎ only; hide/delete/reset live in each editor's dialog
