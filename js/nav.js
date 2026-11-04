@@ -318,7 +318,7 @@ const MEDIT=()=>ISOWNER()&&EDITING(); // 1.16.0: only after «تعديل وتر�
 function mgSet(f){const g=JSON.parse(JSON.stringify(MGCFG()));f(g);CFG.menus={...(CFG.menus||{}),groups:g};changed();renderMenu()}
 /** 1.16.0 ✎ on a menu group or item (owner): its name in Arabic and English and hide/show for visitors, in one floating window.
    An information page opens its own editor (title, text, hide, delete). */
-const MGTEXT={'ad-look':'ad_look','ad-contact':'ad_contact','ad-team':'ad_team','ad-pub':'ad_pub',share:'mr_share',clear:'cd_t',lang:'mr_lang',theme:'mr_theme',install:'mr_install',wa:'mr_wa',mail:'mr_mail',call:'mr_call',links:'lk_t'};
+const MGTEXT={log:'lg_t','ad-look':'ad_look','ad-contact':'ad_contact','ad-team':'ad_team','ad-pub':'ad_pub',share:'mr_share',clear:'cd_t',lang:'mr_lang',theme:'mr_theme',install:'mr_install',wa:'mr_wa',mail:'mr_mail',call:'mr_call',links:'lk_t'};
 async function mgEdit(key){
   if(!ISOWNER())return;
   if(key.startsWith('g:'))return mgGroupEdit(key.slice(2));
@@ -379,6 +379,7 @@ function menuHTML(r){
   G.recent=RECENT.map(recentItem).filter(Boolean).slice(0,6);
   // shortcut tiles: sections not in the bar, my lab results, my medicines, the link check (team), information pages
   G.short=[...navMore().map(p=>({key:'p-'+p,label:T(SECKEY[p])+(navHidden(p)?' · '+T('pg_hidden'):''),ico:tabIco(p),page:p,f:()=>go(p)})),
+    ...(own&&!OWN.preview?[{key:'log',label:T('lg_t'),ico:ICO.history,page:'roadmap',f:()=>openLog()}]:[]),
     ...(own&&CAN('refs')&&!OWN.preview?[{key:'links',label:T('lk_t'),ico:tabIco('links'),page:'sources',f:()=>go('links')}]:[]),
     ...visiblePages().filter(p=>!SPECIAL.includes(p.id)).map(p=>({key:'pg-'+p.id,...pgItem(p)}))];
   // «help and information», each on its own: how to use · FAQ · about us · suggest a feature · privacy policy · disclaimer

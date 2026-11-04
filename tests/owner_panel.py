@@ -85,5 +85,19 @@ with sync_playwright() as p:
         if btn.count(): btn.click(); o.wait_for_timeout(300)
         check(f'{tag}: «اذهب إليه» closes the window', o.is_hidden('#dlg'))
         o.screenshot(path=f'tests/shots/panel_bar_{tag}.png', clip={'x': 0, 'y': 0, 'width': W, 'height': 140})
+        # activity log: a tile in «الأقسام» opens a floating window, filters, who and when under every action
+        o.evaluate("""window.__ACTIVITY=[{id:3,at:'2026-11-04T10:00:00Z',who:'أحمد',user_id:'u2',kind:'int',action:'edit',item:'5',label:'fe + Levothyroxine',detail:'desc_ar,severity'},
+          {id:2,at:'2026-11-04T09:00:00Z',who:'د. سيف الدين',user_id:'u1',kind:'publish',action:'publish',item:'7',label:'نشر الأسبوع',detail:null},
+          {id:1,at:'2026-11-04T08:00:00Z',who:'د. سيف الدين',user_id:'u1',kind:'draft',action:'save',item:'draft',label:null,detail:'look,text'}]""")
+        if o.evaluate('WIDE()'): o.locator('#side-b .mtile', has_text='سجل الإجراءات').click()
+        else: o.evaluate("go('menu')"); o.wait_for_timeout(200); o.locator('#menu-b .mtile', has_text='سجل الإجراءات').click()
+        o.wait_for_timeout(400)
+        t = o.inner_text('#sheet-b')
+        check(f'{tag}: activity log opens with every action, what changed and who', o.locator('#sheet-b .lglist li').count() == 3 and 'بواسطة أحمد' in t and 'الشرح' in t and 'الخطورة' in t and 'الخطوط والأحجام والألوان' in t, t[:300])
+        o.click('[data-logf="pub"]'); o.wait_for_timeout(150)
+        check(f'{tag}: the «publishing» filter keeps only publishing', o.locator('#sheet-b .lglist li').count() == 1 and 'نشر الأسبوع' in o.inner_text('#sheet-b'))
+        o.click('[data-logf="all"]'); o.wait_for_timeout(100)
+        o.screenshot(path=f'tests/shots/panel_log_{tag}.png')
+        o.evaluate('closeSheet()')
         check(f'{tag}: no page errors', not errs, str(errs))
     print(f'\n{len(fails)} FAILED: {fails}' if fails else '\nALL PASSED'); sys.exit(1 if fails else 0)

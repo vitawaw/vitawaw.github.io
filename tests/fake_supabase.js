@@ -7,7 +7,8 @@ window.__calls=[];
   const q=(t)=>{const f={};let upd=null;const api={select(){return api},eq(c,v){f[c]=v;return api},order(){return api},limit(){return api},
    update(v){upd=v;return api},
    // notifications for a pharmacist: list, and «mark read»
-   then(ok,no){if(t!=='notifications')return Promise.resolve({data:null,error:{message:'?'}}).then(ok,no);st.notes=st.notes||[];
+   then(ok,no){if(t==='activity'){const a=(window.__ACTIVITY||[]).filter(r=>(window.__ROLE||'owner')==='owner'||r.user_id==='u2');return Promise.resolve({data:JSON.parse(JSON.stringify(a)),error:null}).then(ok,no)} // 1.16.0 activity log (RLS: a pharmacist sees his own)
+     if(t!=='notifications')return Promise.resolve({data:null,error:{message:'?'}}).then(ok,no);st.notes=st.notes||[];
      if(upd){st.notes.forEach(n=>{if(f.read===undefined||n.read===f.read)Object.assign(n,upd)});save();window.__calls.push(['notes-read']);return Promise.resolve({error:null}).then(ok,no)}
      return Promise.resolve({data:JSON.parse(JSON.stringify(st.notes)),error:null}).then(ok,no)},
    maybeSingle(){if(t==='members')return Promise.resolve({data:{role:window.__ROLE||'owner',status:window.__STATUS||'active',perms:window.__PERMS||{},name:window.__NAME||''},error:null});const row=(st.cfg||{})[f.id];return Promise.resolve({data:row?{data:row}:null,error:null})},

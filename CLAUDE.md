@@ -93,6 +93,11 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   admin items movable/renamable (keys 'ad-<id>', MGTEXT), elevated cards/tiles (`--elev`, `--edge`). Follow-up tools = `CFG.tools.follow`
   (tool ids, 'p:<section>', 'pg:<page>'; FOLLOW0 default; `fItem()`, `openFollowAdd()`, `editFollow()`, mergeCfg validates).
   Test file `tests/owner_panel.py` (3 sizes).
+  Activity log («سجل الإجراءات»): table public.activity written ONLY by triggers (private.log_content on sources/interactions/
+  nutrients, log_config on site_config draft, log_publish on config_history, log_team on members + private.invites); RLS select =
+  owner all / others own rows; no client writes. File `activity_log_1_16_0.sql` (tested on a local Postgres 16 with a mock auth
+  schema, twice-safe). Client `openLog()`/`drawLog()` in owner.js (LOGF/LOGW filters, LOGFIELD labels), menu tile key 'log';
+  shows lg_nodb until the SQL is run. Fake: window.__ACTIVITY.
   FIXED a stray `@media (max-width:420px){` left by 1.15.0 that limited all later CSS to phones.
   DB: `cleanup_1_16_0.sql` (revoke unused owner invite, drop publish_config) and `content_1_16_0.sql` (sources 79–85, 8 interactions,
   draft privacy text + roadmap) — NOT yet applied anywhere (the MCP approval timed out); apply TEST first, then LIVE at release.

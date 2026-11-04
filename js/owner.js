@@ -825,6 +825,42 @@ async function discard(){
   }
   OWN.base=cfgJSON();OWN.saved=false;undoReset();changed();toast(T('o_discdone'));
 }
+/* ===================== 1.16.0 activity log («سجل الإجراءات») =====================
+   The database writes every action itself (table public.activity, file activity_log_1_16_0.sql): added, edited (which fields),
+   hidden, shown, deleted, approved, rejected content; saved draft parts; publishing; the team. The owner reads all of it,
+   an invited pharmacist only his own (row level security). Under each action: who did it and when. */
+let LOGF='all',LOGW='',LOGROWS=null;
+const LOGKIND={all:null,content:['src','int','nut'],set:['draft'],pub:['publish'],team:['team']};
+const LOGFIELD={org:'lf_org',title:'lf_title',url:'lf_url',use_ar:'lf_use',use_en:'lf_use',kind:'lf_kind',nutrient_id:'lf_nut',supp_ar:'lf_nut',supp_en:'lf_nut',
+  with_ar:'lf_with',with_en:'lf_with',desc_ar:'lf_desc',desc_en:'lf_desc',severity:'lf_sev',source_ids:'lf_src',gap:'lf_gap',hidden:'lf_hidden',
+  name_ar:'lf_name',name_en:'lf_name',hint_ar:'lf_hint',hint_en:'lf_hint',unit:'lf_unit',dose_rows:'lf_rows',plan_ar:'lf_plan',plan_en:'lf_plan',note_ar:'lf_note',note_en:'lf_note',
+  text:'lf_text',pages:'lf_pages',menus:'pb_menus',tools:'pb_tools',look:'lk_win',colors:'lk_cols',roadmap:'pb_rm',brand:'br_t',review:'pb_review',contact:'o_contact',
+  nutOrder:'pb_order',medcat:'pb_medcat',nut:'lf_nhide',team:'lf_team',team_done:'lf_teamdone'};
+async function openLog(){
+  if(!(typeof OWN!=='undefined'&&OWN.on))return;
+  openSheet(T('lg_t'),`<p class="hint">${esc(T(ISOWNER()?'lg_i_own':'lg_i_team'))}</p><p class="hint">${esc(T('o_busy'))}</p>`,{key:'log'});
+  LOGROWS=null;
+  if(OWN.local||!OWN.client){LOGROWS=[];drawLog();return}
+  const {data,error}=await OWN.client.from('activity').select('id,at,who,kind,action,item,label,detail').order('id',{ascending:false}).limit(300);
+  LOGROWS=error?false:clean(data||[]);drawLog();
+}
+function drawLog(){
+  if(!SHEET||SHEET.key!=='log')return;
+  if(LOGROWS===false){$('sheet-b').innerHTML=`<p class="hint">${esc(T('lg_nodb'))}</p>`;return}
+  const rows=LOGROWS||[],people=[...new Set(rows.map(r=>r.who||'').filter(Boolean))];
+  const ks=LOGKIND[LOGF],list=rows.filter(r=>(!ks||ks.includes(r.kind))&&(!LOGW||r.who===LOGW));
+  const fmtD=d=>{try{return new Date(d).toLocaleString(LANG==='ar'?'ar-IQ-u-nu-latn':'en-GB',{dateStyle:'medium',timeStyle:'short'})}catch(e){return d}};
+  const det=r=>{if(!r.detail)return '';if(r.kind==='team'&&r.action!=='perms')return r.detail;
+    const parts=[...new Set(r.detail.split(',').map(k=>LOGFIELD[k]?T(LOGFIELD[k]):r.kind==='team'?(I18N['pl_'+k]?T('pl_'+k):k):k))];return T(r.kind==='team'?'lg_perms':'lg_what')+' '+parts.join(L('، ',', '))};
+  const lab=r=>{let l=r.label||r.item||'';if(r.kind==='int'){const i=l.indexOf(' + '),k=i>0?l.slice(0,i):'';if(k&&(KEYS.includes(k)||I18N['n_'+k]))l=kname(k)+l.slice(i)}else if(r.kind==='nut'&&r.item&&(KEYS.includes(r.item)))l=kname(r.item);return l};
+  const what=r=>{const kn=I18N['lk_'+r.kind]?T('lk_'+r.kind):r.kind;return r.kind==='publish'?(r.label?`«${r.label}»`:''):r.kind==='draft'?'':`${kn}: ${lab(r)}`};
+  $('sheet-b').innerHTML=`<p class="hint">${esc(T(ISOWNER()?'lg_i_own':'lg_i_team'))}</p>`+
+    `<div class="filters lgf">${Object.keys(LOGKIND).map(k=>`<button type="button" data-logf="${k}" aria-pressed="${k===LOGF}">${esc(T('lg_f_'+k))}<bdi class="fc">${rows.filter(r=>!LOGKIND[k]||LOGKIND[k].includes(r.kind)).length}</bdi></button>`).join('')}</div>`+
+    (ISOWNER()&&people.length>1?`<div class="row lgw"><label class="l" for="logw">${esc(T('lg_who'))}</label><select id="logw"><option value="">${esc(T('all'))}</option>${people.map(p=>`<option${p===LOGW?' selected':''}>${esc(p)}</option>`).join('')}</select></div>`:'')+
+    (list.length?`<ul class="lglist">${list.map(r=>`<li class="lga-${esc(r.action)}"><div class="lgh"><span class="lgc">${esc(T('la_'+r.action))}</span><b>${esc(what(r))}</b></div>${det(r)?`<div class="lgd">${esc(det(r))}</div>`:''}<div class="lgby">${esc(T('lg_by'))} <b>${esc(r.who||T('lg_unknown'))}</b> · <bdi>${esc(fmtD(r.at))}</bdi></div></li>`).join('')}</ul>`:`<p class="inone">${esc(T('lg_none'))}</p>`);
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-logf]');if(!b)return;e.preventDefault();LOGF=b.dataset.logf;drawLog()});
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='logw'){LOGW=e.target.value;drawLog()}});
 /* ===================== account & security (owner and pharmacists) =====================
    Password (the current one is checked first), two-step verification with an authenticator app (TOTP),
    signing out other devices. With two-step verification on, the database also refuses edits until the code is given. */

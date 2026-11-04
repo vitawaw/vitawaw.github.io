@@ -1050,3 +1050,17 @@ ol.refs>li{border-inline-start:4px solid color-mix(in srgb,var(--pc2,var(--royal
 @media (min-width:768px){.picker [data-fgo],.tadd{min-height:118px}}
 .pka{flex-wrap:nowrap}
 @media (max-width:419px){.pka .drag,.pka .epen{width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important}.pkw>button[data-k],.pkw>button[data-tv],.pkw>button[data-fgo]{padding-top:36px}}
+/* 1.16.0 activity log: one card per action, who and when under it */
+.lgf{margin:6px 0 10px}
+.lgw{margin-bottom:10px}
+.lglist{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.lglist li{border:1px solid var(--edge);border-inline-start:4px solid var(--royal);border-radius:12px;padding:10px 12px;background:var(--card);box-shadow:var(--elev);display:grid;gap:4px}
+.lglist li.lga-del,.lglist li.lga-reject{border-inline-start-color:var(--bad)}
+.lglist li.lga-add,.lglist li.lga-approve,.lglist li.lga-publish,.lglist li.lga-restore{border-inline-start-color:var(--ok)}
+.lglist li.lga-hide{border-inline-start-color:var(--warn)}
+.lgh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lgc{font:700 calc(12px*var(--fsb,1)) var(--f-body);padding:2px 9px;border-radius:99px;background:var(--chip);color:var(--royal)}
+.lga-del .lgc,.lga-reject .lgc{background:var(--bad-bg);color:var(--bad)}.lga-add .lgc,.lga-approve .lgc,.lga-publish .lgc{background:var(--ok-bg);color:var(--ok)}
+.lgh b{font:700 calc(14px*var(--fsh,1)) var(--f-display);overflow-wrap:anywhere}
+.lgd{font-size:calc(13px*var(--fsb,1));color:var(--ink)}
+.lgby{font-size:calc(12px*var(--fsb,1));color:var(--mute);border-top:1px dashed var(--line);padding-top:4px}
