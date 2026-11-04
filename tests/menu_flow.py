@@ -1,7 +1,7 @@
 """Menus (1.6.3, like Facebook): bottom tab bar + ☰ Menu page on phones/tablets, side menu on wide screens, floating windows, info pages, pharmacist accounts.
 Run:  python3 tests/menu_flow.py      (needs Playwright; uses the fake Supabase in tests/fake_supabase.js)
 Prints PASS/FAIL lines and writes screenshots to tests/shots/."""
-import json, os, sys
+import json, os, re, sys
 from playwright.sync_api import sync_playwright
 exec(open('tests/owner_flow.py').read().split('with sync_playwright()')[0])   # serve(), setup(), ok(), more(), login()
 os.makedirs('tests/shots', exist_ok=True)
@@ -17,6 +17,11 @@ def page(b, w=390, h=844, init=''):
     if init: pg.add_init_script(init)
     setup(pg); pg.goto('http://app.test/'); pg.wait_for_timeout(600)
     return pg, errs
+
+def act(o, loc, a):  # 1.16.0: hide/show and delete live in the ✎ floating window of each item
+    loc.locator('[data-act="edit"]').first.click(); o.wait_for_timeout(200)
+    lbl = {'hide': ['إخفاء', 'إظهار'], 'del': ['حذف']}[a]
+    o.locator('#dlg-a button').filter(has_text=re.compile('^(' + '|'.join(lbl) + ')$')).first.click(); o.wait_for_timeout(200)
 
 with sync_playwright() as p:
     b = p.chromium.launch()
@@ -55,7 +60,7 @@ with sync_playwright() as p:
     check('Menu: account card, shortcuts, settings', all(x in t for x in ['الحساب', 'تسجيل الدخول', 'لديّ دعوة', 'اختصارات', 'القادم', 'سياسة الخصوصية', 'مشاركة التطبيق', 'الإعدادات', 'اللغة', 'المظهر']) and 'وضع العرض' not in t, t[:200])
     tt = v.evaluate("[...document.querySelectorAll('#menu-b .mtile')].map(e=>e.innerText.trim())")
     check('Menu shortcuts are tiles: every section, bar ones too (1.14.5)', all(any(x in t2 for t2 in tt) for x in ['الحاسبة', 'التداخلات', 'الأدوات', 'المصادر', 'القادم']), str(tt[:8]))
-    check('Menu: your shortcuts (last used), contact and settings (language, appearance) as rectangles', v.locator('#menu-b .mrc').count() >= 2 and 'التواصل' in t and 'الخصوصية' in t and v.locator('#menu-b .m3').count() >= 1 and v.locator('#menu-b .m3').last.locator('.m3b').count() == 2)
+    check('Menu: your shortcuts (last used), contact and settings (language, appearance) as rectangles', v.locator('#menu-b .mrc').count() >= 2 and 'التواصل' in t and 'الخصوصية' in t and v.locator('#menu-b .m3').count() >= 1 and v.locator('#menu-b .m3').last.locator('.m3b').count() == 3 and 'تثبيت' in v.inner_text('#menu-b .m3 >> nth=-1'))
     check('visitor: no management in Menu', 'الإدارة' not in t)
     v.screenshot(path='tests/shots/menu_ar.png', full_page=True)
     mi(v, 'سياسة الخصوصية')
@@ -106,21 +111,25 @@ with sync_playwright() as p:
     # the same buttons on every item: approve · edit · hide/show · delete
     o.click('#t-interactions'); o.evaluate("renderInter()"); o.wait_for_timeout(200)
     card = o.locator('#ilist .icard:not(.pending)').first
-    check('interaction card: edit, hide, delete buttons', all(card.locator(f'[data-act="{a}"]').count() == 1 for a in ['edit', 'hide', 'del']))
+    check('1.16.0 interaction card: ⋮⋮ and ✎ only', card.locator('[data-act="edit"]').count() == 1 and card.locator('.drag').count() == 1 and card.locator('[data-act="hide"],[data-act="del"]').count() == 0)
+    card.locator('[data-act="edit"]').click(); o.wait_for_timeout(200)
+    dl = o.inner_text('#dlg-a')
+    check('1.16.0 ✎ window holds hide, delete, cancel, save', all(x in dl for x in ['إخفاء', 'حذف', 'إلغاء', 'حفظ']) and o.inner_text('#dlg-b').count('(English)') == 3, dl)
+    o.keyboard.press('Escape'); o.wait_for_timeout(150)
     n0 = o.locator('#ilist .icard').count()
-    card.locator('[data-act="hide"]').click(); o.wait_for_timeout(200)
+    act(o, card, 'hide')
     check('hide marks the item hidden for the team', o.locator('#ilist .icard.hid').count() == 1 and o.locator('#ilist .icard').count() == n0)
     npub = o.locator('#ilist .icard:not(.pending):not(.hid)').count()  # visitors see only approved, shown items
     o.evaluate('setPreview(true)'); o.wait_for_timeout(200)
     check('preview: hidden item not shown to visitors', o.locator('#ilist .icard').count() == npub)
     o.evaluate('setPreview(false)'); o.wait_for_timeout(200)
-    o.locator('#ilist .icard.hid [data-act="hide"]').click(); o.wait_for_timeout(200)
+    act(o, o.locator('#ilist .icard.hid'), 'hide')
     check('show brings it back', o.locator('#ilist .icard.hid').count() == 0)
-    o.locator('#ilist .icard').last.locator('[data-act="del"]').click(); o.wait_for_timeout(200); ok(o)
+    act(o, o.locator('#ilist .icard').last, 'del'); ok(o)
     check('delete (with confirmation) removes the item', o.locator('#ilist .icard').count() == n0 - 1)
     o.evaluate("go('sources')"); o.wait_for_timeout(200)
     li = o.locator('#reflist li[id^="ref-"]').first
-    check('source: edit, hide, delete buttons', all(li.locator(f'[data-act="{a}"]').count() == 1 for a in ['edit', 'hide', 'del']))
+    check('source: ✎ only on the card', li.locator('[data-act="edit"]').count() == 1 and li.locator('[data-act="del"]').count() == 0)
     li.locator('[data-act="edit"]').click(); o.wait_for_timeout(200)
     labels = o.inner_text('#dlg-b')
     check('source dialog has type and English fields', 'نوع المصدر' in labels and '(English)' in labels, labels[:200])
@@ -128,14 +137,19 @@ with sync_playwright() as p:
     check('chosen source type is shown', 'دراسة أو مراجعة منهجية' in o.locator('#reflist li[id^="ref-"]').filter(has=o.locator('.rt-s')).first.inner_text())
     o.screenshot(path='tests/shots/owner_sources.png')
     o.click('#t-calc'); o.wait_for_timeout(200)
-    check('added vitamin: edit, hide, delete + «awaiting review ›» opens 🔔', all(o.locator(f'#picker .pkw [data-act="{a}"]').count() >= 1 for a in ['edit', 'hide', 'del']) and o.locator('#picker .pkw button.pend[data-gonotif]').count() >= 1)
+    check('vitamin tiles: ⋮⋮ and ✎ (built-in too)', o.locator('#picker .pkw [data-act="edit"]').count() >= 1 and o.locator('#picker .pkw [data-nedit]').count() >= 8 and o.locator('#picker .pkw .drag').count() >= 9)
+    o.locator('#picker .pkw [data-nedit="d"]').click(); o.wait_for_timeout(200)
+    o.fill('#dlgf0', 'فيتامين د'); ok(o)
+    check('built-in vitamin renamed from its ✎', 'فيتامين د' in o.inner_text('#picker [data-k="d"]') and o.evaluate("CFG.text.n_d.ar") == 'فيتامين د')
+    o.locator('#picker .pkw [data-nedit="d"]').click(); o.wait_for_timeout(200)
+    o.locator('#dlg-a button', has_text='استعادة').first.click() if o.locator('#dlg-a button', has_text='استعادة').count() else o.keyboard.press('Escape'); o.wait_for_timeout(200)
     o.locator('#picker .pkw [data-act="edit"]').first.click(); o.wait_for_timeout(200)
-    check('vitamin dialog has English fields', o.inner_text('#dlg-b').count('(English)') == 4); o.click('#dlg-a button:not(.pri)')
+    check('vitamin dialog has English fields', o.inner_text('#dlg-b').count('(English)') == 4); o.keyboard.press('Escape'); o.wait_for_timeout(150)
     o.click('#t-interactions'); o.evaluate("renderInter()"); o.wait_for_timeout(150)
     o.locator('#ilist .icard').first.locator('[data-act="edit"]').click(); o.wait_for_timeout(200)
-    check('interaction dialog has English fields', o.inner_text('#dlg-b').count('(English)') == 3); o.click('#dlg-a button:not(.pri)')
+    check('interaction dialog has English fields', o.inner_text('#dlg-b').count('(English)') == 3); o.keyboard.press('Escape'); o.wait_for_timeout(150)
     o.evaluate("go('roadmap')"); o.wait_for_timeout(200)
-    check('roadmap feature: edit, hide, delete', all(o.locator(f'#rmgrid .rm [data-act="{a}"]').count() >= 1 for a in ['edit', 'hide', 'del']))
+    check('roadmap feature: ✎', o.locator('#rmgrid .rm [data-act="edit"]').count() >= 1)
     # ---- fixes from the 1.6.5 review ----
     o.evaluate("go('calc')"); o.wait_for_timeout(150)
     o.evaluate("CFG.text.hc_t={ar:'عنوان مخصص',en:'Custom'};changed()"); o.wait_for_timeout(100)
@@ -149,11 +163,11 @@ with sync_playwright() as p:
     o.locator('#sheet-b .sact button', has_text='حذف').click(); o.wait_for_timeout(200); o.keyboard.press('Escape'); o.wait_for_timeout(200)
     check('Escape on a confirmation closes only the confirmation', o.is_visible('#sheet') and o.is_hidden('#dlg')); o.click('#sheet-x')
     o.click('#t-interactions'); o.evaluate("renderInter()"); o.wait_for_timeout(200)
-    o.locator('#ilist .icard').first.locator('[data-act="hide"]').click(); o.wait_for_timeout(150)
+    act(o, o.locator('#ilist .icard').first, 'hide')
     n0 = o.evaluate("__calls.filter(c=>c[1]==='save_content').length")
     o.evaluate("document.getElementById('o-save').click();document.getElementById('o-save').click()"); o.wait_for_timeout(800)
     check('double tap on Save -> saved once', o.evaluate("__calls.filter(c=>c[1]==='save_content').length") == n0 + 1)
-    o.locator('#ilist .icard.hid [data-act="hide"]').click(); o.wait_for_timeout(150)
+    act(o, o.locator('#ilist .icard.hid'), 'hide')
     o.evaluate("__st.inter[0].d={ar:'غيّرها صيدلي من جهاز آخر',en:'x'}")
     n1 = o.evaluate("__calls.filter(c=>c[1]==='save_content').length")
     o.click('#o-save'); o.wait_for_timeout(600)
@@ -165,7 +179,7 @@ with sync_playwright() as p:
     o.evaluate("go('sources')"); o.wait_for_timeout(200); o.click('#radd'); o.wait_for_timeout(200); ok(o); o.wait_for_timeout(200)
     check('empty source -> error under the field (not a toast)', o.is_visible('#dlg') and o.locator('#dlg .row.bad .ferr').count() == 1 and 'الجهة' in o.inner_text('#dlg .row.bad'))
     o.keyboard.press('Escape'); o.wait_for_timeout(150)
-    o.locator('#reflist [data-act="del"]').first.click(); o.wait_for_timeout(200)
+    act(o, o.locator('#reflist li[id^="ref-"]').first, 'del')
     check('delete confirmation: «رجوع» and red «نعم، احذف»', o.locator('#dlg-a button', has_text='رجوع').count() == 1 and o.locator('#dlg-a .btn.danger.pri', has_text='نعم، احذف').count() == 1)
     o.keyboard.press('Escape'); o.wait_for_timeout(150)
     o.click('#o-publish'); o.wait_for_timeout(250)
@@ -235,7 +249,7 @@ with sync_playwright() as p:
     check('interactions: one list of cards, no supplement groups, no «my medicines» box', o.locator('#ilist details.igrp').count() == 0 and o.locator('#interactions #mymed').count() == 0 and o.locator('#ilist .icard').count() > 3)
     # owner hides a menu item and a group from visitors (👁 in edit mode)
     o.evaluate("CFG.menus={...(CFG.menus||{}),groups:{...((CFG.menus||{}).groups||{}),off:['p-roadmap','g:apps']}};renderMenu()")
-    hid = o.evaluate("(()=>{const s=OWN.on;OWN.on=false;const h=menuHTML('m');OWN.on=s;return [h.includes('القادم'),h.includes('ثبّت')||h.includes('تثبيت')]})()")
+    hid = o.evaluate("(()=>{const s=OWN.on;OWN.on=false;const h=menuHTML('m');OWN.on=s;return [h.includes('القادم'),h.includes('مشاركة التطبيق')]})()")
     check('menu: hidden item and group are gone for visitors', hid == [False, False], str(hid))
     check('menu: the team still sees the hidden item, marked', 'مخفي' in o.evaluate("menuHTML('m')"))
     o.evaluate("CFG.menus.groups.off=[];renderMenu()")

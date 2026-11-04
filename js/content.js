@@ -10,14 +10,18 @@ const SHOWALL=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview;
 const SEVORD={major:0,moderate:1,minor:2};
 const bulkBar=(t,n)=>n&&CANAPPROVE()?`<div class="oedit bulk"><span class="pend">${n} ${T('o_pendn')}</span><button class="btn" type="button" data-gonotif="1">${T('nt_open')}</button></div>`:'';
 const CANAPPROVE=()=>typeof OWN!=='undefined'&&(OWN.role==='owner'||OWN.local);
-/** The same buttons on every editable item: edit, hide/show, delete; a waiting item shows «awaiting review»
+/** 1.16.0: every editable item carries the same two buttons — ⋮⋮ to drag it and ✎ to open its floating window, which holds
+   everything about it (Arabic and English name, description, hide/show, delete). A waiting item shows «awaiting review»
    (for the owner it opens 🔔 notifications, where changes are approved or rejected).
    kind: r = source, i = interaction, n = added vitamin, m = roadmap feature. The database checks every change. */
-function actBtns(kind,id,{rv=true,hidden=false,edit=true,del=true,drag=false}={}){
-  const b=(a,ico,lbl,cls='')=>`<button class="btn${cls}" type="button" data-act="${a}" data-kind="${kind}" data-id="${esc(String(id))}" aria-label="${esc(lbl)}" title="${esc(lbl)}">${ico}<span class="lbl">${esc(lbl)}</span></button>`;
+const EPEN=(attrs,lbl)=>`<button class="btn epen" type="button" ${attrs} aria-label="${esc(lbl||T('o_editall'))}" title="${esc(lbl||T('o_editall'))}">${PEN}</button>`;
+function actBtns(kind,id,{rv=true,hidden=false,edit=true,drag=false}={}){
   return (drag?DRAG(T('o_drag')):'')+(rv?'':CANAPPROVE()?`<button class="pend" type="button" data-gonotif="1">${T('o_pending')} ›</button>`:`<span class="pend">${T('o_pending')}</span>`)+(hidden?`<span class="hidb">${T('o_hiddenb')}</span>`:'')+
-    (edit?b('edit',PEN,T('o_edit')):'')+b('hide',hidden?EYE:EYEOFF,T(hidden?'o_nshow':'o_nhide'))+(del?b('del',TRASH,T('o_del'),' danger'):'');
+    (edit?EPEN(`data-act="edit" data-kind="${kind}" data-id="${esc(String(id))}"`):'');
 }
+/** the buttons at the bottom of an item's floating window: hide/show · delete · (reset) · cancel · save */
+const EDB=({hidden=false,hide=true,del=true,reset=false,isNew=false}={})=>[...(!isNew&&hide?[{label:T(hidden?'o_nshow':'o_nhide'),action:'hide'}]:[]),...(!isNew&&del?[{label:T('o_del'),action:'del',danger:1}]:[]),
+  ...(reset?[{label:T('o_reset'),action:'reset'}]:[]),{label:T('o_cancel'),action:'cancel'},{label:T('ed_save'),action:'ok',pri:1}];
 const actBar=(kind,id,o)=>`<div class="oedit acts">${actBtns(kind,id,o)}</div>`;
 const NHIDE=()=>(CFG.nut&&CFG.nut.hide)||[];
 const NCUST=()=>(CFG.nut&&CFG.nut.custom)||[];
@@ -40,6 +44,7 @@ function buildData(){
   REFGROUP={};
   KEYS.slice(1).forEach(k=>{const g=new Set(DEF_REFGROUP[k]||(CUST[k]?CUST[k].r||[]:[]));INTER.filter(x=>x[0]===k).forEach(x=>x[4].forEach(n=>g.add(n)));REFGROUP[k]=[...g].filter(n=>REFS[n])});
   // picker (the owner's buttons around each vitamin are taken off first and put back by renderNutAdmin)
+  $('picker').querySelectorAll('em.bh').forEach(e=>e.remove());
   $('picker').querySelectorAll('.pkw').forEach(w=>{const b=w.querySelector('button[data-k]');if(b)w.before(b);w.remove()});
   document.querySelectorAll('#picker button[data-k]').forEach(b=>{if(BUILTIN.includes(b.dataset.k)){b.hidden=hide.includes(b.dataset.k)&&!all;b.classList.toggle('off',hide.includes(b.dataset.k))}else b.remove()});
   VC.forEach(c=>{const b=document.createElement('button');b.dataset.k=c.id;b.className='cnut';b.innerHTML=`<span>${esc(tx2(c.n))}</span><small>${esc(tx2(c.h))}</small>${c.rv===false?`<em class="pend">${T('o_pending')}</em>`:''}${c.hidden?`<em class="hidb">${T('o_hiddenb')}</em>`:''}`;$('picker').appendChild(b);F[c.id]=()=>fCustom(c.id);EX[c.id]={age:30,sex:'f'}});
@@ -49,12 +54,21 @@ function buildData(){
   $('picker').querySelectorAll('.pkh').forEach(h=>h.remove());
   const SPEC=['preg','inf','vac','bar','thi'],spec=KEYS.slice(1).filter(k=>SPEC.includes(k)).map(k=>$('picker').querySelector(`button[data-k="${k}"]`)).filter(Boolean);
   if(spec.some(b=>!b.hidden)){const h=document.createElement('h3');h.className='pkh';h.dataset.t='pk_spec';h.textContent=T('pk_spec');$('picker').appendChild(h);spec.forEach(b=>$('picker').appendChild(b))}
+  // 1.16.0: every vitamin tile carries its symbol (same tile design as the tools and the menu sections)
+  $('picker').querySelectorAll('button[data-k]').forEach(b=>{if(!b.querySelector('.tico'))b.insertAdjacentHTML('afterbegin',`<i class="tico" aria-hidden="true">${vBadge(b.dataset.k)}</i>`)});
   if(!KEYS.includes(K)||K==='all')K=KEYS[1]||'d';
   showFor();
   document.querySelectorAll('#picker button[data-k]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===K));
   $('nsw').hidden=$('picker').querySelectorAll('button[data-k]:not([hidden])').length<10;filterNuts();
   renderNutAdmin();
 }
+const VSVG=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const VBADGE={d:'D',b12:'B12',fol:'B9',fe:'Fe',ca:'Ca',mg:'Mg',c:'C',zn:'Zn',vac:'A',thi:'B1',
+  preg:VSVG('<circle cx="12" cy="5" r="2.5"/><path d="M10 21v-6l-1-4a3 3 0 0 1 3-3c2 0 2.5 1.5 3.5 3.5a3.5 3.5 0 0 1-2.5 4.5v5"/>'),
+  inf:VSVG('<circle cx="12" cy="10" r="6"/><path d="M9.5 9h.01M14.5 9h.01M10 12.5a3 3 0 0 0 4 0M12 4c-1 0-1.5-1-1-2"/><path d="M8 17l-1 4M16 17l1 4"/>'),
+  bar:VSVG('<path d="M12 3v18M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0zM8 21h8"/>')};
+/** the symbol on a vitamin tile: D, B12, Fe… a picture for the special calculators, the first letters for an added one */
+function vBadge(k){if(VBADGE[k])return VBADGE[k];const c=CUST[k],n=c&&((c.n&&c.n.en)||(c.n&&c.n.ar))||'';const m=n.match(/\b(?:vitamin|فيتامين)\s*([A-Za-z]\d{0,2})/i);return esc(m?m[1]:(n.replace(/[^A-Za-z\u0600-\u06FF]/g,'').slice(0,2)||'+'))}
 function filterNuts(){const q=normAr($('nsearch')&&$('nsearch').value);document.querySelectorAll('#picker button[data-k]').forEach(b=>b.classList.toggle('nf',!!q&&!normAr(b.textContent).includes(q)));document.querySelectorAll('#picker .pkh').forEach(h=>h.classList.toggle('nf',!!q))}
 /** owner: each vitamin carries its own buttons (drag ⋮⋮ to reorder · edit · hide/show · delete); «add» is under the list */
 function renderNutAdmin(){
@@ -63,9 +77,10 @@ function renderNutAdmin(){
   const hide=NHIDE(),cust=Object.fromEntries(NCUST().map(c=>[c.id,c]));
   pk.querySelectorAll('button[data-k]').forEach(b=>{const k=b.dataset.k,c=cust[k],off=c?!!c.hidden:hide.includes(k);
     const w=document.createElement('div');w.className='pkw'+(off?' off':'');w.dataset.sid=k;b.before(w);w.appendChild(b);
-    w.insertAdjacentHTML('beforeend',`<div class="pka">${DRAG(T('o_drag'))}${c?actBtns('n',c.id,{rv:c.rv!==false,hidden:!!c.hidden}):
-      `<button class="btn" type="button" data-nhide="${k}" aria-label="${esc(T(off?'o_nshow':'o_nhide'))}" title="${esc(T(off?'o_nshow':'o_nhide'))}">${off?EYE:EYEOFF}<span class="lbl">${esc(T(off?'o_nshow':'o_nhide'))}</span></button>`}</div>`)});
-  el.innerHTML=`<button class="oadd otop" type="button" id="nadd">${PLUS}${T('o_nadd').replace(/^\+\s*/,'')}</button>${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<p class="hint">${T('o_drag_i')} ${T('o_nhint')}</p>`;
+    if(off&&!c)b.insertAdjacentHTML('beforeend',`<em class="hidb bh">${T('o_hiddenb')}</em>`);
+    // ⋮⋮ (owner: the order is a site setting) and ✎ (an added vitamin: whoever may edit vitamins; a built-in one: the owner)
+    w.insertAdjacentHTML('beforeend',`<div class="pka">${ISOWNER()?DRAG(T('o_drag')):''}${c?(CAN('nut')?EPEN(`data-act="edit" data-kind="n" data-id="${esc(c.id)}"`):''):ISOWNER()?EPEN(`data-nedit="${k}"`):''}</div>`)});
+  el.innerHTML=`<button class="oadd otop" type="button" id="nadd">${PLUS}${T('o_nadd').replace(/^\+\s*/,'')}</button>${bulkBar('n',NCUST().filter(c=>c.rv===false).length)}<p class="hint">${T('o_tile_hint')}</p>`;
   // drag the ⋮⋮ handle to change the vitamins' order (saved with the page settings, then published)
   sortable(pk,'.pkw',ids=>{if(!ISOWNER())return;CFG.nutOrder=ids;changed()});
 }

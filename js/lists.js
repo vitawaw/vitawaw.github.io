@@ -69,17 +69,26 @@ function medCatalog(){
   return medBase().filter(m=>!m.hide&&m.ar.length&&live.some(h=>h.includes(m.en)||(DRUG_CLASS[m.en]&&h.includes(DRUG_CLASS[m.en]))));
 }
 /* «My medicines» page: every medicine the site knows; tap to add it to your list. The team edits (✎) or adds (+). */
-let MCQ='';
+let MCQ='',MCSORT='';
+/** 1.16.0: the medicines in alphabetical order — Arabic (أ–ي) or English (A–Z), with a letter heading over each group */
+const mcSort=()=>MCSORT||(LANG==='ar'?'ar':'en');
+const mcName=(m,k)=>k==='ar'?(m.ar[0]||m.en):m.en;
+const mcLetter=(m,k)=>{const c=mcName(m,k).trim().charAt(0);return k==='ar'?c.replace(/[إأآا]/,'ا'):c.toUpperCase()};
 function renderMedCat(){
   const el=$('medcat');if(!el)return;
-  const team=typeof CAN==='function'&&CAN('inter')&&!(typeof OWN!=='undefined'&&OWN.preview),q=normAr(MCQ);
+  const team=typeof CAN==='function'&&CAN('inter')&&!(typeof OWN!=='undefined'&&OWN.preview),q=normAr(MCQ),k=mcSort();
   const list=medBase().map((m,i)=>({...m,i})).filter(m=>(team||(!m.hide&&medHits(m.en)))&&(!q||normAr(m.en+' '+m.ar.join(' ')).includes(q)))
-    .sort((a,b)=>(LANG==='ar'?(a.ar[0]||a.en).localeCompare(b.ar[0]||b.en,'ar'):a.en.localeCompare(b.en)));
-  el.innerHTML=(list.length?`<div class="mclist">${list.map(m=>{const n=medHits(m.en),on=MEDS.includes(m.en);
-    return `<div class="mcrow${m.hide?' hid':''}"><button type="button" class="mcadd" data-mcadd="${esc(m.en)}"${on||m.hide||!n?' disabled':''}><b>${esc(medLabel({en:m.en,ar:m.ar.length?m.ar:[m.en]}))}</b><small>${on?T('mc_in'):n?T('mc_n').replace('{n}',n):T('mc_none')}</small></button>${team?`<button type="button" class="pen mgpen" data-mcedit="${m.i}" aria-label="${esc(T('o_edit'))}">✎</button>`:''}</div>`}).join('')}</div>`:`<p class="inone">${T('i_none')}</p>`)+
-    '';
+    .sort((a,b)=>mcName(a,k).localeCompare(mcName(b,k),k==='ar'?'ar':'en'));
+  let last='',rows='';
+  list.forEach(m=>{const n=medHits(m.en),on=MEDS.includes(m.en),l=mcLetter(m,k);
+    if(l!==last){rows+=`<h4 class="mclet" dir="${k==='ar'?'rtl':'ltr'}">${esc(l)}</h4>`;last=l}
+    const nm=k==='ar'?`${m.ar[0]||m.en} · ${m.en.charAt(0).toUpperCase()+m.en.slice(1)}`:`${m.en.charAt(0).toUpperCase()+m.en.slice(1)} · ${m.ar[0]||''}`;
+    rows+=`<div class="mcrow${m.hide?' hid':''}"><button type="button" class="mcadd" data-mcadd="${esc(m.en)}"${on||m.hide||!n?' disabled':''}><b dir="auto">${esc(nm)}</b><small>${on?T('mc_in'):n?T('mc_n').replace('{n}',n):T('mc_none')}</small></button>${team?EPEN(`data-mcedit="${m.i}"`):''}</div>`});
+  el.innerHTML=`<div class="filters mcsort" role="group" aria-label="${esc(T('mc_sort'))}"><span class="hint">${esc(T('mc_sort'))}</span>${[['ar','أ – ي'],['en','A – Z']].map(([v,l])=>`<button type="button" data-mcsort="${v}" aria-pressed="${k===v}">${l}</button>`).join('')}</div>`+
+    (list.length?`<div class="mclist">${rows}</div>`:`<p class="hint">${T('mc_empty')}</p>`);
   const aw=$('mcaddw');if(aw)aw.innerHTML=team?`<button class="oadd otop" type="button" data-mcedit="new">${PLUS}${T('mc_new')}</button>`:'';
 }
+document.addEventListener('click',e=>{const b=e.target.closest('[data-mcsort]');if(!b)return;e.preventDefault();MCSORT=b.dataset.mcsort;renderMedCat()});
 async function editMed(i){
   const base=JSON.parse(JSON.stringify(medBase())),m=i==='new'?{en:'',ar:[],hide:false}:base[+i];if(!m)return;
   let err=null,vals=[m.en,m.ar.join('، ')];
@@ -185,7 +194,7 @@ function usedIn(n,x){
 function renderRefs(){
   // 1.14.1: one full list. Above the search: source types; below it: vitamins (like interactions). Counts follow the other filter + search.
   if(!KEYS.includes(SF))SF='all';
-  const lk=$('reflist').parentNode.id==='linksb'&&typeof lkShow==='function'?lkShow():null; // 1.14.6: the link filter only on its own page
+  const onLk=$('reflist').parentNode.id==='linksb'&&typeof lkShow==='function',lk=onLk?lkShow():null; // 1.14.6: the link filter only on its own page
   const sq=iTerms(normAr($('ssearch')&&$('ssearch').value)),sm=([n,x])=>!sq.length||sq.some(q=>normAr([n,x[0],x[1],x[3],x[4]].join(' ')).includes(q));
   const base=Object.entries(REFS).filter(sm),inV=(n,k)=>k==='all'||(REFGROUP[k]||[]).includes(+n),inT=(x,k)=>k==='all'||rtOf(x)===k;
   const tc=k=>base.filter(([n,x])=>inV(n,SF)&&inT(x,k)).length,vc=k=>base.filter(([n,x])=>inT(x,RTF)&&inV(n,k)).length;
@@ -195,7 +204,7 @@ function renderRefs(){
   $('sfilters').innerHTML=KEYS.map(k=>`<button type="button" data-sf="${esc(k)}" aria-pressed="${k===SF}">${esc(kname(k))}<bdi class="fc">${vc(k)}</bdi></button>`).join('');
   $('refbulk').innerHTML=SHOWALL()?bulkBar('r',(CFG.refs||[]).filter(x=>x.rv===false).length):'';
   $('reflist').innerHTML=base.sort((a,b)=>RTORD[rtOf(a[1])]-RTORD[rtOf(b[1])]||a[0]-b[0]).filter(([n,x])=>lk?lk.includes(+n):inT(x,RTF)&&inV(n,SF)).map(([n,x])=>
-    `<li id="ref-${n}"${x[6]?' class="hid"':''}><span class="num">${n}</span><div><div class="org"><span class="rtype rt-${rtOf(x)}">${T('rt_'+rtOf(x))}</span>${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl" dir="auto">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div>${stampHTML(x[9],x[10])}${usedIn(+n,x)}${actBar('r',n,{rv:x[5]!==false,hidden:x[6]})}</div></li>`).join('');
+    `<li id="ref-${n}"${x[6]?' class="hid"':''}><span class="num">${n}</span><div><div class="org"><span class="rtype rt-${rtOf(x)}">${T('rt_'+rtOf(x))}</span>${esc(x[0])}${(LANG==='ar'?x[3]:x[4])?' · '+esc(LANG==='ar'?x[3]:x[4]):''}</div><div class="ttl" dir="auto">${/^https?:\/\//.test(x[2]||'')?`<a href="${esc(x[2])}" target="_blank" rel="noopener">${esc(x[1])}</a>`:esc(x[1])}</div>${onLk?lkBadge(+n,x):''}${stampHTML(x[9],x[10])}${usedIn(+n,x)}${actBar('r',n,{rv:x[5]!==false,hidden:x[6]})}</div></li>`).join('');
   $('rcount').textContent=Object.keys(REFS).length;
   if(typeof renderLinks==='function')renderLinks();
   $('rev2').hidden=!REV().name;if(REV().name)$('rev2').innerHTML=reviewHTML0().replace(/^<div class="reviewed">|<\/div>$/g,'');

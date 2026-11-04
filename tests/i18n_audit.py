@@ -113,7 +113,7 @@ def owner_dialogs(pg,lang,tag):
                     # trigger validation message by submitting empty where possible
                     pg.keyboard.press('Escape');pg.wait_for_timeout(60)
                     if pg.is_visible('#dlg'):
-                        b=pg.locator('#dlg-a button:not(.pri)')
+                        b=pg.locator('#dlg-a button',has_text=re.compile('^(إلغاء|Cancel|رجوع|Back)$'))
                         if b.count(): b.first.click();pg.wait_for_timeout(60)
             except Exception as e: print('ERR',s,e)
     pg.evaluate('setPreview(true)');pg.wait_for_timeout(150);scan(pg,tag+' preview',lang);pg.click('#o-pvexit');pg.wait_for_timeout(100)

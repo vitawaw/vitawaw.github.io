@@ -197,7 +197,8 @@ const ICONS=()=>Object.keys(IC).map(k=>[k,{bell:'🔔',chart:'📈',plus:'➕',p
 async function editFeature(i){
   const isNew=i==null,x=isNew?{st:'plan',ic:'plus',t:{ar:'',en:''},d:{ar:'',en:''}}:CFG.roadmap[i];
   const r=await dialog({title:T(isNew?'o_add':'o_feat'),fields:[{label:T('o_ftitle'),value:x.t.ar},{label:T('o_ftitle_en'),value:x.t.en||'',ltr:1},{label:T('o_fdesc'),type:'textarea',value:x.d.ar},{label:T('o_fdesc_en'),type:'textarea',value:x.d.en||'',ltr:1},
-    {label:T('o_fst'),type:'select',options:STATUSES(),value:x.st},{label:T('o_fic'),type:'select',options:ICONS(),value:x.ic},{label:T('o_fgo'),type:'select',options:GOLIST(),value:x.go||''}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+    {label:T('o_fst'),type:'select',options:STATUSES(),value:x.st},{label:T('o_fic'),type:'select',options:ICONS(),value:x.ic},{label:T('o_fgo'),type:'select',options:GOLIST(),value:x.go||''}],buttons:EDB({isNew,hidden:!!x.hidden})});
+  if(r.action==='hide')return hideFeature(i);if(r.action==='del')return delFeature(i);
   if(r.action!=='ok')return;
   const [t,te,d,de,st,ic,goTo]=r.values.map(v=>v.trim());if(!t)return;
   const item={st,ic,t:{ar:t,en:te},d:{ar:d,en:de},...(goTo?{go:goTo}:{}),...(x.hidden?{hidden:true}:{})};
@@ -228,7 +229,8 @@ async function editRef(id){
   let v=[o.org,o.title,o.url,o.kind||'',o.ar||'',o.en||''],err=null;
   while(true){
     const r=await dialog({err,title:T(isNew?'o_radd':'o_redit'),info:T('o_rinfo'),fields:[{label:T('o_rorg'),value:v[0]},{label:T('o_rtitle'),type:'textarea',value:v[1]},{label:T('o_rurl'),type:'url',value:v[2]},
-      {label:T('o_rtype'),type:'select',options:RTYPES(),value:v[3]},{label:T('o_ruse'),value:v[4]},{label:T('o_ruse_en'),value:v[5],ltr:1}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+      {label:T('o_rtype'),type:'select',options:RTYPES(),value:v[3]},{label:T('o_ruse'),value:v[4]},{label:T('o_ruse_en'),value:v[5],ltr:1}],buttons:EDB({isNew,hidden:!!o.hidden})});
+    if(r.action==='hide')return hideRef(id);if(r.action==='del')return delRef(id);
     if(r.action!=='ok')return;
     v=r.values.map(x=>x.trim());
     if(!v[0]||!v[1]){err={i:v[0]?1:0,msg:T('o_rneed')};continue}
@@ -258,7 +260,8 @@ async function editInter(i){
       {label:T('o_id'),type:'textarea',value:v[6]},{label:T('o_id_en'),type:'textarea',value:v[7],ltr:1},{label:T('o_isrc'),type:'checks',options:refOpts(),value:v[8]},
       // timing for the daily supplement schedule (optional): which item it concerns and the minimum gaps in hours
       {label:T('o_ig'),type:'select',options:[['',T('o_ig_none')],...SCI.map(x=>[x[0],L(x[1],x[2])])],value:v[9]},{label:T('o_igb'),type:'number',value:v[10],ltr:1},{label:T('o_iga'),type:'number',value:v[11],ltr:1}],
-      buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+      buttons:EDB({isNew,hidden:!!(o&&o.hidden)})});
+    if(r.action==='hide')return hideInter(i);if(r.action==='del')return delInter(i);
     if(r.action!=='ok')return;
     v=[...r.values.slice(0,8).map(x=>x.trim()),r.values[8],...r.values.slice(9).map(x=>x.trim())];
     if(!v[2])v[2]=kname(v[0]);
@@ -396,7 +399,7 @@ function renderLinks(){
     rest=`<p class="hint">${L2?T('lk_last').replace('{d}','<bdi>'+esc(L2.at)+'</bdi>').replace('{n}',L2.n):T('lk_never')}</p>`+
     (L2?`<div class="lkcs">${chip('ok',ok,'ok',T('lk_ok'))}${chip('broken',L2.broken.length,'bad',T('lk_bad'))}${chip('blocked',L2.blocked.length,'warn',T('lk_hand'))}</div>`:'')+
     (LKF?`<p class="hint">${T(LKF==='ok'?'lk_ok_h':LKF==='broken'?'lk_broken_h':'lk_blocked_h')} <button type="button" class="linkbtn" data-lkf="">${T('lk_all')}</button></p>`:'');
-  el.innerHTML=`<div class="lkh"><b>${T('lk_t')}</b>${btn}</div>`+rest; // 1.14.6: the link check lives only on its own page
+  el.innerHTML=`<div class="lkh"><b>${T('lk_box')}</b>${btn}</div>`+rest; // 1.14.6: the link check lives only on its own page
 }
 document.addEventListener('click',e=>{
   if(e.target.closest('#lknow')){linksCheck();return}
@@ -407,6 +410,12 @@ document.addEventListener('click',e=>{
 const lkShow=()=>{if(!LKF||!LINKS)return null;if(LKF!=='ok')return LINKS[LKF]||[];
   // working links: those the check reached (older checks kept no list: every checked source that is not broken or blocked)
   return LINKS.ok||((PUBLISHED&&PUBLISHED.refs)||[]).filter(r=>/^https?:\/\//.test(r.url||'')).map(r=>r.id).filter(id=>!LINKS.broken.includes(id)&&!LINKS.blocked.includes(id))};
+/** 1.16.0 «source check» page: every source shows the state of its link from the last check, with the link itself */
+function lkState(n,x){if(!/^https?:\/\//.test(x[2]||''))return 'none';if(!LINKS)return 'new';
+  if(LINKS.broken.includes(n))return 'broken';if(LINKS.blocked.includes(n))return 'blocked';
+  return !LINKS.ok||LINKS.ok.includes(n)?'ok':'new'} // older checks kept no «working» list: every checked source that is not broken or blocked
+function lkBadge(n,x){const s=lkState(n,x),cls={ok:'ok',broken:'bad',blocked:'warn',none:'',new:''}[s];
+  return `<div class="lkst"><span class="lkb ${cls}">${esc(T('lks_'+s))}</span>${/^https?:\/\//.test(x[2]||'')?`<a class="lkurl" href="${esc(x[2])}" target="_blank" rel="noopener" dir="ltr">${esc(x[2].replace(/^https?:\/\/(www\.)?/,'').slice(0,60))}</a>`:''}</div>`}
 /** show the item where it lives */
 function viewItem(n){
   if(SHEET&&SHEET.key==='notif')closeSheet(false); // leave the 🔔 window to show the item
@@ -467,6 +476,18 @@ function toggleBuiltin(k){
   if(j>=0)h.splice(j,1);else{if(KEYS.length<=2){toast(T('o_nlast'));return}h.push(k)}
   changed();
 }
+/** 1.16.0 ✎ on a built-in vitamin (owner): its Arabic and English name and description, hide/show; the dose rules stay in the code */
+async function editBuiltin(k){
+  if(!ISOWNER()){toast(T('o_onlyowner'));return}
+  const keys=['n_'+k,'h_'+k],cur=x=>CFG.text[x]||{ar:I18N[x][0],en:I18N[x][1]},off=NHIDE().includes(k);
+  const r=await dialog({title:kname(k),info:T('ed_builtin_i'),fields:[{label:T('nv_name'),value:cur(keys[0]).ar},{label:T('nv_name_en'),value:cur(keys[0]).en,ltr:1},{label:T('ed_desc'),value:cur(keys[1]).ar},{label:T('ed_desc_en'),value:cur(keys[1]).en,ltr:1}],
+    buttons:EDB({hidden:off,del:false,reset:true})});
+  if(r.action==='hide')return toggleBuiltin(k);
+  if(r.action==='reset'){keys.forEach(x=>delete CFG.text[x]);changed();return}
+  if(r.action!=='ok')return;
+  keys.forEach((x,i)=>{const d=I18N[x],ar=r.values[2*i].trim()||d[0],en=r.values[2*i+1].trim()||d[1];if(ar===d[0]&&en===d[1])delete CFG.text[x];else CFG.text[x]={ar,en}});changed();
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-nedit]');if(!b||!OWN.on)return;e.preventDefault();e.stopPropagation();editBuiltin(b.dataset.nedit)},true);
 const fmtRows=rows=>(rows||[]).map(r=>`${r.a0}-${r.a1>=110?'+':r.a1} | ${(SEXES().find(s=>s[0]===r.sx)||SEXES()[0])[1]} | ${r.rda} | ${r.ul||'-'}`).join('\n');
 function parseRows(txt){
   const sxMap={};SEXES().forEach(([k,l])=>{sxMap[l.trim()]=k;sxMap[k]=k});Object.assign(sxMap,{'الكل':'all','ذكر':'m','أنثى':'f','انثى':'f','حامل':'p','مرضع':'l','all':'all','male':'m','female':'f','pregnant':'p','lactating':'l'});
@@ -491,7 +512,8 @@ async function editNut(id){
     const r=await dialog({err,title:T(isNew?'o_nadd':'o_nedit'),info:T('o_ninfo'),fields:[{label:T('o_nname'),value:v[0]},{label:T('o_nname_en'),value:v[1],ltr:1},{label:T('o_nh'),value:v[2]},{label:T('o_nh_en'),value:v[3],ltr:1},
       {label:T('o_nunit'),type:'select',options:UNITS(),value:v[4]},{label:T('o_nrows'),type:'textarea',value:v[5],ph:T('o_nrows_ph')},
       {label:T('o_nplan'),type:'textarea',value:v[6]},{label:T('o_nplan_en'),type:'textarea',value:v[7],ltr:1},{label:T('o_nnote'),type:'textarea',value:v[8]},{label:T('o_nnote_en'),type:'textarea',value:v[9],ltr:1},
-      {label:T('o_isrc'),type:'checks',options:refOpts(),value:v[10]}],buttons:[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+      {label:T('o_isrc'),type:'checks',options:refOpts(),value:v[10]}],buttons:EDB({isNew,hidden:!!(o&&o.hidden)})});
+    if(r.action==='hide')return hideNut(id);if(r.action==='del')return delNut(id);
     if(r.action!=='ok')return;
     v=[...r.values.slice(0,10).map((x,j)=>j===4||j===5?x:x.trim()),r.values[10]];
     if(!v[0]){err={i:0,msg:T('o_nneedname')};continue}

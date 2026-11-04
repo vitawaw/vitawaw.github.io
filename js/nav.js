@@ -152,23 +152,29 @@ function renderToolsGrid(){
   if(!$('tgrid'))return;
   const own=ISOWNER()&&!OWN.preview,hide=(CFG.tools&&CFG.tools.hide)||[];
   const FOLLOW=['tool-sch','tool-ul','tool-labs'],tl=toolList(),grp=[...tl.filter(t=>!FOLLOW.includes(t[0])),...tl.filter(t=>FOLLOW.includes(t[0]))],first=grp.findIndex(t=>FOLLOW.includes(t[0]));
-  $('tgrid').innerHTML=grp.map((t,i)=>(i===first&&i>0?`<h3 class="pkh tgh">${esc(T('tg_follow'))}</h3>`:'')+(t=>{const b=`<button type="button" data-tv="${t[0]}"><span>${esc(toolName(t))}</span><small>${esc(T(TOOLSUB[t[0]]||t[2]))}</small></button>`,off=hide.includes(t[0]);
-    return own?`<div class="pkw tkw${off?' off':''}" data-sid="${t[0]}">${b}<div class="pka">${DRAG(T('o_drag'))}<button class="btn" type="button" data-tled="${t[0]}" aria-label="${esc(T('o_edit'))}" title="${esc(T('o_edit'))}">${PEN}</button><button class="btn" type="button" data-tlhide="${t[0]}" aria-label="${esc(T(off?'o_nshow':'o_nhide'))}" title="${esc(T(off?'o_nshow':'o_nhide'))}">${off?EYE:EYEOFF}</button></div></div>`:b})(t)).join('')+
-    (own?`<p class="hint tlhint">${T('tl_hint')}</p>`:'');
+  const tic=id=>{const sv=$(id)&&$(id).querySelector('.ttl-ic svg');return sv?sv.outerHTML:ICO.info};
+  $('tgrid').innerHTML=grp.map((t,i)=>(i===first&&i>0?`<h3 class="pkh tgh">${esc(T('tg_follow'))}</h3>`:'')+(t=>{const off=hide.includes(t[0]),b=`<button type="button" data-tv="${t[0]}"><i class="tico" aria-hidden="true">${tic(t[0])}</i><span>${esc(toolName(t))}</span><small>${esc(T(toolSubKey(t)))}</small>${own&&off?`<em class="hidb">${T('o_hiddenb')}</em>`:''}</button>`;
+    return own?`<div class="pkw tkw${off?' off':''}" data-sid="${t[0]}">${b}<div class="pka">${DRAG(T('o_drag'))}${EPEN(`data-tled="${t[0]}"`)}</div></div>`:b})(t)).join('')+
+    (own?`<p class="hint tlhint">${T('o_tile_hint')}</p>`:'');
   if(own)sortable($('tgrid'),'.tkw',ids=>{if(!ISOWNER())return;CFG.tools={...CFG.tools,order:ids};changed()});
   toolSearch();
 }
+const toolSubKey=t=>TOOLSUB[t[0]]||t[2];
 /** the search box above the tools keeps only the tools whose name matches */
 function toolSearch(){const q=normAr($('tsearch')&&$('tsearch').value).trim();document.querySelectorAll('#tgrid [data-tv]').forEach(b=>{(b.closest('.tkw')||b).hidden=!!q&&!normAr(b.textContent).includes(q)});document.querySelectorAll('#tgrid .tgh').forEach(h=>{h.hidden=!!q})}
-document.addEventListener('click',async e=>{
-  const h=e.target.closest('[data-tlhide]'),ed=e.target.closest('[data-tled]');if(!(h||ed)||!ISOWNER())return;e.preventDefault();
+/** 1.16.0 ✎ on a tool (owner): Arabic and English name, description, hide/show — one floating window */
+async function editTool(id){
   const c=CFG.tools={order:[],hide:[],names:{},...CFG.tools};
-  if(h){const id=h.dataset.tlhide;c.hide=c.hide.includes(id)?c.hide.filter(x=>x!==id):[...c.hide,id];changed();return}
-  const t=TOOLS.find(x=>x[0]===ed.dataset.tled);if(!t)return;const n=c.names[t[0]]||{ar:I18N[t[1]][0],en:I18N[t[1]][1]};
-  const r=await dialog({title:T('o_edit'),fields:[{label:T('nv_name'),value:n.ar},{label:T('nv_name_en'),value:n.en||'',ltr:1}],buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
-  if(r.action==='ok'){const ar=r.values[0].trim(),en=r.values[1].trim();c.names={...c.names,[t[0]]:{ar:ar||I18N[t[1]][0],en:en||I18N[t[1]][1]}};changed()}
-  if(r.action==='reset'){const nm={...c.names};delete nm[t[0]];c.names=nm;changed()}
-});
+  const t=TOOLS.find(x=>x[0]===id);if(!t)return;const n=c.names[t[0]]||{ar:I18N[t[1]][0],en:I18N[t[1]][1]},dk=toolSubKey(t),d=CFG.text[dk]||{ar:I18N[dk][0],en:I18N[dk][1]},off=c.hide.includes(id);
+  const r=await dialog({title:toolName(t),fields:[{label:T('nv_name'),value:n.ar},{label:T('nv_name_en'),value:n.en||'',ltr:1},{label:T('ed_desc'),value:d.ar},{label:T('ed_desc_en'),value:d.en||'',ltr:1}],buttons:EDB({hidden:off,del:false,reset:true})});
+  if(r.action==='hide'){c.hide=off?c.hide.filter(x=>x!==id):[...c.hide,id];changed();return}
+  if(r.action==='reset'){const nm={...c.names};delete nm[t[0]];c.names=nm;delete CFG.text[dk];changed();return}
+  if(r.action!=='ok')return;
+  const ar=r.values[0].trim(),en=r.values[1].trim();c.names={...c.names,[t[0]]:{ar:ar||I18N[t[1]][0],en:en||I18N[t[1]][1]}};
+  const da=r.values[2].trim()||I18N[dk][0],de=r.values[3].trim()||I18N[dk][1];if(da===I18N[dk][0]&&de===I18N[dk][1])delete CFG.text[dk];else CFG.text[dk]={ar:da,en:de};
+  changed();
+}
+document.addEventListener('click',e=>{const ed=e.target.closest('[data-tled]');if(!ed||!ISOWNER())return;e.preventDefault();e.stopPropagation();editTool(ed.dataset.tled)});
 function openToolPage(id){closeSheet(false);TOOLFROM=cur==='tools'?'':(location.hash||'#'+cur);if(location.hash!=='#'+id)location.hash=id;else show('tools',id);window.scrollTo(0,0)}
 function toolBack(){const h=TOOLFROM;TOOLFROM='';if(h&&h!=='#tools')location.hash=h.slice(1);else go('tools')}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-tv]');if(!b)return;e.preventDefault();openToolPage(b.dataset.tv)});
@@ -248,17 +254,33 @@ function mgItems(id,list){const o=(MGCFG().items||{})[id]||[],ix=k=>{const i=o.i
 /* 1.14.6: the owner hides groups ('g:<id>') or single items (their key) from visitors; the team still sees them, marked hidden */
 const mgOff=k=>((MGCFG().off)||[]).includes(k);
 function mgToggle(k){mgSet(g=>{const o=new Set(g.off||[]);o.has(k)?o.delete(k):o.add(k);g.off=[...o]})}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-mgoff]');if(b){e.preventDefault();mgToggle(b.dataset.mgoff)}});
-const MEDIT=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview&&ISOWNER()&&document.body.classList.contains('textedit');
+// 1.16.0: the owner always sees ⋮⋮ and ✎ on the menu's groups and items (no separate «edit» mode)
+const MEDIT=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview&&ISOWNER();
 function mgSet(f){const g=JSON.parse(JSON.stringify(MGCFG()));f(g);CFG.menus={...(CFG.menus||{}),groups:g};changed();renderMenu()}
-async function mgRename(id){
-  const cur=(MGCFG().names||{})[id]||{},d=MGNAME[id]?I18N[MGNAME[id]]:['',''];
-  const r=await dialog({title:T('mg_ren'),fields:[{label:T('nv_name'),value:cur.ar||d[0]},{label:T('nv_name_en'),value:cur.en||d[1],ltr:1}],buttons:[{label:T('o_reset'),action:'reset'},{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}]});
+/** 1.16.0 ✎ on a menu group or item (owner): its name in Arabic and English and hide/show for visitors, in one floating window.
+   An information page opens its own editor (title, text, hide, delete). */
+const MGTEXT={share:'mr_share',clear:'cd_t',lang:'mr_lang',theme:'mr_theme',install:'mr_install',wa:'mr_wa',mail:'mr_mail',call:'mr_call',links:'lk_t'};
+async function mgEdit(key){
+  if(!ISOWNER())return;
+  if(key.startsWith('g:'))return mgGroupEdit(key.slice(2));
+  if(key.startsWith('pg-'))return editPage(key.slice(3));
+  const tk=key.startsWith('p-')?SECKEY[key.slice(2)]:MGTEXT[key];if(!tk||!I18N[tk])return;
+  const d=I18N[tk],c=CFG.text[tk]||{ar:d[0],en:d[1]},off=mgOff(key);
+  const r=await dialog({title:T(tk),fields:[{label:T('nv_name'),value:c.ar},{label:T('nv_name_en'),value:c.en||'',ltr:1}],buttons:EDB({hidden:off,del:false,reset:true})});
+  if(r.action==='hide')return mgToggle(key);
+  if(r.action==='reset'){delete CFG.text[tk];changed();renderNav();return}
+  if(r.action!=='ok')return;
+  const ar=r.values[0].trim()||d[0],en=r.values[1].trim()||d[1];if(ar===d[0]&&en===d[1])delete CFG.text[tk];else CFG.text[tk]={ar,en};changed();renderNav();
+}
+async function mgGroupEdit(id){
+  const cur=(MGCFG().names||{})[id]||{},d=MGNAME[id]?I18N[MGNAME[id]]:['',''],off=mgOff('g:'+id);
+  const r=await dialog({title:mgName(id)||T('mg_noname'),fields:[{label:T('nv_name'),value:cur.ar||d[0]},{label:T('nv_name_en'),value:cur.en||d[1],ltr:1}],buttons:EDB({hidden:off,hide:id!=='admin',del:false,reset:true})});
+  if(r.action==='hide')return mgToggle('g:'+id);
   if(r.action==='cancel')return;
   mgSet(g=>{g.names=g.names||{};const ar=r.action==='ok'?r.values[0].trim():'',en=r.action==='ok'?r.values[1].trim():'';
     if(!ar&&!en||(ar===d[0]&&en===d[1]))delete g.names[id];else g.names[id]={ar:ar||en,en:en||ar}});
 }
-document.addEventListener('click',e=>{const b=e.target.closest('[data-mgren]');if(b){e.preventDefault();mgRename(b.dataset.mgren)}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-mged]');if(!b)return;e.preventDefault();e.stopPropagation();mgEdit(b.dataset.mged)});
 /** after drawing: groups and their items can be dragged */
 function mgSortable(){
   if(!MEDIT())return;
@@ -303,7 +325,7 @@ function menuHTML(r){
   // «help and information», each on its own: how to use · FAQ · about us · suggest a feature · privacy policy · disclaimer
   const PICO={howto:MI2.book,faq:MI2.q,who:MI2.user,about:ICO.info,method:MI2.book,suggest:MI.mail,privacy:MI2.shield,disclaimer:ICO.info};
   G.help=['howto','faq','who','about','method','suggest','privacy','disclaimer'].map(pg).filter(Boolean).map(p=>({key:'pg-'+p.id,...pgItem(p),ico:PICO[p.id]}));
-  G.apps=[{key:'install',label:T('mr_install'),ico:MI.install,f:installApp},{key:'share',label:T('mr_share'),ico:MI.share,f:shareApp},{key:'clear',label:T('cd_t'),ico:MI.trash,f:clearMyData}];
+  G.apps=[{key:'share',label:T('mr_share'),ico:MI.share,f:shareApp},{key:'clear',label:T('cd_t'),ico:MI.trash,f:clearMyData}];
   // the team: management sections, pharmacists (own page)
   G.admin=(own?adminGroups():[]).map(g=>({...g,key:g.id}));
   // contact (WhatsApp · e-mail · call) right above the settings; an invited pharmacist talks to the owner directly
@@ -313,27 +335,28 @@ function menuHTML(r){
   if(PHONEF())con.push({key:'call',label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
   G.contact=own&&!ISOWNER()?[]:con;
   G.settings=[{key:'lang',label:T('mr_lang'),v:LANG==='ar'?'العربية':'English',ico:MI.lang,f:()=>setLang(LANG==='ar'?'en':'ar')},
-    {key:'theme',label:T('mr_theme'),v:T(isDark()?'mr_dark':'mr_light'),ico:MI.theme,f:()=>setTheme(isDark()?'light':'dark')}];
+    {key:'theme',label:T('mr_theme'),v:T(isDark()?'mr_dark':'mr_light'),ico:MI.theme,f:()=>setTheme(isDark()?'light':'dark')},
+    {key:'install',label:T('mr_install'),v:T('mr_install_v'),ico:MI.install,f:installApp}]; // 1.16.0: install sits with language and appearance
   const r3b=c=>{const inner=`<span class="di">${c.ico}</span><b>${esc(c.label)}</b>${c.v?`<small>${esc(c.v)}</small>`:''}`;
     return c.href?`<a class="m3b" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`:`<button type="button" class="m3b" data-na="${r}${ACT[r].push(c.f)-1}">${inner}</button>`};
-  // edit mode: items are not links, each has ⋮⋮ to drag inside its group
-  const eye=k=>{const off=mgOff(k);return `<button type="button" class="pen mgeye${off?' off':''}" data-mgoff="${esc(k)}" aria-pressed="${off}" aria-label="${esc(T(off?'o_nshow':'o_nhide'))}" title="${esc(T(off?'mg_off':'mg_on'))}">${off?EYEOFF:EYE}</button>`};
-  const eItem=(c,cls)=>`<div class="${cls} medit${mgOff(c.key)?' hid':''}" data-sid="${esc(c.key)}"><span class="drag idrag" tabindex="0" role="button" aria-label="${esc(T('o_drag'))}">⋮⋮</span><span class="di">${c.ico||ICO.info}</span><span class="mt">${esc(c.label)}</span>${eye(c.key)}</div>`;
-  const head=(id,t)=>ed?`<div class="mgh${mgOff('g:'+id)?' hid':''}"><span class="drag gdrag" tabindex="0" role="button" aria-label="${esc(T('o_drag'))}">⋮⋮</span><h3>${esc(t||T('mg_noname'))}</h3><button type="button" class="pen mgpen" data-mgren="${id}" aria-label="${esc(T('o_edit'))}">✎</button>${id==='admin'?'':eye('g:'+id)}</div>`:(t?`<h3>${esc(t)}${own&&mgOff('g:'+id)?' · '+esc(T('pg_hidden')):''}</h3>`:'');
+  // owner (1.16.0): every group and item keeps its look and gets ⋮⋮ (drag inside its group) and ✎ (name in Arabic and English, hide/show)
+  const ctl=(c)=>`<span class="drag idrag" tabindex="0" role="button" aria-label="${esc(T('o_drag'))}">⋮⋮</span>${EPEN(`data-mged="${esc(c.key)}"`)}`;
+  const eWrap=(c,inner,cls)=>`<div class="medit ${cls}${mgOff(c.key)?' hid':''}" data-sid="${esc(c.key)}">${inner}${ctl(c)}</div>`;
+  const head=(id,t)=>ed?`<div class="mgh${mgOff('g:'+id)?' hid':''}"><span class="drag gdrag" tabindex="0" role="button" aria-label="${esc(T('o_drag'))}">⋮⋮</span><h3>${esc(t||T('mg_noname'))}${mgOff('g:'+id)?' · '+esc(T('pg_hidden')):''}</h3>${EPEN(`data-mged="g:${id}"`)}</div>`:(t?`<h3>${esc(t)}${own&&mgOff('g:'+id)?' · '+esc(T('pg_hidden')):''}</h3>`:'');
   const body=(id,items)=>{
     if(!items.length)return '';
-    if(id==='recent')return ed?'':`<div class="mrec">${items.map(c=>`<button type="button" class="mrc" data-na="${r}${ACT[r].push(c.f)-1}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span>${esc(c.label)}</span></button>`).join('')}</div>`;
+    if(id==='recent')return `<div class="mrec">${items.map(c=>`<button type="button" class="mrc" data-na="${r}${ACT[r].push(c.f)-1}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span>${esc(c.label)}</span></button>`).join('')}</div>`;
     items=mgItems(id,items);
     // 1.14.6: what the owner hid is gone for visitors; the team sees it marked «hidden»
-    if(!ed&&id!=='admin'){if(!own)items=items.filter(c=>!mgOff(c.key));else items=items.map(c=>mgOff(c.key)?{...c,label:c.label+' · '+T('pg_hidden')}:c);if(!items.length)return ''}
-    if(ed)return `<div class="ml mgl" data-g="${id}">${items.map(c=>eItem(c,'mi')).join('')}</div>`;
-    if(id==='short')return `<div class="mtiles">${items.map(tile).join('')}</div>`;
-    if(id==='help')return items.map(c=>`<div class="ml one">${row(c)}</div>`).join('');
+    if(id!=='admin'){if(!own)items=items.filter(c=>!mgOff(c.key));else items=items.map(c=>mgOff(c.key)?{...c,label:c.label+' · '+T('pg_hidden')}:c);if(!items.length)return ''}
+    const E=ed&&id!=='admin',L=(cls,x)=>E?`<div class="${cls} mgl" data-g="${id}">${x}</div>`:`<div class="${cls}">${x}</div>`;
+    if(id==='short')return L('mtiles',items.map(c=>E?eWrap(c,tile(c),'tw'):tile(c)).join(''));
+    if(id==='help')return E?L('mlh',items.map(c=>eWrap(c,`<div class="ml one">${row(c)}</div>`,'rw')).join('')):items.map(c=>`<div class="ml one">${row(c)}</div>`).join('');
     if(id==='admin')return `<div class="ml maccs">${items.map(g=>g.go?row({label:g.label,ico:g.ico,n:g.n,f:g.go}):acc('ad-'+g.id,g.ico,g.label,g.rows.map(row).join(''))).join('')}</div>`;
-    if(id==='contact'||id==='settings')return `<div class="m3">${items.map(r3b).join('')}</div>`;
-    return `<div class="ml">${items.map(row).join('')}</div>`;
+    if(id==='contact'||id==='settings')return L('m3',items.map(c=>E?eWrap(c,r3b(c),'tw'):r3b(c)).join(''));
+    return L('ml',items.map(c=>E?eWrap(c,row(c),'rw'):row(c)).join(''));
   };
-  if(ed)h+=`<p class="hint mgedh">${esc(T('mg_hint'))}</p>`;
+  if(ed)h+=`<p class="hint mgedh">${esc(T('o_tile_hint'))}</p>`;
   h+=`<div class="mgs" data-r="${r}">`+mgOrder().filter(id=>ed||own||id==='admin'||!mgOff('g:'+id)).map(id=>{const b=body(id,G[id]||[]);return b||(ed&&id!=='recent'&&(G[id]||[]).length)?`<div class="mg" data-sid="${id}">${head(id,mgName(id))}${b}</div>`:''}).join('')+`</div>`;
   if(own)h+=`<div class="mg"><div class="ml maccs">`+acc('mine',MI.key,T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join(''))+`</div></div>`;
   if(own)h+=`<button type="button" class="mout" data-na="${r}${ACT[r].push(logout)-1}">${MI.out}<span>${esc(T('o_logout'))}</span></button>`;
@@ -438,9 +461,10 @@ async function editPage(id){
   const isNew=id==null,o=isNew?{t:{ar:'',en:''},b:{ar:'',en:''},hidden:false}:CFG.pages.find(x=>x.id===id);if(!o)return;
   let v=[o.t.ar,o.t.en||'',o.b.ar,o.b.en||'',o.hidden?'h':'s'],err=null;
   while(true){
-    const btns=[{label:T('o_cancel'),action:'cancel'},{label:T('o_ok'),action:'ok',pri:1}];
+    const btns=EDB({isNew,hide:false,del:id!=='suggest'});
     const r=await dialog({err,title:T(isNew?'pg_new':'pg_edit'),fields:[{label:T('pg_t'),value:v[0]},{label:T('pg_ten'),value:v[1],ltr:1},{label:T('pg_b'),type:'textarea',value:v[2]},{label:T('pg_ben'),type:'textarea',value:v[3],ltr:1},
       {label:T('pg_vis'),type:'select',options:[['s',T('pg_shown')],['h',T('pg_hiddenv')]],value:v[4]}],buttons:btns});
+    if(r.action==='del'){if(await confirmDel(tx2(o.t))){CFG.pages=CFG.pages.filter(x=>x.id!==id);closeSheet(false);changed()}return}
     if(r.action!=='ok')return;
     v=r.values.map(x=>x.trim());
     if(!v[0]||!v[2]){err={i:v[0]?2:0,msg:T('pg_need')};continue}
