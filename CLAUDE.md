@@ -76,7 +76,8 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
-- **1.16.4 (preview)**: install bar «ثبّت تطبيق VITAWAW الآن»; `toolActs()` (tools.js, boot) puts `.tact` under each tool's fields =
+- **Live: 1.16.4** (he said «انشر» on 2026-11-04; main fast-forwarded; checked online: live = no example buttons, empty fields; test = examples).
+- **1.16.4**: install bar «ثبّت تطبيق VITAWAW الآن»; `toolActs()` (tools.js, boot) puts `.tact` under each tool's fields =
   «جرّب مثالاً» ([data-tex], test site only) + «مسح البيانات» ([data-tclr], `TOOLCLR`); NO pre-filled numbers on either site (boot no
   longer fills); labs example saves 2 results; `#schk.sch{display:block}` fixed the schedule groups sitting side by side on wide screens.
   check_assets.py also fails if index.html tool inputs carry value=. tools_flow 104.
