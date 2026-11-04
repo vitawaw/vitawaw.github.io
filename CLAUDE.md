@@ -75,6 +75,17 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
+- **1.16.0 (preview, includes 1.15.0 + 1.14.6)**: his «نفذ الاقتراحات و التصحيحات و الملاحضات» + notes. ONE tile design (css end of app.css):
+  #picker/#tgrid/.mtiles = 4 per row on every size, `.tico` badge (VBADGE/vBadge in content.js; tools reuse `.ttl-ic svg`). ⋮⋮ + ✎ on
+  every item: `EPEN()` + `EDB()` (content.js) — actBtns = drag + pend + ✎ only; hide/delete/reset live in each editor's dialog
+  (editRef/editInter/editNut/editFeature/editPage, `editBuiltin(k)` = CFG.text n_k/h_k + hide, `editTool(id)` names + CFG.text desc,
+  `mgEdit(key)`/`mgGroupEdit` in nav.js = names via CFG.text (MGTEXT, SECKEY) + mgoff). MEDIT() = owner always (no textedit needed).
+  Interactions + medicines one column; medicine A–Z (`MCSORT`, `.mclet`). #links = «فحص المصادر»: full #reflist with `lkBadge()`
+  (owner.js). Install in settings (.m3 = 3). Labels: أدوية المريض / سجل التحاليل. Zinc `czg=dia` (WHO 2004, source 85 in DEF_REFS).
+  Worker /api/links needs a team session token (`teamOnly`, Supabase /auth/v1/user). CI `.github/workflows/tests.yml`.
+  FIXED a stray `@media (max-width:420px){` left by 1.15.0 that limited all later CSS to phones.
+  DB: `cleanup_1_16_0.sql` (revoke unused owner invite, drop publish_config) and `content_1_16_0.sql` (sources 79–85, 8 interactions,
+  draft privacy text + roadmap) — NOT yet applied anywhere (the MCP approval timed out); apply TEST first, then LIVE at release.
 - **1.15.0 (preview, includes 1.14.6)**: his «اريد حذف وضع المريض»: MODE stays 'pro' (i18n.js) but nothing switches it: setMode,
   #modeg, welcome «who» row, menu «وضع العرض», PROONLY, SECKEY proxy, body.ptm/.ptl, R()/srcLine patient branches all removed; boot
   removes vw-mode. Patient card (r.pt in calculators, pcard in ui.js) KEPT (pharmacist hands it over). Info pages faq/about/method/who

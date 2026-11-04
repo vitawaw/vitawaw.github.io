@@ -9,7 +9,7 @@
  * - After CACHE_SECONDS the copy we have is returned at once and refreshed in the background; if Supabase is slow
  *   or down, visitors keep getting the last good copy (one Supabase request at a time, retried every 30 s).
  * - A daily cron request keeps the free Supabase project from pausing after 7 idle days.
- * - GET /api/links?ids=1,2,… checks the links of published sources (at most LINKS_MAX per request, the free plan allows
+ * - GET /api/links?ids=1,2,… (signed-in team only, 1.16.0) checks the links of published sources (at most LINKS_MAX per request, the free plan allows
  *   50 outgoing requests per call). Only URLs that are in the published content can be checked (never a URL from the
  *   request), and each answer is cached for a day, so the endpoint cannot be used to make the worker fetch other sites.
  *
@@ -83,8 +83,27 @@ async function checkUrl(u) {
     return { code: 0, state: /timeout|abort/i.test(String(e && e.name || e)) ? 'blocked' : 'broken' };
   }
 }
+/* 1.16.0: the link check is for the signed-in team only (owner and invited pharmacists; sign-up is invite-only).
+   The page sends the user's Supabase session token; Supabase confirms it (/auth/v1/user). Confirmed tokens are
+   remembered in this isolate for 10 minutes so a check of 72 sources asks Supabase once. */
+const TEAM_OK = new Map(); // token hash -> time confirmed
+async function teamOnly(request, env) {
+  const m = /^Bearer\s+([\w-]+\.[\w-]+\.[\w-]+)$/.exec(request.headers.get('Authorization') || '');
+  if (!m) return false;
+  const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(m[1])))].slice(0, 12).map(b => b.toString(16).padStart(2, '0')).join('');
+  const t = TEAM_OK.get(h);
+  if (t && Date.now() - t < 600000) return true;
+  try {
+    const r = await fetch(env.SUPABASE_URL.replace(/\/$/, '') + '/auth/v1/user', { headers: { apikey: env.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + m[1] }, signal: AbortSignal.timeout(5000) });
+    if (!r.ok) return false;
+    if (TEAM_OK.size > 500) TEAM_OK.clear();
+    TEAM_OK.set(h, Date.now());
+    return true;
+  } catch (e) { return false; }
+}
 async function links(request, env, ctx) {
   const url = new URL(request.url);
+  if (!(await teamOnly(request, env))) return json('{"error":"sign in"}', 401, 'no-store');
   const ids = [...new Set((url.searchParams.get('ids') || '').split(',').map(Number).filter(n => Number.isInteger(n) && n > 0))].sort((a, b) => a - b).slice(0, LINKS_MAX);
   if (!ids.length) return json('{"error":"ids"}', 400, 'no-store');
   const cache = typeof caches !== 'undefined' ? caches.default : null;
@@ -94,7 +113,7 @@ async function links(request, env, ctx) {
   if (!entry) { try { entry = await refresh(env); } catch (e) { return json('{"error":"content unavailable"}', 503, 'no-store'); } }
   const refs = (JSON.parse(entry.body)[0].data.refs || []).filter(r => ids.includes(r.id) && /^https?:\/\//.test(r.url || ''));
   const out = await Promise.all(refs.map(async r => ({ id: r.id, ...(await checkUrl(r.url)) })));
-  const res = json(JSON.stringify({ at: new Date().toISOString(), links: out }), 200, `public, max-age=${LINK_TTL}`);
+  const res = json(JSON.stringify({ at: new Date().toISOString(), links: out }), 200, `private, max-age=${LINK_TTL}`);
   if (cache) ctx.waitUntil(cache.put(key, res.clone()));
   return res;
 }

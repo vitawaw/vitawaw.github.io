@@ -1,0 +1,39 @@
+# VITAWAW 1.16.0: run the fast tests on every push and pull request (no secrets, no deploy; Cloudflare still builds the site).
+name: tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright (Chromium)
+        run: |
+          pip install playwright==1.48.0
+          python -m playwright install --with-deps chromium
+      - name: Asset hashes match (set_version.py)
+        run: python3 tests/check_assets.py
+      - name: Edge worker
+        run: |
+          node tests/worker_test.mjs
+          node tests/worker_links_test.mjs
+      - name: Dose results
+        run: |
+          python3 tests/medical_cases.py | tee mc.txt
+          test "$(grep -c '^ok' mc.txt)" -ge 66
+      - name: Owner, menus and tools
+        run: |
+          python3 tests/owner_flow.py
+          python3 tests/menu_flow.py
+          python3 tests/tools_flow.py | tee tf.txt
+          ! grep -qiE '^fail|traceback' tf.txt

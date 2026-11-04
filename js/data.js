@@ -53,10 +53,11 @@ const DEF_REFS={
 77:['American Family Physician, 2009','Saper RB, Rash R. Zinc: An Essential Micronutrient. Am Fam Physician 2009;79(9):768–772','https://pmc.ncbi.nlm.nih.gov/articles/PMC2820120/','نسبة الزنك العنصري في أملاحه','Elemental zinc in zinc salts'],
 78:['Nutrients, 2021','Zhang H, et al. Study on Reference Range of Zinc, Copper and Copper/Zinc Ratio in Childbearing Women of China. Nutrients 2021;13(3):946','https://doi.org/10.3390/nu13030946','تحويل وحدات الزنك والنحاس في الدم','Converting serum zinc and copper units'],
 75:['Gilead, U.S. prescribing information','BIKTARVY (bictegravir, emtricitabine, tenofovir alafenamide): Prescribing information','https://www.gilead.com/-/media/files/pdfs/medicines/hiv/biktarvy/biktarvy_pi.pdf','Bictegravir مع الكالسيوم والحديد والمغنيسيوم','Bictegravir with calcium, iron and magnesium'],
-68:['British Society of Gastroenterology, 2021','Snook J, et al. British Society of Gastroenterology guidelines for the management of iron deficiency anaemia in adults. Gut 2021;70:2030–2051','https://doi.org/10.1136/gutjnl-2021-325210','علاج فقر الدم بعوز الحديد للبالغين وحد Ferritin','Adult iron-deficiency anaemia treatment and ferritin cut-off']
+68:['British Society of Gastroenterology, 2021','Snook J, et al. British Society of Gastroenterology guidelines for the management of iron deficiency anaemia in adults. Gut 2021;70:2030–2051','https://doi.org/10.1136/gutjnl-2021-325210','علاج فقر الدم بعوز الحديد للبالغين وحد Ferritin','Adult iron-deficiency anaemia treatment and ferritin cut-off'],
+85:['World Health Organization / UNICEF, 2004','Clinical management of acute diarrhoea: WHO/UNICEF joint statement (WHO/FCH/CAH/04.7)','https://www.who.int/publications/i/item/WHO_FCH_CAH_04.7','الزنك لإسهال الأطفال: 10 ملغ تحت 6 أشهر و20 ملغ من 6 أشهر لمدة 10 – 14 يوماً','Zinc for childhood diarrhoea: 10 mg under 6 months, 20 mg from 6 months, for 10–14 days']
 };
 let REFS=DEF_REFS;
-const DEF_REFGROUP={d:[2,3,4,61],b12:[5,8,29,63,64],fol:[11,28,65,66,67],fe:[13,14,15,16,17,27,51,52,59,62,68],ca:[18,19,27,61],mg:[20,21,22,58],c:[23,24],zn:[25,26,77],
+const DEF_REFGROUP={d:[2,3,4,61],b12:[5,8,29,63,64],fol:[11,28,65,66,67],fe:[13,14,15,16,17,27,51,52,59,62,68],ca:[18,19,27,61],mg:[20,21,22,58],c:[23,24],zn:[25,26,77,85],
   preg:[57,65,67,11,15,37,4,3,18,44,42,30,51],inf:[55,14,56,4],vac:[53,54,30],bar:[69],thi:[70,71]};
 
 const DEF_INTER=[

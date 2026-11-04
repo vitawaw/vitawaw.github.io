@@ -32,6 +32,11 @@ CASES = [  # nutrient, fields, sex, expected text somewhere in the result (Arabi
  ('mg', {'age':40,'mgv':1.5}, 'm', 'بعد 7 أيام'),
  ('c',  {'age':0}, 'f', '40 – 50'),                                          # NIH infant AI
  ('zn', {'age':30}, 'm', '11'),
+ # 1.16.0 WHO/UNICEF 2004: zinc for acute diarrhoea — 20 mg from 6 months, 10 mg under 6 months, 10–14 days; not for 5 years and over
+ ('zn', {'age':2,'czg':'dia'}, 'm', '20 ملغ زنك عنصري يومياً'),
+ ('zn', {'age':0,'czg':'dia'}, 'm', 'أقل من 6 أشهر: 10 ملغ'),
+ ('zn', {'age':2,'czg':'dia'}, 'm', '10 – 14 يوماً'),
+ ('zn', {'age':8,'czg':'dia'}, 'm', 'دون 5 سنوات'),
  # 1.7.0
  ('b12',{'age':40,'b12v':250,'ab12':20}, 'f', 'Active B12 أقل من 25'),        # NICE NG239 active B12 <25 = deficiency
  ('b12',{'age':40,'b12v':250,'ab12':50}, 'f', 'افحص MMA'),                    # 25-70 indeterminate -> MMA

@@ -335,6 +335,15 @@ function fZn(){
   const ul=(age<1?'4 – 5':age<=3?'7':age<=8?'12':age<=13?'23':age<=18?'34':'40')+MG+L(' / يوم',' / day');
   const kv=[[RDAL(age),rda+L(' ملغ زنك عنصري',' mg elemental zinc')],[L('الحد الأعلى الآمن (UL)','Tolerable Upper Intake Level (UL)'),ul]];
   let r;
+  // 1.16.0: acute diarrhoea in children under 5 (WHO/UNICEF 2004): 10 mg under 6 months, 20 mg from 6 months, for 10–14 days with ORS
+  if(g==='dia'){
+    const cur=age<1?L('أقل من 6 أشهر: 10 ملغ يومياً · من 6 أشهر: 20 ملغ يومياً','Under 6 months: 10 mg daily · from 6 months: 20 mg daily'):L('20 ملغ زنك عنصري يومياً','20 mg elemental zinc daily');
+    r=age>=5?{badge:L('إسهال الأطفال','Childhood diarrhoea'),tone:'warn',title:L('التوصية لمن هم دون 5 سنوات','The recommendation is for children under 5'),sub:L('توصية WHO/UNICEF للزنك مع الإسهال الحاد تخص الأطفال دون 5 سنوات','The WHO/UNICEF zinc recommendation for acute diarrhoea covers children under 5'),refs:[85]}
+      :{badge:L('إسهال الأطفال الحاد','Acute childhood diarrhoea'),tone:'ok',title:cur,sub:L('لمدة 10 – 14 يوماً، مع محلول الإرواء الفموي (ORS)','For 10–14 days, together with oral rehydration salts (ORS)'),refs:[85],
+        plan:[{h:L('الجرعة','Dose'),d:cur+R([85])},{h:L('المدة','Duration'),d:L('10 – 14 يوماً حتى لو توقف الإسهال قبلها','10–14 days, even if the diarrhoea stops sooner')+R([85])},{h:L('مع','With'),d:L('محلول الإرواء الفموي منخفض التركيز، واستمرار الرضاعة والتغذية','Low-osmolarity ORS, and continued breastfeeding and feeding')+R([85])}]};
+    r.kv=kv;r.notes=[{t:L('علامات الجفاف الشديد أو الدم في البراز أو استمرار الإسهال أكثر من 14 يوماً تحتاج طبيباً.','Signs of severe dehydration, blood in the stool or diarrhoea lasting over 14 days need a doctor.'),i:1}];
+    return render(r);
+  }
   if(g==='rda')r={badge:L('الاحتياج اليومي','Daily requirement'),tone:'info',title:L(`${rda} ملغ زنك يومياً`,`${rda} mg zinc daily`),sub:L('من الغذاء أو المكملات','From food or supplements'),refs:[25],pt:L(`تحتاج ${rda} ملغ زنك يومياً من الطعام أو المكملات.`,`You need ${rda} mg of zinc a day from food or supplements.`)};
   else r={badge:L('نزلات البرد','Common cold'),tone:'warn',title:L('فائدة محتملة لكنها غير مؤكدة','Possible benefit, not proven'),sub:L('مراجعة Cochrane 2024: قد يقصّر الزنك مدة البرد بنحو يومين، والثقة في الأدلة منخفضة، ولم يثبت أنه يمنع الإصابة','Cochrane 2024: zinc may shorten colds by about 2 days, with low-certainty evidence; it has not been shown to prevent colds'),refs:[26],
     pt:L('الزنك قد يقصّر البرد يومين تقريباً، لكن الدليل ضعيف. إن استخدمته فلأيام قليلة فقط، فقد يسبب غثياناً وتغيراً في الطعم.','Zinc may shorten a cold by about 2 days, but the evidence is weak. If you use it, only for a few days; it can cause nausea and a changed taste.'),

@@ -379,7 +379,9 @@ async function linksCheck(){
   if(linksBusy)return;linksBusy=true;renderLinks();
   const ids=((PUBLISHED&&PUBLISHED.refs)||[]).filter(r=>/^https?:\/\//.test(r.url||'')).map(r=>r.id),out=[];
   try{
-    for(let i=0;i<ids.length;i+=25){const r=await fetch('/api/links?ids='+ids.slice(i,i+25).join(','),{signal:AbortSignal.timeout(60000)});if(!r.ok)throw new Error(r.status);out.push(...((await r.json()).links||[]))}
+    // 1.16.0: the worker checks links only for the signed-in team, so the session token goes with the request
+    const tok=OWN.client?((await OWN.client.auth.getSession()).data.session||{}).access_token:'',hd=tok?{Authorization:'Bearer '+tok}:{};
+    for(let i=0;i<ids.length;i+=25){const r=await fetch('/api/links?ids='+ids.slice(i,i+25).join(','),{headers:hd,signal:AbortSignal.timeout(60000)});if(!r.ok)throw new Error(r.status);out.push(...((await r.json()).links||[]))}
     LINKS={at:new Date().toISOString().slice(0,10),ok:out.filter(x=>x.state==='ok').map(x=>x.id),broken:out.filter(x=>x.state==='broken').map(x=>x.id),blocked:out.filter(x=>x.state==='blocked').map(x=>x.id),n:out.length};
     try{localStorage.setItem('vw-links',JSON.stringify(LINKS))}catch(e){}
   }catch(e){toast(T('o_neterr'))}
