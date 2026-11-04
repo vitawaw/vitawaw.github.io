@@ -1,15 +1,15 @@
 // VITAWAW service worker: lets the installed app open offline.
 // VERSION and FILES are updated by tools/set_version.py; do not edit them by hand.
-const VERSION='vitawaw-1.16.1-1e0ab400';
+const VERSION='vitawaw-1.16.1-b26c0961';
 const FILES=[
   './',
   './index.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
-  './css/app.css?v=1.16.1-1e42fda1',
+  './css/app.css?v=1.16.1-e47af9f4',
   './js/pre.js?v=1.16.1-ce28d413',
-  './js/config.js?v=1.16.1-42f7e417',
+  './js/config.js?v=1.16.1-fe4338e0',
   './js/i18n.js?v=1.16.1-48007370',
   './js/data.js?v=1.16.1-78a70643',
   './js/util.js?v=1.16.1-ece5b126',
@@ -22,7 +22,7 @@ const FILES=[
   './js/ui.js?v=1.16.1-84bf8dd2',
   './js/published.js?v=1.16.1-87f710f2',
   './js/owner.js?v=1.16.1-e66dc2c9',
-  './js/nav.js?v=1.16.1-c63b45e3',
+  './js/nav.js?v=1.16.1-2e65f626',
   './js/team.js?v=1.16.1-ca6436a6',
   './js/boot.js?v=1.16.1-de688673',
   './fonts/cairo-700.woff2',

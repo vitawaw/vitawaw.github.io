@@ -62,7 +62,7 @@ with sync_playwright() as p:
         o.locator('#dlg [data-md="h"][data-for="dlgf3"]').click(); o.wait_for_timeout(100)
         check(f'{tag}: «عنوان» makes the line a heading in the preview', o.locator('#mdprev h3').count() >= 1)
         o.evaluate("const t=document.getElementById('dlgf3');t.value+='\\n\\n- أولاً\\n- ثانياً\\n\\n**مهم** جداً';t.dispatchEvent(new Event('input',{bubbles:true}))"); o.wait_for_timeout(100)
-        check(f'{tag}: list and bold in the preview, no HTML from the text', o.locator('#mdprev li').count() == 2 and o.locator('#mdprev b').count() >= 1)
+        check(f'{tag}: list and bold in the preview, no HTML from the text', o.locator('#mdprev li', has_text='ثانياً').count() == 1 and o.locator('#mdprev b', has_text='مهم').count() == 1 and o.locator('#mdprev .pgc').count() >= 1)
         o.screenshot(path=f'tests/shots/panel_page_{tag}.png')
         o.click('#dlg-a .pri'); o.wait_for_timeout(300)
         o.evaluate("CFG.pages.find(p=>p.id==='about').b.ar+='\\n\\n<script>alert(1)</script>';openPage('about')"); o.wait_for_timeout(200)

@@ -37,7 +37,8 @@ const paras=t=>String(t||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).m
     if(/^##\s+/.test(line.trim())){flushP();flushU();h+=`<h3>${e.replace(/^##\s+/,'')}</h3>`}
     else if(/^[-•]\s+/.test(line.trim())){flushP();ul.push(e.replace(/^[-•]\s+/,''))}
     else{flushU();p.push(e)}});
-  flushP();flushU();return h}).join('');
+  flushP();flushU();return h}).reduce((o,h)=>{ // 1.16.1: every «## heading» starts a card (.pgc) holding what follows it
+    if(h.startsWith('<h3>')){o.push({c:1,h});}else if(o.length&&o[o.length-1].c){o[o.length-1].h+=h}else o.push({c:0,h});return o},[]).map(x=>x.c?`<section class="pgc">${x.h}</section>`:x.h).join('');
 /** «suggest a feature or report an error» is a page like the others (editable); until the owner edits it, it uses the default texts */
 const SUGGEST=()=>{const t=k=>(CFG.text&&CFG.text[k])||{ar:I18N[k][0],en:I18N[k][1]};return {id:'suggest',t:t('sg_t'),b:t('sg_l'),hidden:false}};
 /** «How to use and FAQ» (one old page) is shown as two pages to everyone until the owner saves the split (owner.js splitHowto) */

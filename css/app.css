@@ -1078,3 +1078,9 @@ ol.refs>li{border-inline-start:4px solid color-mix(in srgb,var(--pc2,var(--royal
 .tioff{opacity:.5}
 #lbpens .filters{margin-bottom:8px}
 #lbpens button svg{width:14px;height:14px;vertical-align:-2px}
+/* 1.16.1 information pages: every heading is a card; points as a list; bold stands out */
+.prose .pgc{border:1px solid var(--edge);border-inline-start:4px solid var(--pc2,var(--royal));border-radius:14px;padding:10px 14px 4px;margin:0 0 12px;background:var(--card);box-shadow:var(--elev)}
+.prose .pgc h3{margin:2px 0 6px;color:var(--pc2,var(--royal))}
+.prose .pgc ul{margin:2px 0 8px}
+.prose .pgc p{margin:0 0 8px}
+.prose b{color:var(--ink);font-weight:800}
