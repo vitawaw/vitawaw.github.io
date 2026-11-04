@@ -644,6 +644,7 @@ async function resumeSession(){
   try{await loadSupabaseLib()}catch(e){return}
   OWN.client=OWN.client||window.supabase.createClient(SB.url,SB.key);
   const {data:{session}}=await OWN.client.auth.getSession();if(session&&!OWN.on)await afterLogin();
+  if(WANT&&!OWN.on){WANT=null;history.replaceState(null,'',location.pathname+location.search+'#'+cur)} // signed out meanwhile: the address follows the page shown
 }
 async function openOwner(opt={}){
   history.replaceState(null,'',location.pathname+location.search+'#'+(cur||'calc'));
@@ -706,6 +707,8 @@ async function afterLogin(){
   const {data:ct,error}=await c.rpc('get_content');if(error||!ct){toast(T('o_neterr'));return}
   startOwner({local:false,role:m.role,draft:draftFor(dr&&dr.data,m.role),content:ct});
   if(m.role==='owner')teamLoad().then(()=>renderNav());else loadNotes();
+  if(WANT){const [p,v]=WANT;WANT=null;if(location.hash==='#'+p)show(p,v)} // 1.17.1 the team page the reload asked for
+  wantVit(); // 1.17.1 a vitamin that only the team's content has
 }
 function applyContent(ct){ct=clean(ct);CFG.refs=ct.refs||[];CFG.inter=ct.inter||[];CFG.nut={hide:(ct.nut&&ct.nut.hide)||[],custom:(ct.nut&&ct.nut.custom)||[]};OWN.nextRef=ct.next_ref||30;OWN.del=ct.del||null;OWN.parts=partsOf()}
 const settingsOf=c=>({contact:c.contact,colors:c.colors,text:c.text,roadmap:c.roadmap,pages:c.pages||DEFAULT_CFG.pages,nutOrder:c.nutOrder||[],brand:c.brand||DEFAULT_CFG.brand,review:c.review||DEFAULT_CFG.review,menus:c.menus||DEFAULT_CFG.menus,tools:c.tools||DEFAULT_CFG.tools,medcat:c.medcat||null,look:c.look||DEFAULT_CFG.look});

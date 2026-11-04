@@ -60,6 +60,7 @@ and where the project stands. Details: `README.md` (architecture, file map, test
 python3 tests/owner_flow.py      # owner / visitor / pharmacist flows (fake Supabase: tests/fake_supabase.js)
 python3 tests/owner_panel.py     # 1.16.0 owner panel: edit mode, appearance, page editor, 3 sizes, undo, publish list, follow-up tools
 python3 tests/stats_flow.py      # 1.17.0 visit counting + owner dashboard, 3 sizes
+python3 tests/reload_flow.py     # 1.17.0 every page stays after a browser reload (3 roles × 3 sizes, ~8 min)
 python3 tests/menu_flow.py       # menus, floating windows, info pages, pharmacist accounts, 3 screen sizes → tests/shots/
 python3 tests/medical_cases.py   # dose results against expected values
 python3 tests/tools_flow.py      # tool formulas + calculator → tools links
@@ -88,6 +89,11 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   = sample numbers made in the page (nothing written). Demo data `stats_demo_test.sql` (TEST only, optional; refuses when real visits exist; demo vids start 'de').
   Privacy page «عدّ الزيارات بلا هوية» in DEFAULT_CFG + draft file `content_1_17_0.sql` (both projects). Test `tests/stats_flow.py`
   (in CI). The 3 SQL files are NOT applied anywhere yet (MCP approval timed out on TEST too) → he runs them.
+- **1.17.0 reload fixes** (his «بعض الصفحات عندما احدث الصفحه ينتقل الى غير صفحه»): `tests/reload_flow.py` (visitor/pharmacist/owner ×
+  3 sizes, every section/tool/vitamin, info page, slow first visit). Fixes: routeSpecial maps #sch/#labs/#ul (SECTOOL); `WANT` in show()
+  (team page asked for while a saved session `HASSESSION()` is not back yet → shown at the end of afterLogin, address reset if signed out);
+  boot resumes the session on EVERY address (it skipped #tool-/#v-/#info-); info pages keep `#info-<id>` while open (openPage replaceState,
+  closeSheet puts #cur back); `WANTV`/`WANTPG` + `wantVit()` (in refreshAll and afterLogin) open a vitamin/page that arrives with the content.
 - **Live: 1.16.4** (he said «انشر» on 2026-11-04; main fast-forwarded; checked online: live = no example buttons, empty fields; test = examples).
 - **1.16.4**: install bar «ثبّت تطبيق VITAWAW الآن»; `toolActs()` (tools.js, boot) puts `.tact` under each tool's fields =
   «جرّب مثالاً» ([data-tex], test site only) + «مسح البيانات» ([data-tclr], `TOOLCLR`); NO pre-filled numbers on either site (boot no

@@ -5,11 +5,18 @@
 /* ===================== navigation ===================== */
 const PAGES=['calc','tools','interactions','sources','roadmap','notif','team','menu','meds','links','stats'];
 let cur='calc',CALCV=false,TOOLV=''; // CALCV: the chosen vitamin's page (patient data + result) instead of the list of vitamins
+/** 1.17.1 after a reload the saved session is restored a moment after the first page is drawn: a team-only page asked for in
+    the address (pharmacists, visit dashboard, link check, a section hidden from visitors) waits for it instead of jumping away */
+let WANT=null;
+const HASSESSION=()=>{try{return Object.keys(localStorage).some(k=>/^sb-.+-auth-token$/.test(k))}catch(e){return false}};
 function show(p,view){
   if(p==='notif'){if(typeof openNotif==='function')setTimeout(openNotif,0);p=cur&&cur!=='notif'?cur:'calc'} // 🔔 is a floating window, not a page
   if(typeof SECTOOL!=='undefined'&&SECTOOL[p]){view=SECTOOL[p];p='tools'} // the schedule and lab results sections are tool pages
+  const asked=p,askedView=view;
   if(p==='links'&&!(typeof CAN==='function'&&CAN('refs')))p='calc'; // the link check is for the team
   if(!PAGES.includes(p)||(p==='menu'&&WIDE())||((p==='team'||p==='stats')&&!ISOWNER())||(navHidden(p)&&!SHOWALL()))p='calc'; // a section the owner hid is not shown // wide screens show the menu at the side
+  if(asked!==p&&asked!=='notif'&&asked!=='menu'&&typeof OWN!=='undefined'&&!OWN.on&&HASSESSION())WANT=[asked,askedView];
+  else if(asked===p)WANT=null;
   cur=p;CALCV=p==='calc'&&view==='v';$('calc').classList.toggle('cv',CALCV);TOOLV=p==='tools'&&/^tool-/.test(view||'')?view:'';$('tools').classList.toggle('tv',!!TOOLV);if(TOOLV)$('tback').querySelector('span').textContent=typeof TOOLFROM!=='undefined'&&TOOLFROM&&TOOLFROM!=='#tools'?L('رجوع','Back'):T('tab_tools');document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));if(CALCV)$('cvname').textContent=kname(K);if(typeof rememberRecent==='function')rememberRecent('p:'+p);
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
   // a section that is a tool's page (schedule, lab results) is the selected tab while its tool is open
@@ -43,12 +50,13 @@ window.addEventListener('hashchange',()=>{if(routeSpecial())return;show(location
 function routeSpecial(){
   let h=location.hash.slice(1);try{h=decodeURIComponent(h)}catch(e){}
   if(/^tool-(pill|d|ca|gz|ml|sch|labs|ul|u)$/.test(h)){show('tools',h);window.scrollTo(0,0);return true} // one tool of the tools page
+  if(typeof SECTOOL!=='undefined'&&SECTOOL[h]){show('tools',SECTOOL[h]);window.scrollTo(0,0);return true} // 1.17.1 the schedule / lab results / upper limit sections are tools
   if(/(^|&)(type=recovery|error_code=otp_expired)(&|$)/.test(h)){recoverPassword();return true} // the link from the «forgot password» e-mail
-  if(h.startsWith('v-')){const k=h.slice(2);if(KEYS.includes(k)&&k!=='all'&&k!==K){K=k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()}show('calc','v');window.scrollTo(0,0);return true} // one vitamin's page
+  if(h.startsWith('v-')){const k=h.slice(2);if(!KEYS.includes(k)&&/^[a-z0-9_]{1,30}$/.test(k))WANTV=k;if(KEYS.includes(k)&&k!=='all'&&k!==K){K=k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()}show('calc','v');window.scrollTo(0,0);return true} // one vitamin's page
   if(h==='owner'){openOwner();return true}
   if(h==='join'||h.startsWith('join=')){const [em,k]=h.slice(5).split('&k=');openOwner({join:em||'',key:k||''});return true}
   if(h.startsWith('c=')){history.replaceState(null,'',location.pathname+location.search+'#calc');loadShared(h.slice(2));return true}
-  if(h.startsWith('info-')){history.replaceState(null,'',location.pathname+location.search+'#'+cur);openPage(h.slice(5));return true}
+  if(h.startsWith('info-')){const id=h.slice(5);if(!allPages().some(x=>x.id===id)&&/^[a-z0-9_-]{1,40}$/.test(id))WANTPG=id;else openPage(id);return true} // the page keeps #info-<id> while it is open (1.17.1: a reload opens it again)
   return false;
 }
 document.querySelectorAll('.tab[data-p]').forEach(t=>{
@@ -255,7 +263,16 @@ function applyColors(){
   Object.entries(CFG.colors).forEach(([p,c])=>{const el=$(p),t=$('t-'+p);if(t)t.style.setProperty('--ti',c[1]);if(!el)return;el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1])});
   [['meds','meds'],['links','sources'],['stats','tools']].forEach(([p,q])=>{const c=CFG.colors[q]||CFG.colors.interactions,el=$(p);if(c&&el){el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1])}}); // own pages take the colours of their section
 }
-function refreshAll(){applyColors();setLang(LANG);decorate()}
+function refreshAll(){applyColors();setLang(LANG);decorate();wantVit()}
+/** 1.17.1 #v-<id> of a vitamin that is not loaded yet (published content still on its way, or a team member's new vitamin
+    before the session is back): opened as soon as it exists, instead of staying on another vitamin */
+let WANTV='',WANTPG='';
+function wantVit(){
+  if(WANTPG&&location.hash==='#info-'+WANTPG&&allPages().some(x=>x.id===WANTPG)){const id=WANTPG;WANTPG='';openPage(id)} // an owner's own page arrives with the content
+  if(!WANTV||location.hash!=='#v-'+WANTV){WANTV='';return}
+  if(!KEYS.includes(WANTV))return;
+  const k=WANTV;WANTV='';if(k!==K){K=k;try{localStorage.setItem('vw-k',K)}catch(e){}apply()}show('calc','v');
+}
 
 $('mcq').addEventListener('input',()=>{MCQ=$('mcq').value;renderMedCat()});
 if($('ulper'))$('ulper').addEventListener('change',()=>ul()); // 1.16.2 upper limit: amounts per day or per week

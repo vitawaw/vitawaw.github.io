@@ -489,6 +489,7 @@ function openSheet(title,content,opt={}){
 function closeSheet(focus=true){
   if($('sheet').hidden||!SHEET)return;
   const s=SHEET;SHEET=null;
+  if(s.key==='page'&&/^#info-/.test(location.hash))history.replaceState(null,'',location.pathname+location.search+'#'+(cur||'calc')); // back to the page underneath
   if(s.node){s.home.parentNode.insertBefore(s.node,s.home);s.home.remove()}
   $('sheet').hidden=true;$('sheet-b').innerHTML='';document.body.style.overflow='';
   if(s.onClose)s.onClose();if(focus&&s.last&&s.last.focus)s.last.focus();
@@ -503,6 +504,7 @@ function openToolSheet(sec){const t=TOOLS.find(x=>x[0]===sec)||TOOLS[1];openShee
 function openPage(id){
   const p=allPages().find(x=>x.id===id);if(!p||(p.hidden&&!SHOWALL()))return;
   if(typeof statHit==='function')statHit('page',id);
+  if(location.hash!=='#info-'+id)history.replaceState(null,'',location.pathname+location.search+'#info-'+id); // 1.17.1 a reload keeps it open
   openSheet(tx2(p.t),`<div class="prose">${paras(tx2(p.b))}</div>`,{key:'page'});
   if(id==='suggest'){ // e-mail and phone with their buttons (the owner edits them here too)
     const c=document.querySelector('#roadmap .contact').cloneNode(true);c.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));c.querySelectorAll('h2,.lead').forEach(x=>x.remove());
