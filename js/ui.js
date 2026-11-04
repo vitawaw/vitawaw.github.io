@@ -3,13 +3,13 @@
    language switch (setLang), event wiring, colors and refreshAll().
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
-const PAGES=['calc','tools','interactions','sources','roadmap','notif','team','menu','meds','links'];
+const PAGES=['calc','tools','interactions','sources','roadmap','notif','team','menu','meds','links','stats'];
 let cur='calc',CALCV=false,TOOLV=''; // CALCV: the chosen vitamin's page (patient data + result) instead of the list of vitamins
 function show(p,view){
   if(p==='notif'){if(typeof openNotif==='function')setTimeout(openNotif,0);p=cur&&cur!=='notif'?cur:'calc'} // 🔔 is a floating window, not a page
   if(typeof SECTOOL!=='undefined'&&SECTOOL[p]){view=SECTOOL[p];p='tools'} // the schedule and lab results sections are tool pages
   if(p==='links'&&!(typeof CAN==='function'&&CAN('refs')))p='calc'; // the link check is for the team
-  if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='team'&&!ISOWNER())||(navHidden(p)&&!SHOWALL()))p='calc'; // a section the owner hid is not shown // wide screens show the menu at the side
+  if(!PAGES.includes(p)||(p==='menu'&&WIDE())||((p==='team'||p==='stats')&&!ISOWNER())||(navHidden(p)&&!SHOWALL()))p='calc'; // a section the owner hid is not shown // wide screens show the menu at the side
   cur=p;CALCV=p==='calc'&&view==='v';$('calc').classList.toggle('cv',CALCV);TOOLV=p==='tools'&&/^tool-/.test(view||'')?view:'';$('tools').classList.toggle('tv',!!TOOLV);if(TOOLV)$('tback').querySelector('span').textContent=typeof TOOLFROM!=='undefined'&&TOOLFROM&&TOOLFROM!=='#tools'?L('رجوع','Back'):T('tab_tools');document.querySelectorAll('#tools>section[id^="tool-"]').forEach(x=>x.classList.toggle('on',x.id===TOOLV));if(CALCV)$('cvname').textContent=kname(K);if(typeof rememberRecent==='function')rememberRecent('p:'+p);
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
   // a section that is a tool's page (schedule, lab results) is the selected tab while its tool is open
@@ -17,6 +17,8 @@ function show(p,view){
   if(TOOLV==='tool-sch'||TOOLV==='tool-labs'||TOOLV==='tool-ul'){const own=$({'tool-sch':'t-sch','tool-labs':'t-labs','tool-ul':'t-ul'}[TOOLV]);
     if(!own.classList.contains('offbar')){$('t-tools').setAttribute('aria-selected',false);own.setAttribute('aria-selected',true)}}
   if(p==='team'&&typeof openTeamPage==='function')openTeamPage();
+  if(p==='stats'&&typeof openStats==='function')openStats();
+  if(typeof statHit==='function'){if(TOOLV)statHit('tool',TOOLV.slice(5));else if(p!=='menu'&&p!=='notif'&&p!=='team'&&p!=='stats')statHit('section',p)}
   sharedParts(p);
   if(typeof rememberRecent==='function')rememberRecent(TOOLV?'t:'+TOOLKIND[TOOLV]:'p:'+p);
   if(p!=='sources'){$('back').hidden=true;document.querySelectorAll('ol.refs li.hl').forEach(l=>l.classList.remove('hl'))}
@@ -251,7 +253,7 @@ function applyLook(){
 function applyColors(){
   applyLook();
   Object.entries(CFG.colors).forEach(([p,c])=>{const el=$(p),t=$('t-'+p);if(t)t.style.setProperty('--ti',c[1]);if(!el)return;el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1])});
-  [['meds','meds'],['links','sources']].forEach(([p,q])=>{const c=CFG.colors[q]||CFG.colors.interactions,el=$(p);if(c&&el){el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1])}}); // own pages take the colours of their section
+  [['meds','meds'],['links','sources'],['stats','tools']].forEach(([p,q])=>{const c=CFG.colors[q]||CFG.colors.interactions,el=$(p);if(c&&el){el.style.setProperty('--pc',c[0]);el.style.setProperty('--pc2',c[1])}}); // own pages take the colours of their section
 }
 function refreshAll(){applyColors();setLang(LANG);decorate()}
 

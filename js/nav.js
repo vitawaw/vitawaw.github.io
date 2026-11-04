@@ -164,6 +164,7 @@ const FOLLOW0=['tool-sch','tool-ul','tool-labs'];
     appears in both by itself. Shown only to the signed-in team (and «فحص المصادر» only to whoever edits sources). */
 const TEAMX=()=>{const own=typeof OWN!=='undefined'&&OWN.on&&!OWN.preview;return [
   ...(own?[{k:'log',name:T('lg_t'),ico:ICO.history,page:'roadmap',f:()=>openLog()}]:[]),
+  ...(own&&ISOWNER()?[{k:'stats',name:T('st_t'),ico:ICO.chart,page:'tools',f:()=>go('stats')}]:[]),
   ...(own&&CAN('refs')?[{k:'links',name:T('lk_t'),ico:tabIco('links'),page:'sources',f:()=>go('links')}]:[])]};
 const FOLLOW=()=>Array.isArray(CFG.tools&&CFG.tools.follow)?CFG.tools.follow:FOLLOW0;
 const fKey=k=>k.startsWith('p:')&&SECTOOL[k.slice(2)]?SECTOOL[k.slice(2)]:k; // a section that is a tool (schedule, lab results…) is that tool
@@ -501,6 +502,7 @@ function openToolSheet(sec){const t=TOOLS.find(x=>x[0]===sec)||TOOLS[1];openShee
 /* ===================== information pages ===================== */
 function openPage(id){
   const p=allPages().find(x=>x.id===id);if(!p||(p.hidden&&!SHOWALL()))return;
+  if(typeof statHit==='function')statHit('page',id);
   openSheet(tx2(p.t),`<div class="prose">${paras(tx2(p.b))}</div>`,{key:'page'});
   if(id==='suggest'){ // e-mail and phone with their buttons (the owner edits them here too)
     const c=document.querySelector('#roadmap .contact').cloneNode(true);c.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));c.querySelectorAll('h2,.lead').forEach(x=>x.remove());

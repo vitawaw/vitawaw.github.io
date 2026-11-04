@@ -13,6 +13,11 @@
  *   50 outgoing requests per call). Only URLs that are in the published content can be checked (never a URL from the
  *   request), and each answer is cached for a day, so the endpoint cannot be used to make the worker fetch other sites.
  *
+ * - POST /api/hit (1.17.0) counts visits for the owner's dashboard, anonymously: the page sends only what happened
+ *   ({e:[[kind,item],…], lang, dv}); the worker adds the country code and a 16-character code made from
+ *   (day + IP + browser + salt) that changes every day. The IP and the browser text are never stored or sent on.
+ *   Supabase public.log_hits() checks every value. Robots are not counted.
+ *
  * Settings come from wrangler.jsonc "vars": SUPABASE_URL and SUPABASE_ANON_KEY (public key,
  * the database is protected by row level security).
  */
@@ -118,6 +123,40 @@ async function links(request, env, ctx) {
   return res;
 }
 
+/* 1.17.0 anonymous visit counting (see the top of the file). STATS_SALT (optional secret) makes the daily code
+   impossible to recompute; without it the public key is used, which is enough because only the owner's database reads it. */
+const HIT_MAX = 4096;
+const BOT = /bot|crawl|spider|slurp|headless|lighthouse|pagespeed|preview|monitor|curl|wget|python|node-fetch|axios/i;
+async function hit(request, env, ctx) {
+  const url = new URL(request.url);
+  const origin = request.headers.get('Origin');
+  if (origin && origin !== url.origin) return new Response(null, { status: 403 });
+  const ua = request.headers.get('User-Agent') || '';
+  if (!ua || BOT.test(ua)) return new Response(null, { status: 204 });
+  const text = await request.text().catch(() => '');
+  if (!text || text.length > HIT_MAX) return new Response(null, { status: 413 });
+  let b; try { b = JSON.parse(text); } catch (e) { return new Response(null, { status: 400 }); }
+  if (!b || !Array.isArray(b.e)) return new Response(null, { status: 400 });
+  const e = b.e.filter(x => Array.isArray(x) && typeof x[0] === 'string' && (x[1] === undefined || typeof x[1] === 'string')).slice(0, 40)
+    .map(x => [x[0].slice(0, 10), (x[1] || '').slice(0, 40)]);
+  if (!e.length) return new Response(null, { status: 204 });
+  const lang = b.lang === 'en' ? 'en' : 'ar';
+  const device = ['phone', 'tablet', 'pc'].includes(b.dv) ? b.dv : /iPad|Tablet/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua)) ? 'tablet' : /Mobi|iPhone|Android/i.test(ua) ? 'phone' : 'pc';
+  const cc = String((request.cf && request.cf.country) || '').toUpperCase();
+  const country = /^[A-Z]{2}$/.test(cc) && cc !== 'XX' && cc !== 'T1' ? cc : '';
+  const day = new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10); // Baghdad day, like the database
+  const ip = request.headers.get('CF-Connecting-IP') || '';
+  const salt = env.STATS_SALT || env.SUPABASE_ANON_KEY || '';
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(day + '|' + ip + '|' + ua + '|' + salt));
+  const vid = [...new Uint8Array(d)].slice(0, 8).map(x => x.toString(16).padStart(2, '0')).join('');
+  const key = env.SUPABASE_ANON_KEY;
+  ctx.waitUntil(fetch(env.SUPABASE_URL.replace(/\/$/, '') + '/rest/v1/rpc/log_hits', {
+    method: 'POST', headers: { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p: { vid, device, lang, country, e } }), signal: AbortSignal.timeout(5000),
+  }).then(r => { if (!r.ok && r.status !== 404) console.error('log_hits', r.status); }).catch(() => {}));
+  return new Response(null, { status: 204 });
+}
+
 const json = (body, status, cache) =>
   new Response(body, { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': cache, 'X-Content-Type-Options': 'nosniff' } });
 
@@ -131,6 +170,10 @@ export default {
     if (url.pathname === '/api/links') {
       if (request.method !== 'GET') return json('{"error":"method"}', 405, 'no-store');
       return links(request, env, ctx);
+    }
+    if (url.pathname === '/api/hit') {
+      if (request.method !== 'POST') return json('{"error":"method"}', 405, 'no-store');
+      return hit(request, env, ctx);
     }
     if (url.pathname.startsWith('/api/')) return json('{"error":"not found"}', 404, 'no-store');
     // anything else is the static site (normally served before this code even runs)

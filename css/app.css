@@ -1111,3 +1111,45 @@ body:not(.demo) #example,body:not(.demo) [data-ex],body:not(.demo) .tex,body:not
 /* 1.16.4 the schedule's groups stack (they sat side by side on wide screens); tool buttons like the calculator's */
 #schk.sch{display:block}
 .tact{margin:10px 0}
+/* 1.17.0 visit dashboard (#stats, owner only) — same cards, colours and chips as the rest of the site */
+#stats.page.narrow{max-width:1080px}
+#stats .stper{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+#stats .stper button{justify-content:center;text-align:center}
+.stdemo{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:8px 12px;font:700 calc(13px*var(--fsb,1)) var(--f-body);margin:0 0 10px}
+.strange{color:var(--mute);font-size:calc(13px*var(--fsb,1));margin:0 0 10px}
+.stcards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+@media (min-width:760px){.stcards{grid-template-columns:repeat(4,1fr)}}
+.stc,.stbox{background:var(--card);border:1px solid var(--edge);box-shadow:var(--elev);border-radius:16px}
+.stc{padding:12px 14px;display:grid;gap:4px;min-width:0}
+.stch{display:flex;align-items:center;gap:8px;color:var(--mute);font:700 calc(13px*var(--fsb,1)) var(--f-body)}
+.stic{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--pc,var(--royal)) 14%,transparent);color:var(--pc,var(--royal));flex:none}
+.stic svg{width:18px;height:18px}
+.stc>b{font:800 calc(24px*var(--fsh,1)) var(--f-display);color:var(--ink);line-height:1.2}
+.stdl{font:700 calc(12px*var(--fsb,1)) var(--f-body);color:var(--mute)}
+.stdl.up{color:var(--ok)}.stdl.down{color:var(--bad)}
+.stbox{padding:12px 14px;min-width:0}
+.stbox h3{margin:0 0 10px;font:800 calc(15px*var(--fsh,1)) var(--f-display);color:var(--ink)}
+.stwide{margin-bottom:12px}
+.stgrid{display:grid;grid-template-columns:1fr;gap:12px}
+@media (min-width:760px){.stgrid{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1024px){.stgrid{grid-template-columns:repeat(3,1fr)}}
+.stchart svg{display:block;width:100%;height:auto;overflow:visible}
+.stchart text{font:600 11px var(--f-body);fill:var(--mute)}
+.stg line{stroke:var(--line);stroke-width:1}
+.stl{fill:none;stroke:var(--pc,var(--royal));stroke-width:2.5;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.stl2{fill:none;stroke:var(--pc2,var(--deep));stroke-width:2;stroke-dasharray:5 4;stroke-linejoin:round;vector-effect:non-scaling-stroke;opacity:.85}
+.sta{fill:color-mix(in srgb,var(--pc,var(--royal)) 12%,transparent)}
+.std circle{fill:var(--card);stroke:var(--pc,var(--royal));stroke-width:2;vector-effect:non-scaling-stroke}
+.stleg{display:flex;gap:16px;justify-content:center;margin-top:6px;font:700 calc(12px*var(--fsb,1)) var(--f-body);color:var(--mute)}
+.stleg span::before{content:"";display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-inline-end:6px;background:var(--pc,var(--royal))}
+.stleg .k2::before{background:repeating-linear-gradient(90deg,var(--pc2,var(--deep)) 0 5px,transparent 5px 9px)}
+.stbars{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.stbl{display:flex;justify-content:space-between;gap:8px;font-size:calc(14px*var(--fsb,1));color:var(--ink)}
+.stbl span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stbl b{flex:none;font-weight:800}
+.stbl small{color:var(--mute);font-weight:700;margin-inline-start:6px}
+.stbars i{display:block;height:6px;border-radius:99px;background:var(--soft);margin-top:4px;position:relative;overflow:hidden}
+.stbars i::after{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:var(--w);border-radius:99px;background:var(--pc,var(--royal))}
+.stempty{background:var(--soft);border-radius:12px;padding:10px 12px}
+.stbad{color:var(--bad)}
+.stpriv{margin-top:14px}

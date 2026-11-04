@@ -26,7 +26,7 @@ function interHTML(){
     <button class="btn" type="button" data-goint="${esc(ks.length>1?'all':K)}">${T('ri_all')}</button></div>`;
 }
 function render(r){
-  LAST=r;$('calc').classList.remove('nores');
+  LAST=r;if(typeof statHit==='function')statHit('calc',K);$('calc').classList.remove('nores');
   const urgent=(r.notes||[]).filter(n=>n.u),rest=(r.notes||[]).filter(n=>!n.u);
   const all=r.srcs=[...new Set([...(r.refs||[]),...(r.opts||[]).flatMap(o=>o.r||[]),...(r.notes||[]).flatMap(o=>o.r||[]),...(r.plan||[]).flatMap(o=>o.r||[])])].sort((a,b)=>a-b);
   r.srcNames=[...new Set(all.filter(n=>REFS[n]).map(n=>REFS[n][0]))];

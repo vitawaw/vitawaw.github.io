@@ -1,0 +1,84 @@
+"""1.17.0 visit statistics: anonymous counting in the page + the owner's dashboard «لوحة الزيارات» (3 sizes).
+Run: python3 tests/stats_flow.py  (screenshots → tests/shots/stats_*.png)"""
+import os, sys, json
+from playwright.sync_api import sync_playwright
+exec(open('tests/owner_flow.py').read().split('with sync_playwright()')[0])
+os.makedirs('tests/shots', exist_ok=True)
+fails = []
+def check(name, cond, extra=''):
+    print(('PASS ' if cond else 'FAIL ') + name + (f'  [{extra}]' if extra else ''))
+    if not cond: fails.append(name)
+BEACON = "window.__STATS_TEST=1;window.__BEACONS=[];navigator.sendBeacon=(u,b)=>{b.text().then(t=>window.__BEACONS.push([u,JSON.parse(t)]));return true};"
+with sync_playwright() as p:
+    b = p.chromium.launch()
+    # ---- visitor: what is counted, and nothing about the person
+    v = b.new_context(viewport={'width': 390, 'height': 844}).new_page(); errs = []
+    v.on('pageerror', lambda e: errs.append(str(e)))
+    v.add_init_script(BEACON); setup(v); v.goto('http://app.test/'); v.wait_for_timeout(600)
+    v.evaluate("go('interactions')"); v.wait_for_timeout(150); v.evaluate("go('interactions')"); v.wait_for_timeout(100)
+    v.evaluate("openToolPage('tool-ul')"); v.wait_for_timeout(200)
+    v.evaluate("openPage('privacy')"); v.wait_for_timeout(200); v.evaluate('closeSheet()')
+    v.evaluate("statHit('calc','d');statHit('calc','d');statHit('calc','fe')")
+    v.evaluate("statFlush()"); v.wait_for_timeout(200)
+    bs = v.evaluate('window.__BEACONS')
+    ev = bs[0][1]['e'] if bs else []
+    check('visitor: one beacon to /api/hit', len(bs) == 1 and bs[0][0] == '/api/hit', str(bs)[:200])
+    check('visitor: open + section + tool + page are counted', ['open', ''] in ev and ['section', 'interactions'] in ev and ['tool', 'ul'] in ev and ['page', 'privacy'] in ev, str(ev))
+    check('visitor: the same section twice in a row counts once', sum(1 for x in ev if x == ['section', 'interactions']) == 1)
+    check('visitor: a calculator counts once per visit', ev.count(['calc', 'd']) == 1 and ['calc', 'fe'] in ev)
+    body = bs[0][1] if bs else {}
+    check('visitor: only events, language and device type are sent', set(body) == {'e', 'lang', 'dv'} and body.get('dv') in ('phone', 'tablet', 'pc'), str(body)[:200])
+    v.evaluate("statFlush()"); v.wait_for_timeout(100)
+    check('visitor: nothing new → nothing sent', len(v.evaluate('window.__BEACONS')) == 1)
+    v.evaluate("go('stats')"); v.wait_for_timeout(200)
+    check('visitor: the dashboard page is closed to visitors', v.evaluate('cur') == 'calc' and v.locator('#stats-b .stc').count() == 0)
+    check('visitor: no page errors', not errs, '; '.join(errs)[:300])
+    t = v.evaluate("allPages().find(x=>x.id==='privacy').b.ar")
+    check('privacy page explains the anonymous counting', 'عدّ الزيارات بلا هوية' in t and 'IP' in t)
+    # the browser's «do not track» is respected
+    g = b.new_context(viewport={'width': 390, 'height': 844}).new_page()
+    g.add_init_script(BEACON + "Object.defineProperty(navigator,'globalPrivacyControl',{get:()=>true});"); setup(g); g.goto('http://app.test/'); g.wait_for_timeout(500)
+    g.evaluate("go('tools');statFlush()"); g.wait_for_timeout(150)
+    check('visitor with «do not track»: nothing is sent', g.evaluate('window.__BEACONS.length') == 0)
+    # ---- pharmacist: no dashboard
+    e = b.new_context(viewport={'width': 390, 'height': 844}).new_page(); e.add_init_script("window.__ROLE='editor'"); e.add_init_script(BEACON)
+    setup(e); e.add_init_script("window.__PERMS={inter:true}"); e.goto('http://app.test/'); e.wait_for_timeout(500); login(e)
+    check('pharmacist: no «لوحة الزيارات» tile', not e.evaluate("TEAMX().some(x=>x.k==='stats')"))
+    e.evaluate("go('stats')"); e.wait_for_timeout(200)
+    check('pharmacist: the page is closed', e.evaluate('cur') == 'calc')
+    e.evaluate("go('tools');statFlush()"); e.wait_for_timeout(150)
+    check('team: not counted', e.evaluate('window.__BEACONS.length') == 0)
+    # ---- owner: the dashboard on three sizes
+    for (W, H, tag) in [(390, 844, 'phone'), (820, 1180, 'ipad'), (1366, 900, 'pc')]:
+        o = b.new_context(viewport={'width': W, 'height': H}).new_page(); errs = []
+        o.on('pageerror', lambda x: errs.append(str(x)))
+        setup(o); o.goto('http://app.test/'); o.wait_for_timeout(600); login(o)
+        check(f'{tag}: owner has the «لوحة الزيارات» tile', o.evaluate("TEAMX().some(x=>x.k==='stats')"))
+        c = menu(o); o.locator(f'{c} button, {c} a', has_text='لوحة الزيارات').first.click(); o.wait_for_timeout(500)
+        check(f'{tag}: the tile opens the dashboard', o.evaluate('cur') == 'stats')
+        check(f'{tag}: 4 cards with numbers and change', o.locator('#stats-b .stc').count() == 4 and o.locator('#stats-b .stdl.up').count() >= 1 and o.locator('#stats-b .stdl.down').count() >= 1)
+        check(f'{tag}: chart over 7 days with two lines', o.locator('#stats-b .stl').count() == 1 and o.locator('#stats-b .stl2').count() == 1 and o.locator('#stats-b .std circle').count() == 7)
+        check(f'{tag}: top lists, devices, language, countries', o.locator('#stats-b .stbox').count() == 8 and 'فيتامين D' in o.inner_text('#stats-b') and 'العراق' in o.inner_text('#stats-b') and 'هاتف' in o.inner_text('#stats-b'))
+        ov = o.evaluate("document.documentElement.scrollWidth-document.documentElement.clientWidth")
+        check(f'{tag}: no sideways scroll', ov <= 0, str(ov))
+        o.screenshot(path=f'tests/shots/stats_{tag}.png', full_page=True)
+        o.click('[data-stp="1"]'); o.wait_for_timeout(300)
+        check(f'{tag}: «اليوم» shows 24 hours', o.locator('#stats-b .std circle').count() == 24 and 'كل ساعة' in o.inner_text('#stats-b'))
+        o.click('[data-stp="30"]'); o.wait_for_timeout(300)
+        check(f'{tag}: 30 days', o.locator('#stats-b .std circle').count() == 30)
+        o.evaluate("statHit('section','calc')"); o.evaluate("STQ.length")
+        check(f'{tag}: the owner is not counted', o.evaluate('STQ.length') == 0)
+        check(f'{tag}: no demo note on the live site', o.locator('.stdemo').count() == 0)
+        check(f'{tag}: no page errors', not errs, '; '.join(errs)[:300])
+        if tag == 'phone':
+            o.evaluate("setLang('en')"); o.wait_for_timeout(300); o.evaluate("go('stats')"); o.wait_for_timeout(400)
+            tx = o.inner_text('#stats')
+            check('english: dashboard in English', 'Visit dashboard' in tx and 'Most used calculators' in tx and 'Iraq' in tx and not any('؀' <= ch <= 'ۿ' for ch in tx.replace('العربية', '')), tx[:200])
+            o.screenshot(path='tests/shots/stats_phone_en.png', full_page=True)
+            o.evaluate("setLang('ar')"); o.wait_for_timeout(200)
+            o.evaluate("window.__NOSTATS=1;go('stats')"); o.wait_for_timeout(400)
+            check('before the database file: a clear message', 'stats_1_17_0.sql' in o.inner_text('#stats-b'))
+            o.evaluate("window.__NOSTATS=0")
+    b.close()
+print('ALL PASSED' if not fails else f'{len(fails)} FAILED: {fails}')
+sys.exit(1 if fails else 0)

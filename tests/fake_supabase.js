@@ -29,6 +29,12 @@ window.__calls=[];
     challengeAndVerify:async(a)=>{if(a.code!=='123456')return{error:{message:'bad code'}};const f=mfa().factors.find(x=>x.id===a.factorId);if(f)f.status='verified';mfa().aal='aal2';save();return{error:null}},
     unenroll:async(a)=>{st.mfa.factors=mfa().factors.filter(x=>x.id!==a.factorId);save();return{error:null}}}},from:q,
    rpc:async(n,a)=>{window.__calls.push(['rpc',n]);
+    if(n==='site_stats'){if((window.__ROLE||'owner')!=='owner')return{data:null,error:{message:'owner only'}};if(window.__NOSTATS)return{data:null,error:{message:'function public.site_stats does not exist'}};
+      const k=Math.max(1,Math.min(365,a.p_days||7)),day=i=>{const d=new Date(Date.now()-i*864e5);return d.toISOString().slice(0,10)},w=i=>(i*7919%13);
+      const series=k===1?Array.from({length:24},(_,h)=>[h,h<8?0:w(h)%5]):Array.from({length:k},(_,i)=>[day(k-1-i),2+w(i)%6,1+w(i)%4]);
+      return{data:{days:k,from:k===1?day(0):day(k-1),to:day(0),opens:12*k,people:4*k,calcs:9*k,tools:3*k,prev:{opens:10*k,people:5*k,calcs:9*k,tools:0},series,
+        top:{calc:[['d',5*k],['fe',3*k],['b12',k]],tool:[['ul',2*k],['sch',k]],section:[['calc',6*k],['tools',2*k],['interactions',k]],page:[['privacy',2],['about',1]]},
+        device:{phone:3*k,pc:k},lang:{ar:10*k,en:2*k},country:[['IQ',10*k],['JO',k]]},error:null}}
     if(n==='get_content')return{data:JSON.parse(JSON.stringify({refs:st.refs,inter:st.inter,nut:st.nut,next_ref:st.next_ref,del:st.del||{refs:[],inter:[],nut:[]}})),error:null};
     if(n==='review_change'){if((window.__ROLE||'owner')!=='owner')return{error:{message:'only the owner'}};
       const list=a.p_kind==='r'?st.refs:a.p_kind==='i'?st.inter:st.nut.custom,key={r:'refs',i:'inter',n:'nut'}[a.p_kind];st.del=st.del||{refs:[],inter:[],nut:[]};

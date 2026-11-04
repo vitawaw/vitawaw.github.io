@@ -52,4 +52,29 @@ r = await worker.fetch(new Request('https://site.test/api/content', { method: 'P
 ok(r.status === 405, 'POST refused');
 r = await get('/index.html');
 ok((await r.text()) === 'asset', 'non-api path goes to static assets');
+// 1.17.0 POST /api/hit: anonymous counting
+{
+  const sent = []; const w = []; const cx = { waitUntil(p) { w.push(p); } };
+  globalThis.fetch = async (u, init) => { sent.push([u, JSON.parse(init.body), init.headers]); return new Response('', { status: 204 }); };
+  const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile/15E148';
+  const post = (body, h = {}) => { const q = new Request('https://site.test/api/hit', { method: 'POST', body, headers: { 'User-Agent': UA, 'CF-Connecting-IP': '1.2.3.4', ...h } }); Object.defineProperty(q, 'cf', { value: { country: 'iq' } }); return worker.fetch(q, env, cx); };
+  r = await post(JSON.stringify({ e: [['open', ''], ['calc', 'd']], lang: 'en' })); await Promise.all(w);
+  ok(r.status === 204 && sent.length === 1 && sent[0][0] === 'https://x.supabase.co/rest/v1/rpc/log_hits', 'hit -> 204 and one log_hits call');
+  const p = sent[0][1].p;
+  ok(/^[0-9a-f]{16}$/.test(p.vid) && p.device === 'phone' && p.lang === 'en' && p.country === 'IQ' && p.e.length === 2, 'hit: daily code, phone, language, country');
+  ok(!JSON.stringify(sent[0][1]).includes('1.2.3.4') && !JSON.stringify(sent[0][1]).includes('iPhone'), 'hit: IP and browser text never sent on');
+  await post(JSON.stringify({ e: [['open', '']] })); await Promise.all(w);
+  ok(sent[1][1].p.vid === p.vid, 'hit: same person, same day -> same code');
+  await post(JSON.stringify({ e: [['open', '']] }), { 'CF-Connecting-IP': '5.6.7.8' }); await Promise.all(w);
+  ok(sent[2][1].p.vid !== p.vid, 'hit: other person -> other code');
+  const n = sent.length;
+  r = await post(JSON.stringify({ e: [['open', '']] }), { 'User-Agent': 'Googlebot/2.1' }); await Promise.all(w);
+  ok(r.status === 204 && sent.length === n, 'hit: robots are not counted');
+  r = await post('x'.repeat(5000)); ok(r.status === 413, 'hit: big body refused');
+  r = await post(JSON.stringify({ e: [['open', '']] }), { Origin: 'https://evil.test' }); ok(r.status === 403, 'hit: other site refused');
+  r = await post(JSON.stringify({ e: Array.from({ length: 90 }, () => ['calc', 'd']), dv: 'tablet' })); await Promise.all(w);
+  ok(sent.at(-1)[1].p.e.length === 40 && sent.at(-1)[1].p.device === 'tablet', 'hit: at most 40 events; page device hint used');
+  r = await get('/api/hit'); ok(r.status === 405, 'hit: GET refused');
+  globalThis.fetch = realFetch;
+}
 console.log('all worker tests passed');

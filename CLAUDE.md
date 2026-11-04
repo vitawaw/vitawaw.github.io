@@ -59,6 +59,7 @@ and where the project stands. Details: `README.md` (architecture, file map, test
 ```
 python3 tests/owner_flow.py      # owner / visitor / pharmacist flows (fake Supabase: tests/fake_supabase.js)
 python3 tests/owner_panel.py     # 1.16.0 owner panel: edit mode, appearance, page editor, 3 sizes, undo, publish list, follow-up tools
+python3 tests/stats_flow.py      # 1.17.0 visit counting + owner dashboard, 3 sizes
 python3 tests/menu_flow.py       # menus, floating windows, info pages, pharmacist accounts, 3 screen sizes → tests/shots/
 python3 tests/medical_cases.py   # dose results against expected values
 python3 tests/tools_flow.py      # tool formulas + calculator → tools links
@@ -76,6 +77,16 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
+- **1.17.0 (preview)**: his «اريد داشبورد … للزيارات و كم شخص استخدم الموقع» → proposal 1 (anonymous own counting). Client
+  `js/stats.js`: `statHit(kind,item)` queue (open at boot, section/tool in show(), calc in render() once per visit per K, page in
+  openPage) → `statFlush()` sendBeacon `/api/hit` on hidden/pagehide/30 events; off for OWN.on, FRAME, webdriver/localhost
+  (tests set `__STATS_TEST`), GPC/DNT. Worker `hit()`: robots skipped, Origin check, ≤4 KB, device (page hint `dv` or UA),
+  cf.country, vid = sha256(Baghdad day|IP|UA|STATS_SALT or anon key)[0:16] → RPC `log_hits`. DB `stats_1_17_0.sql`: tables
+  stat_counts (per hour) / stat_people (per day, 400 days), RLS no policies, `log_hits` (anon) + `site_stats(p_days)` (owner
+  only). Page `#stats` (PAGES, owner only in show()), TEAMX tile 'stats' (menu + follow-up), `openStats()/drawStats()`, SVG chart
+  `stChart()`, `.st*` CSS. Demo data `stats_demo_test.sql` (TEST only; refuses when real visits exist; demo vids start 'de').
+  Privacy page «عدّ الزيارات بلا هوية» in DEFAULT_CFG + draft file `content_1_17_0.sql` (both projects). Test `tests/stats_flow.py`
+  (in CI). The 3 SQL files are NOT applied anywhere yet (MCP approval timed out on TEST too) → he runs them.
 - **Live: 1.16.4** (he said «انشر» on 2026-11-04; main fast-forwarded; checked online: live = no example buttons, empty fields; test = examples).
 - **1.16.4**: install bar «ثبّت تطبيق VITAWAW الآن»; `toolActs()` (tools.js, boot) puts `.tact` under each tool's fields =
   «جرّب مثالاً» ([data-tex], test site only) + «مسح البيانات» ([data-tclr], `TOOLCLR`); NO pre-filled numbers on either site (boot no
