@@ -56,8 +56,7 @@ def nutrients(pg):
 def walk(pg,lang,tag):
     pg.click('#t-calc');pg.wait_for_timeout(150)
     scan(pg,tag+' calc-empty',lang)
-    for mode in ['pro','patient']:
-        pg.evaluate(f"setMode('{'pro' if mode=='pro' else 'pt'}')")
+    for mode in ['pro']:  # 1.15.0: no patient mode any more
         for k in nutrients(pg):
             pg.evaluate(f"openNut('{k}')");pg.wait_for_timeout(60)  # each vitamin has its own page (1.12.0)
             fill_all(pg)

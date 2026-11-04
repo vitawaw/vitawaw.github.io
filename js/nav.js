@@ -23,7 +23,7 @@ const CHEV='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentCol
 const TOOLS=[['tool-pill','tl_pill','tt_t'],['tool-d','tl_d','td_t'],['tool-ca','tl_ca','tp_t'],['tool-gz','tl_gz','tg_t'],['tool-ml','tl_ml','ml_t'],['tool-sch','tl_sch','sc_t'],['tool-labs','tl_labs','lb_t'],['tool-ul','tl_ul','tl_t'],['tool-u','tl_u','tu_t']];
 /** the line under a tool's name on the tools page (1.14.0: never the same words as the name) */
 const TOOLSUB={'tool-sch':'ts_sch','tool-labs':'ts_labs','tool-u':'ts_u'};
-const tabIco=p=>{const s=p==='sources'&&MODE==='pt'&&$('tool-labs')?$('tool-labs').querySelector('.ttl-ic svg'):(p==='meds'||p==='links')&&$(p)?$(p).querySelector('.hi svg'):$('t-'+p)&&$('t-'+p).querySelector('svg');return s?s.outerHTML:ICO.info};
+const tabIco=p=>{const s=(p==='meds'||p==='links')&&$(p)?$(p).querySelector('.hi svg'):$('t-'+p)&&$('t-'+p).querySelector('svg');return s?s.outerHTML:ICO.info};
 /** true when the signed-in account may edit this part: 'nut' | 'inter' | 'refs' | 'text' */
 const CAN=k=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner'||(k!=='text'&&!!(OWN.perms&&OWN.perms[k]))); // texts and pages: owner only
 const ISOWNER=()=>typeof OWN!=='undefined'&&OWN.on&&(OWN.local||OWN.role==='owner');
@@ -62,8 +62,7 @@ const pickNut=k=>openNut(k);
 const SECTIONS=['calc','tools','interactions','sources','roadmap','meds','sch','labs','ul']; // 1.14.1: meds/sch/labs are sections too (owner: bar, order, names)
 const SECTOOL={sch:'tool-sch',labs:'tool-labs',ul:'tool-ul'}; // sections that are a tool's own page
 const SECKEY0={calc:'tab_calc',tools:'tab_tools',interactions:'tab_int',sources:'tab_src',roadmap:'tab_rm',notif:'nt_t',meds:'mm_t',links:'lk_t',sch:'tl_sch',labs:'tl_labs',ul:'tl_ul'};
-/* patient mode (1.13.0): the sources section becomes «my lab results» (the labs tool) everywhere */
-const SECKEY=new Proxy(SECKEY0,{get:(o,k)=>k==='sources'&&MODE==='pt'?'tl_labs':o[k]});
+const SECKEY=SECKEY0;
 /* ===================== main sections (owner, 1.12.0): order everywhere, the bar (≤4), hidden ones, names, colors =====================
    CFG.menus = {order, bar, hide}. The calculator cannot be hidden; 🔔 and ☰ are always there. */
 const HEROKEY={calc:['hc_t','hc_l'],tools:['ht_t','ht_l'],interactions:['ti_t','hi_l'],sources:['ts_t','hs_l'],roadmap:['rm_t','rm_l']};
@@ -77,12 +76,10 @@ function NAV(){
 const navHidden=p=>NAV().hide.includes(p);
 /** sections not in the bar, in the owner's order (they are tiles in the menu) */
 // 1.14.5: «الأقسام» lists every section (also those in the bar), as the owner chose; same filters as before otherwise
-const navMore=()=>{const n=NAV();return n.order.filter(p=>(!n.hide.includes(p)||SHOWALL())&&!(p==='sources'&&MODE==='pt')&&!(SECTOOL[p]&&(toolHidden(SECTOOL[p])||(MODE==='pt'&&PROONLY.includes(SECTOOL[p])))))};
+const navMore=()=>{const n=NAV();return n.order.filter(p=>(!n.hide.includes(p)||SHOWALL())&&!(SECTOOL[p]&&toolHidden(SECTOOL[p])))};
 function renderTabs(){
   const n=NAV();
   n.order.forEach((p,i)=>{const t=$('t-'+p);if(!t)return;t.style.order=i;t.classList.toggle('offbar',!n.bar.includes(p));t.hidden=n.hide.includes(p)&&!SHOWALL()});
-  if(MODE==='pt'&&n.bar.includes('labs'))$('t-sources').classList.add('offbar');
-  if(MODE==='pt')$('t-ul').classList.add('offbar'); // the upper-limit checker is a pharmacist tool // patient mode: «sources» is «my lab results», already in the bar
   $('t-notif').style.order=98;$('t-menu').style.order=99;
 }
 function navSave(n){CFG.menus={...(CFG.menus||{}),order:n.order,bar:n.bar,hide:n.hide};changed();drawNavManager()}
@@ -137,19 +134,18 @@ function recentItem(k){
   if(t==='p'&&SECKEY[id]&&mgOff('p-'+id)&&!(typeof OWN!=='undefined'&&OWN.on))return null; // 1.14.6: hidden from visitors by the owner
   if(t==='p'&&SECKEY[id])return {label:T(SECKEY[id]),ico:tabIco(id),page:id,f:()=>go(id)};
   const tl=TOOLS.find(x=>TOOLKIND[x[0]]===id);
-  if(t==='t'&&tl){if((MODE==='pt'&&PROONLY.includes(tl[0]))||toolHidden(tl[0]))return null;const ic=$(tl[0])&&$(tl[0]).querySelector('.ttl-ic svg');return {label:toolName(tl),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openToolPage(tl[0])}}
+  if(t==='t'&&tl){if(toolHidden(tl[0]))return null;const ic=$(tl[0])&&$(tl[0]).querySelector('.ttl-ic svg');return {label:toolName(tl),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openToolPage(tl[0])}}
   return null;
 }
 /** «suggest a feature or report an error»: phone and e-mail in a floating window (the owner can edit them there) */
 function openContact(){openPage('suggest')}
 /* the tools page: rectangles like the vitamins; each opens its own working page (#tool-pill…) with «‹ Tools» */
-const PROONLY=['tool-pill','tool-ca','tool-gz','tool-u','tool-ul']; // pharmacist tools: not shown in patient mode
 /** a tool the owner hid is gone everywhere: tools page, search, result buttons, menu, reminders (id = 'tool-labs', or its kind 'labs') */
 const toolHidden=k=>{const id=k.startsWith('tool-')?k:(TOOLS.find(t=>TOOLKIND[t[0]]===k)||[''])[0];return !SHOWALL()&&((CFG.tools&&CFG.tools.hide)||[]).includes(id)};
-/** the tools in the owner's order; hidden ones only for the team while editing; patient mode leaves out the pharmacist tools */
+/** the tools in the owner's order; hidden ones only for the team while editing */
 function toolList(){
   const c=CFG.tools||{},ids=TOOLS.map(t=>t[0]),order=[...new Set([...(c.order||[]).filter(x=>ids.includes(x)),...ids])],hide=c.hide||[];
-  return order.map(id=>TOOLS.find(t=>t[0]===id)).filter(t=>(!hide.includes(t[0])||SHOWALL())&&!(MODE==='pt'&&PROONLY.includes(t[0])));
+  return order.map(id=>TOOLS.find(t=>t[0]===id)).filter(t=>!hide.includes(t[0])||SHOWALL());
 }
 const toolName=t=>{const n=CFG.tools&&CFG.tools.names&&CFG.tools.names[t[0]];return (n&&(LANG==='ar'?n.ar:(n.en||n.ar)))||T(t[1])};
 function renderToolsGrid(){
@@ -191,7 +187,6 @@ function renderNav(){
   const nc=notifCount();['nt-count','hnt-count'].forEach(id=>{$(id).hidden=!nc;$(id).textContent=nc>99?'99+':nc});
   $('hnotif').setAttribute('aria-label',T('nt_t'));$('hnotif').classList.toggle('on',!!(SHEET&&SHEET.key==='notif'));
   document.body.classList.toggle('team',typeof OWN!=='undefined'&&OWN.on);
-  document.body.classList.toggle('ptm',MODE==='pt');
   if(SHEET&&SHEET.key==='notif')renderNotif();
   renderToolsGrid();$('cvname').textContent=kname(K);
   $('hsearch').setAttribute('aria-label',T('gs_t'));
@@ -222,7 +217,6 @@ const whoLabel=()=>T(OWN.local?'o_local':OWN.role==='owner'?'o_owner':'o_editor'
 const MI={
   lang:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>',
   theme:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
-  mode:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
   share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/></svg>',
   install:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/></svg>',
   wa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/></svg>',
@@ -319,8 +313,7 @@ function menuHTML(r){
   if(PHONEF())con.push({key:'call',label:T('mr_call'),ico:MI.call,href:'tel:'+PHONEF().replace(/[^+\d]/g,'')});
   G.contact=own&&!ISOWNER()?[]:con;
   G.settings=[{key:'lang',label:T('mr_lang'),v:LANG==='ar'?'العربية':'English',ico:MI.lang,f:()=>setLang(LANG==='ar'?'en':'ar')},
-    {key:'theme',label:T('mr_theme'),v:T(isDark()?'mr_dark':'mr_light'),ico:MI.theme,f:()=>setTheme(isDark()?'light':'dark')},
-    {key:'mode',label:T('mr_mode'),v:T(MODE==='pro'?'m_pro':'m_pt'),ico:MI.mode,f:()=>setMode(MODE==='pro'?'pt':'pro')}];
+    {key:'theme',label:T('mr_theme'),v:T(isDark()?'mr_dark':'mr_light'),ico:MI.theme,f:()=>setTheme(isDark()?'light':'dark')}];
   const r3b=c=>{const inner=`<span class="di">${c.ico}</span><b>${esc(c.label)}</b>${c.v?`<small>${esc(c.v)}</small>`:''}`;
     return c.href?`<a class="m3b" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`:`<button type="button" class="m3b" data-na="${r}${ACT[r].push(c.f)-1}">${inner}</button>`};
   // edit mode: items are not links, each has ⋮⋮ to drag inside its group
@@ -368,7 +361,7 @@ function gsResults(q){
   const calc=KEYS.slice(1).filter(k=>hit(kname(k)+' '+(I18N['h_'+k]?I18N['h_'+k].join(' '):''))).slice(0,6);
   const tools=TOOLS.filter(t=>!toolHidden(t[0])&&hit(T(t[1])+' '+T(t[2]))).slice(0,6);
   const inter=INTER.filter(x=>x[7]&&!x[8]&&hit([x[1][0],x[1][1],x[2][0],x[2][1],x[3][0],x[3][1]].join(' ')));
-  const refs=MODE==='pt'?[]:Object.entries(REFS).filter(([i,x])=>!x[6]&&hit(x[0]+' '+x[1]+' '+x[3]+' '+x[4])).slice(0,6);
+  const refs=Object.entries(REFS).filter(([i,x])=>!x[6]&&hit(x[0]+' '+x[1]+' '+x[3]+' '+x[4])).slice(0,6);
   const pages=visiblePages().filter(p=>hit(tx2(p.t)+' '+tx2(p.b))).slice(0,4);
   const sec=(t,items)=>items?`<h3 class="gsh">${esc(t)}</h3><div class="gsl">${items}</div>`:'';
   const it=(attr,label,sub)=>`<button type="button" class="gsi" ${attr}><b>${esc(label)}</b>${sub?`<small>${esc(sub)}</small>`:''}</button>`;

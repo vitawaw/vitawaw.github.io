@@ -1,5 +1,5 @@
 /* VITAWAW · js/ui.js
-   Page behaviour: tabs/navigation, professional/patient mode, welcome card, patient card, theme, examples,
+   Page behaviour: tabs/navigation, welcome card, patient card, theme, examples,
    language switch (setLang), event wiring, colors and refreshAll().
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== navigation ===================== */
@@ -7,7 +7,6 @@ const PAGES=['calc','tools','interactions','sources','roadmap','notif','team','m
 let cur='calc',CALCV=false,TOOLV=''; // CALCV: the chosen vitamin's page (patient data + result) instead of the list of vitamins
 function show(p,view){
   if(p==='notif'){if(typeof openNotif==='function')setTimeout(openNotif,0);p=cur&&cur!=='notif'?cur:'calc'} // 🔔 is a floating window, not a page
-  if(p==='sources'&&MODE==='pt'){p='tools';view='tool-labs'} // patient mode: no sources page; that place is «my lab results»
   if(typeof SECTOOL!=='undefined'&&SECTOOL[p]){view=SECTOOL[p];p='tools'} // the schedule and lab results sections are tool pages
   if(p==='links'&&!(typeof CAN==='function'&&CAN('refs')))p='calc'; // the link check is for the team
   if(!PAGES.includes(p)||(p==='menu'&&WIDE())||(p==='team'&&!ISOWNER())||(navHidden(p)&&!SHOWALL()))p='calc'; // a section the owner hid is not shown // wide screens show the menu at the side
@@ -15,8 +14,8 @@ function show(p,view){
   PAGES.forEach(x=>{$(x).hidden=x!==p;const t=$('t-'+x);if(t){t.setAttribute('aria-selected',x===p);t.tabIndex=x===p?0:-1}});
   // a section that is a tool's page (schedule, lab results) is the selected tab while its tool is open
   ['t-sch','t-labs','t-ul'].forEach(id=>$(id).setAttribute('aria-selected',false));
-  if(TOOLV==='tool-sch'||TOOLV==='tool-labs'||TOOLV==='tool-ul'){const own=$({'tool-sch':'t-sch','tool-labs':'t-labs','tool-ul':'t-ul'}[TOOLV]),pt=MODE==='pt'&&TOOLV==='tool-labs'&&own.classList.contains('offbar');
-    if(!own.classList.contains('offbar')||pt){$('t-tools').setAttribute('aria-selected',false);(pt?$('t-sources'):own).setAttribute('aria-selected',true)}}
+  if(TOOLV==='tool-sch'||TOOLV==='tool-labs'||TOOLV==='tool-ul'){const own=$({'tool-sch':'t-sch','tool-labs':'t-labs','tool-ul':'t-ul'}[TOOLV]);
+    if(!own.classList.contains('offbar')){$('t-tools').setAttribute('aria-selected',false);own.setAttribute('aria-selected',true)}}
   if(p==='team'&&typeof openTeamPage==='function')openTeamPage();
   sharedParts(p);
   if(typeof rememberRecent==='function')rememberRecent(TOOLV?'t:'+TOOLKIND[TOOLV]:'p:'+p);
@@ -92,14 +91,6 @@ const toRes=()=>{const y=$('resbox').getBoundingClientRect().top+scrollY-110;win
 $('rbar').addEventListener('click',toRes);$('rbar').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toRes()}});
 
 /* ===================== mode, welcome, text size ===================== */
-function setMode(m,save=true){
-  MODE=m;document.querySelectorAll('#modeg [data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));
-  if(save)try{localStorage.setItem('vw-mode',m)}catch(e){}
-  if(LAST)F[K]();if(typeof renderNav==='function')renderNav();
-  if(typeof renderInter==='function')renderInter();
-  if(m==='pt'&&cur==='sources')show('sources');
-}
-document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.mode);if(b.closest('#welcome'))closeWelcome()}));
 function closeWelcome(){$('welcome').hidden=true;try{localStorage.setItem('vw-welcome','1')}catch(e){}}
 $('wclose').addEventListener('click',closeWelcome);
 
