@@ -84,7 +84,8 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   cf.country, vid = sha256(Baghdad day|IP|UA|STATS_SALT or anon key)[0:16] → RPC `log_hits`. DB `stats_1_17_0.sql`: tables
   stat_counts (per hour) / stat_people (per day, 400 days), RLS no policies, `log_hits` (anon) + `site_stats(p_days)` (owner
   only). Page `#stats` (PAGES, owner only in show()), TEAMX tile 'stats' (menu + follow-up), `openStats()/drawStats()`, SVG chart
-  `stChart()`, `.st*` CSS. Demo data `stats_demo_test.sql` (TEST only; refuses when real visits exist; demo vids start 'de').
+  `stChart()`, `.st*` CSS. Test site: «جرّب مثالاً» [data-stex] / «مسح البيانات» [data-stclr] on the dashboard (body.demo only) → `STEX` + `stDemo(k)`
+  = sample numbers made in the page (nothing written). Demo data `stats_demo_test.sql` (TEST only, optional; refuses when real visits exist; demo vids start 'de').
   Privacy page «عدّ الزيارات بلا هوية» in DEFAULT_CFG + draft file `content_1_17_0.sql` (both projects). Test `tests/stats_flow.py`
   (in CI). The 3 SQL files are NOT applied anywhere yet (MCP approval timed out on TEST too) → he runs them.
 - **Live: 1.16.4** (he said «انشر» on 2026-11-04; main fast-forwarded; checked online: live = no example buttons, empty fields; test = examples).

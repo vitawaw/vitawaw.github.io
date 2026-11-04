@@ -5,7 +5,7 @@
    the country and a code that changes every day (see src/worker.js); the database keeps only counts per hour.
    Not counted: the signed-in team, the owner's three-size preview, robots, «Do Not Track» browsers, local tests.
    Dashboard («لوحة الزيارات», page #stats): the owner only — public.site_stats() refuses everyone else. */
-const STQ=[];let STLAST='',STDONE=new Set(),STP=7,STDATA=null;
+const STQ=[];let STLAST='',STDONE=new Set(),STP=7,STDATA=null,STEX=false;
 const STOFF=()=>{try{return (typeof FRAME!=='undefined'&&FRAME)||(typeof OWN!=='undefined'&&OWN.on)||(!window.__STATS_TEST&&(navigator.webdriver||/^(localhost|127\.|\[::1\]|app\.test$)/.test(location.hostname)))||navigator.globalPrivacyControl===true||navigator.doNotTrack==='1'}catch(e){return true}};
 const STDEV=()=>{try{const touch=matchMedia('(pointer:coarse)').matches,w=Math.min(screen.width,screen.height);return !touch?'pc':w>=600?'tablet':'phone'}catch(e){return ''}};
 const STKEY=s=>String(s||'').toLowerCase().replace(/[^a-z0-9_:-]/g,'').slice(0,40);
@@ -31,6 +31,7 @@ window.addEventListener('pagehide',statFlush);
 async function openStats(){
   const b=$('stats-b');if(!b)return;
   if(!ISOWNER()){b.innerHTML='';return}
+  if(STEX){STDATA=stDemo(STP);drawStats();return} // «جرّب مثالاً» (test site): sample numbers made in the page, nothing is written
   STDATA=null;drawStats();
   let data=null,error=null;
   if(typeof OWN!=='undefined'&&OWN.client){try{({data,error}=await OWN.client.rpc('site_stats',{p_days:STP}))}catch(e){error=e}}else error=1;
@@ -80,8 +81,9 @@ function stChart(d){
 function drawStats(){
   const b=$('stats-b');if(!b||cur!=='stats')return;
   const per=[1,7,30,90].map(x=>`<button type="button" data-stp="${x}" aria-pressed="${x===STP}">${esc(T('st_p'+x))}</button>`).join('');
-  const demo=typeof IS_PREVIEW!=='undefined'&&IS_PREVIEW?`<p class="stdemo">${esc(T('st_demo'))}</p>`:'';
-  const head=`<div class="filters stper">${per}</div>`+demo;
+  const test=document.body.classList.contains('demo'); // the test site only, like the examples of the calculators and tools
+  const acts=test?`<div class="ract tact stact"><button class="btn" type="button" data-stex="1">${esc(T('ex'))}</button><button class="btn" type="button" data-stclr="1">${esc(T('clr'))}</button></div>`:'';
+  const head=`<div class="filters stper">${per}</div>`+acts+(STEX?`<p class="stdemo">${esc(T('st_demo'))}</p>`:'');
   if(STDATA===null){b.innerHTML=head+`<p class="hint">${esc(T('o_busy'))}</p>`;return}
   if(STDATA===false){b.innerHTML=head+`<p class="hint stbad">${esc(T('st_nodb'))}</p>`;return}
   const d=STDATA,pv=d.prev||{},top=d.top||{};
@@ -101,4 +103,20 @@ function drawStats(){
     `<div class="stgrid">${box(T('st_tcalc'),stBars(tl('calc')))}${box(T('st_ttool'),stBars(tl('tool')))}${box(T('st_tsec'),stBars(tl('section')))}${box(T('st_tpage'),stBars(tl('page')))}${box(T('st_dev'),stBars(devs))}${box(T('st_lang'),stBars(langs))}${box(T('st_country'),stBars(cs))}</div>`+
     `<p class="hint stpriv">${esc(T('st_priv'))}</p>`;
 }
+/** sample numbers for «جرّب مثالاً»: a small site (under 100 people a month), mostly phones, Arabic and Iraq; same shape as site_stats() */
+function stDemo(k){
+  const rnd=t=>{let h=2166136261;for(const c of String(t)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return ((h>>>0)%1000)/1000};
+  const day=i=>{const d=new Date(Date.now()+3*36e5-i*864e5);return d.toISOString().slice(0,10)};
+  const ppl=i=>{const d=day(i),w=new Date(d+'T00:00:00').getDay();return Math.max(1,1+Math.floor(rnd(d)*3)+(i<21?1:0)-(w===5?1:0))};
+  const tot=(a,b)=>{let o=0,p=0,c=0,t=0;for(let i=a;i<b;i++){const n=ppl(i);p+=n;o+=Math.round(n*(1.4+rnd('o'+day(i))));c+=Math.round(n*(1.1+rnd('c'+day(i))));t+=Math.round(n*(.4+rnd('t'+day(i))*.6))}return {opens:o,people:p,calcs:c,tools:t}};
+  const now=k===1?(()=>{const h=new Date(Date.now()+3*36e5).getUTCHours(),n=Math.min(ppl(0),3);return {opens:Math.max(1,Math.round(n*1.5)),people:n,calcs:n+1,tools:1,h}})():tot(0,k);
+  const series=k===1?(()=>{const v=Array(24).fill(0);for(let i=0;i<now.opens;i++){const span=now.h>=8?now.h-7:now.h+1,base=now.h>=8?8:0;v[base+Math.floor(rnd('h'+i+day(0))*span)]++}return v.map((x,h)=>[h,x])})():Array.from({length:k},(_,j)=>{const i=k-1-j,n=ppl(i);return [day(i),Math.round(n*(1.4+rnd('o'+day(i)))),n]});
+  const sp=(list,total)=>{const w=list.map((x,i)=>[x,(list.length-i)*(.6+rnd(x+k))]),s=w.reduce((a,x)=>a+x[1],0);return w.map(([x,v])=>[x,Math.max(1,Math.round(v/s*total))]).sort((a,b)=>b[1]-a[1])};
+  const o=now.opens,p=now.people;
+  return {days:k,from:day(k-1),to:day(0),opens:o,people:p,calcs:now.calcs,tools:now.tools,prev:k===1?{opens:Math.round(o*1.1),people:p,calcs:now.calcs,tools:0}:tot(k,2*k),series,
+    top:{calc:sp(['d','fe','b12','fol','ca','preg','mg','zn','c','inf','bar','thi'],now.calcs).slice(0,Math.min(12,2+Math.ceil(now.calcs/3))),tool:sp(['ul','sch','labs','pill','d','ml','ca','u'],now.tools).slice(0,Math.min(8,1+Math.ceil(now.tools/2))),
+      section:sp(['calc','tools','interactions','sources','meds','roadmap'],Math.round(o*1.6)),page:sp(['privacy','about','howto','faq','who'],Math.max(1,Math.round(o*.3))).slice(0,Math.min(5,1+Math.ceil(o/12)))},
+    device:Object.fromEntries(sp(['phone','pc','tablet'],p).filter(x=>x[1]>0)),lang:Object.fromEntries(sp(['ar','en'],o)),country:sp(['IQ','JO','SA','AE','TR','DE'],o).slice(0,Math.min(6,1+Math.ceil(o/15)))};
+}
+document.addEventListener('click',e=>{const x=e.target.closest('[data-stex],[data-stclr]');if(!x)return;e.preventDefault();STEX=!!x.dataset.stex;openStats()});
 document.addEventListener('click',e=>{const x=e.target.closest('[data-stp]');if(!x)return;e.preventDefault();STP=+x.dataset.stp||7;openStats()});
