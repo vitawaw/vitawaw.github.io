@@ -103,13 +103,31 @@ const TOOLEX={
   'tool-gz':()=>{$('gw').value=60;$('gha').value=9;gtTouched=false;gz()},
   'tool-ml':()=>{$('mlwt').value=10;$('mlmgkg').value=3;$('mlconc').value=25;$('mlper').value=1;mlc()},
   'tool-sch':()=>{SCI.forEach(x=>{const c=$('sc-'+x[0]);if(c)c.checked=['levo','fe','ca','d'].includes(x[0])});sch()},
-  'tool-labs':()=>{if(!LABS.some(x=>x.k==='d')){const d=new Date();d.setMonth(d.getMonth()-3);LABS.push({k:'d',v:12,d:d.toISOString().slice(0,10)});LABS.sort((a,b)=>a.d.localeCompare(b.d));saveLabs()}$('lbk').value='d';$('lbv').value=28;$('lbd').value=today();labs()},
+  'tool-labs':()=>{if(!LABS.some(x=>x.k==='d')){const d=new Date();d.setMonth(d.getMonth()-3);LABS.push({k:'d',v:12,d:d.toISOString().slice(0,10)},{k:'d',v:28,d:today()});LABS.sort((a,b)=>a.d.localeCompare(b.d));saveLabs()}$('lbk').value='d';$('lbv').value='';$('lbd').value=today();labs()},
   'tool-ul':()=>{$('ulage').value='4';if($('ulper'))$('ulper').value='d';ULT.forEach(x=>{const e=$('ul-'+x[0]);if(e)e.value={d:2000,fe:60,ca:1200,zn:25}[x[0]]||''});ul()},
   'tool-u':()=>{$('ucv').value='d';$('uval').value=1000;ucv()}};
-function toolExamples(){ // called by boot only on the test site
-  Object.keys(TOOLEX).forEach(id=>{const sec=$(id),lead=sec&&sec.querySelector('.lead');if(!sec||sec.querySelector('.tex'))return;
-    const d=document.createElement('div');d.className='ract tex';d.innerHTML=`<button class="btn" type="button" data-tex="${id}" data-t="ex">${esc(T('ex'))}</button>`;(lead||sec.querySelector('h2')).after(d)});
+/* 1.16.4: «جرّب مثالاً» + «مسح البيانات» under the fields of every tool, like the calculator (the example button on the test site only) */
+const TOOLCLR={
+  'tool-pill':()=>{$('tabmg').value='';$('needmg').value='';pills()},
+  'tool-d':()=>{$('iu').value='';conv()},
+  'tool-ca':()=>{$('tca').value='';$('alb').value='';cca()},
+  'tool-gz':()=>{$('gw').value='';$('gha').value='';gtTouched=false;gz()},
+  'tool-ml':()=>{['mlwt','mlmgkg','mlconc','mldpm'].forEach(id=>{$(id).value=''});$('mlper').value=1;mlc()},
+  'tool-sch':()=>{SCI.forEach(x=>{const c=$('sc-'+x[0]);if(c)c.checked=false});sch()},
+  'tool-labs':()=>{$('lbv').value='';$('lbd').value=today();labs()},
+  'tool-ul':()=>{ULT.forEach(x=>{const e=$('ul-'+x[0]);if(e)e.value=''});ul()},
+  'tool-u':()=>{$('uval').value='';ucv()}};
+const TOOLOUT={'tool-sch':'schout','tool-labs':'lbout','tool-ul':'ulout'};
+function toolActs(){
+  const demo=document.body.classList.contains('demo');
+  Object.keys(TOOLCLR).forEach(id=>{const sec=$(id);if(!sec||sec.querySelector('.tact'))return;
+    let at=TOOLOUT[id]?$(TOOLOUT[id]):sec.querySelector('.out');while(at&&at.parentNode!==sec)at=at.parentNode;
+    const d=document.createElement('div');d.className='ract tact';
+    d.innerHTML=(demo?`<button class="btn" type="button" data-tex="${id}" data-t="ex">${esc(T('ex'))}</button>`:'')+`<button class="btn" type="button" data-tclr="${id}" data-t="clr">${esc(T('clr'))}</button>`;
+    if(at)sec.insertBefore(d,at);else sec.appendChild(d)});
 }
+const toolExamples=toolActs; // older name
+document.addEventListener('click',e=>{const b=e.target.closest('[data-tclr]');if(!b)return;e.preventDefault();const f=TOOLCLR[b.dataset.tclr];if(f)f()});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-tex]');if(!b)return;e.preventDefault();const f=TOOLEX[b.dataset.tex];if(f)f()});
 /* the calculator opens a tool already filled in: PILL (tablets), ML (syrup), UCVSET (units), ULSET (upper limit), SCHSET (daily schedule) */
 let UCVSET=null,ULSET=null,SCHSET=null;

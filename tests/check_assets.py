@@ -10,3 +10,9 @@ links = re.findall(r'(?:href|src)="(?:css|js)/', html)
 if bad or not links:
     print('OUT OF DATE:', bad or 'no versioned links found', '\nRun: python3 tools/set_version.py <version>'); sys.exit(1)
 print(f'ok: {len(links)} css/js links match their content')
+# 1.16.4: the live page has no example numbers in the tool fields (they are filled only by «جرّب مثالاً» on the test site)
+import re as _re
+_h=open('index.html',encoding='utf-8').read()
+_bad=[i for i in ['tabmg','needmg','iu','tca','alb','gw','gha','mlwt','mlmgkg','mlconc','uval'] if _re.search(r'id="'+i+r'"[^>]*value="',_h)]
+if _bad: print('FAIL: example numbers left in index.html:',_bad); sys.exit(1)
+print('ok: no example numbers in the tool fields')

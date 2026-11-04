@@ -1103,7 +1103,11 @@ html.frame #instbar{display:none}
 .ulwhat p{margin:0;font-size:calc(13px*var(--fsb,1));line-height:1.7}
 
 /* 1.16.3 examples only on the test site (body.demo) */
-body:not(.demo) #example,body:not(.demo) [data-ex],body:not(.demo) .tex{display:none!important}
+body:not(.demo) #example,body:not(.demo) [data-ex],body:not(.demo) .tex,body:not(.demo) [data-tex]{display:none!important}
 .tex{margin:0 0 10px}
 .ulsc{display:inline-block;margin:-2px 0 4px;padding:1px 8px;border-radius:99px;font:700 calc(11px*var(--fsb,1)) var(--f-body)}
 .ulsc.t{background:var(--chip);color:var(--royal)}.ulsc.s{background:var(--warn-bg);color:var(--warn)}
+
+/* 1.16.4 the schedule's groups stack (they sat side by side on wide screens); tool buttons like the calculator's */
+#schk.sch{display:block}
+.tact{margin:10px 0}
