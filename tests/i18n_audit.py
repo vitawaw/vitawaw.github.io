@@ -99,6 +99,7 @@ def menus(pg,lang,tag):
     for pid in pg.evaluate("(CFG.pages||[]).map(p=>p.id)"):
         pg.evaluate(f"openPage('{pid}')");pg.wait_for_timeout(50);scan(pg,f'{tag} page {pid}',lang);pg.evaluate('closeSheet(false)')
 def owner_dialogs(pg,lang,tag):
+    pg.evaluate("document.body.classList.add('textedit');refreshAll()");pg.wait_for_timeout(150)  # 1.16.0: ✎ only in edit mode
     sels=['[data-act="edit"][data-kind="n"]','#nadd','[data-act="edit"][data-kind="i"]','#iadd','[data-act="edit"][data-kind="r"]','#radd','[data-act="del"][data-kind="r"]','#o-publish','#o-pass','[data-approveall="n"]','[data-approveall="i"]','[data-approveall="r"]','[data-edtext]','[data-edcolor]','[data-edcontact]','[data-act="edit"][data-kind="m"]','#rmadd','#o-discard']
     for tab in ['calc','interactions','sources','roadmap','tools']:
         pg.evaluate(f"go('{tab}')");pg.wait_for_timeout(120);scan(pg,f'{tag} owner {tab}',lang)

@@ -39,7 +39,7 @@ with sync_playwright() as p:
         check(f'{tag}: «تراجع» in the owner bar takes back the last change', o.evaluate("CFG.look.sh") == 1 and not o.evaluate('dirty()'))
         check(f'{tag}: nothing left to undo -> button disabled', o.is_disabled('#o-undo'))
         # page editor: formatting buttons and preview
-        o.evaluate("editPage('about')"); o.wait_for_timeout(200)
+        o.evaluate("void editPage('about')"); o.wait_for_timeout(200)
         o.evaluate("const t=document.getElementById('dlgf3');t.focus();t.setSelectionRange(0,0)")
         o.locator('#dlg [data-md="h"][data-for="dlgf3"]').click(); o.wait_for_timeout(100)
         check(f'{tag}: «عنوان» makes the line a heading in the preview', o.locator('#mdprev h3').count() >= 1)

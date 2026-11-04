@@ -43,6 +43,7 @@ with sync_playwright() as p:
     b=p.chromium.launch();ctx=b.new_context(viewport={'width':390,'height':844});pg=ctx.new_page()
     errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:(m.type=='error' or 'Content Security Policy' in m.text) and errs.append(m.text));setup(pg)
     pg.goto('http://app.test/');pg.wait_for_timeout(500);login(pg)
+    pg.click('#o-texts');pg.wait_for_timeout(200)  # 1.16.0: ✎ and ⋮⋮ show after «تعديل وترتيب»
     print('owner on:',pg.evaluate("document.body.classList.contains('owner')"),'| bar:',pg.inner_text('#ostate'))
     print('picker has vk (pending, owner sees):',pg.locator('#picker [data-k="vk"]').count(),pg.inner_text('#picker [data-k="vk"]').replace('\n',' / '))
     pg.click('#t-interactions');pg.wait_for_timeout(200);pg.evaluate("renderInter()")
@@ -79,5 +80,6 @@ with sync_playwright() as p:
     e=b.new_context(viewport={'width':390,'height':844}).new_page();e.add_init_script("window.__ROLE='editor'");setup(e);e.add_init_script("window.__PERMS={inter:true}");e.goto('http://app.test/');e.wait_for_timeout(500);login(e)
     print('EDITOR publish btn visible:',e.is_visible('#o-publish'),'| approve btns:',e.locator('[data-act="ok"],[data-approve]').count())
     print('EDITOR classes:',e.evaluate("['cant-nut','cant-inter','cant-refs','cant-text','not-owner'].filter(c=>document.body.classList.contains(c)).join(',')"))
+    e.click('#o-texts');e.wait_for_timeout(200)
     e.click('#t-interactions');e.wait_for_timeout(200);e.evaluate("renderInter()");e.click('[data-act="edit"][data-kind="i"][data-id="0"]');e.wait_for_timeout(200);e.select_option('#dlgf1','minor');ok(e)
     e.click('#o-save');e.wait_for_timeout(600);print('EDITOR saved parts:',e.evaluate('window.__SAVED'),'| draft written:',e.evaluate("__calls.some(c=>c[0]==='upsert')"),'| toast:',e.inner_text('#toast'))
