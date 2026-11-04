@@ -3,7 +3,7 @@
    clean() for every piece of data that comes from outside, mergeCfg() and the cached published copy.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== Medical review (fill in to show the stamp) ===================== */
-const APP_VERSION='1.14.5';
+const APP_VERSION='1.14.6';
 /* the medical review stamp is set by the owner (menu → site → «ختم المراجعة الطبية») and published with the settings: CFG.review */
 
 /* ===================== Supabase connection (fill after creating the project) ===================== */
@@ -88,7 +88,7 @@ function mergeCfg(base,over){const out=clone(base);if(!over)return out;over=clea
   if(Array.isArray(over.nutOrder))out.nutOrder=over.nutOrder;
   if(over.review&&over.review.n)out.review={n:{ar:over.review.n.ar||'',en:over.review.n.en||''},date:/^\d{4}-\d{2}-\d{2}$/.test(over.review.date||'')?over.review.date:''};
   if(over.menus&&typeof over.menus==='object')out.menus={order:Array.isArray(over.menus.order)?over.menus.order:out.menus.order,bar:Array.isArray(over.menus.bar)?over.menus.bar:out.menus.bar,hide:Array.isArray(over.menus.hide)?over.menus.hide:[]};
-  if(over.menus&&over.menus.groups&&typeof over.menus.groups==='object'){const g=over.menus.groups;out.menus.groups={order:Array.isArray(g.order)?g.order:[],names:g.names&&typeof g.names==='object'?g.names:{},items:g.items&&typeof g.items==='object'?g.items:{}}}
+  if(over.menus&&over.menus.groups&&typeof over.menus.groups==='object'){const g=over.menus.groups;out.menus.groups={order:Array.isArray(g.order)?g.order:[],names:g.names&&typeof g.names==='object'?g.names:{},items:g.items&&typeof g.items==='object'?g.items:{},off:Array.isArray(g.off)?g.off.filter(x=>typeof x==='string').slice(0,200):[]}}
   if(over.tools&&typeof over.tools==='object')out.tools={order:Array.isArray(over.tools.order)?over.tools.order:[],hide:Array.isArray(over.tools.hide)?over.tools.hide:[],names:over.tools.names&&typeof over.tools.names==='object'?over.tools.names:{}};
   if(over.brand)out.brand={l1:over.brand.l1||'',l2:over.brand.l2||'',url:over.brand.url||''};
   if(Array.isArray(over.refs))out.refs=over.refs;

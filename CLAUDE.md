@@ -75,6 +75,11 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
+- **1.14.6 (preview)**: his notes: «أدويتي» only on its own page (#mymed HTML moved into #medsb; interactions page ignores MEDS:
+  `mine` only when onMeds); link check only on #links (#lkbox HTML in #linksb, fold code removed, lkShow only when #reflist sits in
+  #linksb); interactions = one flat card list (grouped=false; IGOPEN code unused); owner hides menu groups/items from visitors:
+  CFG.menus.groups.off ['g:<id>' | item key] (mergeCfg keeps it), 👁 `.mgeye` in edit mode (`mgToggle`), visitors filtered, team sees
+  «· مخفي», recentItem skips hidden sections for visitors. No DB change (menus are owner settings).
 - **Live: 1.14.5** (he said «جاهز» on 2026-11-03; main fast-forwarded): he chose «كل الأقسام في المكانين»: navMore() no longer excludes bar sections, so «الأقسام» tiles = every
   section (hidden ones only for the team, no sources in patient mode, no hidden/PROONLY tools); the special p-sources tile is gone.
 - **Live: 1.14.4** (he said «جاهز» on 2026-11-03; main fast-forwarded; the first Workers Build of 7d9318f failed after ~10 min with no log on both main and the branch; Cloudflare incident «Workers and Pages build errors» 14:46–18:10 UTC; rebuilt after their fix): the p-sources tile in «الأقسام» is for EVERYONE in pharmacist mode (owner, team, visitor), never patient mode;

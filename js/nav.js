@@ -134,6 +134,7 @@ function rememberRecent(k){if(k==='p:menu'||k==='p:notif')return;RECENT=[k,...RE
 function recentItem(k){
   const [t,id]=k.split(':');
   if(t==='p'&&id==='links'&&!(typeof OWN!=='undefined'&&OWN.on&&CAN('refs')))return null;
+  if(t==='p'&&SECKEY[id]&&mgOff('p-'+id)&&!(typeof OWN!=='undefined'&&OWN.on))return null; // 1.14.6: hidden from visitors by the owner
   if(t==='p'&&SECKEY[id])return {label:T(SECKEY[id]),ico:tabIco(id),page:id,f:()=>go(id)};
   const tl=TOOLS.find(x=>TOOLKIND[x[0]]===id);
   if(t==='t'&&tl){if((MODE==='pt'&&PROONLY.includes(tl[0]))||toolHidden(tl[0]))return null;const ic=$(tl[0])&&$(tl[0]).querySelector('.ttl-ic svg');return {label:toolName(tl),ico:ic?ic.outerHTML:ICO.info,page:'tools',f:()=>openToolPage(tl[0])}}
@@ -250,6 +251,10 @@ const mgName=id=>{const n=(MGCFG().names||{})[id];return n&&(n.ar||n.en)?tx2(n):
 const mgOrder=()=>[...new Set([...(MGCFG().order||[]).filter(x=>MGROUPS.includes(x)),...MGROUPS])];
 function mgItems(id,list){const o=(MGCFG().items||{})[id]||[],ix=k=>{const i=o.indexOf(k);return i<0?999:i};
   return list.map((x,i)=>[x,i]).sort((a,b)=>ix(a[0].key)-ix(b[0].key)||a[1]-b[1]).map(a=>a[0])}
+/* 1.14.6: the owner hides groups ('g:<id>') or single items (their key) from visitors; the team still sees them, marked hidden */
+const mgOff=k=>((MGCFG().off)||[]).includes(k);
+function mgToggle(k){mgSet(g=>{const o=new Set(g.off||[]);o.has(k)?o.delete(k):o.add(k);g.off=[...o]})}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-mgoff]');if(b){e.preventDefault();mgToggle(b.dataset.mgoff)}});
 const MEDIT=()=>typeof OWN!=='undefined'&&OWN.on&&!OWN.preview&&ISOWNER()&&document.body.classList.contains('textedit');
 function mgSet(f){const g=JSON.parse(JSON.stringify(MGCFG()));f(g);CFG.menus={...(CFG.menus||{}),groups:g};changed();renderMenu()}
 async function mgRename(id){
@@ -319,12 +324,15 @@ function menuHTML(r){
   const r3b=c=>{const inner=`<span class="di">${c.ico}</span><b>${esc(c.label)}</b>${c.v?`<small>${esc(c.v)}</small>`:''}`;
     return c.href?`<a class="m3b" href="${esc(c.href)}"${/^https?:/.test(c.href)?' target="_blank" rel="noopener"':''}>${inner}</a>`:`<button type="button" class="m3b" data-na="${r}${ACT[r].push(c.f)-1}">${inner}</button>`};
   // edit mode: items are not links, each has ⋮⋮ to drag inside its group
-  const eItem=(c,cls)=>`<div class="${cls} medit" data-sid="${esc(c.key)}"><span class="drag idrag" tabindex="0" role="button" aria-label="${esc(T('o_drag'))}">⋮⋮</span><span class="di">${c.ico||ICO.info}</span><span class="mt">${esc(c.label)}</span></div>`;
-  const head=(id,t)=>ed?`<div class="mgh"><span class="drag gdrag" tabindex="0" role="button" aria-label="${esc(T('o_drag'))}">⋮⋮</span><h3>${esc(t||T('mg_noname'))}</h3><button type="button" class="pen mgpen" data-mgren="${id}" aria-label="${esc(T('o_edit'))}">✎</button></div>`:(t?`<h3>${esc(t)}</h3>`:'');
+  const eye=k=>{const off=mgOff(k);return `<button type="button" class="pen mgeye${off?' off':''}" data-mgoff="${esc(k)}" aria-pressed="${off}" aria-label="${esc(T(off?'o_nshow':'o_nhide'))}" title="${esc(T(off?'mg_off':'mg_on'))}">${off?EYEOFF:EYE}</button>`};
+  const eItem=(c,cls)=>`<div class="${cls} medit${mgOff(c.key)?' hid':''}" data-sid="${esc(c.key)}"><span class="drag idrag" tabindex="0" role="button" aria-label="${esc(T('o_drag'))}">⋮⋮</span><span class="di">${c.ico||ICO.info}</span><span class="mt">${esc(c.label)}</span>${eye(c.key)}</div>`;
+  const head=(id,t)=>ed?`<div class="mgh${mgOff('g:'+id)?' hid':''}"><span class="drag gdrag" tabindex="0" role="button" aria-label="${esc(T('o_drag'))}">⋮⋮</span><h3>${esc(t||T('mg_noname'))}</h3><button type="button" class="pen mgpen" data-mgren="${id}" aria-label="${esc(T('o_edit'))}">✎</button>${id==='admin'?'':eye('g:'+id)}</div>`:(t?`<h3>${esc(t)}${own&&mgOff('g:'+id)?' · '+esc(T('pg_hidden')):''}</h3>`:'');
   const body=(id,items)=>{
     if(!items.length)return '';
     if(id==='recent')return ed?'':`<div class="mrec">${items.map(c=>`<button type="button" class="mrc" data-na="${r}${ACT[r].push(c.f)-1}" style="${colorVars(c.page)}"><span class="di">${c.ico}</span><span>${esc(c.label)}</span></button>`).join('')}</div>`;
     items=mgItems(id,items);
+    // 1.14.6: what the owner hid is gone for visitors; the team sees it marked «hidden»
+    if(!ed&&id!=='admin'){if(!own)items=items.filter(c=>!mgOff(c.key));else items=items.map(c=>mgOff(c.key)?{...c,label:c.label+' · '+T('pg_hidden')}:c);if(!items.length)return ''}
     if(ed)return `<div class="ml mgl" data-g="${id}">${items.map(c=>eItem(c,'mi')).join('')}</div>`;
     if(id==='short')return `<div class="mtiles">${items.map(tile).join('')}</div>`;
     if(id==='help')return items.map(c=>`<div class="ml one">${row(c)}</div>`).join('');
@@ -333,7 +341,7 @@ function menuHTML(r){
     return `<div class="ml">${items.map(row).join('')}</div>`;
   };
   if(ed)h+=`<p class="hint mgedh">${esc(T('mg_hint'))}</p>`;
-  h+=`<div class="mgs" data-r="${r}">`+mgOrder().map(id=>{const b=body(id,G[id]||[]);return b||(ed&&id!=='recent'&&(G[id]||[]).length)?`<div class="mg" data-sid="${id}">${head(id,mgName(id))}${b}</div>`:''}).join('')+`</div>`;
+  h+=`<div class="mgs" data-r="${r}">`+mgOrder().filter(id=>ed||own||id==='admin'||!mgOff('g:'+id)).map(id=>{const b=body(id,G[id]||[]);return b||(ed&&id!=='recent'&&(G[id]||[]).length)?`<div class="mg" data-sid="${id}">${head(id,mgName(id))}${b}</div>`:''}).join('')+`</div>`;
   if(own)h+=`<div class="mg"><div class="ml maccs">`+acc('mine',MI.key,T('mr_mine'),[!OWN.local&&row({label:T('ac_t'),ico:MI.key,f:openAccount}),!ISOWNER()&&row({label:T('mr_myperms'),ico:ICO.check,f:showMyPerms})].filter(Boolean).join(''))+`</div></div>`;
   if(own)h+=`<button type="button" class="mout" data-na="${r}${ACT[r].push(logout)-1}">${MI.out}<span>${esc(T('o_logout'))}</span></button>`;
   return h;

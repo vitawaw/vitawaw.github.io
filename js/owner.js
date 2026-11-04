@@ -396,11 +396,7 @@ function renderLinks(){
     rest=`<p class="hint">${L2?T('lk_last').replace('{d}','<bdi>'+esc(L2.at)+'</bdi>').replace('{n}',L2.n):T('lk_never')}</p>`+
     (L2?`<div class="lkcs">${chip('ok',ok,'ok',T('lk_ok'))}${chip('broken',L2.broken.length,'bad',T('lk_bad'))}${chip('blocked',L2.blocked.length,'warn',T('lk_hand'))}</div>`:'')+
     (LKF?`<p class="hint">${T(LKF==='ok'?'lk_ok_h':LKF==='broken'?'lk_broken_h':'lk_blocked_h')} <button type="button" class="linkbtn" data-lkf="">${T('lk_all')}</button></p>`:'');
-  // 1.14.1: on the sources page the box is one line (title + the three counts) that opens on tap; on its own page it is always open
-  if(el.parentNode&&el.parentNode.id==='linksb'){el.classList.remove('lkfold');el.innerHTML=`<div class="lkh"><b>${T('lk_t')}</b>${btn}</div>`+rest;return}
-  el.classList.add('lkfold');
-  const mini=L2?`<span class="lkmini"><b class="ok">${ok}</b><b class="bad">${L2.broken.length}</b><b class="warn">${L2.blocked.length}</b></span>`:'';
-  el.innerHTML=`<details class="lkd"${LKOPEN||LKF?' open':''}><summary><b>${T('lk_t')}</b>${mini}</summary><div class="lkdb"><div class="lkh">${btn}</div>${rest}</div></details>`;
+  el.innerHTML=`<div class="lkh"><b>${T('lk_t')}</b>${btn}</div>`+rest; // 1.14.6: the link check lives only on its own page
 }
 document.addEventListener('toggle',e=>{if(e.target.matches&&e.target.matches('details.lkd'))LKOPEN=e.target.open},true);
 document.addEventListener('click',e=>{

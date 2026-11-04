@@ -15,12 +15,12 @@ function renderInter(){
   $('filters').innerHTML=(ISRC&&REFS[ISRC]?`<button type="button" class="srcf" data-clrsrc="1" aria-pressed="true">${T('su_src').replace('{n}',ISRC)} ×</button>`:'')+KEYS.filter(k=>k==='all'||INTER.some(x=>x[0]===k)).map(k=>`<button data-f="${esc(k)}" aria-pressed="${!ISRC&&k===IF}">${esc(kname(k))}<bdi class="fc">${INTER.filter(x=>k==='all'||x[0]===k).length}</bdi></button>`).join('');
   if(IF!=='all'&&!INTER.some(x=>x[0]===IF))IF='all';
   const onMeds=typeof cur!=='undefined'&&cur==='meds'; // «my medicines» page: only the medicines decide (no supplement chip, search or source filter)
-  const iq=onMeds?[]:iTerms(normAr($('isearch')&&$('isearch').value)),mine=MEDS.length?medMatch:null,im=x=>{if(onMeds)return !!mine&&mine(x);if(ISRC&&!x[4].includes(ISRC))return false;if(!ISRC&&!(IF==='all'||x[0]===IF))return false;if(mine&&!mine(x))return false;if(!iq.length)return true;const h=normAr([x[1][0],x[1][1],x[2][0],x[2][1],x[3][0],x[3][1]].join(' '));return iq.some(q=>h.includes(q))};
+  const iq=onMeds?[]:iTerms(normAr($('isearch')&&$('isearch').value)),mine=onMeds&&MEDS.length?medMatch:null,im=x=>{if(onMeds)return !!mine&&mine(x);if(ISRC&&!x[4].includes(ISRC))return false;if(!ISRC&&!(IF==='all'||x[0]===IF))return false;if(mine&&!mine(x))return false;if(!iq.length)return true;const h=normAr([x[1][0],x[1][1],x[2][0],x[2][1],x[3][0],x[3][1]].join(' '));return iq.some(q=>h.includes(q))};
   renderMeds();
   const ish=INTER.filter(im);
   const card=x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}${x[8]?' hid':''}" data-sid="${x[5]}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div>${stampHTML(x[10],x[11])}${icActs(x)}${actBar('i',x[5],{rv:x[7],hidden:x[8],drag:true})}</div>`,bySev=(a,b)=>SEVORD[a[6]]-SEVORD[b[6]];
   // 1.14.0: with no filter, the long list is grouped by supplement (tap a group to open it); filters, search, my medicines and editing show the flat list
-  const grouped=!onMeds&&!ISRC&&IF==='all'&&!iq.length&&!mine&&ish.length>12; // 1.14.1: the team sees the same groups (drag stays inside a group)
+  const grouped=false; // 1.14.6: one list of cards like the sources page (the supplement chips at the top filter it)
   const body=grouped?KEYS.filter(k=>k!=='all'&&ish.some(x=>x[0]===k)).map(k=>{const g=ish.filter(x=>x[0]===k).sort(bySev),n=s=>g.filter(x=>x[6]===s).length;
     return `<details class="igrp" data-ig="${esc(k)}"${IGOPEN.includes(k)?' open':''}><summary><b>${esc(kname(k))}</b><span class="igc">${['major','moderate','minor'].filter(s=>n(s)).map(s=>`<span class="sev sev-${s}">${n(s)} ${T('sev_'+s)}</span>`).join('')}</span></summary><div class="cgrid">${g.map(card).join('')}</div></details>`}).join('')
     :'<div class="cgrid">'+ish.sort(bySev).map(card).join('')+'</div>';
@@ -188,7 +188,7 @@ function usedIn(n,x){
 function renderRefs(){
   // 1.14.1: one full list. Above the search: source types; below it: vitamins (like interactions). Counts follow the other filter + search.
   if(!KEYS.includes(SF))SF='all';
-  const lk=typeof lkShow==='function'?lkShow():null;
+  const lk=$('reflist').parentNode.id==='linksb'&&typeof lkShow==='function'?lkShow():null; // 1.14.6: the link filter only on its own page
   const sq=iTerms(normAr($('ssearch')&&$('ssearch').value)),sm=([n,x])=>!sq.length||sq.some(q=>normAr([n,x[0],x[1],x[3],x[4]].join(' ')).includes(q));
   const base=Object.entries(REFS).filter(sm),inV=(n,k)=>k==='all'||(REFGROUP[k]||[]).includes(+n),inT=(x,k)=>k==='all'||rtOf(x)===k;
   const tc=k=>base.filter(([n,x])=>inV(n,SF)&&inT(x,k)).length,vc=k=>base.filter(([n,x])=>inT(x,RTF)&&inV(n,k)).length;

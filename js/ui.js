@@ -31,10 +31,10 @@ function show(p,view){
    the same elements move to the page that is open, so there is one list and one check */
 function sharedParts(p){
   const put=(id,box)=>{const el=$(id);if(el&&el.parentNode!==box)box.append(el)},home=id=>{const el=$(id),a=$(id+'-home');if(el&&a&&el.previousElementSibling!==a)a.after(el)};
-  if(p==='meds'){put('mymed',$('medsb'));put('ilist',$('medsb'));if(typeof renderInter==='function')renderInter();if(typeof renderMedCat==='function')renderMedCat()}
-  else if(p==='interactions'&&$('mymed').parentNode.id==='medsb'){home('mymed');home('ilist');if(typeof renderInter==='function')renderInter()}
-  if(p==='links'){put('lkbox',$('linksb'));put('reflist',$('linksb'));if(typeof renderRefs==='function')renderRefs();if(typeof linksAuto==='function'&&OWN.on)linksAuto()}
-  else if(p==='sources'&&$('lkbox').parentNode.id==='linksb'){home('lkbox');home('reflist');if(typeof renderRefs==='function')renderRefs()}
+  if(p==='meds'){put('ilist',$('medsb'));if(typeof renderInter==='function')renderInter();if(typeof renderMedCat==='function')renderMedCat()}
+  else if(p==='interactions'&&$('ilist').parentNode.id==='medsb'){home('ilist');if(typeof renderInter==='function')renderInter()}
+  if(p==='links'){put('reflist',$('linksb'));if(typeof renderRefs==='function')renderRefs();if(typeof linksAuto==='function'&&OWN.on)linksAuto()}
+  else if(p==='sources'&&$('reflist').parentNode.id==='linksb'){home('reflist');if(typeof renderRefs==='function')renderRefs()}
 }
 function go(p){if(typeof SECTOOL!=='undefined'&&SECTOOL[p])p=SECTOOL[p];if(location.hash!=='#'+p)location.hash=p;else if(/^tool-/.test(p))show('tools',p);else show(p);window.scrollTo(0,0)}
 window.addEventListener('hashchange',()=>{if(routeSpecial())return;show(location.hash.slice(1));window.scrollTo(0,0)});

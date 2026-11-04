@@ -71,7 +71,7 @@ with sync_playwright() as p:
     check('my medicines page: the list moved here', pg.evaluate("$('mymed').closest('.page').id"), 'meds')
     check('my medicines page: empty until a medicine is added', T('ilist'), 'أضف دواءً')
     pg.goto('http://app.test/#interactions'); pg.wait_for_timeout(200)
-    check('back on the interactions page', pg.evaluate("$('mymed').closest('.page').id+','+$('ilist').closest('.page').id"), 'interactions,interactions')
+    check('back on the interactions page: the list returns, «my medicines» stays on its own page (1.14.6)', pg.evaluate("$('mymed').closest('.page').id+','+$('ilist').closest('.page').id"), 'meds,interactions')
     pg.goto('http://app.test/#links'); pg.wait_for_timeout(200); check('link check: visitors are sent to the calculator', pg.evaluate('cur'), 'calc')
     pg.goto('http://app.test/#meds'); pg.wait_for_timeout(200)
     check('medicines in the app are listed', str(pg.locator('#medcat .mcadd').count()>3), 'True')
@@ -119,7 +119,7 @@ with sync_playwright() as p:
     card = pg.locator('#ilist .icard', has_text='Levothyroxine').first
     card.locator('[data-gosch]').click(); pg.wait_for_timeout(150)
     check('card -> schedule', ','.join(pg.evaluate("SCI.map(x=>x[0]).filter(id=>$('sc-'+id).checked)")), 'levo,fe'); back()
-    pg.goto('http://app.test/#interactions'); pg.wait_for_timeout(150); pg.evaluate("IF='all';renderInter()")
+    pg.goto('http://app.test/#meds'); pg.wait_for_timeout(150); pg.evaluate("IF='all';renderInter()")
     pg.fill('#medin','ليفو'); pg.dispatch_event('#medin','input'); pg.wait_for_timeout(100)
     sug = T('medsug'); check('suggestions: levothyroxine', sug, 'Levothyroxine')
     pg.fill('#medin','xyzq'); pg.dispatch_event('#medin','input'); check('no match message', T('medsug'), 'لا يوجد')

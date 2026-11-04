@@ -903,6 +903,10 @@ body.ptm #t-sources>span.full.ptl{display:inline!important}
 .mgh .drag,.medit .drag{cursor:grab;touch-action:none;user-select:none;padding:6px 8px;border-radius:8px;color:var(--mute);font-weight:900;letter-spacing:-2px}
 .mgpen{min-width:36px;min-height:36px;border:1px solid var(--line);background:var(--tile);color:var(--ink);border-radius:10px;cursor:pointer;font-size:calc(15px*var(--fsb,1))}
 .medit{display:flex;align-items:center;gap:10px;cursor:default}
+.medit .mt{flex:1}
+.mgeye{min-width:36px;min-height:36px;border:1px solid var(--line);background:var(--tile);color:var(--ink);border-radius:10px;cursor:pointer;display:grid;place-items:center}
+.mgeye svg{width:18px;height:18px}.mgeye.off{color:var(--bad);border-color:var(--bad)}
+.medit.hid .mt,.medit.hid .di,.mgh.hid h3{opacity:.45;text-decoration:line-through}
 .mg.dragging,.medit.dragging{opacity:.6;outline:2px dashed var(--pc2,#075BFF)}
 .mgedh{margin:6px 4px 10px}
 
