@@ -1064,3 +1064,4 @@ ol.refs>li{border-inline-start:4px solid color-mix(in srgb,var(--pc2,var(--royal
 .lgh b{font:700 calc(14px*var(--fsh,1)) var(--f-display);overflow-wrap:anywhere}
 .lgd{font-size:calc(13px*var(--fsb,1));color:var(--ink)}
 .lgby{font-size:calc(12px*var(--fsb,1));color:var(--mute);border-top:1px dashed var(--line);padding-top:4px}
+#sheet-b{grid-auto-rows:max-content;align-content:start} /* 1.16.0 fix: long lists in a floating window were squeezed to fit (overflow:hidden rows shrink) and could not be scrolled */
