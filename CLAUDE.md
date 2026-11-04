@@ -75,6 +75,13 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
+- **1.15.0 (preview, includes 1.14.6)**: his «اريد حذف وضع المريض»: MODE stays 'pro' (i18n.js) but nothing switches it: setMode,
+  #modeg, welcome «who» row, menu «وضع العرض», PROONLY, SECKEY proxy, body.ptm/.ptl, R()/srcLine patient branches all removed; boot
+  removes vw-mode. Patient card (r.pt in calculators, pcard in ui.js) KEPT (pharmacist hands it over). Info pages faq/about/method/who
+  fixed in DEFAULT_CFG + DB draft file `content_1_15_0.sql` (exact-sentence replaces; applied on TEST via pg_net, md5 b52ea61b…;
+  apply on LIVE at release, then he publishes). Dead code removed (grouped interactions, IGOPEN, folded link box, rm_next); search
+  fields get aria-label. Full review report written (Claude Docs). Findings to propose: unused owner invite (revoke), legacy
+  publish_config (drop), old previews release-1-4/1-5/1-6 still serve old code on the LIVE DB, /api/links open to anyone, no CI.
 - **1.14.6 (preview)**: his notes: «أدويتي» only on its own page (#mymed HTML moved into #medsb; interactions page ignores MEDS:
   `mine` only when onMeds); link check only on #links (#lkbox HTML in #linksb, fold code removed, lkShow only when #reflist sits in
   #linksb); interactions = one flat card list (grouped=false; IGOPEN code unused); owner hides menu groups/items from visitors:

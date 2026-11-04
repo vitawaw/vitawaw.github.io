@@ -104,7 +104,7 @@ with sync_playwright() as p:
     o.click('#sheet-x')
     check('new page in the Menu', o.locator(menu(o) + ' .mtile', has_text='الأسئلة الشائعة').count() == 1)
     # the same buttons on every item: approve · edit · hide/show · delete
-    o.click('#t-interactions'); o.evaluate("IGOPEN=KEYS.slice();renderInter()"); o.wait_for_timeout(200)
+    o.click('#t-interactions'); o.evaluate("renderInter()"); o.wait_for_timeout(200)
     card = o.locator('#ilist .icard:not(.pending)').first
     check('interaction card: edit, hide, delete buttons', all(card.locator(f'[data-act="{a}"]').count() == 1 for a in ['edit', 'hide', 'del']))
     n0 = o.locator('#ilist .icard').count()
@@ -131,7 +131,7 @@ with sync_playwright() as p:
     check('added vitamin: edit, hide, delete + «awaiting review ›» opens 🔔', all(o.locator(f'#picker .pkw [data-act="{a}"]').count() >= 1 for a in ['edit', 'hide', 'del']) and o.locator('#picker .pkw button.pend[data-gonotif]').count() >= 1)
     o.locator('#picker .pkw [data-act="edit"]').first.click(); o.wait_for_timeout(200)
     check('vitamin dialog has English fields', o.inner_text('#dlg-b').count('(English)') == 4); o.click('#dlg-a button:not(.pri)')
-    o.click('#t-interactions'); o.evaluate("IGOPEN=KEYS.slice();renderInter()"); o.wait_for_timeout(150)
+    o.click('#t-interactions'); o.evaluate("renderInter()"); o.wait_for_timeout(150)
     o.locator('#ilist .icard').first.locator('[data-act="edit"]').click(); o.wait_for_timeout(200)
     check('interaction dialog has English fields', o.inner_text('#dlg-b').count('(English)') == 3); o.click('#dlg-a button:not(.pri)')
     o.evaluate("go('roadmap')"); o.wait_for_timeout(200)
@@ -148,7 +148,7 @@ with sync_playwright() as p:
     o.evaluate("openPage('about')"); o.wait_for_timeout(200)
     o.locator('#sheet-b .sact button', has_text='حذف').click(); o.wait_for_timeout(200); o.keyboard.press('Escape'); o.wait_for_timeout(200)
     check('Escape on a confirmation closes only the confirmation', o.is_visible('#sheet') and o.is_hidden('#dlg')); o.click('#sheet-x')
-    o.click('#t-interactions'); o.evaluate("IGOPEN=KEYS.slice();renderInter()"); o.wait_for_timeout(200)
+    o.click('#t-interactions'); o.evaluate("renderInter()"); o.wait_for_timeout(200)
     o.locator('#ilist .icard').first.locator('[data-act="hide"]').click(); o.wait_for_timeout(150)
     n0 = o.evaluate("__calls.filter(c=>c[1]==='save_content').length")
     o.evaluate("document.getElementById('o-save').click();document.getElementById('o-save').click()"); o.wait_for_timeout(800)
@@ -198,7 +198,7 @@ with sync_playwright() as p:
     check('footer: app logo in a circle above «بواسطة سيف الدين»', o.locator('#flogos .fl svg').count() == 1)
     # ---- 1.6.8 ----
     check('roadmap: no arrows any more (drag instead)', o.locator('#rmgrid [data-rmup],#rmgrid [data-rmdown]').count() == 0)
-    o.click('#t-interactions'); o.evaluate("IGOPEN=KEYS.slice();renderInter()"); o.wait_for_timeout(200)
+    o.click('#t-interactions'); o.evaluate("renderInter()"); o.wait_for_timeout(200)
     cards = o.evaluate("[...document.querySelectorAll('#ilist .icard')].map(c=>c.dataset.sid)")
     sev = o.evaluate("[...document.querySelectorAll('#ilist .icard')].map(c=>(c.className.match(/sevb-([a-z]+)/)||[])[1])")
     grp = o.evaluate("[...document.querySelectorAll('#ilist .icard')].map(c=>(c.closest('.igrp')||{}).dataset?.ig||'')")

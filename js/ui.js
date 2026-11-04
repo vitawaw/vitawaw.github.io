@@ -159,7 +159,7 @@ function setLang(l){
   LANG=l;buildData();const html=document.documentElement;
   html.lang=l;html.dir=l==='ar'?'rtl':'ltr';
   document.querySelectorAll('[data-t]').forEach(el=>{if(I18N[el.dataset.t])el.textContent=T(el.dataset.t)});
-  document.querySelectorAll('[data-ph]').forEach(el=>{const v=I18N[el.dataset.ph];if(v)el.placeholder=v[l==='ar'?0:1]});
+  document.querySelectorAll('[data-ph]').forEach(el=>{const v=I18N[el.dataset.ph];if(v){el.placeholder=v[l==='ar'?0:1];if(el.type==='search'&&!el.getAttribute('aria-labelledby'))el.setAttribute('aria-label',el.placeholder)}}); // 1.15.0: search fields need a name for screen readers
   document.querySelectorAll('[data-th]').forEach(el=>{const v=I18N[el.dataset.th];if(v)el.innerHTML=v[l==='ar'?0:1]});
   $('backarrow').setAttribute('d',l==='ar'?'M9 6l6 6-6 6':'M15 6l-6 6 6 6');
   document.querySelectorAll('[aria-label="unit"],[aria-label="الوحدة"]').forEach(el=>el.setAttribute('aria-label',l==='ar'?'الوحدة':'unit'));

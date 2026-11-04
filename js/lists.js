@@ -2,7 +2,7 @@
    Interactions tab (filters + search incl. Arabic drug names), sources tab, roadmap ('coming next') and contact links.
    Files are plain scripts loaded in order by index.html (shared global scope, no build step). */
 /* ===================== interactions & sources ===================== */
-let IF='all',SF='all',RTF='all',ISRC=null,IGOPEN=[]; // IGOPEN: interaction groups the visitor opened (1.14.0) // ISRC: show only the interactions that cite this source (from the sources page)
+let IF='all',SF='all',RTF='all',ISRC=null; // ISRC: show only the interactions that cite this source (from the sources page)
 const BUILTIN=['d','b12','fol','fe','ca','mg','c','zn','preg','inf','vac','bar','thi'];
 let KEYS=['all',...BUILTIN],INTER=[],REFGROUP={},CUST={};
 const tx2=o=>o?(LANG==='ar'?o.ar:(o.en||o.ar)):'';
@@ -19,11 +19,8 @@ function renderInter(){
   renderMeds();
   const ish=INTER.filter(im);
   const card=x=>`<div class="icard sevb-${x[6]}${x[7]?'':' pending'}${x[8]?' hid':''}" data-sid="${x[5]}"><div class="who"><span class="sev sev-${x[6]}">${T('sev_'+x[6])}</span>${esc(L(x[1][0],x[1][1]))} <em>+ ${esc(L(x[2][0],x[2][1]))}</em></div><div class="what">${esc(L(x[3][0],x[3][1]))}${R(x[4])}</div>${stampHTML(x[10],x[11])}${icActs(x)}${actBar('i',x[5],{rv:x[7],hidden:x[8],drag:true})}</div>`,bySev=(a,b)=>SEVORD[a[6]]-SEVORD[b[6]];
-  // 1.14.0: with no filter, the long list is grouped by supplement (tap a group to open it); filters, search, my medicines and editing show the flat list
-  const grouped=false; // 1.14.6: one list of cards like the sources page (the supplement chips at the top filter it)
-  const body=grouped?KEYS.filter(k=>k!=='all'&&ish.some(x=>x[0]===k)).map(k=>{const g=ish.filter(x=>x[0]===k).sort(bySev),n=s=>g.filter(x=>x[6]===s).length;
-    return `<details class="igrp" data-ig="${esc(k)}"${IGOPEN.includes(k)?' open':''}><summary><b>${esc(kname(k))}</b><span class="igc">${['major','moderate','minor'].filter(s=>n(s)).map(s=>`<span class="sev sev-${s}">${n(s)} ${T('sev_'+s)}</span>`).join('')}</span></summary><div class="cgrid">${g.map(card).join('')}</div></details>`}).join('')
-    :'<div class="cgrid">'+ish.sort(bySev).map(card).join('')+'</div>';
+  // 1.14.6: one list of cards like the sources page (the supplement chips at the top filter it)
+  const body='<div class="cgrid">'+ish.sort(bySev).map(card).join('')+'</div>';
   $('ilist').innerHTML=(ish.length?'':`<p class="inone">${T(onMeds&&!MEDS.length?'mp_none':'i_none')}</p>`)+bulkBar('i',ish.filter(x=>!x[7]).length)+body;
   $('icount').textContent=INTER.length;
   // owner: drag ⋮⋮ to change the order of interactions (dangerous ones always stay first: the order counts inside each severity)
@@ -214,4 +211,3 @@ document.addEventListener('click',e=>{
 // a button or link inside an opened card does its job and the window closes (e.g. «used in» → the calculator)
 document.addEventListener('click',e=>{if(e.target.closest('#sheet-b .cardfull')&&e.target.closest('button,a'))setTimeout(()=>{if(SHEET&&SHEET.key==='card')closeSheet(false)},0)});
 
-document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details.igrp'))return;const k=d.dataset.ig;IGOPEN=d.open?[...new Set([...IGOPEN,k])]:IGOPEN.filter(x=>x!==k)},true);

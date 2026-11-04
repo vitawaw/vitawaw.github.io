@@ -45,11 +45,11 @@ with sync_playwright() as p:
     pg.goto('http://app.test/');pg.wait_for_timeout(500);login(pg)
     print('owner on:',pg.evaluate("document.body.classList.contains('owner')"),'| bar:',pg.inner_text('#ostate'))
     print('picker has vk (pending, owner sees):',pg.locator('#picker [data-k="vk"]').count(),pg.inner_text('#picker [data-k="vk"]').replace('\n',' / '))
-    pg.click('#t-interactions');pg.wait_for_timeout(200);pg.evaluate("IGOPEN=KEYS.slice();renderInter()")
+    pg.click('#t-interactions');pg.wait_for_timeout(200);pg.evaluate("renderInter()")
     print('first card (sorted major first):',pg.locator('#ilist .icard').first.inner_text().replace('\n',' | ')[:120])
     pg.screenshot(path='tests/out_owner.png')
     # preview hides pending
-    pg.click('#o-preview');pg.wait_for_timeout(300);print('PREVIEW icount:',pg.inner_text('#icount'),'vk in picker:',pg.locator('#picker [data-k="vk"]').count());pg.click('#o-pvexit');pg.wait_for_timeout(300);pg.click('#t-interactions');pg.wait_for_timeout(200);pg.evaluate("IGOPEN=KEYS.slice();renderInter()")
+    pg.click('#o-preview');pg.wait_for_timeout(300);print('PREVIEW icount:',pg.inner_text('#icount'),'vk in picker:',pg.locator('#picker [data-k="vk"]').count());pg.click('#o-pvexit');pg.wait_for_timeout(300);pg.click('#t-interactions');pg.wait_for_timeout(200);pg.evaluate("renderInter()")
     # edit an interaction severity
     pg.click('[data-act="edit"][data-kind="i"][data-id="0"]');pg.wait_for_timeout(200);pg.select_option('#dlgf1','major');ok(pg)
     # add interaction
@@ -79,5 +79,5 @@ with sync_playwright() as p:
     e=b.new_context(viewport={'width':390,'height':844}).new_page();e.add_init_script("window.__ROLE='editor'");setup(e);e.add_init_script("window.__PERMS={inter:true}");e.goto('http://app.test/');e.wait_for_timeout(500);login(e)
     print('EDITOR publish btn visible:',e.is_visible('#o-publish'),'| approve btns:',e.locator('[data-act="ok"],[data-approve]').count())
     print('EDITOR classes:',e.evaluate("['cant-nut','cant-inter','cant-refs','cant-text','not-owner'].filter(c=>document.body.classList.contains(c)).join(',')"))
-    e.click('#t-interactions');e.wait_for_timeout(200);e.evaluate("IGOPEN=KEYS.slice();renderInter()");e.click('[data-act="edit"][data-kind="i"][data-id="0"]');e.wait_for_timeout(200);e.select_option('#dlgf1','minor');ok(e)
+    e.click('#t-interactions');e.wait_for_timeout(200);e.evaluate("renderInter()");e.click('[data-act="edit"][data-kind="i"][data-id="0"]');e.wait_for_timeout(200);e.select_option('#dlgf1','minor');ok(e)
     e.click('#o-save');e.wait_for_timeout(600);print('EDITOR saved parts:',e.evaluate('window.__SAVED'),'| draft written:',e.evaluate("__calls.some(c=>c[0]==='upsert')"),'| toast:',e.inner_text('#toast'))

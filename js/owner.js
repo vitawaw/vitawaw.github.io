@@ -385,7 +385,7 @@ async function linksCheck(){
 function linksAuto(){if(!OWN.local&&(!LINKS||Date.now()-Date.parse(LINKS.at)>7*864e5))linksCheck()}
 /** top of the sources page (owner, and pharmacists who edit sources): the link check, like «My medicines» on interactions.
    The numbers filter the list: tap «not working» to see only those sources. */
-let LKF='',LKOPEN=false; // LKF: '' | 'ok' | 'broken' | 'blocked'; LKOPEN: the folded box on the sources page is open
+let LKF=''; // '' | 'ok' | 'broken' | 'blocked'
 function renderLinks(){
   const el=$('lkbox');if(!el)return;
   if(typeof OWN==='undefined'||!OWN.on||OWN.preview||!CAN('refs')){el.hidden=true;el.innerHTML='';LKF='';return}
@@ -398,7 +398,6 @@ function renderLinks(){
     (LKF?`<p class="hint">${T(LKF==='ok'?'lk_ok_h':LKF==='broken'?'lk_broken_h':'lk_blocked_h')} <button type="button" class="linkbtn" data-lkf="">${T('lk_all')}</button></p>`:'');
   el.innerHTML=`<div class="lkh"><b>${T('lk_t')}</b>${btn}</div>`+rest; // 1.14.6: the link check lives only on its own page
 }
-document.addEventListener('toggle',e=>{if(e.target.matches&&e.target.matches('details.lkd'))LKOPEN=e.target.open},true);
 document.addEventListener('click',e=>{
   if(e.target.closest('#lknow')){linksCheck();return}
   const b=e.target.closest('[data-lkf]');if(!b)return;LKF=LKF===b.dataset.lkf?'':b.dataset.lkf;renderRefs();

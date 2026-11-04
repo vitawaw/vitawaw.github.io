@@ -839,16 +839,6 @@ html,body{overflow-x:clip}
 /* sources page: the link check (team) */
 .lkbox{border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 12px;background:var(--bg);display:grid;gap:8px}
 .lkbox .hint{margin:0}
-.lkbox.lkfold{padding:0;gap:0}
-.lkd>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:0 14px;cursor:pointer;list-style:none}
-.lkd>summary::-webkit-details-marker{display:none}
-.lkd>summary::after{content:'';width:8px;height:8px;border:solid var(--mute);border-width:0 2px 2px 0;transform:rotate(45deg);margin-inline-start:4px;transition:transform .15s}
-.lkd[open]>summary::after{transform:rotate(-135deg)}
-.lkd>summary>b:first-child{margin-inline-end:auto}
-.lkmini{display:flex;gap:6px}
-.lkmini b{min-width:26px;padding:2px 8px;border-radius:99px;text-align:center;font:700 calc(13px*var(--fsb,1)) var(--f-body);background:var(--bg)}
-.lkmini .ok{color:var(--ok)}.lkmini .bad{color:var(--bad)}.lkmini .warn{color:var(--warn)}
-.lkdb{display:grid;gap:8px;padding:0 12px 12px}
 .lkh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .lkcs{display:flex;gap:8px;flex-wrap:wrap}
 .lkc{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);font:600 calc(14px*var(--fsb,1)) var(--f-body);color:var(--ink);cursor:pointer}
@@ -929,25 +919,9 @@ a.ref,.sev-minor{color:var(--royal-t,var(--royal))}
 .nsearch{border-radius:12px}
 a.flag,.flag a{display:inline-block;padding:10px 0}
 
-/* 1.14.0 interactions grouped by supplement */
-details.igrp{border:1px solid var(--line);border-radius:14px;background:var(--card);margin-bottom:10px}
-details.igrp>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px;min-height:52px}
-details.igrp>summary::-webkit-details-marker{display:none}
-details.igrp>summary b{font:800 calc(15px*var(--fsh,1)) var(--f-display);flex:1;min-width:120px}
-details.igrp>summary::after{content:"";width:9px;height:9px;border:solid var(--mute);border-width:0 2px 2px 0;transform:rotate(45deg);margin-inline-start:4px;transition:transform .15s}
-details.igrp[open]>summary::after{transform:rotate(-135deg)}
-details.igrp .igc{display:flex;gap:6px;flex-wrap:wrap}
-details.igrp>.cgrid{padding:0 10px 10px}
-
 /* 1.14.0 calculator list: a heading before the special calculators */
 #picker .pkh{grid-column:1/-1;margin:10px 2px 0;font:800 calc(15px*var(--fsh,1)) var(--f-display);color:var(--ink)}
 #picker .pkh.nf{display:none}
 
 /* 1.14.2 tools page in two parts: a heading before the follow-up tools (schedule, upper limit, lab results) */
 #tgrid .tgh{grid-column:1/-1;margin:10px 2px 0;font:800 calc(15px*var(--fsh,1)) var(--f-display);color:var(--ink)}
-/* interaction groups: name on top; under it the severity chips, and the arrow at the end of that second line (left in Arabic, right in English) */
-details.igrp>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n n" "c a";align-items:center;row-gap:6px}
-details.igrp>summary b{grid-area:n;min-width:0}
-details.igrp>summary .igc{grid-area:c}
-details.igrp>summary::after{grid-area:a;margin:0 6px}
-details.igrp>summary::after{margin-top:-6px}
