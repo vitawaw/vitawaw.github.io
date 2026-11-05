@@ -84,7 +84,8 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   405/403/413 checks; DB live 15 MB, RLS on all 10 tables, anon = SELECT site_config + EXECUTE log_hits only, every definer function has a
   fixed search_path, 0 pending, 0 open invites, owner MFA still 0. Fixes: `Object.prototype.hasOwnProperty.call(F, …)` for vw-k and
   shared links (#c= with k «constructor»); `stats_1_17_1.sql` = log_hits daily caps (2000 people / 2000 count rows), 400-day purge of
-  counts, items ≤24 chars (tested locally) — NOT applied yet (MCP approval timed out on both) → he runs it on both projects.
+  counts, items ≤24 chars (tested locally) — run by him on BOTH projects 2026-11-05 (checked: caps, purge, search_path, anon execute).
+  The JS guard is on the preview only until he says «انشر».
 - **Live: 1.17.0** (he said «انشر» on 2026-11-05; main fast-forwarded; checked online on 3 sizes: no errors, #tool-sch stays after reload,
   #stats closed to visitors, /api/hit refuses other origins). He ran stats_1_17_0.sql on TEST and on LIVE (checked 2026-11-05 on live: 2 tables,
   RLS, 0 policies, anon may only call log_hits, 0 rows, no demo). content_1_17_0.sql: his SQL-editor run changed nothing (likely CR LF from the paste;
