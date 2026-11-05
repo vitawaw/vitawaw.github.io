@@ -32,7 +32,7 @@ function renderInter(){
 /** buttons on an interaction card: open the supplement's calculator; arrange both in the daily schedule when the schedule knows them */
 function icActs(x){
   const calc=!!document.querySelector(`#picker button[data-k="${CSS.escape(x[0])}"]:not([hidden])`);
-  const sch=schPair(x);
+  const sch=typeof toolHidden==='function'&&toolHidden('tool-sch')?null:schPair(x);
   return calc||sch?`<div class="iact">${calc?`<button class="btn" type="button" data-gocalc="${esc(x[0])}">${T('ic_calc')}</button>`:''}${sch?`<button class="btn" type="button" data-gosch="${esc(sch.join(','))}">${T('ic_sch')}</button>`:''}</div>`:'';
 }
 /** the two schedule items of an interaction: its timing (x[9].d), or the medicine recognised in its text */
@@ -130,7 +130,7 @@ function renderMeds(){
   const ids=[...new Set([...MEDS.map(medSch).filter(Boolean),...hits.map(x=>x[0]).filter(k=>SCI.some(s=>s[0]===k))])];
   const cat=Object.fromEntries(medCatalog().map(m=>[m.en,m]));
   el.innerHTML=MEDS.map((m,i)=>`<span class="mchip">${esc(cat[m]?medLabel(cat[m]):m)}<button type="button" data-delmed="${i}" aria-label="${esc(T('o_del'))}">×</button></span>`).join('')+
-    (MEDS.length?`<span class="mmsum">${hits.length?T('mm_n').replace('{n}',hits.length):T('mm_none')}</span>`+(ids.length>1?`<button class="btn" type="button" data-gosch="${esc(ids.join(','))}">${T('ic_sch')}</button>`:''):'');
+    (MEDS.length?`<span class="mmsum">${hits.length?T('mm_n').replace('{n}',hits.length):T('mm_none')}</span>`+(ids.length>1&&!toolHidden('tool-sch')?`<button class="btn" type="button" data-gosch="${esc(ids.join(','))}">${T('ic_sch')}</button>`:''):'');
 }
 const IC={
  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',

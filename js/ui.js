@@ -12,6 +12,7 @@ const HASSESSION=()=>{try{return Object.keys(localStorage).some(k=>/^sb-.+-auth-
 function show(p,view){
   if(p==='notif'){if(typeof openNotif==='function')setTimeout(openNotif,0);p=cur&&cur!=='notif'?cur:'calc'} // 🔔 is a floating window, not a page
   if(typeof SECTOOL!=='undefined'&&SECTOOL[p]){view=SECTOOL[p];p='tools'} // the schedule and lab results sections are tool pages
+  if(p==='tools'&&view&&typeof toolHidden==='function'&&toolHidden(view))view=''; // 1.17.2 a hidden tool's address opens the tools list
   const asked=p,askedView=view;
   if(p==='links'&&!(typeof CAN==='function'&&CAN('refs')))p='calc'; // the link check is for the team
   if(!PAGES.includes(p)||(p==='menu'&&WIDE())||((p==='team'||p==='stats')&&!ISOWNER())||(navHidden(p)&&!SHOWALL()))p='calc'; // a section the owner hid is not shown // wide screens show the menu at the side

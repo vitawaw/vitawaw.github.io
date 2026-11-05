@@ -150,11 +150,11 @@ function recentItem(k){
 function openContact(){openPage('suggest')}
 /* the tools page: rectangles like the vitamins; each opens its own working page (#tool-pill…) with «‹ Tools» */
 /** a tool the owner hid is gone everywhere: tools page, search, result buttons, menu, reminders (id = 'tool-labs', or its kind 'labs') */
-const toolHidden=k=>{const id=k.startsWith('tool-')?k:(TOOLS.find(t=>TOOLKIND[t[0]]===k)||[''])[0];return !SHOWALL()&&((CFG.tools&&CFG.tools.hide)||[]).includes(id)};
+const toolHidden=k=>{const id=k.startsWith('tool-')?k:(TOOLS.find(t=>TOOLKIND[t[0]]===k)||[''])[0];return !(SHOWALL()&&EDITING())&&((CFG.tools&&CFG.tools.hide)||[]).includes(id)}; // 1.17.2 the owner too, unless «تعديل وترتيب» is on
 /** the tools in the owner's order; hidden ones only for the team while editing */
 function toolList(){
   const c=CFG.tools||{},ids=TOOLS.map(t=>t[0]),order=[...new Set([...(c.order||[]).filter(x=>ids.includes(x)),...ids])],hide=c.hide||[];
-  return order.map(id=>TOOLS.find(t=>t[0]===id)).filter(t=>!hide.includes(t[0])||SHOWALL());
+  return order.map(id=>TOOLS.find(t=>t[0]===id)).filter(t=>!hide.includes(t[0])||(SHOWALL()&&EDITING()));
 }
 const toolName=t=>{const n=CFG.tools&&CFG.tools.names&&CFG.tools.names[t[0]];return (n&&(LANG==='ar'?n.ar:(n.en||n.ar)))||T(t[1])};
 /* 1.16.0 «أدوات المتابعة»: the owner chooses what is in it — tools, any section, any information page (also pages added
@@ -184,7 +184,7 @@ function renderToolsGrid(){
     return own?`<div class="pkw tkw${off?' off':''}" data-sid="${t[0]}">${b}<div class="pka">${DRAG(T('o_drag'))}${EPEN(`data-tled="${t[0]}"`)}</div></div>`:b};
   const main=toolList().filter(t=>!fol.includes(t[0]));
   const fl=fol.map(k=>{const it=fItem(k);if(!it)return '';
-    if(it.tool)return (hide.includes(k)&&!SHOWALL())?'':toolTile(it.tool);
+    if(it.tool)return toolHidden(k)?'':toolTile(it.tool); // 1.17.2 hidden: shown to the team only in «تعديل وترتيب»
     if(it.off&&!SHOWALL())return '';
     const b=`<button type="button" data-fgo="${esc(k)}"${it.page?` style="${colorVars(it.page)}"`:''}><i class="tico" aria-hidden="true">${it.ico}</i><span>${esc(it.name)}</span>${SHOWALL()&&it.off?`<em class="hidb">${T('o_hiddenb')}</em>`:''}</button>`;
     return own?`<div class="pkw tkw" data-sid="${esc(k)}">${b}<div class="pka">${DRAG(T('o_drag'))}${EPEN(`data-fed="${esc(k)}"`)}</div></div>`:b}).join('');

@@ -38,7 +38,7 @@ function render(r){
   // more tools, opened already filled in from this result
   const tb=k=>`<button class="btn" type="button" data-tool="${k}">${T('tb_'+k)}</button>`;
   acts.push(`<button class="btn" type="button" data-report="1">${T('rp_btn')}</button>`,`<button class="btn" type="button" data-share="1">${T('sh_btn')}</button>`);
-  if(r.lab&&r.lab.length)acts.push(`<button class="btn" type="button" data-lab="1">${T('lb_save')}</button>`);
+  if(r.lab&&r.lab.length&&!(typeof toolHidden==='function'&&toolHidden('tool-labs')))acts.push(`<button class="btn" type="button" data-lab="1">${T('lb_save')}</button>`);
   if(r.cal)acts.push(`<button class="btn" type="button" data-cal="1">${CALIC}${T('cal_add')}</button>`);
   if(r.ml){ML=r.ml;acts.push(tb('ml'))}
   if(r.sch){SCHSET=r.sch;acts.push(tb('sch'))}

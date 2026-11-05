@@ -210,5 +210,13 @@ with sync_playwright() as p:
     pg.evaluate("CFG.tools={...CFG.tools,items:{}};schBuild();ulBuild();labsBuild()")
     check('owner: renamed tool', T('tgrid'), 'فحص الحد'); check('owner: hidden tool gone', str(pg.locator('#tgrid [data-tv="tool-gz"]').count()), '0')
     check('stamp of a pharmacist', pg.evaluate("stampHTML('د. أحمد','2026-11-02')"), 'راجعه: د. أحمد')
+    # 1.17.2 hidden schedule and lab log: gone from the tools page, the result buttons, the interaction cards and their own address
+    pg.evaluate("CFG.tools={...CFG.tools,hide:['tool-sch','tool-labs']};renderNav();renderToolsGrid();go('calc');openNut('fe');fillExample()"); pg.wait_for_timeout(400)
+    res_ok = pg.locator('#res [data-lab], #res [data-tool="sch"]').count() == 0
+    pg.evaluate("go('interactions');refreshAll()"); pg.wait_for_timeout(300)
+    int_ok = pg.locator('#ilist [data-gosch]').count() == 0
+    pg.evaluate("location.hash='tool-sch'"); pg.wait_for_timeout(300)
+    check('1.17.2 hidden schedule + lab log: no tile, no result/interaction buttons, address opens the tools list', str(pg.locator('#tgrid [data-tv="tool-sch"], #tgrid [data-tv="tool-labs"]').count()==0 and res_ok and int_ok and pg.evaluate("TOOLV")==''), 'True')
+    pg.evaluate("CFG.tools={...CFG.tools,hide:[]};renderNav();renderToolsGrid()")
     print('page errors:', errs)
 sys.exit(1 if fails or errs else 0)

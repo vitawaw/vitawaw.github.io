@@ -78,6 +78,11 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
+- **1.17.2 (preview)**: his «اريد اخفائهما (سجل التحاليل وجدول المكملات) … اضغط اخفاء لا يختفون»: hiding worked for visitors but the
+  owner kept seeing them («مخفي عن الزوار»). Now `toolHidden()`/`toolList()`/follow-up tiles show hidden tools to the team only with
+  EDITING(); render.js drops the data-lab button, lists.js the data-gosch buttons, show() sends a hidden tool's address to the tools
+  list. tools_flow 105. He also asked for a Project Plan doc (rubric: problem, importance, description WITHOUT labs/schedule, tasks,
+  submission) → Claude Doc; member names and deadline still to come from him.
 - **1.17.1 (preview) = full review 2026-11-05** (his «فحص للكود كامل للموقع التجريبي و الموقع الرئيسي»): all tests pass (CI green,
   i18n baseline en 18 / ar 118), crawl of BOTH sites (phone ar+en, iPad, PC): 0 errors, 0 overflow, 0 failed requests, 32 calculators,
   all tools' examples (test), 8 pages; headers OK; repo files not served (unknown paths return index.html); /api/links 401, /api/hit
