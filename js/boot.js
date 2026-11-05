@@ -6,7 +6,7 @@
 function frameDraft(){try{const d=JSON.parse(localStorage.getItem('vw-frame')||'null');if(d&&typeof d==='object'){CFG=mergeCfg(DEFAULT_CFG,d);buildData();refreshAll()}}catch(e){}}
 let startLang='ar',startPage='calc',welcomeSeen=false;
 try{
-  const s=localStorage.getItem('vw-k');buildData();if(s&&F[s])K=s;
+  const s=localStorage.getItem('vw-k');buildData();if(s&&Object.prototype.hasOwnProperty.call(F,s))K=s; // 1.17.1 only a real calculator name (not e.g. «constructor»)
   startLang=localStorage.getItem('vw-lang')||'ar';startPage=localStorage.getItem('vw-p')||'calc';
   localStorage.removeItem('vw-mode'); // 1.15.0: there is no patient mode any more
   welcomeSeen=!!localStorage.getItem('vw-welcome');

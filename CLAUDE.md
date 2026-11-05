@@ -78,6 +78,13 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
+- **1.17.1 (preview) = full review 2026-11-05** (his «فحص للكود كامل للموقع التجريبي و الموقع الرئيسي»): all tests pass (CI green,
+  i18n baseline en 18 / ar 118), crawl of BOTH sites (phone ar+en, iPad, PC): 0 errors, 0 overflow, 0 failed requests, 32 calculators,
+  all tools' examples (test), 8 pages; headers OK; repo files not served (unknown paths return index.html); /api/links 401, /api/hit
+  405/403/413 checks; DB live 15 MB, RLS on all 10 tables, anon = SELECT site_config + EXECUTE log_hits only, every definer function has a
+  fixed search_path, 0 pending, 0 open invites, owner MFA still 0. Fixes: `Object.prototype.hasOwnProperty.call(F, …)` for vw-k and
+  shared links (#c= with k «constructor»); `stats_1_17_1.sql` = log_hits daily caps (2000 people / 2000 count rows), 400-day purge of
+  counts, items ≤24 chars (tested locally) — NOT applied yet (MCP approval timed out on both) → he runs it on both projects.
 - **Live: 1.17.0** (he said «انشر» on 2026-11-05; main fast-forwarded; checked online on 3 sizes: no errors, #tool-sch stays after reload,
   #stats closed to visitors, /api/hit refuses other origins). He ran stats_1_17_0.sql on TEST and on LIVE (checked 2026-11-05 on live: 2 tables,
   RLS, 0 policies, anon may only call log_hits, 0 rows, no demo). content_1_17_0.sql: his SQL-editor run changed nothing (likely CR LF from the paste;

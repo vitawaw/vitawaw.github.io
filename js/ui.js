@@ -200,7 +200,7 @@ async function shareResult(){
 }
 function loadShared(code){
   let o=null;try{o=JSON.parse(b64u.dec(code))}catch(e){}
-  if(!o||typeof o!=='object'||!F[o.k]||typeof o.f!=='object'){show('calc');return}
+  if(!o||typeof o!=='object'||typeof o.k!=='string'||!Object.prototype.hasOwnProperty.call(F,o.k)||!o.f||typeof o.f!=='object'){show('calc');return} // 1.17.1 a changed link cannot pick a non-calculator
   K=o.k;FORMIDS.forEach(id=>{const el=$(id);if(!el)return;const v=o.f[id];
     if(el.type==='checkbox')el.checked=v===1;
     else if(el.tagName==='SELECT'){if(v!=null&&[...el.options].some(x=>x.value===String(v)))el.value=String(v)}
