@@ -78,6 +78,9 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   1 unused index). Owner has NO MFA factor yet. Load test on the PREVIEW (node fetch, 3200 requests, up to 200 concurrent): 0 errors,
   ~400 req/s (client-bound), p95 1.8 s at 200 conc. Limit = Workers free 100k requests/day (/api/content ≈ 1 per page open; static
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
+- **Live: 1.17.0** (he said «انشر» on 2026-11-05; main fast-forwarded; checked online on 3 sizes: no errors, #tool-sch stays after reload,
+  #stats closed to visitors, /api/hit refuses other origins). He ran stats_1_17_0.sql on TEST (dashboard showed zeros). LIVE still needs
+  stats_1_17_0.sql + content_1_17_0.sql (until then counts are dropped silently and the dashboard shows st_nodb), then «نشر» for the privacy text.
 - **1.17.0 (preview)**: his «اريد داشبورد … للزيارات و كم شخص استخدم الموقع» → proposal 1 (anonymous own counting). Client
   `js/stats.js`: `statHit(kind,item)` queue (open at boot, section/tool in show(), calc in render() once per visit per K, page in
   openPage) → `statFlush()` sendBeacon `/api/hit` on hidden/pagehide/30 events; off for OWN.on, FRAME, webdriver/localhost
