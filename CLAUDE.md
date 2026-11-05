@@ -80,8 +80,9 @@ Gotcha: CSS class names are global; `details.more` already exists (that's why th
   assets free); page falls back to Supabase direct. /api/content 29 KB compressed, css+js 183 KB. Live writes from bash are blocked.
 - **Live: 1.17.0** (he said «انشر» on 2026-11-05; main fast-forwarded; checked online on 3 sizes: no errors, #tool-sch stays after reload,
   #stats closed to visitors, /api/hit refuses other origins). He ran stats_1_17_0.sql on TEST and on LIVE (checked 2026-11-05 on live: 2 tables,
-  RLS, 0 policies, anon may only call log_hits, 0 rows, no demo). content_1_17_0.sql NOT yet run on live (draft privacy still old; the file
-  matches it) → he runs it, then «نشر».
+  RLS, 0 policies, anon may only call log_hits, 0 rows, no demo). content_1_17_0.sql: his SQL-editor run changed nothing (likely CR LF from the paste;
+  the file now strips chr(13)); Claude APPLIED it via apply_migration on LIVE and TEST (approval worked) — draft privacy has the new
+  section in ar+en, 8 pages kept. He must press «نشر» on each site for visitors to see it.
 - **1.17.0 (preview)**: his «اريد داشبورد … للزيارات و كم شخص استخدم الموقع» → proposal 1 (anonymous own counting). Client
   `js/stats.js`: `statHit(kind,item)` queue (open at boot, section/tool in show(), calc in render() once per visit per K, page in
   openPage) → `statFlush()` sendBeacon `/api/hit` on hidden/pagehide/30 events; off for OWN.on, FRAME, webdriver/localhost
